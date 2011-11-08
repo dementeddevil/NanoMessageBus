@@ -7,7 +7,7 @@
 	{
 		public static string FormatWith(this string value, params object[] values)
 		{
-			return String.Format(CultureInfo.InvariantCulture, value, values);
+			return string.Format(CultureInfo.InvariantCulture, value, values);
 		}
 
 		public static TimeSpan Milliseconds(this int milliseconds)
