@@ -1,2 +1,0 @@
-http://nlog-project.org/
-http://www.opensource.org/licenses/bsd-license.php
