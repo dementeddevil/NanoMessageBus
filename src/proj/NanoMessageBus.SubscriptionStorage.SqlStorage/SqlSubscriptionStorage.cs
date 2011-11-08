@@ -21,9 +21,10 @@ namespace NanoMessageBus.SubscriptionStorage
 
 		public virtual void Subscribe(Uri address, IEnumerable<string> messageTypes, DateTime? expiration)
 		{
-			this.ExecuteCommand(address, messageTypes, command =>
+			var types = messageTypes.ToArray();
+			this.ExecuteCommand(address, types, command =>
 			{
-				foreach (var type in messageTypes)
+				foreach (var type in types)
 					Log.Info(Diagnostics.Subscribe, address, type, expiration);
 
 				command.CommandText = SqlStatements.InsertSubscription;
@@ -32,9 +33,10 @@ namespace NanoMessageBus.SubscriptionStorage
 		}
 		public virtual void Unsubscribe(Uri address, IEnumerable<string> messageTypes)
 		{
-			this.ExecuteCommand(address, messageTypes, command =>
+			var types = messageTypes.ToArray();
+			this.ExecuteCommand(address, types, command =>
 			{
-				foreach (var type in messageTypes)
+				foreach (var type in types)
 					Log.Info(Diagnostics.Unsubscribe, address, type);
 
 				command.CommandText = SqlStatements.DeleteSubscription;

@@ -2,7 +2,6 @@
 {
 	using Newtonsoft.Json;
 	using Serialization;
-	using Wireup;
 
 	public static class JsonSerializationWireupExtensions
 	{

@@ -8,7 +8,7 @@
     <ProjectGuid>{45F17FC3-36CB-428A-BCBB-4F0198E4BCBB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.Serialization.Json.Wireup</RootNamespace>
+    <RootNamespace>NanoMessageBus</RootNamespace>
     <AssemblyName>NanoMessageBus.Serialization.Json.Wireup</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

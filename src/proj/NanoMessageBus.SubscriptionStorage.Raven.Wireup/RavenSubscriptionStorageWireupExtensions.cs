@@ -3,7 +3,6 @@
 	using Raven.Client;
 	using Raven.Client.Document;
 	using SubscriptionStorage.Raven;
-	using Wireup;
 
 	public static class RavenSubscriptionStorageWireupExtensions
 	{

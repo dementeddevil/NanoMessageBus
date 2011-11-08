@@ -15,13 +15,11 @@
 		{
 			public readonly Uri Address;
 			public readonly string MessageType;
-			private readonly DateTime? expiration;
 
-			public Subscription(Uri address, string messageType, DateTime? expiration)
+			public Subscription(Uri address, string messageType)
 			{
 				this.Address = address;
 				this.MessageType = messageType;
-				this.expiration = expiration;
 			}
 		}
 		
@@ -32,7 +30,7 @@
 				foreach (var type in messageTypes)
 				{
 					this.subscriptions.RemoveAll(s => s.Address == address && s.MessageType == type);
-					this.subscriptions.Add(new Subscription(address, type, expiration));
+					this.subscriptions.Add(new Subscription(address, type));
 				}
 			}
 		}

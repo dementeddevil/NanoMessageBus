@@ -8,7 +8,7 @@
     <ProjectGuid>{F861BC58-CC40-45CA-83AD-6E7FCB65DB8D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.SubscriptionStorage.Raven.Wireup</RootNamespace>
+    <RootNamespace>NanoMessageBus</RootNamespace>
     <AssemblyName>NanoMessageBus.SubscriptionStorage.Raven.Wireup</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

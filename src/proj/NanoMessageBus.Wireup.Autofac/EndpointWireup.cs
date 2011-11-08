@@ -1,4 +1,4 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
 	using System;
 	using Autofac;
@@ -33,9 +33,9 @@ namespace NanoMessageBus.Wireup
 			return this;
 		}
 
-		public virtual EndpointWireup PostPoisonMessageHandlingAction(Action<EnvelopeMessage> postHandlingAction)
+		public virtual EndpointWireup PostPoisonMessageHandlingAction(Action<EnvelopeMessage> action)
 		{
-			this.postHandlingAction = postHandlingAction;
+			this.postHandlingAction = action;
 			return this;
 		}
 

@@ -10,7 +10,7 @@ namespace NanoMessageBus.Logging
 		}
 
 		private static readonly NLog.LogFactory Factory = new NLog.LogFactory();
-		private readonly global::NLog.Logger log;
+		private readonly NLog.Logger log;
 
 		public NLogLogger(Type typeToLog)
 		{

@@ -88,12 +88,12 @@ namespace NanoMessageBus
 
 		private void Dispatch(object[] messages, IEnumerable<Uri> addresses)
 		{
-			if (!addresses.Any())
+			var list = addresses.ToArray();
+			if (!list.Any())
 				return;
 
 			var transportMessage = this.builder.BuildMessage(this.context.OutgoingHeaders, messages);
-
-			this.transport.Send(transportMessage, addresses.ToArray());
+			this.transport.Send(transportMessage, list);
 		}
 	}
 }

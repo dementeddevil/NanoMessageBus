@@ -8,7 +8,7 @@
     <ProjectGuid>{2122403B-F8F9-413B-A571-5B3B7211BF96}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.Wireup</RootNamespace>
+    <RootNamespace>NanoMessageBus</RootNamespace>
     <AssemblyName>NanoMessageBus.Wireup.Autofac</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

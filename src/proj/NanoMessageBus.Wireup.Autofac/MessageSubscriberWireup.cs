@@ -1,4 +1,4 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
@@ -55,9 +55,9 @@ namespace NanoMessageBus.Wireup
 			if (this.requests.Count > 0)
 				builder.RegisterCallback(this.OnContainerConfigured);
 		}
-		protected virtual MessageSubscriber BuildMessageSubsciber(IComponentContext c)
+		protected virtual MessageSubscriber.MessageSubscriber BuildMessageSubsciber(IComponentContext c)
 		{
-			return new MessageSubscriber(
+			return new MessageSubscriber.MessageSubscriber(
 				c.Resolve<IReceiveFromEndpoints>().EndpointAddress,
 				c.Resolve<ITransportMessages>());
 		}

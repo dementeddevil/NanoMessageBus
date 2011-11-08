@@ -1,6 +1,5 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
-	using System;
 	using Autofac;
 	using Serialization;
 

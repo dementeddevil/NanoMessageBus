@@ -28,8 +28,10 @@
 			{
 				foreach (var messageType in messageTypes)
 				{
+					var type = messageType;
+
 					var subscription = session.Query<Subscription>()
-						.Where(s => s.Subscriber == address.ToString() && s.MessageType == messageType)
+						.Where(s => s.Subscriber == address.ToString() && s.MessageType == type)
 						.SingleOrDefault();
 
 					if (subscription == null)

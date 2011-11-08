@@ -17,7 +17,7 @@
 			this.Expiration = expiration;
 		}
 
-		public string Id { get; private set; } 
+		public string Id { get; set; } // set by RavenDB
 		public string Subscriber { get; private set; }
 		public string MessageType { get; set; }
 		public DateTime? Expiration { get; set; }

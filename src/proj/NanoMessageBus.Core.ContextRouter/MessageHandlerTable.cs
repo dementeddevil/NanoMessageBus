@@ -57,15 +57,10 @@ namespace NanoMessageBus.Core
 		{
 			ICollection<Func<TContainer, IHandleMessages<object>>> routeCallbacks;
 			if (Routes.TryGetValue(messageType, out routeCallbacks))
-			{
 				return routeCallbacks.Select(route => route(this.childContainer));
-			}
-			else
-			{
-				// if we don't have a handler registered for the messageType
-				// the event is logged above in GetHandlers()
-				return new IHandleMessages<object>[] { };
-			}
+
+			// if we don't have a handler registered for the messageType the event is logged above in GetHandlers()
+			return new IHandleMessages<object>[] { };
 		}
 
 		private class MessageHandler<TMessage> : IHandleMessages<object>

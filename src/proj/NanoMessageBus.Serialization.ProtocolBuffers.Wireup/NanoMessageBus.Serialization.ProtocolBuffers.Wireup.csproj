@@ -8,7 +8,7 @@
     <ProjectGuid>{CC559DE2-5052-42A2-959C-F5163EF2A005}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.Serialization.ProtocolBuffers.Wireup</RootNamespace>
+    <RootNamespace>NanoMessageBus</RootNamespace>
     <AssemblyName>NanoMessageBus.Serialization.ProtocolBuffers.Wireup</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
