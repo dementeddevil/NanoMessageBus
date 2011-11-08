@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus", "proj\Nano
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.Core", "proj\NanoMessageBus.Core\NanoMessageBus.Core.csproj", "{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.RabbitMQ", "proj\NanoMessageBus.RabbitMQ\NanoMessageBus.RabbitMQ.csproj", "{DA0F702D-4FF3-4882-956E-E8B1B759CD41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA0F702D-4FF3-4882-956E-E8B1B759CD41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA0F702D-4FF3-4882-956E-E8B1B759CD41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA0F702D-4FF3-4882-956E-E8B1B759CD41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA0F702D-4FF3-4882-956E-E8B1B759CD41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
