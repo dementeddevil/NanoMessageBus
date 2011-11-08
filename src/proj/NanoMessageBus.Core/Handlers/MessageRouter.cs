@@ -30,20 +30,7 @@ namespace NanoMessageBus.Handlers
 
 		public virtual void Route(EnvelopeMessage message)
 		{
-			if (message == null || message.LogicalMessages == null || message.LogicalMessages.Count == 0)
-			{
-				// we wore unable to get a valid message from the queue.
-				// probably deserialization issue, and the message has been forwarder to the poison queue.
-				// this will complete the transaction removing the message from the current queue.
-				Log.Debug(Diagnostics.CommittingUnitOfWork);
-				this.unitOfWork.Complete();
-				return;
-			}
-
-			this.CurrentMessage = message;
-
-			if (!this.poisonMessageHandler.IsPoison(message))
-				this.TryRoute(message);
+			this.TryRoute(this.CurrentMessage = message);
 
 			Log.Debug(Diagnostics.CommittingUnitOfWork);
 			this.unitOfWork.Complete();
@@ -52,6 +39,9 @@ namespace NanoMessageBus.Handlers
 		}
 		private void TryRoute(EnvelopeMessage message)
 		{
+			if (!this.CanRoute(message))
+				return;
+
 			Log.Verbose(Diagnostics.RoutingMessagesToHandlers);
 
 			try
@@ -65,6 +55,10 @@ namespace NanoMessageBus.Handlers
 				this.poisonMessageHandler.HandleFailure(message, e);
 				throw;
 			}
+		}
+		private bool CanRoute(EnvelopeMessage message)
+		{
+			return message.IsPopulated() && !this.poisonMessageHandler.IsPoison(message);
 		}
 
 		public MessageRouter(

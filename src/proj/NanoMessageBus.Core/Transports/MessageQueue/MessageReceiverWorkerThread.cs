@@ -44,6 +44,7 @@ namespace NanoMessageBus.Transports.MessageQueue
 		{
 			if (!this.receiverQueue.HasMessagesInQueue())
 				return;
+
 			using (var router = this.routerFactory())
 				this.RouteToHandlers(router, this.receiverQueue.Receive());
 		}

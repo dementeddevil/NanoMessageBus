@@ -5,6 +5,11 @@ namespace NanoMessageBus.Transports
 
 	internal static class ExtensionMethods
 	{
+		public static bool IsPopulated(this EnvelopeMessage message)
+		{
+			return message != null && message.LogicalMessages != null && message.LogicalMessages.Count > 0;
+		}
+
 		public static ICollection<Uri> GetMatching(
 			this IDictionary<Type, ICollection<Uri>> source, IEnumerable<Type> types)
 		{

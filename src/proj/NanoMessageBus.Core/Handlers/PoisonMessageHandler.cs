@@ -32,6 +32,9 @@ namespace NanoMessageBus.Handlers
 		}
 		private bool CanRetry(EnvelopeMessage message)
 		{
+			if (message == null)
+				return false;
+
 			lock (this.messageFailures)
 			{
 				int retries;
