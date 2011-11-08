@@ -103,7 +103,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Transports\MessageQueue\ExtensionMethods.cs" />
     <Compile Include="Transports\MessageQueue\IThread.cs" />
     <Compile Include="Transports\MessageQueue\MessageQueueTransport.cs" />
     <Compile Include="Transports\MessageQueue\MessageReceiverWorkerThread.cs" />

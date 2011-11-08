@@ -1,7 +1,6 @@
 namespace NanoMessageBus.Endpoints.MsmqEndpoint
 {
 	using System;
-	using System.Globalization;
 	using System.Text;
 
 	internal static class ExtensionMethods
@@ -9,14 +8,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		private const string Spacer = "\r\n----\r\n";
 		private const string Separator = "\r\n-----------------------\r\n\r\n";
 
-		public static TimeSpan Milliseconds(this int milliseconds)
-		{
-			return new TimeSpan(0, 0, 0, 0, milliseconds);
-		}
-		public static string FormatWith(this string format, params object[] values)
-		{
-			return string.Format(CultureInfo.InvariantCulture, format, values);
-		}
 		public static byte[] Serialize(this Exception exception)
 		{
 			var builder = new StringBuilder();
