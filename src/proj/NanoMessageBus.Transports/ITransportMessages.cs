@@ -14,7 +14,7 @@ namespace NanoMessageBus.Transports
 		/// Starts the transport listening for new messages to receive.
 		/// </summary>
 		void StartListening();
-		
+
 		/// <summary>
 		/// Stops the transport listening for new messages.
 		/// </summary>

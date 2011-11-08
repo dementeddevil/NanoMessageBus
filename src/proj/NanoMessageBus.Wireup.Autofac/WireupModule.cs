@@ -4,7 +4,8 @@
 	using System.Collections.Generic;
 	using Autofac;
 
-	public class WireupModule : Module, IWireup
+	public class WireupModule : Module,
+		IWireup
 	{
 		private readonly IDictionary<Type, IWireup> modules = new Dictionary<Type, IWireup>();
 		private readonly IWireup parent;
@@ -44,8 +45,10 @@
 		public virtual void Register(ContainerBuilder builder)
 		{
 			if (this.parent == null)
+			{
 				foreach (var module in this.modules.Values)
 					builder.RegisterModule(module);
+			}
 			else
 				this.parent.Register(builder);
 		}

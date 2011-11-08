@@ -1,6 +1,7 @@
 namespace NanoMessageBus.Endpoints
 {
 	using System;
+	using System.Diagnostics;
 	using System.Messaging;
 	using System.Runtime.Serialization;
 	using Logging;
@@ -46,7 +47,7 @@ namespace NanoMessageBus.Endpoints
 			get { return this.inputQueue.Address; }
 		}
 
-		[System.Diagnostics.DebuggerNonUserCode]
+		[DebuggerNonUserCode]
 		public bool HasMessagesInQueue()
 		{
 			try
@@ -82,7 +83,7 @@ namespace NanoMessageBus.Endpoints
 			return result;
 		}
 
-		[System.Diagnostics.DebuggerNonUserCode]
+		[DebuggerNonUserCode]
 		private Message DequeueMessage()
 		{
 			try

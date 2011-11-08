@@ -1,6 +1,7 @@
 namespace NanoMessageBus.Logging
 {
 	using System;
+	using log4net;
 
 	public class Log4NetLogger : ILog
 	{
@@ -13,7 +14,7 @@ namespace NanoMessageBus.Logging
 
 		public Log4NetLogger(Type typeToLog)
 		{
-			this.log = log4net.LogManager.GetLogger(typeToLog);
+			this.log = LogManager.GetLogger(typeToLog);
 		}
 
 		public virtual void Verbose(string message, params object[] values)

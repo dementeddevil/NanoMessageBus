@@ -9,7 +9,10 @@
 		public static SubscriptionStorageWireup WithRavenSubscriptionStorage(
 			this SubscriptionStorageWireup wireup, string connectionStringName)
 		{
-			IDocumentStore store = new DocumentStore { ConnectionStringName = connectionStringName };
+			IDocumentStore store = new DocumentStore
+			{
+				ConnectionStringName = connectionStringName
+			};
 			store.Initialize();
 			return wireup.WithRavenSubscriptionStorage(store);
 		}

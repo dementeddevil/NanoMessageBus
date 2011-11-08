@@ -12,9 +12,7 @@ namespace NanoMessageBus.Serialization
 		public BsonMessageSerializer(JsonSerializer customSerializer)
 		{
 			if (customSerializer == null)
-			{
 				throw new ArgumentNullException("customSerializer");
-			}
 
 			this.serializer = customSerializer;
 		}

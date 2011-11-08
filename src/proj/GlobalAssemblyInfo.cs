@@ -4,6 +4,7 @@
 // </copyright>
 // <author>Oliver, Jonathan</author>
 //-----------------------------------------------------------------------
+
 using System;
 using System.Reflection;
 using System.Resources;

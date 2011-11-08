@@ -21,8 +21,8 @@ namespace NanoMessageBus.Logging
 		private static string GetName(this Thread thread)
 		{
 			return !string.IsNullOrEmpty(thread.Name)
-				? thread.Name
-				: thread.ManagedThreadId.ToString(CultureInfo.InvariantCulture);
+			       	? thread.Name
+			       	: thread.ManagedThreadId.ToString(CultureInfo.InvariantCulture);
 		}
 	}
 }

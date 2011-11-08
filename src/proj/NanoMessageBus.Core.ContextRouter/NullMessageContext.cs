@@ -21,10 +21,7 @@ namespace NanoMessageBus.Core
 		}
 		public EnvelopeMessage CurrentMessage
 		{
-			get
-			{
-				return new EnvelopeMessage(Guid.Empty, this.localAddress, TimeSpan.Zero, false, null, null);
-			}
+			get { return new EnvelopeMessage(Guid.Empty, this.localAddress, TimeSpan.Zero, false, null, null); }
 		}
 		public bool ContinueProcessing
 		{

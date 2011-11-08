@@ -102,9 +102,9 @@ namespace NanoMessageBus
 			return new PoisonMessageHandler(
 				c.ResolveNamed<ISendToEndpoints>(
 					PoisonEndpoint, new Parameter[0]),
-					new Uri(this.poisonAddress),
-					this.maxRetries,
-					this.postHandlingAction);
+				new Uri(this.poisonAddress),
+				this.maxRetries,
+				this.postHandlingAction);
 		}
 	}
 }

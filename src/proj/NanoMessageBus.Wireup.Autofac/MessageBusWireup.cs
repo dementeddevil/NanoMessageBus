@@ -44,7 +44,7 @@ namespace NanoMessageBus
 		{
 			foreach (var messageType in messageTypes)
 				this.transientTypes.Add(messageType);
-			
+
 			return this;
 		}
 

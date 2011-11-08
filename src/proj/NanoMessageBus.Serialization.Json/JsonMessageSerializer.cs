@@ -2,6 +2,7 @@ namespace NanoMessageBus.Serialization
 {
 	using System;
 	using System.IO;
+	using System.Reflection;
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Serialization;
 
@@ -12,9 +13,7 @@ namespace NanoMessageBus.Serialization
 		public JsonMessageSerializer(JsonSerializer customSerializer)
 		{
 			if (customSerializer == null)
-			{
 				throw new ArgumentNullException("customSerializer");
-			}
 
 			this.serializer = customSerializer;
 		}
@@ -29,7 +28,7 @@ namespace NanoMessageBus.Serialization
 			var resolver = new DefaultContractResolver();
 
 			// allow json.net to use private setter
-			resolver.DefaultMembersSearchFlags |= System.Reflection.BindingFlags.NonPublic;
+			resolver.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
 
 			return new JsonSerializer
 			{

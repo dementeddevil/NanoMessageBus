@@ -22,7 +22,7 @@
 				this.MessageType = messageType;
 			}
 		}
-		
+
 		public void Subscribe(Uri address, IEnumerable<string> messageTypes, DateTime? expiration)
 		{
 			lock (this.subscriptions)
