@@ -6,8 +6,6 @@ namespace NanoMessageBus.Serialization
 
 	public class BinarySerializer : SerializerBase
 	{
-		private readonly IFormatter formatter = new BinaryFormatter();
-
 		protected override void SerializePayload(Stream output, object message)
 		{
 			this.formatter.Serialize(output, message);
@@ -16,5 +14,7 @@ namespace NanoMessageBus.Serialization
 		{
 			return this.formatter.Deserialize(input);
 		}
+
+		private readonly IFormatter formatter = new BinaryFormatter();
 	}
 }

@@ -88,7 +88,7 @@
     <Compile Include="Serialization\GzipSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
     <Compile Include="Serialization\TransformationSerializer.cs" />
-    <Compile Include="Serialization\UndisposableStream.cs" />
+    <Compile Include="Serialization\IndisposableStream.cs" />
     <Compile Include="Transports\Diagnostics.Designer.cs">
       <DependentUpon>Diagnostics.resx</DependentUpon>
       <AutoGen>True</AutoGen>

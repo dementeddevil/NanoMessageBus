@@ -10,44 +10,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 	public class MsmqSenderEndpoint : ISendToEndpoints
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqReceiverEndpoint));
-		private const string LabelFormat = "NMB:{0}:{1}";
-		private readonly IDictionary<Uri, MsmqConnector> activeConnectors = new Dictionary<Uri, MsmqConnector>();
-		private readonly Func<Uri, MsmqConnector> connectorFactory;
-		private readonly ISerializeMessages serializer;
-		private bool disposed;
-
-		public MsmqSenderEndpoint(Func<Uri, MsmqConnector> connectorFactory, ISerializeMessages serializer)
-		{
-			this.connectorFactory = connectorFactory;
-			this.serializer = serializer;
-		}
-		~MsmqSenderEndpoint()
-		{
-			this.Dispose(false);
-		}
-
-		public void Dispose()
-		{
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-		protected virtual void Dispose(bool disposing)
-		{
-			if (this.disposed || !disposing)
-				return;
-
-			lock (this.activeConnectors)
-			{
-				this.disposed = true;
-
-				foreach (var connector in this.activeConnectors.Values)
-					connector.Dispose();
-
-				this.activeConnectors.Clear();
-			}
-		}
-
 		public virtual void Send(EnvelopeMessage message, params Uri[] recipients)
 		{
 			Log.Debug(Diagnostics.PreparingMessageToSend, message.MessageId, message.LogicalMessages.Count);
@@ -60,7 +22,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 				this.Send(BuildMsmqMessage(message, serializedStream), recipients);
 			}
 		}
-
 		private void Send(IDisposable message, params Uri[] recipients)
 		{
 			using (message)
@@ -103,6 +64,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 				return connector;
 			}
 		}
+
 		public static Message BuildMsmqMessage(EnvelopeMessage message, Stream serialized)
 		{
 			return new Message
@@ -125,5 +87,43 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 			return message.TimeToLive;
 		}
+
+		public MsmqSenderEndpoint(Func<Uri, MsmqConnector> connectorFactory, ISerializeMessages serializer)
+		{
+			this.connectorFactory = connectorFactory;
+			this.serializer = serializer;
+		}
+		~MsmqSenderEndpoint()
+		{
+			this.Dispose(false);
+		}
+
+		public void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+		protected virtual void Dispose(bool disposing)
+		{
+			if (this.disposed || !disposing)
+				return;
+
+			lock (this.activeConnectors)
+			{
+				this.disposed = true;
+
+				foreach (var connector in this.activeConnectors.Values)
+					connector.Dispose();
+
+				this.activeConnectors.Clear();
+			}
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqReceiverEndpoint));
+		private const string LabelFormat = "NMB:{0}:{1}";
+		private readonly IDictionary<Uri, MsmqConnector> activeConnectors = new Dictionary<Uri, MsmqConnector>();
+		private readonly Func<Uri, MsmqConnector> connectorFactory;
+		private readonly ISerializeMessages serializer;
+		private bool disposed;
 	}
 }

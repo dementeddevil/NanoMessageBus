@@ -5,16 +5,6 @@ namespace NanoMessageBus.Handlers
 
 	public class EnvelopeMessageHandler : IHandleMessages<EnvelopeMessage>
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(EnvelopeMessageHandler));
-		private readonly ITrackMessageHandlers handlerTable;
-		private readonly IMessageContext context;
-
-		public EnvelopeMessageHandler(ITrackMessageHandlers handlerTable, IMessageContext context)
-		{
-			this.handlerTable = handlerTable;
-			this.context = context;
-		}
-
 		public virtual void Handle(EnvelopeMessage message)
 		{
 			Log.Debug(Diagnostics.LogicalMessageCount, message.LogicalMessages.Count);
@@ -31,5 +21,15 @@ namespace NanoMessageBus.Handlers
 
 			Log.Debug(Diagnostics.LogicalMessageHandled, message.GetType());
 		}
+
+		public EnvelopeMessageHandler(ITrackMessageHandlers handlerTable, IMessageContext context)
+		{
+			this.handlerTable = handlerTable;
+			this.context = context;
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(EnvelopeMessageHandler));
+		private readonly ITrackMessageHandlers handlerTable;
+		private readonly IMessageContext context;
 	}
 }

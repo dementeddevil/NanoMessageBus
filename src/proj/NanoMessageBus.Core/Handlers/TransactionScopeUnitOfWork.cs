@@ -6,9 +6,23 @@ namespace NanoMessageBus.Handlers
 
 	public class TransactionScopeUnitOfWork : IHandleUnitOfWork
 	{
-		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
-		private readonly TransactionScope transaction;
-		private bool disposed;
+		public void Register(Action callback)
+		{
+			if (callback != null)
+				this.callbacks.Add(callback);
+		}
+		public virtual void Complete()
+		{
+			foreach (var callback in this.callbacks)
+				callback();
+
+			this.Clear();
+			this.transaction.Complete();
+		}
+		public virtual void Clear()
+		{
+			this.callbacks.Clear();
+		}
 
 		public TransactionScopeUnitOfWork()
 			: this(IsolationLevel.ReadCommitted)
@@ -45,22 +59,8 @@ namespace NanoMessageBus.Handlers
 			this.transaction.Dispose();
 		}
 
-		public void Register(Action callback)
-		{
-			if (callback != null)
-				this.callbacks.Add(callback);
-		}
-		public virtual void Complete()
-		{
-			foreach (var callback in this.callbacks)
-				callback();
-
-			this.Clear();
-			this.transaction.Complete();
-		}
-		public virtual void Clear()
-		{
-			this.callbacks.Clear();
-		}
+		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
+		private readonly TransactionScope transaction;
+		private bool disposed;
 	}
 }

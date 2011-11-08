@@ -4,15 +4,6 @@ namespace NanoMessageBus.Serialization
 
 	public class TransformationSerializer : SerializerBase
 	{
-		private readonly ISerializeMessages inner;
-		private readonly ITransformMessages transformer;
-
-		public TransformationSerializer(ISerializeMessages inner, ITransformMessages transformer)
-		{
-			this.transformer = transformer;
-			this.inner = inner;
-		}
-
 		protected override void SerializePayload(Stream output, object message)
 		{
 			message = this.transformer.Transform(message);
@@ -23,5 +14,14 @@ namespace NanoMessageBus.Serialization
 			var message = this.inner.Deserialize(input);
 			return this.transformer.Transform(message);
 		}
+
+		public TransformationSerializer(ISerializeMessages inner, ITransformMessages transformer)
+		{
+			this.transformer = transformer;
+			this.inner = inner;
+		}
+
+		private readonly ISerializeMessages inner;
+		private readonly ITransformMessages transformer;
 	}
 }

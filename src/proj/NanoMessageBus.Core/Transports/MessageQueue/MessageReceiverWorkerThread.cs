@@ -7,22 +7,6 @@ namespace NanoMessageBus.Transports.MessageQueue
 
 	public class MessageReceiverWorkerThread : IReceiveMessages
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageReceiverWorkerThread));
-		private readonly IReceiveFromEndpoints receiverQueue;
-		private readonly Func<IRouteMessagesToHandlers> routerFactory;
-		private readonly IThread thread;
-		private bool started;
-
-		public MessageReceiverWorkerThread(
-			IReceiveFromEndpoints receiverQueue,
-			Func<IRouteMessagesToHandlers> routerFactory,
-			Func<Action, IThread> thread)
-		{
-			this.receiverQueue = receiverQueue;
-			this.routerFactory = routerFactory;
-			this.thread = thread(this.StartReceiving);
-		}
-
 		public virtual void Start()
 		{
 			if (this.started)
@@ -76,5 +60,21 @@ namespace NanoMessageBus.Transports.MessageQueue
 				Log.Info(Diagnostics.MessageProcessingFailed, this.thread.Name, e.Message);
 			}
 		}
+
+		public MessageReceiverWorkerThread(
+			IReceiveFromEndpoints receiverQueue,
+			Func<IRouteMessagesToHandlers> routerFactory,
+			Func<Action, IThread> thread)
+		{
+			this.receiverQueue = receiverQueue;
+			this.routerFactory = routerFactory;
+			this.thread = thread(this.StartReceiving);
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageReceiverWorkerThread));
+		private readonly IReceiveFromEndpoints receiverQueue;
+		private readonly Func<IRouteMessagesToHandlers> routerFactory;
+		private readonly IThread thread;
+		private bool started;
 	}
 }

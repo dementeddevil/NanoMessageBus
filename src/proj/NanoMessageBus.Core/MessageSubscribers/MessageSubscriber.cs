@@ -7,16 +7,6 @@ namespace NanoMessageBus.MessageSubscribers
 
 	public class MessageSubscriber : ISubscribeToMessages, IUnsubscribeFromMessages
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageSubscriber));
-		private readonly Uri returnAddress;
-		private readonly ITransportMessages transport;
-
-		public MessageSubscriber(Uri returnAddress, ITransportMessages transport)
-		{
-			this.returnAddress = returnAddress;
-			this.transport = transport;
-		}
-
 		public virtual void Subscribe(Uri endpointAddress, DateTime? expiration, params Type[] messageTypes)
 		{
 			var request = BuildRequest(expiration, messageTypes);
@@ -67,5 +57,15 @@ namespace NanoMessageBus.MessageSubscribers
 				null,
 				new[] { logicalMessage });
 		}
+
+		public MessageSubscriber(Uri returnAddress, ITransportMessages transport)
+		{
+			this.returnAddress = returnAddress;
+			this.transport = transport;
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageSubscriber));
+		private readonly Uri returnAddress;
+		private readonly ITransportMessages transport;
 	}
 }

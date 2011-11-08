@@ -6,8 +6,14 @@ namespace NanoMessageBus.MessageSubscribers
 	public class SubscriptionMessageHandlers : IHandleMessages<SubscriptionRequestMessage>,
 		IHandleMessages<UnsubscribeRequestMessage>
 	{
-		private readonly IStoreSubscriptions storage;
-		private readonly Uri subscriberAddress;
+		public virtual void Handle(SubscriptionRequestMessage message)
+		{
+			this.storage.Subscribe(this.subscriberAddress, message.MessageTypes, message.Expiration);
+		}
+		public virtual void Handle(UnsubscribeRequestMessage message)
+		{
+			this.storage.Unsubscribe(this.subscriberAddress, message.MessageTypes);
+		}
 
 		public SubscriptionMessageHandlers(IStoreSubscriptions storage, IMessageContext context)
 		{
@@ -15,13 +21,7 @@ namespace NanoMessageBus.MessageSubscribers
 			this.subscriberAddress = context.CurrentMessage.ReturnAddress;
 		}
 
-		public void Handle(SubscriptionRequestMessage message)
-		{
-			this.storage.Subscribe(this.subscriberAddress, message.MessageTypes, message.Expiration);
-		}
-		public void Handle(UnsubscribeRequestMessage message)
-		{
-			this.storage.Unsubscribe(this.subscriberAddress, message.MessageTypes);
-		}
+		private readonly IStoreSubscriptions storage;
+		private readonly Uri subscriberAddress;
 	}
 }

@@ -4,18 +4,6 @@ namespace NanoMessageBus.Transports.MessageQueue
 
 	public class BackgroundThread : IThread
 	{
-		private readonly Thread thread;
-
-		public BackgroundThread(ThreadStart startAction)
-		{
-			this.thread = new Thread(startAction)
-			{
-				IsBackground = true
-			};
-
-			this.thread.Name = Diagnostics.WorkerThreadName.FormatWith(this.thread.ManagedThreadId);
-		}
-
 		public virtual bool IsAlive
 		{
 			get { return this.thread.IsAlive; }
@@ -32,5 +20,13 @@ namespace NanoMessageBus.Transports.MessageQueue
 		{
 			this.thread.Abort();
 		}
+
+		public BackgroundThread(ThreadStart startAction)
+		{
+			this.thread = new Thread(startAction) { IsBackground = true };
+			this.thread.Name = Diagnostics.WorkerThreadName.FormatWith(this.thread.ManagedThreadId);
+		}
+
+		private readonly Thread thread;
 	}
 }

@@ -5,24 +5,7 @@ namespace NanoMessageBus.Transports
 
 	public class MessageBuilder
 	{
-		private readonly IDictionary<Type, TimeSpan> timeToLive;
-		private readonly ICollection<Type> transientMessages;
-		private readonly Uri localAddress;
-
-		public MessageBuilder(Uri localAddress)
-			: this(null, null, localAddress)
-		{
-		}
-		public MessageBuilder(
-			IDictionary<Type, TimeSpan> timeToLive, ICollection<Type> transientMessages, Uri localAddress)
-		{
-			this.timeToLive = timeToLive ?? new Dictionary<Type, TimeSpan>();
-			this.transientMessages = transientMessages ?? new HashSet<Type>();
-			this.localAddress = localAddress;
-		}
-
-		public virtual EnvelopeMessage BuildMessage(
-			IDictionary<string, string> headers, params object[] messages)
+		public virtual EnvelopeMessage BuildMessage(IDictionary<string, string> headers, params object[] messages)
 		{
 			if (messages == null || 0 == messages.Length)
 				return null;
@@ -54,5 +37,21 @@ namespace NanoMessageBus.Transports
 		{
 			this.transientMessages.Add(messageType);
 		}
+
+		public MessageBuilder(Uri localAddress)
+			: this(null, null, localAddress)
+		{
+		}
+		public MessageBuilder(
+			IDictionary<Type, TimeSpan> timeToLive, ICollection<Type> transientMessages, Uri localAddress)
+		{
+			this.timeToLive = timeToLive ?? new Dictionary<Type, TimeSpan>();
+			this.transientMessages = transientMessages ?? new HashSet<Type>();
+			this.localAddress = localAddress;
+		}
+
+		private readonly IDictionary<Type, TimeSpan> timeToLive;
+		private readonly ICollection<Type> transientMessages;
+		private readonly Uri localAddress;
 	}
 }

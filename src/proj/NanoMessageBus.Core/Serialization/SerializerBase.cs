@@ -7,13 +7,6 @@
 
 	public abstract class SerializerBase : ISerializeMessages
 	{
-		private readonly ILog log;
-
-		protected SerializerBase()
-		{
-			this.log = LogFactory.BuildLogger(this.GetType());
-		}
-
 		public void Serialize(Stream output, object message)
 		{
 			try
@@ -51,5 +44,12 @@
 			}
 		}
 		protected abstract object DeserializePayload(Stream input);
+
+		protected SerializerBase()
+		{
+			this.log = LogFactory.BuildLogger(this.GetType());
+		}
+
+		private readonly ILog log;
 	}
 }

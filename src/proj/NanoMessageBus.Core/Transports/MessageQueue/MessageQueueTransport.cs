@@ -8,45 +8,6 @@ namespace NanoMessageBus.Transports.MessageQueue
 
 	public class MessageQueueTransport : ITransportMessages
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageQueueTransport));
-		private static readonly TimeSpan KillDelay = 750.Milliseconds();
-		private readonly ICollection<IReceiveMessages> workers = new LinkedList<IReceiveMessages>();
-		private readonly Func<IReceiveMessages> receiverFactory;
-		private readonly ISendToEndpoints sender;
-		private readonly int maxThreads;
-		private bool started;
-		private bool stopping;
-		private bool disposed;
-
-		public MessageQueueTransport(
-			Func<IReceiveMessages> receiverFactory, ISendToEndpoints sender, int maxThreads)
-		{
-			this.receiverFactory = receiverFactory;
-			this.sender = sender;
-			this.maxThreads = maxThreads;
-		}
-		~MessageQueueTransport()
-		{
-			this.Dispose(false);
-		}
-
-		public void Dispose()
-		{
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-		protected virtual void Dispose(bool disposing)
-		{
-			if (this.disposed || !disposing)
-				return;
-
-			this.disposed = true;
-
-			Log.Info(Diagnostics.DisposingTransport);
-			this.StopListening();
-			Log.Info(Diagnostics.TransportDisposed);
-		}
-
 		public virtual void Send(EnvelopeMessage message, params Uri[] recipients)
 		{
 			if (!message.IsPopulated())
@@ -101,5 +62,44 @@ namespace NanoMessageBus.Transports.MessageQueue
 			foreach (var worker in this.workers)
 				worker.Abort();
 		}
+
+		public MessageQueueTransport(
+			Func<IReceiveMessages> receiverFactory, ISendToEndpoints sender, int maxThreads)
+		{
+			this.receiverFactory = receiverFactory;
+			this.sender = sender;
+			this.maxThreads = maxThreads;
+		}
+		~MessageQueueTransport()
+		{
+			this.Dispose(false);
+		}
+
+		public void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+		protected virtual void Dispose(bool disposing)
+		{
+			if (this.disposed || !disposing)
+				return;
+
+			this.disposed = true;
+
+			Log.Info(Diagnostics.DisposingTransport);
+			this.StopListening();
+			Log.Info(Diagnostics.TransportDisposed);
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageQueueTransport));
+		private static readonly TimeSpan KillDelay = 750.Milliseconds();
+		private readonly ICollection<IReceiveMessages> workers = new LinkedList<IReceiveMessages>();
+		private readonly Func<IReceiveMessages> receiverFactory;
+		private readonly ISendToEndpoints sender;
+		private readonly int maxThreads;
+		private bool started;
+		private bool stopping;
+		private bool disposed;
 	}
 }

@@ -4,20 +4,6 @@ namespace NanoMessageBus.Logging
 
 	public class ConsoleWindowLogger : ILog
 	{
-		public static void MakePrimaryLogger()
-		{
-			LogFactory.BuildLogger = type => new ConsoleWindowLogger(type);
-		}
-
-		private static readonly object Sync = new object();
-		private readonly Type typeToLog;
-		private readonly ConsoleColor originalColor = Console.ForegroundColor;
-
-		public ConsoleWindowLogger(Type typeToLog)
-		{
-			this.typeToLog = typeToLog;
-		}
-
 		public virtual void Verbose(string message, params object[] values)
 		{
 			this.Log(ConsoleColor.Green, message, values);
@@ -52,5 +38,14 @@ namespace NanoMessageBus.Logging
 				Console.ForegroundColor = this.originalColor;
 			}
 		}
+
+		public ConsoleWindowLogger(Type typeToLog)
+		{
+			this.typeToLog = typeToLog;
+		}
+
+		private static readonly object Sync = new object();
+		private readonly Type typeToLog;
+		private readonly ConsoleColor originalColor = Console.ForegroundColor;
 	}
 }

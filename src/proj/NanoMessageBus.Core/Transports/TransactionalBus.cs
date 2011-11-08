@@ -5,16 +5,6 @@ namespace NanoMessageBus.Transports
 
 	public class TransactionalBus : ISendMessages, IPublishMessages
 	{
-		private readonly IHandleUnitOfWork unitOfWork;
-		private readonly MessageBus inner;
-
-		public TransactionalBus(IHandleUnitOfWork unitOfWork, MessageBus inner)
-		{
-			// Null UoW?
-			this.unitOfWork = unitOfWork;
-			this.inner = inner;
-		}
-
 		public virtual void Send(params object[] messages)
 		{
 			this.Register(() => this.inner.Send(messages));
@@ -34,5 +24,14 @@ namespace NanoMessageBus.Transports
 			else
 				this.unitOfWork.Register(callback);
 		}
+
+		public TransactionalBus(IHandleUnitOfWork unitOfWork, MessageBus inner)
+		{
+			this.unitOfWork = unitOfWork; // TODO: Null UoW?
+			this.inner = inner;
+		}
+
+		private readonly IHandleUnitOfWork unitOfWork;
+		private readonly MessageBus inner;
 	}
 }

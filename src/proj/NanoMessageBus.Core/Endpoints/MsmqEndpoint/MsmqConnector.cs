@@ -1,7 +1,6 @@
 namespace NanoMessageBus.Endpoints.MsmqEndpoint
 {
 	using System;
-	using System.Diagnostics;
 	using System.Globalization;
 	using System.Messaging;
 	using System.Transactions;
@@ -9,12 +8,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 	public class MsmqConnector : IDisposable
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqConnector));
-		private readonly MessageQueue queue;
-		private readonly bool enlist;
-		private readonly MsmqAddress address;
-		private bool disposed;
-
 		public static MsmqConnector OpenReceive(MsmqAddress address, bool enlist)
 		{
 			var queue = new MessageQueue(address.Proprietary, QueueAccessMode.Receive);
@@ -36,6 +29,31 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			var queue = new MessageQueue(address.Proprietary, QueueAccessMode.Send);
 			Log.Info(Diagnostics.OpeningQueueForSend, address, enlist);
 			return new MsmqConnector(queue, address, enlist);
+		}
+
+		public virtual Uri Address
+		{
+			get { return this.address.Canonical; }
+		}
+
+		public virtual Message Receive(TimeSpan timeout)
+		{
+			Log.Verbose(Diagnostics.AttemptingToReceiveMessage, this.Address);
+			var trx = this.enlist ? MessageQueueTransactionType.Automatic : MessageQueueTransactionType.None;
+			return this.queue.Receive(timeout, trx);
+		}
+		public virtual void Send(object message)
+		{
+			Log.Verbose(Diagnostics.SendingMessage, this.Address);
+			var trx = (this.enlist && Transaction.Current != null)
+			          	? MessageQueueTransactionType.Automatic
+			          	: MessageQueueTransactionType.Single;
+			this.queue.Send(message, trx);
+		}
+		public virtual bool HasMessages(TimeSpan timeout)
+		{
+			this.queue.Peek(timeout);
+			return true;
 		}
 
 		private MsmqConnector(MessageQueue queue, MsmqAddress address, bool enlist)
@@ -65,33 +83,10 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			this.queue.Dispose();
 		}
 
-		public virtual Uri Address
-		{
-			get { return this.address.Canonical; }
-		}
-
-		[DebuggerNonUserCode]
-		public virtual Message Receive(TimeSpan timeout)
-		{
-			Log.Verbose(Diagnostics.AttemptingToReceiveMessage, this.Address);
-			var trx = this.enlist ? MessageQueueTransactionType.Automatic : MessageQueueTransactionType.None;
-			return this.queue.Receive(timeout, trx);
-		}
-
-		public virtual void Send(object message)
-		{
-			Log.Verbose(Diagnostics.SendingMessage, this.Address);
-			var trx = (this.enlist && Transaction.Current != null)
-			          	? MessageQueueTransactionType.Automatic
-			          	: MessageQueueTransactionType.Single;
-			this.queue.Send(message, trx);
-		}
-
-		[DebuggerNonUserCode]
-		public virtual bool HasMessages(TimeSpan timeout)
-		{
-			this.queue.Peek(timeout);
-			return true;
-		}
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqConnector));
+		private readonly MessageQueue queue;
+		private readonly bool enlist;
+		private readonly MsmqAddress address;
+		private bool disposed;
 	}
 }

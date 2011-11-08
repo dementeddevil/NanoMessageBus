@@ -7,22 +7,6 @@ namespace NanoMessageBus.Handlers
 
 	public class PoisonMessageHandler : IHandlePoisonMessages
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(PoisonMessageHandler));
-		private readonly Uri poisonMessageQueue; // null == set by configuration
-		private readonly IDictionary<Guid, int> messageFailures = new Dictionary<Guid, int>();
-		private readonly ISendToEndpoints poisonQueue;
-		private readonly int maxRetries;
-		private readonly Action<EnvelopeMessage> postHandlingAction;
-
-		public PoisonMessageHandler(
-			ISendToEndpoints poisonQueue, Uri poisonMessageQueue, int maxRetries, Action<EnvelopeMessage> postHandlingAction)
-		{
-			this.poisonQueue = poisonQueue;
-			this.maxRetries = maxRetries;
-			this.poisonMessageQueue = poisonMessageQueue;
-			this.postHandlingAction = postHandlingAction;
-		}
-
 		public virtual bool IsPoison(EnvelopeMessage message)
 		{
 			if (message == null)
@@ -32,7 +16,6 @@ namespace NanoMessageBus.Handlers
 			this.messageFailures.TryGetValue(message.MessageId, out retries);
 			return retries >= this.maxRetries;
 		}
-
 		public virtual void ClearFailures(EnvelopeMessage message)
 		{
 			if (message != null)
@@ -75,5 +58,21 @@ namespace NanoMessageBus.Handlers
 			if (this.postHandlingAction != null)
 				this.postHandlingAction(message);
 		}
+
+		public PoisonMessageHandler(
+			ISendToEndpoints poisonQueue, Uri poisonMessageQueue, int maxRetries, Action<EnvelopeMessage> postHandlingAction)
+		{
+			this.poisonQueue = poisonQueue;
+			this.maxRetries = maxRetries;
+			this.poisonMessageQueue = poisonMessageQueue;
+			this.postHandlingAction = postHandlingAction;
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(PoisonMessageHandler));
+		private readonly Uri poisonMessageQueue; // null == set by configuration
+		private readonly IDictionary<Guid, int> messageFailures = new Dictionary<Guid, int>();
+		private readonly ISendToEndpoints poisonQueue;
+		private readonly int maxRetries;
+		private readonly Action<EnvelopeMessage> postHandlingAction;
 	}
 }

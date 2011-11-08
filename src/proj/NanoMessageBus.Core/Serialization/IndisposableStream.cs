@@ -2,15 +2,8 @@ namespace NanoMessageBus.Serialization
 {
 	using System.IO;
 
-	internal class UndisposableStream : Stream
+	internal class IndisposableStream : Stream
 	{
-		private readonly Stream stream;
-
-		public UndisposableStream(Stream stream)
-		{
-			this.stream = stream;
-		}
-
 		public override bool CanRead
 		{
 			get { return this.stream.CanRead; }
@@ -62,5 +55,12 @@ namespace NanoMessageBus.Serialization
 		{
 			// no-op
 		}
+
+		public IndisposableStream(Stream stream)
+		{
+			this.stream = stream;
+		}
+
+		private readonly Stream stream;
 	}
 }

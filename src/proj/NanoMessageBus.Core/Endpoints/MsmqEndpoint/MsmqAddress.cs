@@ -5,13 +5,19 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 	public class MsmqAddress
 	{
-		private const string LocalHost = ".";
-		private const string MsmqFormat = @"FormatName:Direct=OS:{0}\PRIVATE$\{1}";
-		private const string CanonicalFormat = @"msmq://{0}/{1}";
-		private const string Pattern = @"^((msmq\://)?([A-Za-z0-9-_.]+)/)?([A-Za-z0-9-_.]+)(/)?$";
-		private const int HostNameCapture = 3;
-		private const int QueueNameCapture = 4;
-		private static readonly Regex AddressFormatRegex = new Regex(Pattern, RegexOptions.Compiled);
+		public virtual Uri Canonical
+		{
+			get { return this.canonical; }
+		}
+		public virtual string Proprietary
+		{
+			get { return this.proprietary; }
+		}
+
+		public override string ToString()
+		{
+			return this.proprietary;
+		}
 
 		private readonly Uri canonical;
 		private readonly string proprietary;
@@ -38,18 +44,12 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			return value.ToLowerInvariant();
 		}
 
-		public virtual Uri Canonical
-		{
-			get { return this.canonical; }
-		}
-		public virtual string Proprietary
-		{
-			get { return this.proprietary; }
-		}
-
-		public override string ToString()
-		{
-			return this.proprietary;
-		}
+		private const string LocalHost = ".";
+		private const string MsmqFormat = @"FormatName:Direct=OS:{0}\PRIVATE$\{1}";
+		private const string CanonicalFormat = @"msmq://{0}/{1}";
+		private const string Pattern = @"^((msmq\://)?([A-Za-z0-9-_.]+)/)?([A-Za-z0-9-_.]+)(/)?$";
+		private const int HostNameCapture = 3;
+		private const int QueueNameCapture = 4;
+		private static readonly Regex AddressFormatRegex = new Regex(Pattern, RegexOptions.Compiled);
 	}
 }

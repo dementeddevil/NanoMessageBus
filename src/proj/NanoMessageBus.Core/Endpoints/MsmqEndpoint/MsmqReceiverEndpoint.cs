@@ -1,7 +1,6 @@
 namespace NanoMessageBus.Endpoints.MsmqEndpoint
 {
 	using System;
-	using System.Diagnostics;
 	using System.Messaging;
 	using System.Runtime.Serialization;
 	using Logging;
@@ -9,46 +8,12 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 	public class MsmqReceiverEndpoint : IReceiveFromEndpoints
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqReceiverEndpoint));
-		private static readonly TimeSpan Timeout = 500.Milliseconds();
-		private readonly MsmqConnector inputQueue;
-		private readonly MsmqConnector poisonQueue;
-		private readonly ISerializeMessages serializer;
-		private bool disposed;
-
-		public MsmqReceiverEndpoint(
-			MsmqConnector inputQueue, MsmqConnector poisonQueue, ISerializeMessages serializer)
-		{
-			this.inputQueue = inputQueue;
-			this.poisonQueue = poisonQueue;
-			this.serializer = serializer;
-		}
-		~MsmqReceiverEndpoint()
-		{
-			this.Dispose(false);
-		}
-
-		public void Dispose()
-		{
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-		protected virtual void Dispose(bool disposing)
-		{
-			if (this.disposed || !disposing)
-				return;
-
-			this.disposed = true;
-			this.inputQueue.Dispose();
-		}
-
 		public Uri EndpointAddress
 		{
 			get { return this.inputQueue.Address; }
 		}
 
-		[DebuggerNonUserCode]
-		public bool HasMessagesInQueue()
+		public virtual bool HasMessagesInQueue()
 		{
 			try
 			{
@@ -82,8 +47,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 			return result;
 		}
-
-		[DebuggerNonUserCode]
 		private Message DequeueMessage()
 		{
 			try
@@ -124,5 +87,38 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			message.Extension = exception.Serialize();
 			this.poisonQueue.Send(message);
 		}
+
+		public MsmqReceiverEndpoint(
+			MsmqConnector inputQueue, MsmqConnector poisonQueue, ISerializeMessages serializer)
+		{
+			this.inputQueue = inputQueue;
+			this.poisonQueue = poisonQueue;
+			this.serializer = serializer;
+		}
+		~MsmqReceiverEndpoint()
+		{
+			this.Dispose(false);
+		}
+
+		public void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+		protected virtual void Dispose(bool disposing)
+		{
+			if (this.disposed || !disposing)
+				return;
+
+			this.disposed = true;
+			this.inputQueue.Dispose();
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqReceiverEndpoint));
+		private static readonly TimeSpan Timeout = 500.Milliseconds();
+		private readonly MsmqConnector inputQueue;
+		private readonly MsmqConnector poisonQueue;
+		private readonly ISerializeMessages serializer;
+		private bool disposed;
 	}
 }

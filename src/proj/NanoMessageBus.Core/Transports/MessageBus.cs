@@ -9,36 +9,20 @@ namespace NanoMessageBus.Transports
 
 	public class MessageBus : ISendMessages, IPublishMessages
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageBus));
-
-		// TODO: make Func<string, ITransport> where address determines transport
-		private readonly ITransportMessages transport;
-		private readonly IStoreSubscriptions subscriptions;
-		private readonly IDictionary<Type, ICollection<Uri>> recipients;
-		private readonly IMessageContext context;
-		private readonly MessageBuilder builder;
-		private readonly IDiscoverMessageTypes discoverer;
-
-		public MessageBus(
-			ITransportMessages transport,
-			IStoreSubscriptions subscriptions,
-			IDictionary<Type, ICollection<Uri>> recipients,
-			IMessageContext context,
-			MessageBuilder builder,
-			IDiscoverMessageTypes discoverer)
-		{
-			this.transport = transport;
-			this.subscriptions = subscriptions;
-			this.recipients = recipients;
-			this.context = context;
-			this.builder = builder;
-			this.discoverer = discoverer;
-		}
-
 		public virtual void Send(params object[] messages)
 		{
 			Log.Debug(Diagnostics.SendingMessage);
 			this.Dispatch(messages, this.GetRecipients);
+		}
+		public virtual void Reply(params object[] messages)
+		{
+			Log.Debug(Diagnostics.Replying, this.context.CurrentMessage.ReturnAddress);
+			this.Dispatch(messages, msg => new[] { this.context.CurrentMessage.ReturnAddress });
+		}
+		public virtual void Publish(params object[] messages)
+		{
+			Log.Debug(Diagnostics.Publishing);
+			this.Dispatch(messages, this.GetSubscribers);
 		}
 
 		private ICollection<Uri> GetRecipients(object primaryMessage)
@@ -46,19 +30,6 @@ namespace NanoMessageBus.Transports
 			var discoveredTypes = this.discoverer.GetTypes(primaryMessage);
 			return this.recipients.GetMatching(discoveredTypes);
 		}
-
-		public virtual void Reply(params object[] messages)
-		{
-			Log.Debug(Diagnostics.Replying, this.context.CurrentMessage.ReturnAddress);
-			this.Dispatch(messages, msg => new[] { this.context.CurrentMessage.ReturnAddress });
-		}
-
-		public virtual void Publish(params object[] messages)
-		{
-			Log.Debug(Diagnostics.Publishing);
-			this.Dispatch(messages, this.GetSubscribers);
-		}
-
 		private ICollection<Uri> GetSubscribers(object primaryMessage)
 		{
 			var discoveredTypes = this.discoverer.GetTypeNames(primaryMessage);
@@ -78,13 +49,6 @@ namespace NanoMessageBus.Transports
 			if (!addresses.Any())
 				Log.Warn(Diagnostics.DroppingMessage, primaryMessage.GetType());
 		}
-
-		private static object[] PopulatedMessagesOnly(object[] messages)
-		{
-			messages = (messages ?? new object[] { }).Where(x => x != null).ToArray();
-			return messages;
-		}
-
 		private void Dispatch(object[] messages, IEnumerable<Uri> addresses)
 		{
 			var list = addresses.ToArray();
@@ -94,5 +58,34 @@ namespace NanoMessageBus.Transports
 			var transportMessage = this.builder.BuildMessage(this.context.OutgoingHeaders, messages);
 			this.transport.Send(transportMessage, list);
 		}
+		private static object[] PopulatedMessagesOnly(object[] messages)
+		{
+			messages = (messages ?? new object[] { }).Where(x => x != null).ToArray();
+			return messages;
+		}
+
+		public MessageBus(
+			ITransportMessages transport,
+			IStoreSubscriptions subscriptions,
+			IDictionary<Type, ICollection<Uri>> recipients,
+			IMessageContext context,
+			MessageBuilder builder,
+			IDiscoverMessageTypes discoverer)
+		{
+			this.transport = transport;
+			this.subscriptions = subscriptions;
+			this.recipients = recipients;
+			this.context = context;
+			this.builder = builder;
+			this.discoverer = discoverer;
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageBus));
+		private readonly ITransportMessages transport; 		// TODO: make Func<string, ITransport> where address determines transport
+		private readonly IStoreSubscriptions subscriptions;
+		private readonly IDictionary<Type, ICollection<Uri>> recipients;
+		private readonly IMessageContext context;
+		private readonly MessageBuilder builder;
+		private readonly IDiscoverMessageTypes discoverer;
 	}
 }

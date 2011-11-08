@@ -5,32 +5,32 @@ namespace NanoMessageBus.Handlers
 
 	public class NullMessageContext : IMessageContext
 	{
-		private readonly Uri localAddress;
-		private readonly IDictionary<string, string> headers = new Dictionary<string, string>();
+		public virtual void DeferMessage()
+		{
+		}
+		public virtual void DropMessage()
+		{
+		}
+		public virtual EnvelopeMessage CurrentMessage
+		{
+			get { return new EnvelopeMessage(Guid.Empty, this.localAddress, TimeSpan.Zero, false, null, null); }
+		}
+		public virtual bool ContinueProcessing
+		{
+			get { return false; }
+		}
+
+		public virtual IDictionary<string, string> OutgoingHeaders
+		{
+			get { return this.headers; }
+		}
 
 		public NullMessageContext(Uri localAddress)
 		{
 			this.localAddress = localAddress;
 		}
 
-		public void DeferMessage()
-		{
-		}
-		public void DropMessage()
-		{
-		}
-		public EnvelopeMessage CurrentMessage
-		{
-			get { return new EnvelopeMessage(Guid.Empty, this.localAddress, TimeSpan.Zero, false, null, null); }
-		}
-		public bool ContinueProcessing
-		{
-			get { return false; }
-		}
-
-		public IDictionary<string, string> OutgoingHeaders
-		{
-			get { return this.headers; }
-		}
+		private readonly Uri localAddress;
+		private readonly IDictionary<string, string> headers = new Dictionary<string, string>();
 	}
 }

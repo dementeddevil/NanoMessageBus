@@ -5,19 +5,6 @@ namespace NanoMessageBus.Logging
 
 	public class OutputWindowLogger : ILog
 	{
-		public static void MakePrimaryLogger()
-		{
-			LogFactory.BuildLogger = type => new OutputWindowLogger(type);
-		}
-
-		private static readonly object Sync = new object();
-		private readonly Type typeToLog;
-
-		public OutputWindowLogger(Type typeToLog)
-		{
-			this.typeToLog = typeToLog;
-		}
-
 		public virtual void Verbose(string message, params object[] values)
 		{
 			this.DebugWindow("Verbose", message, values);
@@ -53,5 +40,13 @@ namespace NanoMessageBus.Logging
 			lock (Sync)
 				Trace.WriteLine(category, message.FormatMessage(this.typeToLog, values));
 		}
+		
+		public OutputWindowLogger(Type typeToLog)
+		{
+			this.typeToLog = typeToLog;
+		}
+
+		private static readonly object Sync = new object();
+		private readonly Type typeToLog;
 	}
 }

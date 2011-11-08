@@ -7,18 +7,6 @@ namespace NanoMessageBus.Handlers
 
 	public class MessageHandlerTable<TContainer> : ITrackMessageHandlers
 	{
-		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageHandlerTable<TContainer>));
-		private static readonly IDictionary<Type, ICollection<Func<TContainer, IHandleMessages<object>>>> Routes =
-			new Dictionary<Type, ICollection<Func<TContainer, IHandleMessages<object>>>>();
-		private readonly TContainer childContainer;
-		private readonly IDiscoverMessageTypes messageTypeDiscoverer;
-
-		public MessageHandlerTable(TContainer childContainer, IDiscoverMessageTypes messageTypeDiscoverer)
-		{
-			this.childContainer = childContainer;
-			this.messageTypeDiscoverer = messageTypeDiscoverer;
-		}
-
 		public static void RegisterHandler<TMessage>(IHandleMessages<TMessage> handler)
 		{
 			RegisterHandler(c => handler);
@@ -79,5 +67,17 @@ namespace NanoMessageBus.Handlers
 				Log.Debug(Diagnostics.HandlerCompleted, message.GetType(), this.handler.GetType());
 			}
 		}
+
+		public MessageHandlerTable(TContainer childContainer, IDiscoverMessageTypes messageTypeDiscoverer)
+		{
+			this.childContainer = childContainer;
+			this.messageTypeDiscoverer = messageTypeDiscoverer;
+		}
+
+		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageHandlerTable<TContainer>));
+		private static readonly IDictionary<Type, ICollection<Func<TContainer, IHandleMessages<object>>>> Routes =
+			new Dictionary<Type, ICollection<Func<TContainer, IHandleMessages<object>>>>();
+		private readonly TContainer childContainer;
+		private readonly IDiscoverMessageTypes messageTypeDiscoverer;
 	}
 }

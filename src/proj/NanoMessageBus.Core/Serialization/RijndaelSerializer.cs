@@ -1,29 +1,11 @@
 namespace NanoMessageBus.Serialization
 {
 	using System;
-	using System.Collections;
 	using System.IO;
 	using System.Security.Cryptography;
 
 	public class RijndaelSerializer : SerializerBase
 	{
-		private const int KeyLength = 16; // bytes
-		private readonly ISerializeMessages inner;
-		private readonly byte[] encryptionKey;
-
-		public RijndaelSerializer(ISerializeMessages inner, byte[] encryptionKey)
-		{
-			if (!KeyIsValid(encryptionKey, KeyLength))
-				throw new ArgumentException(Diagnostics.InvalidEncryptionKey, "encryptionKey");
-
-			this.encryptionKey = encryptionKey;
-			this.inner = inner;
-		}
-		private static bool KeyIsValid(ICollection key, int length)
-		{
-			return key != null && key.Count == length;
-		}
-
 		protected override void SerializePayload(Stream output, object message)
 		{
 			using (var rijndael = new RijndaelManaged())
@@ -33,7 +15,7 @@ namespace NanoMessageBus.Serialization
 				rijndael.GenerateIV();
 
 				using (var encryptor = rijndael.CreateEncryptor())
-				using (var outputWrapper = new UndisposableStream(output))
+				using (var outputWrapper = new IndisposableStream(output))
 				using (var encryptionStream = new CryptoStream(outputWrapper, encryptor, CryptoStreamMode.Write))
 				{
 					outputWrapper.Write(rijndael.IV, 0, rijndael.IV.Length);
@@ -63,5 +45,18 @@ namespace NanoMessageBus.Serialization
 			encrypted.Read(buffer, 0, buffer.Length);
 			return buffer;
 		}
+
+		public RijndaelSerializer(ISerializeMessages inner, byte[] encryptionKey)
+		{
+			if (encryptionKey == null || encryptionKey.Length != KeyLength)
+				throw new ArgumentException(Diagnostics.InvalidEncryptionKey, "encryptionKey");
+
+			this.encryptionKey = encryptionKey;
+			this.inner = inner;
+		}
+
+		private const int KeyLength = 16; // bytes
+		private readonly ISerializeMessages inner;
+		private readonly byte[] encryptionKey;
 	}
 }
