@@ -62,22 +62,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NanoMessageBus.Logging\NanoMessageBus.Logging.csproj">
-      <Project>{9C04BE79-85E3-45BB-8827-B5390C7E803E}</Project>
-      <Name>NanoMessageBus.Logging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NanoMessageBus.MessageSubscriber\NanoMessageBus.MessageSubscriber.csproj">
-      <Project>{551B70F2-60EF-44D0-9BEA-46724F0E0069}</Project>
-      <Name>NanoMessageBus.MessageSubscriber</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NanoMessageBus.SubscriptionStorage\NanoMessageBus.SubscriptionStorage.csproj">
-      <Project>{2787552C-88AE-4CED-A3F3-C0AD78754E63}</Project>
-      <Name>NanoMessageBus.SubscriptionStorage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NanoMessageBus.Transports\NanoMessageBus.Transports.csproj">
-      <Project>{83C0E14D-0C49-4726-B329-5E2E7B0B7681}</Project>
-      <Name>NanoMessageBus.Transports</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NanoMessageBus\NanoMessageBus.csproj">
       <Project>{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34}</Project>
       <Name>NanoMessageBus</Name>

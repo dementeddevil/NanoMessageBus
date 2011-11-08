@@ -70,16 +70,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NanoMessageBus.Logging\NanoMessageBus.Logging.csproj">
-      <Project>{9C04BE79-85E3-45BB-8827-B5390C7E803E}</Project>
-      <Name>NanoMessageBus.Logging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NanoMessageBus.SubscriptionStorage\NanoMessageBus.SubscriptionStorage.csproj">
-      <Project>{2787552C-88AE-4CED-A3F3-C0AD78754E63}</Project>
-      <Name>NanoMessageBus.SubscriptionStorage</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Transactions" />
@@ -94,6 +84,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SqlStatements.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NanoMessageBus\NanoMessageBus.csproj">
+      <Project>{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34}</Project>
+      <Name>NanoMessageBus</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

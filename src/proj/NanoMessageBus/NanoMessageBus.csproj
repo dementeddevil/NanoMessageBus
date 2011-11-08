@@ -48,12 +48,34 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\IDiscoverMessageTypes.cs" />
+    <Compile Include="Core\IHandlePoisonMessages.cs" />
+    <Compile Include="Core\IHandleUnitOfWork.cs" />
+    <Compile Include="Core\IRouteMessagesToHandlers.cs" />
+    <Compile Include="Endpoints\EndpointException.cs" />
+    <Compile Include="Endpoints\IReceiveFromEndpoints.cs" />
+    <Compile Include="Endpoints\ISendToEndpoints.cs" />
     <Compile Include="IHandleMessages.cs" />
     <Compile Include="IMessageContext.cs" />
     <Compile Include="ISendMessages.cs" />
     <Compile Include="IPublishMessages.cs" />
     <Compile Include="EnvelopeMessage.cs" />
+    <Compile Include="Logging\ILog.cs" />
+    <Compile Include="Logging\LogFactory.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
+    <Compile Include="MessageSubscriber\ISubscribeToMessages.cs" />
+    <Compile Include="MessageSubscriber\IUnsubscribeFromMessages.cs" />
+    <Compile Include="MessageSubscriber\SubscriptionRequestMessage.cs" />
+    <Compile Include="MessageSubscriber\UnsubscribeRequestMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\ISerializeMessages.cs" />
+    <Compile Include="Serialization\ITransformMessages.cs" />
+    <Compile Include="SubscriptionStorage\InMemorySubscriptionStorage.cs" />
+    <Compile Include="SubscriptionStorage\IStoreSubscriptions.cs" />
+    <Compile Include="SubscriptionStorage\SubscriptionStorageException.cs" />
+    <Compile Include="Transports\IReceiveMessages.cs" />
+    <Compile Include="Transports\ITransportMessages.cs" />
+    <Compile Include="Transports\MessageTransportException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\CustomDictionary.xml">

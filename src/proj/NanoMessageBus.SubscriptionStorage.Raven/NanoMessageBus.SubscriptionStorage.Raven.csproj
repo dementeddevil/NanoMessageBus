@@ -52,9 +52,9 @@
     <Compile Include="Subscription.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NanoMessageBus.SubscriptionStorage\NanoMessageBus.SubscriptionStorage.csproj" Condition="'$(ILMerged)' != 'true'">
-      <Project>{2787552C-88AE-4CED-A3F3-C0AD78754E63}</Project>
-      <Name>NanoMessageBus.SubscriptionStorage</Name>
+    <ProjectReference Include="..\NanoMessageBus\NanoMessageBus.csproj">
+      <Project>{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34}</Project>
+      <Name>NanoMessageBus</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

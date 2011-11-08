@@ -43,13 +43,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NanoMessageBus.Logging\NanoMessageBus.Logging.csproj">
-      <Project>{9C04BE79-85E3-45BB-8827-B5390C7E803E}</Project>
-      <Name>NanoMessageBus.Logging</Name>
-    </ProjectReference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System" />
+    <ProjectReference Include="..\NanoMessageBus\NanoMessageBus.csproj">
+      <Project>{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34}</Project>
+      <Name>NanoMessageBus</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
