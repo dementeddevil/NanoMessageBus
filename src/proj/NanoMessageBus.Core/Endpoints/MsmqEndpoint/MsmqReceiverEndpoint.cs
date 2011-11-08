@@ -13,24 +13,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			get { return this.inputQueue.Address; }
 		}
 
-		public virtual bool HasMessagesInQueue()
-		{
-			try
-			{
-				return this.inputQueue.HasMessages(Timeout);
-			}
-			catch (MessageQueueException e)
-			{
-				if (e.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
-					return false;
-
-				if (e.MessageQueueErrorCode == MessageQueueErrorCode.AccessDenied)
-					Log.Fatal(Diagnostics.AccessDenied, this.inputQueue.Address);
-
-				throw new EndpointException(e.Message, e);
-			}
-		}
-
 		public virtual EnvelopeMessage Receive()
 		{
 			var message = this.DequeueMessage();
@@ -115,7 +97,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		}
 
 		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MsmqReceiverEndpoint));
-		private static readonly TimeSpan Timeout = 500.Milliseconds();
+		private static readonly TimeSpan Timeout = 1000.Milliseconds();
 		private readonly MsmqConnector inputQueue;
 		private readonly MsmqConnector poisonQueue;
 		private readonly ISerializeMessages serializer;

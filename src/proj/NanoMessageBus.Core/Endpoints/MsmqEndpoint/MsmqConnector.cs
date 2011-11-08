@@ -14,7 +14,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			queue.MessageReadPropertyFilter.SetAll();
 
 			Log.Info(Diagnostics.OpeningQueueForReceive, address, enlist);
-
 			if (!enlist || queue.Transactional)
 				return new MsmqConnector(queue, address, enlist);
 
@@ -45,15 +44,14 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		public virtual void Send(object message)
 		{
 			Log.Verbose(Diagnostics.SendingMessage, this.Address);
-			var trx = (this.enlist && Transaction.Current != null)
-			          	? MessageQueueTransactionType.Automatic
-			          	: MessageQueueTransactionType.Single;
-			this.queue.Send(message, trx);
+			this.queue.Send(message, this.BeginTransaction());
 		}
-		public virtual bool HasMessages(TimeSpan timeout)
+		private MessageQueueTransactionType BeginTransaction()
 		{
-			this.queue.Peek(timeout);
-			return true;
+			if (this.enlist && Transaction.Current == null)
+				return MessageQueueTransactionType.Automatic;
+
+			return MessageQueueTransactionType.Single;
 		}
 
 		private MsmqConnector(MessageQueue queue, MsmqAddress address, bool enlist)
