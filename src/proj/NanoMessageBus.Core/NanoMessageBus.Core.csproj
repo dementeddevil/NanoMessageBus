@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NanoMessageBus</RootNamespace>
+    <AssemblyName>NanoMessageBus.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\GlobalSuppressions.cs">
+      <Link>Properties\GlobalSuppressions.cs</Link>
+    </Compile>
+    <Compile Include="..\VersionAssemblyInfo.cs">
+      <Link>Properties\VersionAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Endpoints\MsmqEndpoint\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Endpoints\MsmqEndpoint\ExtensionMethods.cs" />
+    <Compile Include="Endpoints\MsmqEndpoint\MsmqAddress.cs" />
+    <Compile Include="Endpoints\MsmqEndpoint\MsmqConnector.cs" />
+    <Compile Include="Endpoints\MsmqEndpoint\MsmqReceiverEndpoint.cs" />
+    <Compile Include="Endpoints\MsmqEndpoint\MsmqSenderEndpoint.cs" />
+    <Compile Include="Handlers\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Handlers\EnvelopeMessageHandler.cs" />
+    <Compile Include="Handlers\ITrackMessageHandlers.cs" />
+    <Compile Include="Handlers\MessageHandlerTable.cs" />
+    <Compile Include="Handlers\MessageRouter.cs" />
+    <Compile Include="Handlers\MessageTypeDiscoverer.cs" />
+    <Compile Include="Handlers\NonTransactionalPoisonMessageHandler.cs" />
+    <Compile Include="Handlers\NullMessageContext.cs" />
+    <Compile Include="Handlers\PoisonMessageHandler.cs" />
+    <Compile Include="Handlers\TransactionScopeUnitOfWork.cs" />
+    <Compile Include="Logging\ConsoleWindowLogger.cs" />
+    <Compile Include="Logging\ExtensionMethods.cs" />
+    <Compile Include="Logging\OutputWindowLogger.cs" />
+    <Compile Include="MessageSubscribers\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="MessageSubscribers\ExtensionMethods.cs" />
+    <Compile Include="MessageSubscribers\MessageSubscriber.cs" />
+    <Compile Include="MessageSubscribers\SubscriptionMessageHandlers.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\BinaryMessageSerializer.cs" />
+    <Compile Include="Serialization\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Serialization\EncryptMessageSerializer.cs" />
+    <Compile Include="Serialization\GzipMessageSerializer.cs" />
+    <Compile Include="Serialization\SerializerBase.cs" />
+    <Compile Include="Serialization\TransformationMessageSerializer.cs" />
+    <Compile Include="Serialization\UndisposableStream.cs" />
+    <Compile Include="Serialization\XmlMessageSerializer.cs" />
+    <Compile Include="SubscriptionStorage\InMemorySubscriptionStorage.cs" />
+    <Compile Include="SubscriptionStorage\SqlStorage\CommandBuilder.cs" />
+    <Compile Include="SubscriptionStorage\SqlStorage\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SubscriptionStorage\SqlStorage\ExtensionMethods.cs" />
+    <Compile Include="SubscriptionStorage\SqlStorage\SqlStatements.Designer.cs">
+      <DependentUpon>SqlStatements.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SubscriptionStorage\SqlStorage\SqlSubscriptionStorage.cs" />
+    <Compile Include="Transports\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Transports\ExtensionMethods.cs" />
+    <Compile Include="Transports\MessageBuilder.cs" />
+    <Compile Include="Transports\MessageBus.cs" />
+    <Compile Include="Transports\MessageQueue\BackgroundThread.cs" />
+    <Compile Include="Transports\MessageQueue\Diagnostics.Designer.cs">
+      <DependentUpon>Diagnostics.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Transports\MessageQueue\ExtensionMethods.cs" />
+    <Compile Include="Transports\MessageQueue\IThread.cs" />
+    <Compile Include="Transports\MessageQueue\MessageQueueTransport.cs" />
+    <Compile Include="Transports\MessageQueue\MessageReceiverWorkerThread.cs" />
+    <Compile Include="Transports\TransactionalBus.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\CustomDictionary.xml">
+      <Link>Properties\CustomDictionary.xml</Link>
+    </Content>
+    <Content Include="SubscriptionStorage\SqlStorage\SubscriptionStorage.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Endpoints\MsmqEndpoint\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MessageSubscribers\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Serialization\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SubscriptionStorage\SqlStorage\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SubscriptionStorage\SqlStorage\SqlStatements.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SqlStatements.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Transports\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Transports\MessageQueue\Diagnostics.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Messaging" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NanoMessageBus\NanoMessageBus.csproj">
+      <Project>{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34}</Project>
+      <Name>NanoMessageBus</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

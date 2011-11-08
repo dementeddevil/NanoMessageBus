@@ -4,6 +4,7 @@ namespace NanoMessageBus
 	using Endpoints;
 	using Handlers;
 	using Transports;
+	using Transports.MessageQueue;
 
 	public class TransportWireup : WireupModule
 	{

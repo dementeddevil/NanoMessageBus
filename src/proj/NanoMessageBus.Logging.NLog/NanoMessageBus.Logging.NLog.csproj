@@ -56,11 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NLog">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-      <HintPath>..\..\..\lib\NLog\.NET 3.5\NLog.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog" Condition="$(TargetFrameworkVersion) == 'v4.0'">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
       <HintPath>..\..\..\lib\NLog\.NET 4.0\NLog.dll</HintPath>
     </Reference>
   </ItemGroup>

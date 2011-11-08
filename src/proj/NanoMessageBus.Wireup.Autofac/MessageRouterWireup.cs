@@ -1,7 +1,6 @@
 namespace NanoMessageBus
 {
 	using Autofac;
-	using Core;
 	using Handlers;
 	using Transports;
 

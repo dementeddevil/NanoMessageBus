@@ -2,7 +2,7 @@ namespace NanoMessageBus
 {
 	using System;
 	using Autofac;
-	using Core;
+	using Handlers;
 
 	public class MessageHandlerWireup : WireupModule
 	{

@@ -6,6 +6,7 @@ namespace NanoMessageBus
 	using System.Data.SqlClient;
 	using Autofac;
 	using SubscriptionStorage;
+	using SubscriptionStorage.SqlStorage;
 
 	public class SubscriptionStorageWireup : WireupModule
 	{

@@ -44,6 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NanoMessageBus.Core\NanoMessageBus.Core.csproj">
+      <Project>{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}</Project>
+      <Name>NanoMessageBus.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NanoMessageBus.Serialization.Json\NanoMessageBus.Serialization.Json.csproj">
       <Project>{2E659CAC-6DDB-4800-90AB-13AE068CE407}</Project>
       <Name>NanoMessageBus.Serialization.Json</Name>
@@ -55,21 +59,10 @@
     <Reference Include="NanoMessageBus (ILMerged)" Condition="'$(ILMerged)' == 'true'">
       <HintPath>..\..\..\publish\bin\NanoMessageBus.dll</HintPath>
     </Reference>
-    <ProjectReference Include="..\NanoMessageBus.Serialization.NativeSerializers\NanoMessageBus.Serialization.NativeSerializers.csproj" Condition="'$(ILMerged)' != 'true'">
-      <Project>{D40EACE0-49AB-46FC-9A0A-B56C7D59D328}</Project>
-      <Name>NanoMessageBus.Serialization.NativeSerializers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NanoMessageBus.Wireup.Autofac\NanoMessageBus.Wireup.Autofac.csproj" Condition="'$(ILMerged)' != 'true'">
       <Project>{2122403B-F8F9-413B-A571-5B3B7211BF96}</Project>
       <Name>NanoMessageBus.Wireup.Autofac</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

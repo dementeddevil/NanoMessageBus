@@ -3,8 +3,8 @@ namespace NanoMessageBus
 	using System;
 	using Autofac;
 	using Autofac.Core;
-	using Core;
 	using Endpoints;
+	using Endpoints.MsmqEndpoint;
 	using Handlers;
 	using Serialization;
 

@@ -3,7 +3,6 @@ namespace NanoMessageBus
 	using System;
 	using System.Collections.Generic;
 	using Autofac;
-	using Core;
 	using Endpoints;
 	using Handlers;
 	using SubscriptionStorage;

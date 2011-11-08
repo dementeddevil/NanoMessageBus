@@ -10,9 +10,6 @@ SET TARGET_CONFIG=%1
 :framework_version
 SET FRAMEWORK_VERSION=v4.0
 SET ILMERGE_VERSION=v4,%FRAMEWORK_PATH%
-IF x==%2x GOTO build
-SET FRAMEWORK_VERSION=%2
-SET ILMERGE_VERSION=%3
 
 :build
 if exist publish ( rmdir /s /q publish )
