@@ -1,6 +1,7 @@
 namespace NanoMessageBus.Transports
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using Handlers;
@@ -49,13 +50,13 @@ namespace NanoMessageBus.Transports
 			if (!addresses.Any())
 				Log.Warn(Diagnostics.DroppingMessage, primaryMessage.GetType());
 		}
-		private void Dispatch(object[] messages, IEnumerable<Uri> addresses)
+		private void Dispatch(IEnumerable messages, IEnumerable<Uri> addresses)
 		{
 			var list = addresses.ToArray();
 			if (!list.Any())
 				return;
 
-			var transportMessage = this.builder.BuildMessage(this.context.OutgoingHeaders, messages);
+			var transportMessage = this.builder.BuildMessage(this.context, messages);
 			this.transport.Send(transportMessage, list);
 		}
 		private static object[] PopulatedMessagesOnly(object[] messages)
@@ -81,7 +82,7 @@ namespace NanoMessageBus.Transports
 		}
 
 		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageBus));
-		private readonly ITransportMessages transport; 		// TODO: make Func<string, ITransport> where address determines transport
+		private readonly ITransportMessages transport;
 		private readonly IStoreSubscriptions subscriptions;
 		private readonly IDictionary<Type, ICollection<Uri>> recipients;
 		private readonly IMessageContext context;

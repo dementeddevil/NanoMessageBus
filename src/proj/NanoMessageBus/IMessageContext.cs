@@ -1,7 +1,5 @@
 namespace NanoMessageBus
 {
-	using System.Collections.Generic;
-
 	/// <summary>
 	/// Provides the current context surrounding the incoming message being handled.
 	/// </summary>
@@ -31,10 +29,5 @@ namespace NanoMessageBus
 		/// Stops all additional processing of the incoming envelope message and drops the message.
 		/// </summary>
 		void DropMessage();
-
-		/// <summary>
-		/// Gets the headers to be set on messages that are sent/replyed or published from the current message context.
-		/// </summary>
-		IDictionary<string, string> OutgoingHeaders { get; }
 	}
 }

@@ -107,6 +107,7 @@
     <Compile Include="Transports\MessageQueue\IThread.cs" />
     <Compile Include="Transports\MessageQueue\MessageQueueTransport.cs" />
     <Compile Include="Transports\MessageQueue\MessageReceiverWorkerThread.cs" />
+    <Compile Include="Transports\NullHeaderAppender.cs" />
     <Compile Include="Transports\TransactionalBus.cs" />
   </ItemGroup>
   <ItemGroup>

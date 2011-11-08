@@ -12,7 +12,7 @@ namespace NanoMessageBus
 	/// lifespan of a single, logical message whereas a multi-threaded handler may have a variable
 	/// lifespan dependening upon the container wire-up registration.
 	/// </remarks>
-	public interface IHandleMessages<T>
+	public interface IHandleMessages<in T>
 	{
 		/// <summary>
 		/// Handles the message provided.

@@ -1,7 +1,6 @@
 namespace NanoMessageBus.Handlers
 {
 	using System;
-	using System.Collections.Generic;
 
 	public class NullMessageContext : IMessageContext
 	{
@@ -20,17 +19,11 @@ namespace NanoMessageBus.Handlers
 			get { return false; }
 		}
 
-		public virtual IDictionary<string, string> OutgoingHeaders
-		{
-			get { return this.headers; }
-		}
-
 		public NullMessageContext(Uri localAddress)
 		{
 			this.localAddress = localAddress;
 		}
 
 		private readonly Uri localAddress;
-		private readonly IDictionary<string, string> headers = new Dictionary<string, string>();
 	}
 }

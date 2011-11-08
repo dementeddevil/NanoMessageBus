@@ -12,8 +12,8 @@
     <AssemblyName>NanoMessageBus</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-	<SignAssembly>true</SignAssembly>
-	<AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -69,6 +69,7 @@
     <Compile Include="Serialization\ITransformMessages.cs" />
     <Compile Include="SubscriptionStorage\IStoreSubscriptions.cs" />
     <Compile Include="SubscriptionStorage\SubscriptionStorageException.cs" />
+    <Compile Include="Transports\IAppendHeaders.cs" />
     <Compile Include="Transports\IReceiveMessages.cs" />
     <Compile Include="Transports\ITransportMessages.cs" />
     <Compile Include="Transports\MessageTransportException.cs" />

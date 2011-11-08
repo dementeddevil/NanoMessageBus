@@ -1,7 +1,6 @@
 namespace NanoMessageBus.Handlers
 {
 	using System;
-	using System.Collections.Generic;
 	using System.Linq;
 	using Logging;
 	using Transports;
@@ -10,11 +9,6 @@ namespace NanoMessageBus.Handlers
 	{
 		public virtual EnvelopeMessage CurrentMessage { get; private set; }
 		public virtual bool ContinueProcessing { get; private set; }
-
-		public virtual IDictionary<string, string> OutgoingHeaders
-		{
-			get { return this.outgoingHeaders; }
-		}
 
 		public virtual void DeferMessage()
 		{
@@ -99,7 +93,6 @@ namespace NanoMessageBus.Handlers
 		}
 
 		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageRouter));
-		private readonly IDictionary<string, string> outgoingHeaders = new Dictionary<string, string>();
 		private readonly IDisposable disposer;
 		private readonly IHandleUnitOfWork unitOfWork;
 		private readonly ITransportMessages messageTransport;

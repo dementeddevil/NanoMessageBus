@@ -5,53 +5,35 @@ namespace NanoMessageBus.Transports
 
 	public class MessageBuilder
 	{
-		public virtual EnvelopeMessage BuildMessage(IDictionary<string, string> headers, params object[] messages)
+		public virtual EnvelopeMessage BuildMessage(params object[] messages)
 		{
 			if (messages == null || 0 == messages.Length)
 				return null;
 
 			var primaryMessageType = messages[0].GetType();
+			var envelope = this.BuildMessage(primaryMessageType, messages);
+			this.appender.AppendHeaders(envelope);
+			return envelope;
+		}
+		private EnvelopeMessage BuildMessage(Type primary, ICollection<object> messages)
+		{
+			// TODO:  lock and inspect DescriptionAttribute of primary message (concurrent dictionary)
 			return new EnvelopeMessage(
 				Guid.NewGuid(),
 				this.localAddress,
-				this.GetTimeToLive(primaryMessageType),
-				this.IsPersistent(primaryMessageType),
-				headers,
+				TimeSpan.MaxValue,
+				true,
+				null,
 				messages);
 		}
-		private TimeSpan GetTimeToLive(Type messageType)
-		{
-			TimeSpan ttl;
-			return this.timeToLive.TryGetValue(messageType, out ttl) ? ttl : TimeSpan.MaxValue;
-		}
-		private bool IsPersistent(Type messageType)
-		{
-			return !this.transientMessages.Contains(messageType);
-		}
 
-		public virtual void RegisterMaximumMessageLifetime(Type messageType, TimeSpan ttl)
+		public MessageBuilder(IAppendHeaders appender, Uri localAddress)
 		{
-			this.timeToLive[messageType] = ttl;
-		}
-		public virtual void RegisterTransientMessage(Type messageType)
-		{
-			this.transientMessages.Add(messageType);
-		}
-
-		public MessageBuilder(Uri localAddress)
-			: this(null, null, localAddress)
-		{
-		}
-		public MessageBuilder(
-			IDictionary<Type, TimeSpan> timeToLive, ICollection<Type> transientMessages, Uri localAddress)
-		{
-			this.timeToLive = timeToLive ?? new Dictionary<Type, TimeSpan>();
-			this.transientMessages = transientMessages ?? new HashSet<Type>();
+			this.appender = appender ?? new NullHeaderAppender();
 			this.localAddress = localAddress;
 		}
 
-		private readonly IDictionary<Type, TimeSpan> timeToLive;
-		private readonly ICollection<Type> transientMessages;
+		private readonly IAppendHeaders appender;
 		private readonly Uri localAddress;
 	}
 }

@@ -11,8 +11,8 @@ using System.Resources;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("Jonathan Oliver")]
-[assembly: AssemblyProduct("Nano Message Bus")]
-[assembly: AssemblyCopyright("Copyright © Jonathan Oliver 2010")]
+[assembly: AssemblyProduct("NanoMessageBus")]
+[assembly: AssemblyCopyright("Copyright © Jonathan Oliver 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
