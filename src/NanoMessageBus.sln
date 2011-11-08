@@ -1,11 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "implementation", "implementation", "{8F21589F-B084-4D9F-8AAB-C222D33BD649}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus", "proj\NanoMessageBus\NanoMessageBus.csproj", "{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contracts", "contracts", "{2A1220B4-FCED-4283-9C2D-BF10ACFA412C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.Core", "proj\NanoMessageBus.Core\NanoMessageBus.Core.csproj", "{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92}"
 EndProject
@@ -26,9 +22,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{2B604DD3-92BA-41D0-A5DC-FBE03EC2BF92} = {8F21589F-B084-4D9F-8AAB-C222D33BD649}
-		{A6D3AA0C-CEC9-47FF-80DF-B3F77D5B8E34} = {2A1220B4-FCED-4283-9C2D-BF10ACFA412C}
 	EndGlobalSection
 EndGlobal

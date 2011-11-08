@@ -21,12 +21,8 @@ namespace NanoMessageBus.Transports
 			this.localAddress = localAddress;
 		}
 
-		public virtual EnvelopeMessage BuildMessage(params object[] messages)
-		{
-			return this.BuildMessage(new Dictionary<string, string>(), messages);
-		}
-
-		public virtual EnvelopeMessage BuildMessage(IDictionary<string, string> headers, params object[] messages)
+		public virtual EnvelopeMessage BuildMessage(
+			IDictionary<string, string> headers, params object[] messages)
 		{
 			if (messages == null || 0 == messages.Length)
 				return null;
@@ -43,10 +39,7 @@ namespace NanoMessageBus.Transports
 		private TimeSpan GetTimeToLive(Type messageType)
 		{
 			TimeSpan ttl;
-			if (this.timeToLive.TryGetValue(messageType, out ttl))
-				return ttl;
-
-			return TimeSpan.MaxValue;
+			return this.timeToLive.TryGetValue(messageType, out ttl) ? ttl : TimeSpan.MaxValue;
 		}
 		private bool IsPersistent(Type messageType)
 		{

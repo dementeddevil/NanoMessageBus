@@ -12,6 +12,8 @@
     <AssemblyName>NanoMessageBus.Core</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+	<SignAssembly>true</SignAssembly>
+	<AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,12 +31,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -56,13 +52,13 @@
     <Compile Include="Endpoints\MsmqEndpoint\MsmqConnector.cs" />
     <Compile Include="Endpoints\MsmqEndpoint\MsmqReceiverEndpoint.cs" />
     <Compile Include="Endpoints\MsmqEndpoint\MsmqSenderEndpoint.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Handlers\Diagnostics.Designer.cs">
       <DependentUpon>Diagnostics.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Handlers\EnvelopeMessageHandler.cs" />
-    <Compile Include="Handlers\ITrackMessageHandlers.cs" />
     <Compile Include="Handlers\MessageHandlerTable.cs" />
     <Compile Include="Handlers\MessageRouter.cs" />
     <Compile Include="Handlers\MessageTypeDiscoverer.cs" />
@@ -95,7 +91,6 @@
     <Compile Include="Serialization\UndisposableStream.cs" />
     <Compile Include="Serialization\XmlMessageSerializer.cs" />
     <Compile Include="SubscriptionStorage\InMemorySubscriptionStorage.cs" />
-    <Compile Include="SubscriptionStorage\SqlStorage\CommandBuilder.cs" />
     <Compile Include="SubscriptionStorage\SqlStorage\Diagnostics.Designer.cs">
       <DependentUpon>Diagnostics.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -191,11 +186,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

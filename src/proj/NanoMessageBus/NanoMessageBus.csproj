@@ -12,6 +12,8 @@
     <AssemblyName>NanoMessageBus</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+	<SignAssembly>true</SignAssembly>
+	<AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,12 +34,6 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\NanoMessageBus.xml</DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
@@ -55,6 +51,7 @@
     <Compile Include="Endpoints\EndpointException.cs" />
     <Compile Include="Endpoints\IReceiveFromEndpoints.cs" />
     <Compile Include="Endpoints\ISendToEndpoints.cs" />
+    <Compile Include="Handlers\ITrackMessageHandlers.cs" />
     <Compile Include="IHandleMessages.cs" />
     <Compile Include="IMessageContext.cs" />
     <Compile Include="ISendMessages.cs" />

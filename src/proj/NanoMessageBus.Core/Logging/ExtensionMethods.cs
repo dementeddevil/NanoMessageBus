@@ -10,19 +10,19 @@ namespace NanoMessageBus.Logging
 
 		public static string FormatMessage(this string message, Type typeToLog, params object[] values)
 		{
-			return string.Format(
-				CultureInfo.InvariantCulture,
-				MessageFormat,
+			return MessageFormat.FormatWith(
 				DateTime.UtcNow,
 				Thread.CurrentThread.GetName(),
 				typeToLog.FullName,
-				string.Format(CultureInfo.InvariantCulture, message, values));
+				message.FormatWith(values));
 		}
 		private static string GetName(this Thread thread)
 		{
-			return !string.IsNullOrEmpty(thread.Name)
-			       	? thread.Name
-			       	: thread.ManagedThreadId.ToString(CultureInfo.InvariantCulture);
+			if (thread == null)
+				return string.Empty;
+
+			return string.IsNullOrEmpty(thread.Name)
+				? thread.ManagedThreadId.ToString(CultureInfo.InvariantCulture) : thread.Name;
 		}
 	}
 }

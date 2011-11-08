@@ -3,7 +3,6 @@ namespace NanoMessageBus.SubscriptionStorage.SqlStorage
 	using System;
 	using System.Collections.Generic;
 	using System.Data;
-	using System.Globalization;
 
 	internal static class ExtensionMethods
 	{
@@ -12,9 +11,12 @@ namespace NanoMessageBus.SubscriptionStorage.SqlStorage
 			return !value.HasValue || value == DateTime.MinValue || value == DateTime.MaxValue ? DBNull.Value : (object)value;
 		}
 
-		public static string FormatWith(this string value, params object[] values)
+		public static void AddParameter(this IDbCommand command, string parameterName, object parameterValue)
 		{
-			return string.Format(CultureInfo.InvariantCulture, value, values);
+			var parameter = command.CreateParameter();
+			parameter.ParameterName = parameterName;
+			parameter.Value = parameterValue;
+			command.Parameters.Add(parameter);
 		}
 
 		public static int ExecuteWrappedCommand(this IDbCommand command)
@@ -28,7 +30,6 @@ namespace NanoMessageBus.SubscriptionStorage.SqlStorage
 				throw new SubscriptionStorageException(e.Message, e);
 			}
 		}
-
 		public static IEnumerable<IDataRecord> ExecuteWrappedQuery(this IDbCommand query)
 		{
 			IDataReader reader;
