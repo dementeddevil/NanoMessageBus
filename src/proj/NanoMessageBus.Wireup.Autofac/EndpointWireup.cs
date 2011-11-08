@@ -5,6 +5,7 @@ namespace NanoMessageBus
 	using Autofac.Core;
 	using Core;
 	using Endpoints;
+	using Handlers;
 	using Serialization;
 
 	public class EndpointWireup : WireupModule

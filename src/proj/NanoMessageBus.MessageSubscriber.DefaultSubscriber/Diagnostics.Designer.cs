@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NanoMessageBus.MessageSubscriber {
+namespace NanoMessageBus.MessageSubscribers {
     using System;
     
     

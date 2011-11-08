@@ -6,7 +6,7 @@ namespace NanoMessageBus
 	using Autofac;
 	using Autofac.Core;
 	using Endpoints;
-	using MessageSubscriber;
+	using MessageSubscribers;
 	using SubscriptionStorage;
 	using Transports;
 
@@ -55,9 +55,9 @@ namespace NanoMessageBus
 			if (this.requests.Count > 0)
 				builder.RegisterCallback(this.OnContainerConfigured);
 		}
-		protected virtual MessageSubscriber.MessageSubscriber BuildMessageSubsciber(IComponentContext c)
+		protected virtual MessageSubscriber BuildMessageSubsciber(IComponentContext c)
 		{
-			return new MessageSubscriber.MessageSubscriber(
+			return new MessageSubscriber(
 				c.Resolve<IReceiveFromEndpoints>().EndpointAddress,
 				c.Resolve<ITransportMessages>());
 		}

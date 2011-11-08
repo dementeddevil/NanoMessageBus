@@ -48,10 +48,10 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Core\IDiscoverMessageTypes.cs" />
-    <Compile Include="Core\IHandlePoisonMessages.cs" />
-    <Compile Include="Core\IHandleUnitOfWork.cs" />
-    <Compile Include="Core\IRouteMessagesToHandlers.cs" />
+    <Compile Include="Handlers\IDiscoverMessageTypes.cs" />
+    <Compile Include="Handlers\IHandlePoisonMessages.cs" />
+    <Compile Include="Handlers\IHandleUnitOfWork.cs" />
+    <Compile Include="Handlers\IRouteMessagesToHandlers.cs" />
     <Compile Include="Endpoints\EndpointException.cs" />
     <Compile Include="Endpoints\IReceiveFromEndpoints.cs" />
     <Compile Include="Endpoints\ISendToEndpoints.cs" />
@@ -63,10 +63,10 @@
     <Compile Include="Logging\ILog.cs" />
     <Compile Include="Logging\LogFactory.cs" />
     <Compile Include="Logging\NullLogger.cs" />
-    <Compile Include="MessageSubscriber\ISubscribeToMessages.cs" />
-    <Compile Include="MessageSubscriber\IUnsubscribeFromMessages.cs" />
-    <Compile Include="MessageSubscriber\SubscriptionRequestMessage.cs" />
-    <Compile Include="MessageSubscriber\UnsubscribeRequestMessage.cs" />
+    <Compile Include="MessageSubscribers\ISubscribeToMessages.cs" />
+    <Compile Include="MessageSubscribers\IUnsubscribeFromMessages.cs" />
+    <Compile Include="MessageSubscribers\SubscriptionRequestMessage.cs" />
+    <Compile Include="MessageSubscribers\UnsubscribeRequestMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\ISerializeMessages.cs" />
     <Compile Include="Serialization\ITransformMessages.cs" />

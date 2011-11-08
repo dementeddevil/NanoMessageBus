@@ -1,7 +1,7 @@
 namespace NanoMessageBus
 {
 	using System;
-	using Core;
+	using Handlers;
 
 	public class TransactionalBus : ISendMessages,
 		IPublishMessages

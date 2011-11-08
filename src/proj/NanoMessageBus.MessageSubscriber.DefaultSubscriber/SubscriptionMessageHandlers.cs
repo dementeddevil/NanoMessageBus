@@ -1,4 +1,4 @@
-namespace NanoMessageBus.MessageSubscriber
+namespace NanoMessageBus.MessageSubscribers
 {
 	using System;
 	using SubscriptionStorage;

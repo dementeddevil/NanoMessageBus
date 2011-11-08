@@ -1,8 +1,8 @@
 namespace NanoMessageBus.Transports
 {
 	using System;
-	using Core;
 	using Endpoints;
+	using Handlers;
 	using Logging;
 
 	public class MessageReceiverWorkerThread : IReceiveMessages

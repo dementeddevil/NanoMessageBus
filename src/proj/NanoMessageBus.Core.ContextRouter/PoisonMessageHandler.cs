@@ -3,6 +3,7 @@ namespace NanoMessageBus.Core
 	using System;
 	using System.Collections.Generic;
 	using Endpoints;
+	using Handlers;
 	using Logging;
 
 	public class PoisonMessageHandler : IHandlePoisonMessages

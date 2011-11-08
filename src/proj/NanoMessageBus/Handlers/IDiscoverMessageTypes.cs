@@ -1,4 +1,4 @@
-namespace NanoMessageBus.Core
+namespace NanoMessageBus.Handlers
 {
 	using System;
 	using System.Collections.Generic;

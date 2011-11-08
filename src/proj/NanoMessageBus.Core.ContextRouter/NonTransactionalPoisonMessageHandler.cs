@@ -1,6 +1,7 @@
 namespace NanoMessageBus.Core
 {
 	using System;
+	using Handlers;
 
 	public class NonTransactionalPoisonMessageHandler : IHandlePoisonMessages
 	{

@@ -5,6 +5,7 @@ namespace NanoMessageBus
 	using Autofac;
 	using Core;
 	using Endpoints;
+	using Handlers;
 	using SubscriptionStorage;
 	using Transports;
 

@@ -3,6 +3,7 @@ namespace NanoMessageBus.Core
 	using System;
 	using System.Collections.Generic;
 	using System.Transactions;
+	using Handlers;
 
 	public class TransactionScopeUnitOfWork : IHandleUnitOfWork
 	{

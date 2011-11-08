@@ -1,8 +1,8 @@
 namespace NanoMessageBus
 {
 	using Autofac;
-	using Core;
 	using Endpoints;
+	using Handlers;
 	using Transports;
 
 	public class TransportWireup : WireupModule
