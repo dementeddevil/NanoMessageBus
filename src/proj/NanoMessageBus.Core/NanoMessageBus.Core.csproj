@@ -12,8 +12,8 @@
     <AssemblyName>NanoMessageBus.Core</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-	<SignAssembly>true</SignAssembly>
-	<AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\NanoMessageBus.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,9 +43,9 @@
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Endpoints\MsmqEndpoint\Diagnostics.Designer.cs">
-      <DependentUpon>Diagnostics.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>Diagnostics.resx</DependentUpon>
     </Compile>
     <Compile Include="Endpoints\MsmqEndpoint\ExtensionMethods.cs" />
     <Compile Include="Endpoints\MsmqEndpoint\MsmqAddress.cs" />
@@ -78,31 +78,17 @@
     <Compile Include="MessageSubscribers\MessageSubscriber.cs" />
     <Compile Include="MessageSubscribers\SubscriptionMessageHandlers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\BinaryMessageSerializer.cs" />
+    <Compile Include="Serialization\BinarySerializer.cs" />
     <Compile Include="Serialization\Diagnostics.Designer.cs">
       <DependentUpon>Diagnostics.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Serialization\EncryptMessageSerializer.cs" />
-    <Compile Include="Serialization\GzipMessageSerializer.cs" />
+    <Compile Include="Serialization\RijndaelSerializer.cs" />
+    <Compile Include="Serialization\GzipSerializer.cs" />
     <Compile Include="Serialization\SerializerBase.cs" />
-    <Compile Include="Serialization\TransformationMessageSerializer.cs" />
+    <Compile Include="Serialization\TransformationSerializer.cs" />
     <Compile Include="Serialization\UndisposableStream.cs" />
-    <Compile Include="Serialization\XmlMessageSerializer.cs" />
-    <Compile Include="SubscriptionStorage\InMemorySubscriptionStorage.cs" />
-    <Compile Include="SubscriptionStorage\SqlStorage\Diagnostics.Designer.cs">
-      <DependentUpon>Diagnostics.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="SubscriptionStorage\SqlStorage\ExtensionMethods.cs" />
-    <Compile Include="SubscriptionStorage\SqlStorage\SqlStatements.Designer.cs">
-      <DependentUpon>SqlStatements.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="SubscriptionStorage\SqlStorage\SqlSubscriptionStorage.cs" />
     <Compile Include="Transports\Diagnostics.Designer.cs">
       <DependentUpon>Diagnostics.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -127,15 +113,11 @@
     <Content Include="..\CustomDictionary.xml">
       <Link>Properties\CustomDictionary.xml</Link>
     </Content>
-    <Content Include="SubscriptionStorage\SqlStorage\SubscriptionStorage.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Endpoints\MsmqEndpoint\Diagnostics.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\Diagnostics.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -151,15 +133,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SubscriptionStorage\SqlStorage\Diagnostics.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Diagnostics.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SubscriptionStorage\SqlStorage\SqlStatements.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>SqlStatements.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Transports\Diagnostics.resx">
       <Generator>ResXFileCodeGenerator</Generator>

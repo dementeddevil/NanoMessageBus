@@ -4,15 +4,15 @@ namespace NanoMessageBus.Serialization
 	using System.Runtime.Serialization;
 	using System.Runtime.Serialization.Formatters.Binary;
 
-	public class BinaryMessageSerializer : SerializerBase
+	public class BinarySerializer : SerializerBase
 	{
 		private readonly IFormatter formatter = new BinaryFormatter();
 
-		protected override void SerializeMessage(Stream output, object message)
+		protected override void SerializePayload(Stream output, object message)
 		{
 			this.formatter.Serialize(output, message);
 		}
-		protected override object DeserializeMessage(Stream input)
+		protected override object DeserializePayload(Stream input)
 		{
 			return this.formatter.Deserialize(input);
 		}

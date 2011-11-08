@@ -19,7 +19,7 @@
 			try
 			{
 				this.log.Verbose(Diagnostics.Serializing, message.GetType());
-				this.SerializeMessage(output, message);
+				this.SerializePayload(output, message);
 			}
 			catch (SerializationException)
 			{
@@ -31,14 +31,14 @@
 				throw new SerializationException(Diagnostics.SerializationFailed, e);
 			}
 		}
-		protected abstract void SerializeMessage(Stream output, object message);
+		protected abstract void SerializePayload(Stream output, object message);
 
 		public object Deserialize(Stream input)
 		{
 			try
 			{
 				this.log.Verbose(Diagnostics.Deserializing, input.CanSeek ? (object)input.Length : "unknown");
-				return this.DeserializeMessage(input);
+				return this.DeserializePayload(input);
 			}
 			catch (SerializationException)
 			{
@@ -50,6 +50,6 @@
 				throw new SerializationException(Diagnostics.SerializationFailed, e);
 			}
 		}
-		protected abstract object DeserializeMessage(Stream input);
+		protected abstract object DeserializePayload(Stream input);
 	}
 }

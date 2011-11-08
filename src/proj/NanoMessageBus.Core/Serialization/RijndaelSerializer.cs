@@ -5,13 +5,13 @@ namespace NanoMessageBus.Serialization
 	using System.IO;
 	using System.Security.Cryptography;
 
-	public class EncryptMessageSerializer : SerializerBase
+	public class RijndaelSerializer : SerializerBase
 	{
 		private const int KeyLength = 16; // bytes
 		private readonly ISerializeMessages inner;
 		private readonly byte[] encryptionKey;
 
-		public EncryptMessageSerializer(ISerializeMessages inner, byte[] encryptionKey)
+		public RijndaelSerializer(ISerializeMessages inner, byte[] encryptionKey)
 		{
 			if (!KeyIsValid(encryptionKey, KeyLength))
 				throw new ArgumentException(Diagnostics.InvalidEncryptionKey, "encryptionKey");
@@ -24,7 +24,7 @@ namespace NanoMessageBus.Serialization
 			return key != null && key.Count == length;
 		}
 
-		protected override void SerializeMessage(Stream output, object message)
+		protected override void SerializePayload(Stream output, object message)
 		{
 			using (var rijndael = new RijndaelManaged())
 			{
@@ -44,7 +44,7 @@ namespace NanoMessageBus.Serialization
 			}
 		}
 
-		protected override object DeserializeMessage(Stream input)
+		protected override object DeserializePayload(Stream input)
 		{
 			using (var rijndael = new RijndaelManaged())
 			{
