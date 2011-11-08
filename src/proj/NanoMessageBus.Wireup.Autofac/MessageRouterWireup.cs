@@ -59,7 +59,7 @@ namespace NanoMessageBus.Wireup
 		{
 			builder
 				.Register(c => new MessageRouter(
-					c.Resolve<ILifetimeScope>(),
+					c.Resolve<ILifetimeScope>(), // when message router is disposed, it will dispose this lifetime scope
 					c.Resolve<IHandleUnitOfWork>(),
 					c.Resolve<ITransportMessages>(),
 					c.Resolve<ITrackMessageHandlers>(),

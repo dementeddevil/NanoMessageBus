@@ -79,6 +79,7 @@ namespace NanoMessageBus.Wireup
 				c.Resolve<MessageBuilder>(),
 				c.Resolve<IDiscoverMessageTypes>());
 
+			// TODO: optionally resolve if one is already active
 			return new TransactionalBus(c.Resolve<IHandleUnitOfWork>(), bus);
 		}
 		protected virtual MessageBuilder BuildTransportMessageBuilder(IComponentContext c)
