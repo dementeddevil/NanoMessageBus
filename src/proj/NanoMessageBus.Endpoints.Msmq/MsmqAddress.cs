@@ -6,7 +6,7 @@ namespace NanoMessageBus.Endpoints
 	public class MsmqAddress
 	{
 		private const string LocalHost = ".";
-		private const string MsmqFormat = @"{0}\PRIVATE$\{1}";
+		private const string MsmqFormat = @"FormatName:Direct=OS:{0}\PRIVATE$\{1}";
 		private const string CanonicalFormat = @"msmq://{0}/{1}";
 		private const string Pattern = @"^((msmq\://)?([A-Za-z0-9-_.]+)/)?([A-Za-z0-9-_.]+)(/)?$";
 		private const int HostNameCapture = 3;

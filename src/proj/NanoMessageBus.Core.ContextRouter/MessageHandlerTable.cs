@@ -49,14 +49,18 @@ namespace NanoMessageBus.Core
 				yield return handler;
 			}
 
+			// TODO: change this to a INFO or DEBUG log since events/messages might implement an interface
 			if (!found)
 				Log.Warn(Diagnostics.NoRegisteredHandlersFound, message.GetType());
 		}
 		private IEnumerable<IHandleMessages<object>> GetHandlersForType(Type messageType)
 		{
 			ICollection<Func<TContainer, IHandleMessages<object>>> routeCallbacks;
-			Routes.TryGetValue(messageType, out routeCallbacks);
-			return routeCallbacks.Select(route => route(this.childContainer));
+			if (Routes.TryGetValue(messageType, out routeCallbacks))
+				return routeCallbacks.Select(route => route(this.childContainer));
+
+			// if we don't have a handler registered for the messageType the event is logged above in GetHandlers()
+			return new IHandleMessages<object>[] { };
 		}
 
 		private class MessageHandler<TMessage> : IHandleMessages<object>

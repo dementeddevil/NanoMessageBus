@@ -1,15 +1,26 @@
 namespace NanoMessageBus.Serialization
 {
+	using System;
 	using System.IO;
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Bson;
 
 	public class BsonMessageSerializer : SerializerBase
 	{
-		private readonly JsonSerializer serializer = new JsonSerializer
+		private readonly JsonSerializer serializer;
+
+		public BsonMessageSerializer(JsonSerializer customSerializer)
 		{
-			TypeNameHandling = TypeNameHandling.Objects
-		};
+			if (customSerializer == null)
+				throw new ArgumentNullException("customSerializer");
+
+			this.serializer = customSerializer;
+		}
+
+		public BsonMessageSerializer()
+			: this(JsonMessageSerializer.CreateDefaultSerializer())
+		{
+		}
 
 		protected override void SerializeMessage(Stream output, object message)
 		{

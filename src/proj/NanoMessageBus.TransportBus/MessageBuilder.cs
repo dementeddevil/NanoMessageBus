@@ -23,6 +23,11 @@ namespace NanoMessageBus
 
 		public virtual EnvelopeMessage BuildMessage(params object[] messages)
 		{
+			return this.BuildMessage(new Dictionary<string, string>(), messages);
+		}
+
+		public virtual EnvelopeMessage BuildMessage(IDictionary<string, string> headers, params object[] messages)
+		{
 			if (messages == null || 0 == messages.Length)
 				return null;
 
@@ -32,7 +37,7 @@ namespace NanoMessageBus
 				this.localAddress,
 				this.GetTimeToLive(primaryMessageType),
 				this.IsPersistent(primaryMessageType),
-				new Dictionary<string, string>(),
+				headers,
 				messages);
 		}
 		private TimeSpan GetTimeToLive(Type messageType)

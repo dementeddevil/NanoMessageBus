@@ -8,15 +8,19 @@ namespace NanoMessageBus.Core
 	public class PoisonMessageHandler : IHandlePoisonMessages
 	{
 		private static readonly ILog Log = LogFactory.BuildLogger(typeof(PoisonMessageHandler));
-		private const Uri PoisonMessageQueue = null; // null == set by configuration
+		private readonly Uri poisonMessageQueue; // null == set by configuration
 		private readonly IDictionary<Guid, int> messageFailures = new Dictionary<Guid, int>();
 		private readonly ISendToEndpoints poisonQueue;
 		private readonly int maxRetries;
+		private readonly Action<EnvelopeMessage> postHandlingAction;
 
-		public PoisonMessageHandler(ISendToEndpoints poisonQueue, int maxRetries)
+		public PoisonMessageHandler(
+			ISendToEndpoints poisonQueue, Uri poisonMessageQueue, int maxRetries, Action<EnvelopeMessage> postHandlingAction)
 		{
 			this.poisonQueue = poisonQueue;
 			this.maxRetries = maxRetries;
+			this.poisonMessageQueue = poisonMessageQueue;
+			this.postHandlingAction = postHandlingAction;
 		}
 
 		public virtual bool IsPoison(EnvelopeMessage message)
@@ -67,7 +71,9 @@ namespace NanoMessageBus.Core
 		private void ForwardToPoisonMessageQueue(EnvelopeMessage message)
 		{
 			Log.Info(Diagnostics.ForwardingMessageToPoisonMessageQueue, this.maxRetries, message.MessageId);
-			this.poisonQueue.Send(message, PoisonMessageQueue);
+			this.poisonQueue.Send(message, this.poisonMessageQueue);
+			if (this.postHandlingAction != null)
+				this.postHandlingAction(message);
 		}
 	}
 }

@@ -64,8 +64,10 @@ namespace NanoMessageBus.Endpoints
 		private void Send(IDisposable message, params Uri[] recipients)
 		{
 			using (message)
+			{
 				foreach (var recipient in recipients ?? new Uri[] { })
 					this.Send(recipient, message);
+			}
 		}
 		private void Send(Uri address, object message)
 		{

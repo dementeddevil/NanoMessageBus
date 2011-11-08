@@ -1,4 +1,4 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
 	using Autofac;
 	using Core;
@@ -37,7 +37,7 @@ namespace NanoMessageBus.Wireup
 		{
 			var threadSafeContext = c.Resolve<IComponentContext>();
 			return new MessageQueueTransport(
-				() => threadSafeContext.Resolve<IReceiveMessages>(),
+				threadSafeContext.Resolve<IReceiveMessages>,
 				c.Resolve<ISendToEndpoints>(),
 				this.maxThreads);
 		}
@@ -46,7 +46,7 @@ namespace NanoMessageBus.Wireup
 			var threadSafeContext = c.Resolve<IComponentContext>();
 			return new MessageReceiverWorkerThread(
 				c.Resolve<IReceiveFromEndpoints>(),
-				() => threadSafeContext.Resolve<IRouteMessagesToHandlers>(),
+				threadSafeContext.Resolve<IRouteMessagesToHandlers>,
 				action => new BackgroundThread(() => action()));
 		}
 	}

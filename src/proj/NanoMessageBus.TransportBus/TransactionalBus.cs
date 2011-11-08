@@ -3,7 +3,8 @@ namespace NanoMessageBus
 	using System;
 	using Core;
 
-	public class TransactionalBus : ISendMessages, IPublishMessages
+	public class TransactionalBus : ISendMessages,
+		IPublishMessages
 	{
 		private readonly IHandleUnitOfWork unitOfWork;
 		private readonly MessageBus inner;

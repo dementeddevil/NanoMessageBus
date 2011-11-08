@@ -1,6 +1,7 @@
 namespace NanoMessageBus.Logging
 {
 	using System;
+	using NLog;
 
 	public class NLogLogger : ILog
 	{
@@ -10,7 +11,7 @@ namespace NanoMessageBus.Logging
 		}
 
 		private static readonly NLog.LogFactory Factory = new NLog.LogFactory();
-		private readonly global::NLog.Logger log;
+		private readonly Logger log;
 
 		public NLogLogger(Type typeToLog)
 		{

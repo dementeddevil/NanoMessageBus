@@ -1,5 +1,6 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
+	using System;
 	using Autofac;
 	using Autofac.Core;
 	using Core;
@@ -14,6 +15,7 @@ namespace NanoMessageBus.Wireup
 		private string poisonAddress;
 		private int maxRetries = 3;
 		private bool enlist = true;
+		private Action<EnvelopeMessage> postHandlingAction;
 
 		public EndpointWireup(IWireup parent)
 			: base(parent)
@@ -30,6 +32,13 @@ namespace NanoMessageBus.Wireup
 			this.poisonAddress = address;
 			return this;
 		}
+
+		public virtual EndpointWireup PostPoisonMessageHandlingAction(Action<EnvelopeMessage> action)
+		{
+			this.postHandlingAction = action;
+			return this;
+		}
+
 		public virtual EndpointWireup RetryAtLeast(int times)
 		{
 			this.maxRetries = times;
@@ -91,7 +100,11 @@ namespace NanoMessageBus.Wireup
 				return new NonTransactionalPoisonMessageHandler();
 
 			return new PoisonMessageHandler(
-				c.ResolveNamed<ISendToEndpoints>(PoisonEndpoint, new Parameter[0]), this.maxRetries);
+				c.ResolveNamed<ISendToEndpoints>(
+					PoisonEndpoint, new Parameter[0]),
+				new Uri(this.poisonAddress),
+				this.maxRetries,
+				this.postHandlingAction);
 		}
 	}
 }

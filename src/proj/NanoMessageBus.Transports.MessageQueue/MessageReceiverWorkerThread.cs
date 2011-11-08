@@ -58,14 +58,13 @@ namespace NanoMessageBus.Transports
 		}
 		protected virtual void Receive()
 		{
+			if (!this.receiverQueue.HasMessagesInQueue())
+				return;
 			using (var router = this.routerFactory())
 				this.RouteToHandlers(router, this.receiverQueue.Receive());
 		}
 		private void RouteToHandlers(IRouteMessagesToHandlers router, EnvelopeMessage message)
 		{
-			if (!message.IsPopulated())
-				return;
-
 			try
 			{
 				Log.Info(Diagnostics.DispatchingToRouter, this.thread.Name, router.GetType());

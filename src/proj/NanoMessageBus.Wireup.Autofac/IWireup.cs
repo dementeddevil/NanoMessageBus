@@ -1,4 +1,4 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
 	using Autofac;
 	using Autofac.Core;

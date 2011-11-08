@@ -41,6 +41,7 @@ namespace NanoMessageBus
 			Log.Debug(Diagnostics.SendingMessage);
 			this.Dispatch(messages, this.GetRecipients);
 		}
+
 		private ICollection<Uri> GetRecipients(object primaryMessage)
 		{
 			var discoveredTypes = this.discoverer.GetTypes(primaryMessage);
@@ -58,6 +59,7 @@ namespace NanoMessageBus
 			Log.Debug(Diagnostics.Publishing);
 			this.Dispatch(messages, this.GetSubscribers);
 		}
+
 		private ICollection<Uri> GetSubscribers(object primaryMessage)
 		{
 			var discoveredTypes = this.discoverer.GetTypeNames(primaryMessage);
@@ -77,18 +79,21 @@ namespace NanoMessageBus
 			if (!addresses.Any())
 				Log.Warn(Diagnostics.DroppingMessage, primaryMessage.GetType());
 		}
+
 		private static object[] PopulatedMessagesOnly(object[] messages)
 		{
 			messages = (messages ?? new object[] { }).Where(x => x != null).ToArray();
 			return messages;
 		}
+
 		private void Dispatch(object[] messages, IEnumerable<Uri> addresses)
 		{
-			if (!addresses.Any())
+			var list = addresses.ToArray();
+			if (!list.Any())
 				return;
 
-			var transportMessage = this.builder.BuildMessage(messages);
-			this.transport.Send(transportMessage, addresses.ToArray());
+			var transportMessage = this.builder.BuildMessage(this.context.OutgoingHeaders, messages);
+			this.transport.Send(transportMessage, list);
 		}
 	}
 }

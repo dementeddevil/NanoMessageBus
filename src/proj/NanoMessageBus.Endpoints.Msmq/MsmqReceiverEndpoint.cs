@@ -1,6 +1,7 @@
 namespace NanoMessageBus.Endpoints
 {
 	using System;
+	using System.Diagnostics;
 	using System.Messaging;
 	using System.Runtime.Serialization;
 	using Logging;
@@ -46,6 +47,25 @@ namespace NanoMessageBus.Endpoints
 			get { return this.inputQueue.Address; }
 		}
 
+		[DebuggerNonUserCode]
+		public bool HasMessagesInQueue()
+		{
+			try
+			{
+				return this.inputQueue.HasMessages(Timeout);
+			}
+			catch (MessageQueueException e)
+			{
+				if (e.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
+					return false;
+
+				if (e.MessageQueueErrorCode == MessageQueueErrorCode.AccessDenied)
+					Log.Fatal(Diagnostics.AccessDenied, this.inputQueue.Address);
+
+				throw new EndpointException(e.Message, e);
+			}
+		}
+
 		public virtual EnvelopeMessage Receive()
 		{
 			var message = this.DequeueMessage();
@@ -54,10 +74,16 @@ namespace NanoMessageBus.Endpoints
 
 			Log.Info(Diagnostics.MessageReceived, message.BodyStream.Length, this.inputQueue.Address);
 
+			EnvelopeMessage result;
+
 			using (message)
 			using (message.BodyStream)
-				return this.Deserialize(message);
+				result = this.Deserialize(message);
+
+			return result;
 		}
+
+		[DebuggerNonUserCode]
 		private Message DequeueMessage()
 		{
 			try
@@ -88,7 +114,7 @@ namespace NanoMessageBus.Endpoints
 			}
 			catch (SerializationException e)
 			{
-				Log.Error(Diagnostics.UnableToDeserializeMessage);
+				Log.Error(Diagnostics.UnableToDeserializeMessage, e);
 				this.ForwardToPoisonMessageQueue(message, e);
 				return null;
 			}

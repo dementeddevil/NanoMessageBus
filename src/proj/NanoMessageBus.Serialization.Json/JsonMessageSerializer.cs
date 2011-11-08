@@ -1,14 +1,42 @@
 namespace NanoMessageBus.Serialization
 {
+	using System;
 	using System.IO;
+	using System.Reflection;
 	using Newtonsoft.Json;
+	using Newtonsoft.Json.Serialization;
 
 	public class JsonMessageSerializer : SerializerBase
 	{
-		private readonly JsonSerializer serializer = new JsonSerializer
+		private readonly JsonSerializer serializer;
+
+		public JsonMessageSerializer(JsonSerializer customSerializer)
 		{
-			TypeNameHandling = TypeNameHandling.Objects
-		};
+			if (customSerializer == null)
+				throw new ArgumentNullException("customSerializer");
+
+			this.serializer = customSerializer;
+		}
+
+		public JsonMessageSerializer()
+			: this(CreateDefaultSerializer())
+		{
+		}
+
+		public static JsonSerializer CreateDefaultSerializer()
+		{
+			var resolver = new DefaultContractResolver();
+
+			// allow json.net to use private setter
+			resolver.DefaultMembersSearchFlags |= BindingFlags.NonPublic;
+
+			return new JsonSerializer
+			{
+				TypeNameHandling = TypeNameHandling.Objects,
+				MissingMemberHandling = MissingMemberHandling.Error, // catch possible deserialization errors
+				ContractResolver = resolver
+			};
+		}
 
 		protected override void SerializeMessage(Stream output, object message)
 		{

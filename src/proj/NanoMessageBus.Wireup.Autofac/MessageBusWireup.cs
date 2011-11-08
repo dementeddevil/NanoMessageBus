@@ -1,4 +1,4 @@
-namespace NanoMessageBus.Wireup
+namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace NanoMessageBus.Wireup
 		{
 			foreach (var messageType in messageTypes)
 				this.transientTypes.Add(messageType);
-			
+
 			return this;
 		}
 

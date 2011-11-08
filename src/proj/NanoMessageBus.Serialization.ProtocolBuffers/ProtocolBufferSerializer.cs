@@ -143,8 +143,10 @@ namespace NanoMessageBus.Serialization
 			var envelopeMessage = message.ToMessage();
 
 			foreach (var serializedLogicalMessage in message.LogicalMessages)
+			{
 				using (var stream = new MemoryStream(serializedLogicalMessage))
 					envelopeMessage.LogicalMessages.Add(this.DeserializeMessage(stream));
+			}
 
 			return envelopeMessage;
 		}
