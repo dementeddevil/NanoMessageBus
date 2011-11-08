@@ -5,7 +5,7 @@
 	using System.Runtime.Serialization;
 	using Logging;
 
-	public abstract class SerializerBase : ISerializeMessages
+	public abstract class SerializerBase : ISerializer
 	{
 		public void Serialize(Stream output, object message)
 		{

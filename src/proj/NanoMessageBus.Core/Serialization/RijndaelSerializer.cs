@@ -46,7 +46,7 @@ namespace NanoMessageBus.Serialization
 			return buffer;
 		}
 
-		public RijndaelSerializer(ISerializeMessages inner, byte[] encryptionKey)
+		public RijndaelSerializer(ISerializer inner, byte[] encryptionKey)
 		{
 			if (encryptionKey == null || encryptionKey.Length != KeyLength)
 				throw new ArgumentException(Diagnostics.InvalidEncryptionKey, "encryptionKey");
@@ -56,7 +56,7 @@ namespace NanoMessageBus.Serialization
 		}
 
 		private const int KeyLength = 16; // bytes
-		private readonly ISerializeMessages inner;
+		private readonly ISerializer inner;
 		private readonly byte[] encryptionKey;
 	}
 }

@@ -88,7 +88,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 			return message.TimeToLive;
 		}
 
-		public MsmqSenderEndpoint(Func<Uri, MsmqConnector> connectorFactory, ISerializeMessages serializer)
+		public MsmqSenderEndpoint(Func<Uri, MsmqConnector> connectorFactory, ISerializer serializer)
 		{
 			this.connectorFactory = connectorFactory;
 			this.serializer = serializer;
@@ -123,7 +123,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		private const string LabelFormat = "NMB:{0}:{1}";
 		private readonly IDictionary<Uri, MsmqConnector> activeConnectors = new Dictionary<Uri, MsmqConnector>();
 		private readonly Func<Uri, MsmqConnector> connectorFactory;
-		private readonly ISerializeMessages serializer;
+		private readonly ISerializer serializer;
 		private bool disposed;
 	}
 }

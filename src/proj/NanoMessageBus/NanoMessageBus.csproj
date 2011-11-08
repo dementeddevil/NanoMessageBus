@@ -65,7 +65,7 @@
     <Compile Include="MessageSubscribers\SubscriptionRequestMessage.cs" />
     <Compile Include="MessageSubscribers\UnsubscribeRequestMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\ISerializeMessages.cs" />
+    <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\ITransformMessages.cs" />
     <Compile Include="SubscriptionStorage\IStoreSubscriptions.cs" />
     <Compile Include="SubscriptionStorage\SubscriptionStorageException.cs" />

@@ -4,26 +4,26 @@ namespace NanoMessageBus.Serialization
 	using System.Runtime.Serialization;
 
 	/// <summary>
-	/// Indicates the ability to serialize and deserialize a message.
+	/// Indicates the ability to serialize and deserialize an object.
 	/// </summary>
 	/// <remarks>
 	/// Object instances which implement this interface must be designed to be multi-thread safe.
 	/// </remarks>
-	public interface ISerializeMessages
+	public interface ISerializer
 	{
 		/// <summary>
-		/// Serializes the message provided into the stream specified.
+		/// Serializes the object provided into the stream specified.
 		/// </summary>
 		/// <param name="output">The output stream into which all serialized bytes should be written.</param>
-		/// <param name="message">The message payload to be serialized.</param>
+		/// <param name="payload">The object to be serialized.</param>
 		/// <exception cref="SerializationException" />
-		void Serialize(Stream output, object message);
+		void Serialize(Stream output, object payload);
 
 		/// <summary>
 		/// Deserializes the stream specified into an object graph.
 		/// </summary>
 		/// <param name="input">The stream from which all serialized bytes are to be read.</param>
-		/// <returns>If successful, returns a fully reconstituted message.</returns>
+		/// <returns>If successful, returns a fully reconstituted object.</returns>
 		/// <exception cref="SerializationException" />
 		object Deserialize(Stream input);
 	}

@@ -71,7 +71,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		}
 
 		public MsmqReceiverEndpoint(
-			MsmqConnector inputQueue, MsmqConnector poisonQueue, ISerializeMessages serializer)
+			MsmqConnector inputQueue, MsmqConnector poisonQueue, ISerializer serializer)
 		{
 			this.inputQueue = inputQueue;
 			this.poisonQueue = poisonQueue;
@@ -100,7 +100,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		private static readonly TimeSpan Timeout = 1000.Milliseconds();
 		private readonly MsmqConnector inputQueue;
 		private readonly MsmqConnector poisonQueue;
-		private readonly ISerializeMessages serializer;
+		private readonly ISerializer serializer;
 		private bool disposed;
 	}
 }

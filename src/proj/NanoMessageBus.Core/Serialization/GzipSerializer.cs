@@ -16,11 +16,11 @@ namespace NanoMessageBus.Serialization
 				return this.inner.Deserialize(inflatedStream);
 		}
 
-		public GzipSerializer(ISerializeMessages inner)
+		public GzipSerializer(ISerializer inner)
 		{
 			this.inner = inner;
 		}
 
-		private readonly ISerializeMessages inner;
+		private readonly ISerializer inner;
 	}
 }

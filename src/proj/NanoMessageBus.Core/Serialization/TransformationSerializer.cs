@@ -15,13 +15,13 @@ namespace NanoMessageBus.Serialization
 			return this.transformer.Transform(message);
 		}
 
-		public TransformationSerializer(ISerializeMessages inner, ITransformMessages transformer)
+		public TransformationSerializer(ISerializer inner, ITransformMessages transformer)
 		{
 			this.transformer = transformer;
 			this.inner = inner;
 		}
 
-		private readonly ISerializeMessages inner;
+		private readonly ISerializer inner;
 		private readonly ITransformMessages transformer;
 	}
 }
