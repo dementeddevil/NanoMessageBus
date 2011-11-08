@@ -27,11 +27,11 @@ namespace NanoMessageBus.Wireup
 			return this;
 		}
 
-        public virtual SerializationWireup CustomSerializer(ISerializeMessages serializer)
-        {
-            this.messageSerializer = serializer;
-            return this;
-        }
+		public virtual SerializationWireup CustomSerializer(ISerializeMessages serializer)
+		{
+			this.messageSerializer = serializer;
+			return this;
+		}
 
 		public virtual SerializationWireup CompressMessages()
 		{

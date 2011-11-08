@@ -1,10 +1,11 @@
 namespace NanoMessageBus.Endpoints
 {
 	using System;
+	using System.Diagnostics;
+	using System.Globalization;
 	using System.Messaging;
 	using System.Transactions;
 	using Logging;
-    using System.Globalization;
 
 	public class MsmqConnector : IDisposable
 	{
@@ -25,8 +26,10 @@ namespace NanoMessageBus.Endpoints
 				return new MsmqConnector(queue, address, enlist);
 
 			queue.Dispose();
-            Log.Error(Diagnostics.NonTransactionalQueue, address.Canonical);
-            throw new EndpointException(string.Format(CultureInfo.InvariantCulture, Diagnostics.NonTransactionalQueue, address.Canonical));
+			Log.Error(Diagnostics.NonTransactionalQueue, address.Canonical);
+			throw new EndpointException(string.Format(CultureInfo.InvariantCulture,
+				Diagnostics.NonTransactionalQueue,
+				address.Canonical));
 		}
 		public static MsmqConnector OpenSend(MsmqAddress address, bool enlist)
 		{
@@ -67,7 +70,7 @@ namespace NanoMessageBus.Endpoints
 			get { return this.address.Canonical; }
 		}
 
-        [System.Diagnostics.DebuggerNonUserCode]
+		[DebuggerNonUserCode]
 		public virtual Message Receive(TimeSpan timeout)
 		{
 			Log.Verbose(Diagnostics.AttemptingToReceiveMessage, this.Address);
@@ -79,15 +82,16 @@ namespace NanoMessageBus.Endpoints
 		{
 			Log.Verbose(Diagnostics.SendingMessage, this.Address);
 			var trx = (this.enlist && Transaction.Current != null)
-				? MessageQueueTransactionType.Automatic : MessageQueueTransactionType.Single;
+			          	? MessageQueueTransactionType.Automatic
+			          	: MessageQueueTransactionType.Single;
 			this.queue.Send(message, trx);
 		}
 
-        [System.Diagnostics.DebuggerNonUserCode]
-        public virtual bool HasMessages(TimeSpan timeout)
-        {
-            this.queue.Peek(timeout);
-            return true;            
-        }
+		[DebuggerNonUserCode]
+		public virtual bool HasMessages(TimeSpan timeout)
+		{
+			this.queue.Peek(timeout);
+			return true;
+		}
 	}
 }

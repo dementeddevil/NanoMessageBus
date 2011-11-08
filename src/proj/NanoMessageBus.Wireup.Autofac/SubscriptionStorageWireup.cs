@@ -13,7 +13,7 @@ namespace NanoMessageBus.Wireup
 		private string connectionString;
 		private string providerName;
 
-        private IStoreSubscriptions customStorage;
+		private IStoreSubscriptions customStorage;
 
 		public SubscriptionStorageWireup(IWireup parent)
 			: base(parent)
@@ -32,17 +32,17 @@ namespace NanoMessageBus.Wireup
 			return this;
 		}
 
-        public virtual SubscriptionStorageWireup WithCustomSubscriptionStorage(IStoreSubscriptions storage)
-        {
-            this.customStorage = storage;
-            return this;
-        }
+		public virtual SubscriptionStorageWireup WithCustomSubscriptionStorage(IStoreSubscriptions storage)
+		{
+			this.customStorage = storage;
+			return this;
+		}
 
-        public virtual SubscriptionStorageWireup WithInMemorySubscriptionStorage()
-        {
-            this.customStorage = new InMemorySubscriptionStorage();
-            return this;
-        }
+		public virtual SubscriptionStorageWireup WithInMemorySubscriptionStorage()
+		{
+			this.customStorage = new InMemorySubscriptionStorage();
+			return this;
+		}
 
 		protected override void Load(ContainerBuilder builder)
 		{
@@ -54,13 +54,7 @@ namespace NanoMessageBus.Wireup
 		}
 		protected virtual IStoreSubscriptions BuildSubscriptionStorage(IComponentContext c)
 		{
-            if (this.customStorage != null)
-            {
-                return this.customStorage;
-            }
-
-			return new SqlSubscriptionStorage(this.OpenConnection);
-
+			return this.customStorage ?? new SqlSubscriptionStorage(this.OpenConnection);
 		}
 		private IDbConnection OpenConnection()
 		{

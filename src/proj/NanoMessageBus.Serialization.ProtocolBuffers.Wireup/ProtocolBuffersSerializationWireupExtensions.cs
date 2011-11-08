@@ -1,14 +1,13 @@
-﻿
-namespace NanoMessageBus
+﻿namespace NanoMessageBus
 {
-    using NanoMessageBus.Wireup;
-    using NanoMessageBus.Serialization;
+	using Serialization;
+	using Wireup;
 
-    public static class ProtocolBuffersSerializationWireupExtensions
-    {
-        public static SerializationWireup WithJsonSerializer(this SerializationWireup wireup)
-        {
-            return wireup.CustomSerializer(new ProtocolBufferSerializer());
-        }
-    }
+	public static class ProtocolBuffersSerializationWireupExtensions
+	{
+		public static SerializationWireup WithJsonSerializer(this SerializationWireup wireup)
+		{
+			return wireup.CustomSerializer(new ProtocolBufferSerializer());
+		}
+	}
 }

@@ -38,6 +38,7 @@
     <Rule Name="DoNotDeclareProtectedMembersInSealedTypes" Enabled="True" />
     <Rule Name="DoNotDeclareStaticMembersOnGenericTypes" Enabled="True" />
     <Rule Name="DoNotDeclareVirtualMembersInSealedTypes" Enabled="True" />
+    <Rule Name="DoNotExposeGenericLists" Enabled="True" />
     <Rule Name="DoNotHideBaseClassMethods" Enabled="True" />
     <Rule Name="DoNotNestGenericTypesInMemberSignatures" Enabled="True" />
     <Rule Name="DoNotOverloadOperatorEqualsOnReferenceTypes" Enabled="True" />
@@ -99,7 +100,7 @@
     <Rule Name="EventsShouldNotHaveBeforeOrAfterPrefix" Enabled="True" />
     <Rule Name="FlagsEnumsShouldHavePluralNames" Enabled="True" />
     <Rule Name="IdentifiersShouldBeSpelledCorrectly" Enabled="True" />
-    <Rule Name="IdentifiersShouldDifferByMoreThanCase" Enabled="True" />
+    <Rule Name="IdentifiersShouldDifferByMoreThanCase" Enabled="False" />
     <Rule Name="IdentifiersShouldHaveCorrectPrefix" Enabled="True" />
     <Rule Name="IdentifiersShouldHaveCorrectSuffix" Enabled="True" />
     <Rule Name="IdentifiersShouldNotContainTypeNames" Enabled="True" />
@@ -132,12 +133,16 @@
     <Rule Name="TestForEmptyStringsUsingStringLength" Enabled="True" />
     <Rule Name="UseLiteralsWhereAppropriate" Enabled="True" />
    </RuleFile>
-   <RuleFile Name="$(FxCopDir)\Rules\PortabilityRules.dll" Enabled="True" AllRulesEnabled="True" />
+   <RuleFile Name="$(FxCopDir)\Rules\PortabilityRules.dll" Enabled="True" AllRulesEnabled="False">
+    <Rule Name="PInvokeDeclarationsShouldBePortable" Enabled="True" />
+    <Rule Name="ValueTypeFieldsShouldBePortable" Enabled="True" />
+   </RuleFile>
    <RuleFile Name="$(FxCopDir)\Rules\SecurityRules.dll" Enabled="True" AllRulesEnabled="True" />
    <RuleFile Name="$(FxCopDir)\Rules\UsageRules.dll" Enabled="True" AllRulesEnabled="False">
     <Rule Name="AttributeStringLiteralsShouldParseCorrectly" Enabled="True" />
     <Rule Name="CallBaseClassMethodsOnISerializableTypes" Enabled="True" />
     <Rule Name="CallGCSuppressFinalizeCorrectly" Enabled="True" />
+    <Rule Name="CollectionPropertiesShouldBeReadOnly" Enabled="True" />
     <Rule Name="DisposableFieldsShouldBeDisposed" Enabled="True" />
     <Rule Name="DisposableTypesShouldDeclareFinalizer" Enabled="True" />
     <Rule Name="DoNotCallOverridableMethodsInConstructors" Enabled="True" />

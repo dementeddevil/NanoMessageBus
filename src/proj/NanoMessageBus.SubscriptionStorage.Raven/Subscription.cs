@@ -1,38 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace NanoMessageBus.SubscriptionStorage.Raven
+﻿namespace NanoMessageBus.SubscriptionStorage.Raven
 {
-    public class Subscription
-    {
-        public Subscription(string subscriber, string messageType, DateTime? expiration)
-        {
-            if (subscriber == null)
-            {
-                throw new ArgumentNullException("subscriber");
-            }
+	using System;
 
-            if (messageType == null)
-            {
-                throw new ArgumentNullException("messageType");
-            }
+	public class Subscription
+	{
+		public Subscription(string subscriber, string messageType, DateTime? expiration)
+		{
+			if (subscriber == null)
+				throw new ArgumentNullException("subscriber");
 
-           // this.Id = FormatId(subscriber, messageType);
-            this.Subscriber = subscriber.ToString();
-            this.MessageType = messageType;
-            this.Expiration = expiration;
-        }
+			if (messageType == null)
+				throw new ArgumentNullException("messageType");
 
-        //public static string FormatId(string subscriber, string messageType)
-        //{
-        //    return string.Format("Subscriptions/{0}/{1}", subscriber.Replace('/','-'), messageType);
-        //}
+			this.Subscriber = subscriber;
+			this.MessageType = messageType;
+			this.Expiration = expiration;
+		}
 
-        public string Id { get; private set; } 
-        public string Subscriber { get; private set; }
-        public string MessageType { get; set; }
-        public DateTime? Expiration { get; set; }
-    }
+		public string Id { get; private set; } 
+		public string Subscriber { get; private set; }
+		public string MessageType { get; set; }
+		public DateTime? Expiration { get; set; }
+	}
 }
