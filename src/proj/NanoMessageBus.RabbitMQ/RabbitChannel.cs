@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitMQ
 {
 	using System;
+	using System.Collections;
 	using System.IO;
 	using System.Linq;
 	using Endpoints;
@@ -15,14 +16,14 @@
 		{
 			var channel = this.channelFactory();
 
-			var properties = GetProperties(channel, message);
+			var properties = this.GetProperties(channel, message);
 			var payload = this.SerializePayload(message);
-			var type = message.LogicalMessages.First().GetType();
+			var routingKey = GetRoutingKey(message);
 
-			foreach (var address in recipients.Select(recipient => GetAddress(recipient, type)))
-				channel.BasicPublish(address, properties, payload);
+			foreach (var exchange in recipients.Select(GetExchange))
+				channel.BasicPublish(exchange, routingKey, properties, payload);
 		}
-		private static IBasicProperties GetProperties(IModel channel, EnvelopeMessage message)
+		private IBasicProperties GetProperties(IModel channel, EnvelopeMessage message)
 		{
 			var properties = channel.CreateBasicProperties();
 
@@ -30,11 +31,14 @@
 			properties.ReplyTo = (message.ReturnAddress ?? new Uri(string.Empty)).ToString();
 			properties.SetPersistent(message.Persistent);
 			properties.ContentEncoding = string.Empty; // TODO
-			properties.ContentType = "application/json"; // TODO: determined by the serializer
-			properties.Expiration = (DateTime.UtcNow + message.TimeToLive).ToString(); // TODO
+			properties.ContentType = this.serializer.ContentType;
+			properties.Expiration = (SystemTime.UtcNow + message.TimeToLive).ToString();
+
+			if (message.Headers.Count > 0)
+				properties.Headers = properties.Headers ?? new Hashtable();
 
 			foreach (var item in message.Headers)
-				properties.Headers[EnvelopeHeader + item.Key] = item.Value;
+				properties.Headers[item.Key] = item.Value;
 
 			return properties;
 		}
@@ -46,10 +50,14 @@
 				return stream.ToArray();
 			}
 		}
-		private static PublicationAddress GetAddress(Uri recipient, Type primaryMessage)
+		private static string GetRoutingKey(EnvelopeMessage message)
 		{
-			// TODO: if specified, use DescriptionAttribute for metadata for routing key and for exchange...
-			return new PublicationAddress(string.Empty, recipient.Host, primaryMessage.FullName);
+			var first = message.LogicalMessages.First();
+			return (first.GetType().FullName ?? string.Empty).ToLowerInvariant();
+		}
+		private static string GetExchange(Uri recipient)
+		{
+			return recipient.AbsolutePath.Substring(1); // remove leading slash
 		}
 
 		public virtual EnvelopeMessage Receive()
@@ -85,7 +93,6 @@
 		{
 		}
 
-		private const string EnvelopeHeader = "x-envelope-";
 		private readonly Func<IModel> channelFactory;
 		private readonly Func<DeliveryContext> delivery;
 		private readonly ISerializer serializer;

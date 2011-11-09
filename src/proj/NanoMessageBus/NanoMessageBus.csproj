@@ -69,6 +69,7 @@
     <Compile Include="Serialization\ITransformMessages.cs" />
     <Compile Include="SubscriptionStorage\IStoreSubscriptions.cs" />
     <Compile Include="SubscriptionStorage\SubscriptionStorageException.cs" />
+    <Compile Include="SystemTime.cs" />
     <Compile Include="Transports\IAppendHeaders.cs" />
     <Compile Include="Transports\IReceiveMessages.cs" />
     <Compile Include="Transports\ITransportMessages.cs" />

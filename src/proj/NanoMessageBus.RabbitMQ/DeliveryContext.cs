@@ -1,9 +1,11 @@
 ﻿namespace NanoMessageBus.RabbitMQ
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
+	using System.Text;
 	using global::RabbitMQ.Client;
 	using global::RabbitMQ.Client.Events;
 	using global::RabbitMQ.Client.MessagePatterns;
@@ -16,14 +18,12 @@
 			if (!this.subscription.Next(timeout.Milliseconds, out this.delivery))
 				return null;
 
-			var messages = this.Deserialize();
+			if (this.IsExpired())
+				return null;
+
 			var properties = this.delivery.BasicProperties;
-
-			var headers = new Dictionary<string, string>();
-
-			var keys = properties.Headers.Keys.Cast<string>().Where(key => key.StartsWith(EnvelopeHeader));
-			foreach (var key in keys)
-				headers[key.Substring(0, EnvelopeHeader.Length)] = (string)properties.Headers[key];
+			var messages = this.Deserialize();
+			var headers = this.GetHeaders();
 
 			// TODO: get TTL from attributes of first logical message
 			// TODO: get return address
@@ -35,6 +35,25 @@
 				headers,
 				messages);
 		}
+		private IDictionary<string, string> GetHeaders()
+		{
+			var source = this.delivery.BasicProperties.Headers;
+			if (source == null)
+				return null;
+
+			return source.Cast<DictionaryEntry>()
+				.Select(x => (string)x.Key)
+				.ToDictionary(x => x, y => Encoding.UTF8.GetString((byte[])source[y]));
+		}
+		private bool IsExpired()
+		{
+			var expiration = this.delivery.BasicProperties.Expiration;
+			if (string.IsNullOrEmpty(expiration))
+				return false;
+
+			return SystemTime.UtcNow > DateTime.Parse(expiration);
+		}
+
 		private ICollection<object> Deserialize()
 		{
 			var deserializer = this.serializer(this.delivery.BasicProperties.ContentType);
@@ -48,14 +67,15 @@
 				this.subscription.Ack(this.delivery);
 		}
 
-		public DeliveryContext(Func<string, ISerializer> serializer, IModel channel, Uri queue, bool acknowledge)
+		public DeliveryContext(Func<string, ISerializer> serializer, IModel channel, Uri queueAddress, bool acknowledge)
 		{
+			var queue = queueAddress.AbsolutePath.Substring(1); // remove leading / character
+
 			this.serializer = serializer;
-			this.subscription = new Subscription(channel, queue.Host, !this.acknowledge);
+			this.subscription = new Subscription(channel, queue, !acknowledge);
 			this.acknowledge = acknowledge;
 		}
 
-		private const string EnvelopeHeader = "x-envelope-";
 		private readonly Func<string, ISerializer> serializer;
 		private readonly Subscription subscription;
 		private readonly bool acknowledge;

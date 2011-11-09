@@ -29,6 +29,7 @@
 		public RabbitUnitOfWork(IModel channel)
 		{
 			this.channel = channel;
+			channel.TxSelect(); // mark as transactional
 		}
 		~RabbitUnitOfWork()
 		{
