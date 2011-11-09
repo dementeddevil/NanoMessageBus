@@ -12,7 +12,7 @@ namespace NanoMessageBus.Handlers
 		}
 		public virtual EnvelopeMessage CurrentMessage
 		{
-			get { return new EnvelopeMessage(Guid.Empty, this.localAddress, TimeSpan.Zero, false, null, null); }
+			get { return new EnvelopeMessage(Guid.Empty, Guid.Empty, this.localAddress, TimeSpan.Zero, false, null, null); }
 		}
 		public virtual bool ContinueProcessing
 		{

@@ -17,6 +17,11 @@ namespace NanoMessageBus.Serialization
 		string ContentType { get; }
 
 		/// <summary>
+		/// Gets the underling content encoding associated with the serializer.
+		/// </summary>
+		string ContentEncoding { get; }
+
+		/// <summary>
 		/// Serializes the object provided into the stream specified.
 		/// </summary>
 		/// <param name="output">The output stream into which all serialized bytes should be written.</param>

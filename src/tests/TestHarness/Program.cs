@@ -19,8 +19,8 @@
 
 			SendMessage();
 			
-			// ReceiveMessage();
-			ReceiveAndSend();
+			ReceiveMessage();
+			//// ReceiveAndSend();
 
 			Connection.Dispose();
 		}
@@ -63,6 +63,7 @@
 
 			return new EnvelopeMessage(
 			    Guid.NewGuid(),
+				Guid.Empty,
 			    returnAddress,
 				TimeSpan.MaxValue,
 				true,

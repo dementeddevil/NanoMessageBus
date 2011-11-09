@@ -8,7 +8,11 @@ namespace NanoMessageBus.Serialization
 	{
 		public override string ContentType
 		{
-			get { return "application/vnd.nmb+rijndael;" + this.inner.ContentType; }
+			get { return this.inner.ContentType; }
+		}
+		public override string ContentEncoding
+		{
+			get { return "rijndael; " + this.inner.ContentType; }
 		}
 
 		protected override void SerializePayload(Stream output, object message)

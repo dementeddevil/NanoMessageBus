@@ -8,7 +8,11 @@ namespace NanoMessageBus.Serialization
 	{
 		public override string ContentType
 		{
-			get { return "application/vnd.nmb+binary"; }
+			get { return "application/octet-stream"; }
+		}
+		public override string ContentEncoding
+		{
+			get { return "binary"; }
 		}
 
 		protected override void SerializePayload(Stream output, object message)

@@ -21,12 +21,14 @@
 			this.ThrowWhenDisposed();
 
 			var properties = this.channel.CreateBasicProperties();
+
+			properties.MessageId = message.MessageId.ToString();
 			properties.AppId = message.ProducerId;
 			properties.ContentEncoding = message.ContentEncoding;
 			properties.ContentType = message.ContentType;
 			properties.SetPersistent(message.Durable);
 
-			properties.CorrelationId = message.CorrelationId;
+			properties.CorrelationId = message.CorrelationId.ToNull() ?? string.Empty;
 			properties.Expiration = message.Expiration.ToUniversalTime().ToString(DateTimeFormat);
 
 			properties.Headers = new Hashtable();
@@ -36,7 +38,6 @@
 			if (message.RetryCount > 0)
 				properties.Headers[FailureCount] = message.RetryCount;
 
-			properties.MessageId = message.MessageId.ToString();
 			properties.ReplyTo = message.ReplyTo;
 			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
 			properties.Type = message.MessageType;
@@ -52,15 +53,11 @@
 				return null;
 
 			var properties = result.BasicProperties;
-			var messageId = string.IsNullOrEmpty(properties.MessageId)
-				? Guid.Empty : Guid.Parse(properties.MessageId);
-			var expiration = string.IsNullOrEmpty(properties.Expiration)
-				? DateTime.MaxValue : DateTime.Parse(properties.Expiration);
 			var headers = ParseHeaders(properties.Headers);
 
 			return this.CurrentMessage = new RabbitMessage
 			{
-				MessageId = messageId,
+				MessageId = properties.MessageId.ToGuid(),
 				ProducerId = properties.AppId,
 				Created = properties.Timestamp.UnixTime.ToDateTime(),
 				MessageType = properties.Type,
@@ -69,8 +66,8 @@
 				ContentType = properties.ContentType,
 
 				Durable = properties.DeliveryMode == 2,
-				CorrelationId = properties.CorrelationId,
-				Expiration = expiration,
+				CorrelationId = properties.CorrelationId.ToGuid(),
+				Expiration = properties.Expiration.ToDateTime(),
 
 				Headers = headers,
 
@@ -97,7 +94,7 @@
 		{
 			string value;
 			if (headers != null && headers.TryGetValue(FailureCount, out value))
-				return int.Parse(value);
+				return value.ToInt();
 
 			return redelivered ? 1 : 0;
 		}

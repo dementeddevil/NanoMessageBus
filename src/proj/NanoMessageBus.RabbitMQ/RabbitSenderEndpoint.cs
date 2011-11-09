@@ -21,9 +21,9 @@
 			{
 				MessageId = message.MessageId,
 				ProducerId = string.Empty, // TODO?
-				CorrelationId = string.Empty, // TODO?
-				ContentEncoding = string.Empty, // TODO
+				CorrelationId = message.CorrelationId,
 				ContentType = this.serializer.ContentType,
+				ContentEncoding = this.serializer.ContentEncoding,
 				Durable = message.Persistent,
 				Expiration = message.Expiration(),
 				MessageType = message.MessageType(),

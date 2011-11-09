@@ -51,6 +51,7 @@ namespace NanoMessageBus.MessageSubscribers
 		{
 			return new EnvelopeMessage(
 				Guid.NewGuid(),
+				Guid.Empty,
 				this.returnAddress,
 				TimeSpan.MaxValue,
 				true,

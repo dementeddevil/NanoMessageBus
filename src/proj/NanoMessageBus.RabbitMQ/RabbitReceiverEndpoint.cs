@@ -27,6 +27,7 @@
 
 			return new EnvelopeMessage(
 				message.MessageId,
+				message.CorrelationId,
 				null, // TODO
 				TimeSpan.MaxValue, // TODO
 				message.Durable,

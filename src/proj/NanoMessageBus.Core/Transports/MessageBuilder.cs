@@ -19,6 +19,7 @@ namespace NanoMessageBus.Transports
 		{
 			return new EnvelopeMessage(
 				Guid.NewGuid(),
+				Guid.Empty,
 				this.localAddress,
 				TimeSpan.MaxValue, // TODO: grab from DescriptionAttribute (careful of threading issues)
 				true,

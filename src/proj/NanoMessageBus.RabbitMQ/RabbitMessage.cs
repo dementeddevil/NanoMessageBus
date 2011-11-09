@@ -9,7 +9,7 @@
 		public DateTime Created { get; set; }
 		public string MessageType { get; set; }
 		public string ProducerId { get; set; }
-		public string CorrelationId { get; set; }
+		public Guid CorrelationId { get; set; }
 		public string ContentEncoding { get; set; }
 		public string ContentType { get; set; }
 		public bool Durable { get; set; }
