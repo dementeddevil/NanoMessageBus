@@ -12,10 +12,9 @@
 	
 	public partial class RabbitConnector : IDisposable
 	{
-		//// TODO: logging
-		//// TODO: we need to be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
-
+		// TODO: logging and we need to be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 		public IHandleUnitOfWork UnitOfWork { get; private set; }
+		public RabbitMessage CurrentMessage { get; private set; }
 
 		public virtual void Send(RabbitMessage message, RabbitAddress address)
 		{
@@ -33,6 +32,9 @@
 			properties.Headers = new Hashtable();
 			foreach (var item in message.Headers ?? new Dictionary<string, string>())
 				properties.Headers[item.Key] = item.Value;
+
+			if (message.RetryCount > 0)
+				properties.Headers[FailureCount] = message.RetryCount;
 
 			properties.MessageId = message.MessageId.ToString();
 			properties.ReplyTo = message.ReplyTo;
@@ -54,8 +56,9 @@
 				? Guid.Empty : Guid.Parse(properties.MessageId);
 			var expiration = string.IsNullOrEmpty(properties.Expiration)
 				? DateTime.MaxValue : DateTime.Parse(properties.Expiration);
+			var headers = ParseHeaders(properties.Headers);
 
-			return new RabbitMessage
+			return this.CurrentMessage = new RabbitMessage
 			{
 				MessageId = messageId,
 				ProducerId = properties.AppId,
@@ -69,13 +72,13 @@
 				CorrelationId = properties.CorrelationId,
 				Expiration = expiration,
 
-				Headers = ParseHeaders(properties.Headers),
+				Headers = headers,
 
 				ReplyTo = properties.ReplyTo, // TODO: convert to Uri?
 				UserId = properties.UserId,
 
 				DeliveryTag = result.DeliveryTag,
-				Redelivered = result.Redelivered,
+				RetryCount = RetryCount(headers, result.Redelivered),
 				SourceExchange = result.Exchange,
 				RoutingKey = result.RoutingKey,
 				Body = result.Body
@@ -89,6 +92,14 @@
 			return value.Cast<DictionaryEntry>()
 				.Select(x => (string)x.Key)
 				.ToDictionary(x => x, y => Encoding.UTF8.GetString((byte[])value[y]));
+		}
+		private static int RetryCount(IDictionary<string, string> headers, bool redelivered)
+		{
+			string value;
+			if (headers != null && headers.TryGetValue(FailureCount, out value))
+				return int.Parse(value);
+
+			return redelivered ? 1 : 0;
 		}
 
 		private void ThrowWhenDisposed()
@@ -146,6 +157,7 @@
 			this.channel.Dispose();
 		}
 
+		private const string FailureCount = "x-failure-count";
 		private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
 		private readonly IModel channel;
 		private readonly Subscription subscription;

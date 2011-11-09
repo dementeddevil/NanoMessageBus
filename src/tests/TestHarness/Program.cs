@@ -91,7 +91,8 @@
 				() => connector,
 				deadLetterExchange,
 				poisonMessageExchange,
-				x => Serializer);
+				x => Serializer,
+				3);
 		}
 
 		private static void ReceiveAndSend()

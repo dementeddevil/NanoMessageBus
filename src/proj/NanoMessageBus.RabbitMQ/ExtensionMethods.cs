@@ -1,4 +1,4 @@
-﻿namespace NanoMessageBus
+﻿namespace NanoMessageBus.RabbitMQ
 {
 	using System;
 	using System.Globalization;

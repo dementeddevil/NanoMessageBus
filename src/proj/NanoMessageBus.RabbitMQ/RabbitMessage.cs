@@ -18,7 +18,7 @@
 		public string ReplyTo { get; set; }
 
 		public object DeliveryTag { get; set; }
-		public bool Redelivered { get; set; }
+		public int RetryCount { get; set; }
 		public string SourceExchange { get; set; }
 		public string UserId { get; set; }
 
