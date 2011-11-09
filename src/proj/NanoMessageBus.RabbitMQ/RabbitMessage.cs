@@ -16,11 +16,11 @@
 		public DateTime Expiration { get; set; }
 		public IDictionary<string, string> Headers { get; set; }
 		public string ReplyTo { get; set; }
-		////public string UserId { get; set; }
 
 		public object DeliveryTag { get; set; }
 		public int DeliveryCount { get; set; }
 		public string SourceExchange { get; set; }
+		public string UserId { get; set; }
 
 		public string RoutingKey { get; set; }
 		public byte[] Body { get; set; }

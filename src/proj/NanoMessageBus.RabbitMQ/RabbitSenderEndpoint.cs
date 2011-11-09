@@ -5,7 +5,7 @@
 	using Endpoints;
 	using Serialization;
 
-	public class RabbitDispatchChannel : ISendToEndpoints
+	public class RabbitSenderEndpoint : ISendToEndpoints
 	{
 		//// TODO: logging
 
@@ -27,7 +27,7 @@
 				Durable = message.Persistent,
 				Expiration = message.Expiration(),
 				MessageType = message.MessageType(),
-				ReplyTo = string.Empty, // TODO
+				ReplyTo = connector.EndpointAddress.ToString(), // TODO
 				RoutingKey = message.RoutingKey(),
 				Headers = message.Headers,
 				Body = message.Serialize(this.serializer),
@@ -37,12 +37,12 @@
 				connector.Send(pending, address);
 		}
 
-		public RabbitDispatchChannel(Func<RabbitConnector> connectorFactory, ISerializer serializer)
+		public RabbitSenderEndpoint(Func<RabbitConnector> connectorFactory, ISerializer serializer)
 		{
 			this.connectorFactory = connectorFactory;
 			this.serializer = serializer;
 		}
-		~RabbitDispatchChannel()
+		~RabbitSenderEndpoint()
 		{
 			this.Dispose(false);
 		}

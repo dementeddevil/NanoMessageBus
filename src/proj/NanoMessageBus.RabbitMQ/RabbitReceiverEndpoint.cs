@@ -7,16 +7,14 @@
 	using Endpoints;
 	using Serialization;
 
-	public class RabbitReceiveChannel : IReceiveFromEndpoints
+	public class RabbitReceiverEndpoint : IReceiveFromEndpoints
 	{
 		//// TODO: logging
 
-		public Uri EndpointAddress { get; private set; }
 		public EnvelopeMessage Receive()
 		{
 			// TODO: catch connection errors
-			var connector = this.connectorFactory();
-			var message = connector.Receive(DefaultReceiveWait);
+			var message = this.connector().Receive(DefaultReceiveWait);
 			if (message == null)
 				return null;
 
@@ -65,35 +63,41 @@
 			if (message.Expiration >= SystemTime.UtcNow)
 				return false;
 
-			return this.Forward(message, this.deadLetterAddress);
+			// TODO: catch connection errors
+			this.connector().Send(message, this.deadLetterExchange);
+			return true;
 		}
 		private void ForwardWhenPoison(RabbitMessage message, Exception exception)
 		{
-			// TODO: add exception info to the message
-			var connector = this.connectorFactory();
-			connector.Send(message, this.poisonMessageAddress);
+			if (AppendException(message, exception, string.Empty))
+				AppendException(message, exception.InnerException, "Inner");
+
+			// TODO: catch connection errors
+			this.connector().Send(message, this.poisonMessageExchange);
 		}
-		private bool Forward(RabbitMessage message, RabbitAddress address)
+		private static bool AppendException(RabbitMessage message, Exception exception, string prefix)
 		{
-			var connector = this.connectorFactory();
-			connector.Send(message, address);
+			if (exception == null)
+				return false;
+
+			message.Headers[prefix + "Exception.Type"] = exception.GetType().FullName;
+			message.Headers[prefix + "Exception.Message"] = exception.Message;
+			message.Headers[prefix + "Exception.StackTrace"] = exception.StackTrace;
 			return true;
 		}
 
-		public RabbitReceiveChannel(
-			Uri localAddress,
-			Uri deadLetterAddress,
-			Uri poisonMessageAddress,
-			Func<RabbitConnector> connectorFactory,
+		public RabbitReceiverEndpoint(
+			Func<RabbitConnector> connector,
+			RabbitAddress deadLetterExchange,
+			RabbitAddress poisonMessageExchange,
 			Func<string, ISerializer> serializerFactory)
 		{
-			this.EndpointAddress = localAddress;
-			this.deadLetterAddress = new RabbitAddress(deadLetterAddress);
-			this.poisonMessageAddress = new RabbitAddress(poisonMessageAddress);
-			this.connectorFactory = connectorFactory;
+			this.connector = connector;
+			this.deadLetterExchange = deadLetterExchange;
+			this.poisonMessageExchange = poisonMessageExchange;
 			this.serializerFactory = serializerFactory;
 		}
-		~RabbitReceiveChannel()
+		~RabbitReceiverEndpoint()
 		{
 			this.Dispose(false);
 		}
@@ -108,9 +112,9 @@
 		}
 
 		private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
-		private readonly RabbitAddress deadLetterAddress;
-		private readonly RabbitAddress poisonMessageAddress;
-		private readonly Func<RabbitConnector> connectorFactory;
+		private readonly Func<RabbitConnector> connector;
+		private readonly RabbitAddress deadLetterExchange;
+		private readonly RabbitAddress poisonMessageExchange;
 		private readonly Func<string, ISerializer> serializerFactory;
 	}
 }

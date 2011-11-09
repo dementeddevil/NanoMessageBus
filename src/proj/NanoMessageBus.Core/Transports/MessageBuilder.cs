@@ -17,11 +17,10 @@ namespace NanoMessageBus.Transports
 		}
 		private EnvelopeMessage BuildMessage(Type primary, ICollection<object> messages)
 		{
-			// TODO:  lock and inspect DescriptionAttribute of primary message (concurrent dictionary)
 			return new EnvelopeMessage(
 				Guid.NewGuid(),
 				this.localAddress,
-				TimeSpan.MaxValue,
+				TimeSpan.MaxValue, // TODO: grab from DescriptionAttribute (careful of threading issues)
 				true,
 				null,
 				messages);

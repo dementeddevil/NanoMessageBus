@@ -14,6 +14,8 @@
 		//// TODO: logging
 		//// TODO: we need to be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 
+		public Uri EndpointAddress { get; private set; }
+
 		public virtual void Send(RabbitMessage message, RabbitAddress address)
 		{
 			this.ThrowWhenDisposed();
@@ -68,7 +70,8 @@
 
 				Headers = ParseHeaders(properties.Headers),
 
-				ReplyTo = properties.ReplyTo,
+				ReplyTo = properties.ReplyTo, // TODO: convert to Uri?
+				UserId = properties.UserId,
 
 				DeliveryTag = result.DeliveryTag,
 				DeliveryCount = result.Redelivered ? 1 : 0, // TODO: count # of deliveries
@@ -108,21 +111,16 @@
 			this.channel.TxRollback();
 		}
 
-		public static RabbitConnector OpenSend(object channel)
+		public static RabbitConnector OpenSend(object channel, RabbitAddress address)
 		{
-			return new RabbitConnector(OpenChannel(channel), null);
+			return new RabbitConnector(channel as IModel, null, address);
 		}
-		public static RabbitConnector OpenReceive(object channel, RabbitAddress source, bool acknowledge)
+		public static RabbitConnector OpenReceive(object channel, RabbitAddress address, bool acknowledge)
 		{
-			var model = OpenChannel(channel); // TODO: catch/dispose and rethrow wrapped exception
-			var subscription = new Subscription(model, source.Queue, !acknowledge);
+			var model = channel as IModel; // TODO: catch/dispose and rethrow wrapped exception
+			var subscription = new Subscription(model, address.Queue, !acknowledge);
 
-			return new RabbitConnector(model, subscription);
-		}
-		private static IModel OpenChannel(object channel)
-		{
-			// this method facilitates ILMerging because IConnection doesn't leak into the public interface
-			return ((IModel)channel);
+			return new RabbitConnector(model, subscription, address);
 		}
 
 		private void ThrowWhenDisposed()
@@ -131,10 +129,11 @@
 				throw new ObjectDisposedException(typeof(RabbitConnector).Name, "The object has already been disposed.");
 		}
 
-		private RabbitConnector(IModel channel, Subscription subscription)
+		private RabbitConnector(IModel channel, Subscription subscription, RabbitAddress address)
 		{
 			this.channel = channel;
 			this.subscription = subscription;
+			this.EndpointAddress = address.Raw;
 		}
 		~RabbitConnector()
 		{

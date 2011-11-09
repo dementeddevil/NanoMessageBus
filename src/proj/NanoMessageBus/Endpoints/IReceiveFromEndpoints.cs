@@ -11,11 +11,6 @@ namespace NanoMessageBus.Endpoints
 	public interface IReceiveFromEndpoints : IDisposable
 	{
 		/// <summary>
-		/// Gets the address of the endpoint.
-		/// </summary>
-		Uri EndpointAddress { get; }
-
-		/// <summary>
 		/// Receives a message from the endpoint, if any.
 		/// </summary>
 		/// <returns>The message received, if any; otherwise null.</returns>

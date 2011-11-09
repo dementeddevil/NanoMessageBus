@@ -10,6 +10,11 @@ namespace NanoMessageBus
 	public static class SystemTime
 	{
 		/// <summary>
+		/// Represents "zero" for Unix Epoch Time.
+		/// </summary>
+		public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+		/// <summary>
 		/// The callback to be used to resolve the current moment in time.
 		/// </summary>
 		public static Func<DateTime> Resolver;
@@ -41,10 +46,5 @@ namespace NanoMessageBus
 		{
 			return EpochTime + TimeSpan.FromSeconds(epochTime);
 		}
-
-		/// <summary>
-		/// Represents "zero" for Unix Epoch Time.
-		/// </summary>
-		public static readonly DateTime EpochTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 	}
 }

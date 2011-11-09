@@ -8,11 +8,6 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 	public class MsmqReceiverEndpoint : IReceiveFromEndpoints
 	{
-		public Uri EndpointAddress
-		{
-			get { return this.inputQueue.Address; }
-		}
-
 		public virtual EnvelopeMessage Receive()
 		{
 			var message = this.DequeueMessage();
