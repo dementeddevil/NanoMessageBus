@@ -25,6 +25,8 @@
 			if (logicalMessages == null)
 				return null; // message cannot be deserialized
 
+			message.Headers[RabbitKeys.SourceExchange] = message.SourceExchange;
+
 			return new EnvelopeMessage(
 				message.MessageId,
 				null, // TODO

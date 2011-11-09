@@ -55,9 +55,6 @@
 			var expiration = string.IsNullOrEmpty(properties.Expiration)
 				? DateTime.MaxValue : DateTime.Parse(properties.Expiration);
 
-			var headers = ParseHeaders(properties.Headers);
-			headers[RabbitKeys.SourceExchange] = result.Exchange;
-
 			return new RabbitMessage
 			{
 				MessageId = messageId,
@@ -72,7 +69,7 @@
 				CorrelationId = properties.CorrelationId,
 				Expiration = expiration,
 
-				Headers = headers,
+				Headers = ParseHeaders(properties.Headers),
 
 				ReplyTo = properties.ReplyTo, // TODO: convert to Uri?
 				UserId = properties.UserId,
