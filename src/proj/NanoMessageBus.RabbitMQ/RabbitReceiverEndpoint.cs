@@ -25,11 +25,10 @@
 			if (logicalMessages == null)
 				return null; // message cannot be deserialized
 
-			// TODO: reply-to address and TTL
 			return new EnvelopeMessage(
 				message.MessageId,
-				null,
-				TimeSpan.MaxValue,
+				null, // TODO
+				TimeSpan.MaxValue, // TODO
 				message.Durable,
 				message.Headers,
 				logicalMessages);

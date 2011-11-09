@@ -55,6 +55,9 @@
 			var expiration = string.IsNullOrEmpty(properties.Expiration)
 				? DateTime.MaxValue : DateTime.Parse(properties.Expiration);
 
+			var headers = ParseHeaders(properties.Headers);
+			headers[RabbitKeys.SourceExchange] = result.Exchange;
+
 			return new RabbitMessage
 			{
 				MessageId = messageId,
@@ -69,13 +72,13 @@
 				CorrelationId = properties.CorrelationId,
 				Expiration = expiration,
 
-				Headers = ParseHeaders(properties.Headers),
+				Headers = headers,
 
 				ReplyTo = properties.ReplyTo, // TODO: convert to Uri?
 				UserId = properties.UserId,
 
 				DeliveryTag = result.DeliveryTag,
-				DeliveryCount = result.Redelivered ? 1 : 0, // TODO: count # of deliveries
+				Redelivered = result.Redelivered,
 				SourceExchange = result.Exchange,
 				RoutingKey = result.RoutingKey,
 				Body = result.Body
@@ -124,8 +127,7 @@
 			if (connection == null)
 				throw new ArgumentNullException("connection");
 
-			// TODO: catch/dispose and rethrow wrapped exception
-			this.channel = connection.CreateModel();
+			this.channel = connection.CreateModel(); // TODO: catch/dispose and rethrow wrapped exception
 		}
 		~RabbitConnector()
 		{

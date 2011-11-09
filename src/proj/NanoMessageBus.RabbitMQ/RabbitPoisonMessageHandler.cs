@@ -7,7 +7,7 @@
 	{
 		public virtual bool IsPoison(EnvelopeMessage message)
 		{
-			return this.IsPoison(message.FailureCount(FailureCountHeader));
+			return this.IsPoison(message.FailureCount());
 		}
 		public virtual void ClearFailures(EnvelopeMessage message)
 		{
@@ -16,11 +16,12 @@
 		{
 			this.unitOfWork.Clear(); // don't perform any dispatch operations
 
-			var failures = message.FailureCount(FailureCountHeader) + 1;
-			message.Headers[FailureCountHeader] = failures.ToString();
-
-			var destination = this.IsPoison(failures) ? this.poisonMessageExchange : this.localMessageExchange;
-			this.sender.Send(message, destination.Raw);
+			var failures = message.FailureCount() + 1;
+			message.Headers[RabbitKeys.FailureCount] = failures.ToString();
+			var destination = this.IsPoison(failures)
+				? this.poisonMessageExchange.Raw
+				: new Uri("/" + message.Headers[RabbitKeys.SourceExchange]);
+			this.sender.Send(message, destination);
 
 			this.unitOfWork.Complete(); // but still remove the incoming poison message from the queue
 		}
@@ -31,21 +32,17 @@
 
 		public RabbitPoisonMessageHandler(
 			RabbitSenderEndpoint sender,
-			RabbitAddress localMessageExchange,
 			RabbitAddress poisonMessageExchange,
 			IHandleUnitOfWork unitOfWork,
 			int maxAttempts)
 		{
 			this.sender = sender;
-			this.localMessageExchange = localMessageExchange;
 			this.poisonMessageExchange = poisonMessageExchange;
 			this.unitOfWork = unitOfWork;
 			this.maxAttempts = maxAttempts;
 		}
 
-		private const string FailureCountHeader = "x-failure-count";
 		private readonly RabbitSenderEndpoint sender;
-		private readonly RabbitAddress localMessageExchange;
 		private readonly RabbitAddress poisonMessageExchange;
 		private readonly IHandleUnitOfWork unitOfWork;
 		private readonly int maxAttempts;
