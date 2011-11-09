@@ -12,6 +12,10 @@
 		public string Queue { get; private set; }
 		public Uri Raw { get; private set; }
 
+		public RabbitAddress(string address)
+			: this(new Uri(address))
+		{
+		}
 		public RabbitAddress(Uri address)
 		{
 			this.Raw = address;

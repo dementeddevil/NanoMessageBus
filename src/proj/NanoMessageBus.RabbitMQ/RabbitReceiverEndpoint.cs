@@ -11,7 +11,7 @@
 	{
 		//// TODO: logging
 
-		public EnvelopeMessage Receive()
+		public virtual EnvelopeMessage Receive()
 		{
 			// TODO: catch connection errors
 			var message = this.connector().Receive(DefaultReceiveWait);

@@ -5,16 +5,17 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text;
+	using Handlers;
 	using global::RabbitMQ.Client;
 	using global::RabbitMQ.Client.Events;
 	using global::RabbitMQ.Client.MessagePatterns;
 	
-	public class RabbitConnector : IDisposable
+	public partial class RabbitConnector : IDisposable
 	{
 		//// TODO: logging
 		//// TODO: we need to be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 
-		public Uri EndpointAddress { get; private set; }
+		public IHandleUnitOfWork UnitOfWork { get; private set; }
 
 		public virtual void Send(RabbitMessage message, RabbitAddress address)
 		{
@@ -90,50 +91,40 @@
 				.ToDictionary(x => x, y => Encoding.UTF8.GetString((byte[])value[y]));
 		}
 
-		public virtual void AcknowledgeReceipt()
-		{
-			this.ThrowWhenDisposed();
-			this.subscription.Ack();
-		}
-		public virtual void BeginTransaction()
-		{
-			this.ThrowWhenDisposed();
-			this.channel.TxSelect();
-		}
-		public virtual void CommitTransaction()
-		{
-			this.ThrowWhenDisposed();
-			this.channel.TxCommit();
-		}
-		public virtual void RollbackTransaction()
-		{
-			this.ThrowWhenDisposed();
-			this.channel.TxRollback();
-		}
-
-		public static RabbitConnector OpenSend(object channel, RabbitAddress address)
-		{
-			return new RabbitConnector(channel as IModel, null, address);
-		}
-		public static RabbitConnector OpenReceive(object channel, RabbitAddress address, bool acknowledge)
-		{
-			var model = channel as IModel; // TODO: catch/dispose and rethrow wrapped exception
-			var subscription = new Subscription(model, address.Queue, !acknowledge);
-
-			return new RabbitConnector(model, subscription, address);
-		}
-
 		private void ThrowWhenDisposed()
 		{
 			if (this.disposed)
 				throw new ObjectDisposedException(typeof(RabbitConnector).Name, "The object has already been disposed.");
 		}
 
-		private RabbitConnector(IModel channel, Subscription subscription, RabbitAddress address)
+		public RabbitConnector(object connection, RabbitTransactionType transactionType)
+			: this(connection as IConnection)
 		{
-			this.channel = channel;
-			this.subscription = subscription;
-			this.EndpointAddress = address.Raw;
+			this.UnitOfWork = new RabbitUnitOfWork(this.channel, null, transactionType);
+		}
+		public RabbitConnector(object connection, RabbitTransactionType transactionType, RabbitAddress address)
+			: this(connection as IConnection)
+		{
+			if (address == null)
+				throw new ArgumentNullException("address");
+			if (string.IsNullOrEmpty(address.Queue))
+				throw new ArgumentException("The address provided does not indicate a queue.", "address");
+
+			// a new subscription with RabbitTransactionType.None will put a message on the channel immediately
+			this.subscription = new Subscription(
+				this.channel,
+				address.Queue,
+				transactionType == RabbitTransactionType.None);
+
+			this.UnitOfWork = new RabbitUnitOfWork(this.channel, this.subscription, transactionType);
+		}
+		private RabbitConnector(IConnection connection)
+		{
+			if (connection == null)
+				throw new ArgumentNullException("connection");
+
+			// TODO: catch/dispose and rethrow wrapped exception
+			this.channel = connection.CreateModel();
 		}
 		~RabbitConnector()
 		{
@@ -151,6 +142,7 @@
 				return;
 
 			this.disposed = true;
+			this.UnitOfWork.Dispose();
 			this.channel.Dispose();
 		}
 

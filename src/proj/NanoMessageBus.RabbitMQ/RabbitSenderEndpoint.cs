@@ -9,7 +9,7 @@
 	{
 		//// TODO: logging
 
-		public void Send(EnvelopeMessage message, params Uri[] recipients)
+		public virtual void Send(EnvelopeMessage message, params Uri[] recipients)
 		{
 			recipients = recipients ?? new Uri[0];
 			if (recipients.Length == 0)
@@ -27,7 +27,7 @@
 				Durable = message.Persistent,
 				Expiration = message.Expiration(),
 				MessageType = message.MessageType(),
-				ReplyTo = connector.EndpointAddress.ToString(), // TODO
+				ReplyTo = message.ReturnAddress.ToString(), // TODO
 				RoutingKey = message.RoutingKey(),
 				Headers = message.Headers,
 				Body = message.Serialize(this.serializer),

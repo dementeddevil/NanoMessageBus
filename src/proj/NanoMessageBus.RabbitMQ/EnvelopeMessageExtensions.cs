@@ -5,7 +5,7 @@
 	using System.Linq;
 	using Serialization;
 
-	public static class EnvelopeMessageExtensions
+	internal static class EnvelopeMessageExtensions
 	{
 		public static byte[] Serialize(this EnvelopeMessage message, ISerializer serializer)
 		{
@@ -30,6 +30,9 @@
 
 		public static DateTime Expiration(this EnvelopeMessage message)
 		{
+			if (message.TimeToLive == TimeSpan.MaxValue)
+				return DateTime.MaxValue;
+
 			return SystemTime.UtcNow + message.TimeToLive;
 		}
 

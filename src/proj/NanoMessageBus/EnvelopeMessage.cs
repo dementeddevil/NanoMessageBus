@@ -53,6 +53,9 @@ namespace NanoMessageBus
 			IDictionary<string, string> headers,
 			ICollection<object> logicalMessages)
 		{
+			if (timeToLive.TotalMilliseconds <= 0)
+				throw new ArgumentException("The message TTL must be positive.");
+
 			this.messageId = messageId;
 			this.returnAddress = returnAddress;
 			this.timeToLive = timeToLive;
