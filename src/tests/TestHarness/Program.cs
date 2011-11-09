@@ -18,7 +18,9 @@
 			Init();
 
 			SendMessage();
-			ReceiveMessage();
+			
+			//ReceiveMessage();
+			ReceiveAndSend();
 
 			Connection.Dispose();
 		}
@@ -90,6 +92,23 @@
 				deadLetterExchange,
 				poisonMessageExchange,
 				x => Serializer);
+		}
+
+		private static void ReceiveAndSend()
+		{
+			var address = new RabbitAddress("rabbitmq://localhost/?MyQueue");
+
+			using (var connector = new RabbitConnector(Connection, RabbitTransactionType.Full, address))
+			using (var receiver = OpenReceiver(connector))
+			using (var sender = new RabbitSenderEndpoint(() => connector, Serializer))
+			using (var trx = connector.UnitOfWork)
+			{
+				var message = receiver.Receive();
+
+				sender.Send(Build(address.Raw), new Uri("rabbitmq://localhost/MyExchange"));
+
+				trx.Complete();
+			}
 		}
 	}
 }
