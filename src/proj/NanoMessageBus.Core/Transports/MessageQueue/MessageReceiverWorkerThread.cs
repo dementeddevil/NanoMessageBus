@@ -62,11 +62,11 @@ namespace NanoMessageBus.Transports.MessageQueue
 		public MessageReceiverWorkerThread(
 			IReceiveFromEndpoints receiverQueue,
 			Func<IRouteMessagesToHandlers> routerFactory,
-			Func<Action, IThread> thread)
+			Func<Action, IThread> threadFactory)
 		{
 			this.receiverQueue = receiverQueue;
 			this.routerFactory = routerFactory;
-			this.thread = thread(this.StartReceiving);
+			this.thread = threadFactory(this.StartReceiving);
 		}
 
 		private static readonly ILog Log = LogFactory.BuildLogger(typeof(MessageReceiverWorkerThread));
