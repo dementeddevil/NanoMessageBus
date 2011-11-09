@@ -6,7 +6,7 @@ namespace NanoMessageBus.Handlers
 
 	public class TransactionScopeUnitOfWork : IHandleUnitOfWork
 	{
-		public void Register(Action callback)
+		public virtual void Register(Action callback)
 		{
 			if (callback != null)
 				this.callbacks.Add(callback);

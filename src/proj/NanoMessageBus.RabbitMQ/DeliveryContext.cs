@@ -37,10 +37,9 @@
 		}
 		private ICollection<object> Deserialize()
 		{
-			// TODO: deserialization/casting failures result in forwarding the message to a poison message exchange
-			// TODO: decide serializer based upon content type
+			var deserializer = this.serializer(this.delivery.BasicProperties.ContentType);
 			using (var stream = new MemoryStream(this.delivery.Body))
-				return (ICollection<object>)this.serializer.Deserialize(stream);
+				return (ICollection<object>)deserializer.Deserialize(stream);
 		}
 
 		public virtual void AcknowledgeDelivery()
@@ -49,7 +48,7 @@
 				this.subscription.Ack(this.delivery);
 		}
 
-		public DeliveryContext(ISerializer serializer, IModel channel, Uri queue, bool acknowledge)
+		public DeliveryContext(Func<string, ISerializer> serializer, IModel channel, Uri queue, bool acknowledge)
 		{
 			this.serializer = serializer;
 			this.subscription = new Subscription(channel, queue.Host, !this.acknowledge);
@@ -57,7 +56,7 @@
 		}
 
 		private const string EnvelopeHeader = "x-envelope-";
-		private readonly ISerializer serializer;
+		private readonly Func<string, ISerializer> serializer;
 		private readonly Subscription subscription;
 		private readonly bool acknowledge;
 		private BasicDeliverEventArgs delivery;

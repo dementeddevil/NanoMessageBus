@@ -54,6 +54,7 @@
 
 		public virtual EnvelopeMessage Receive()
 		{
+			// TODO: deserialization/casting failures result in forwarding the message to a poison message exchange
 			var timeout = TimeSpan.FromMilliseconds(500); // TODO: evaluate sleep timeout vs WaitOne
 			var context = this.delivery();
 			return context.Receive(timeout);
