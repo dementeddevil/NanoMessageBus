@@ -5,6 +5,11 @@ namespace NanoMessageBus.Serialization
 
 	public class GzipSerializer : SerializerBase
 	{
+		public override string ContentType
+		{
+			get { return "application/vnd.nmb+gzip;" + this.inner.ContentType; }
+		}
+
 		protected override void SerializePayload(Stream output, object message)
 		{
 			using (var compressedStream = new DeflateStream(output, CompressionMode.Compress, true))

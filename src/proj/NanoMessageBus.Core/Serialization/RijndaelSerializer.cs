@@ -6,6 +6,11 @@ namespace NanoMessageBus.Serialization
 
 	public class RijndaelSerializer : SerializerBase
 	{
+		public override string ContentType
+		{
+			get { return "application/vnd.nmb+rijndael;" + this.inner.ContentType; }
+		}
+
 		protected override void SerializePayload(Stream output, object message)
 		{
 			using (var rijndael = new RijndaelManaged())

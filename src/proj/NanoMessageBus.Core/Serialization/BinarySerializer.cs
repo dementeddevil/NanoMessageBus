@@ -6,6 +6,11 @@ namespace NanoMessageBus.Serialization
 
 	public class BinarySerializer : SerializerBase
 	{
+		public override string ContentType
+		{
+			get { return "application/vnd.nmb+binary"; }
+		}
+
 		protected override void SerializePayload(Stream output, object message)
 		{
 			this.formatter.Serialize(output, message);

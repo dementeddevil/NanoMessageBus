@@ -4,6 +4,11 @@ namespace NanoMessageBus.Serialization
 
 	public class TransformationSerializer : SerializerBase
 	{
+		public override string ContentType
+		{
+			get { return "application/vnd.nmb+xform;" + this.inner.ContentType; }
+		}
+
 		protected override void SerializePayload(Stream output, object message)
 		{
 			message = this.transformer.Transform(message);

@@ -48,20 +48,26 @@
 		}
 		private static PublicationAddress GetAddress(Uri recipient, Type primaryMessage)
 		{
-			// TODO: if specified, use DescriptionAtribute for metadata for routing key and for exchange...
+			// TODO: if specified, use DescriptionAttribute for metadata for routing key and for exchange...
 			return new PublicationAddress(string.Empty, recipient.Host, primaryMessage.FullName);
 		}
 
 		public virtual EnvelopeMessage Receive()
 		{
-			// TODO: where to ack?
-			return null;
+			var timeout = TimeSpan.FromMilliseconds(500); // TODO: evaluate sleep timeout vs WaitOne
+			var context = this.delivery();
+			return context.Receive(timeout);
 		}
 
-		public RabbitChannel(Uri address, Func<IModel> channelFactory, ISerializer serializer)
+		public RabbitChannel(
+			Uri address,
+			Func<IModel> channelFactory,
+			Func<DeliveryContext> delivery,
+			ISerializer serializer)
 		{
 			this.EndpointAddress = address;
 			this.channelFactory = channelFactory;
+			this.delivery = delivery;
 			this.serializer = serializer;
 		}
 		~RabbitChannel()
@@ -79,7 +85,8 @@
 		}
 
 		private const string EnvelopeHeader = "x-envelope-";
-		private readonly ISerializer serializer;
 		private readonly Func<IModel> channelFactory;
+		private readonly Func<DeliveryContext> delivery;
+		private readonly ISerializer serializer;
 	}
 }

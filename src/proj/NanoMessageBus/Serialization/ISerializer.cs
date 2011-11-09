@@ -12,6 +12,11 @@ namespace NanoMessageBus.Serialization
 	public interface ISerializer
 	{
 		/// <summary>
+		/// Gets the content MIME type associated with the serializer.
+		/// </summary>
+		string ContentType { get; }
+
+		/// <summary>
 		/// Serializes the object provided into the stream specified.
 		/// </summary>
 		/// <param name="output">The output stream into which all serialized bytes should be written.</param>

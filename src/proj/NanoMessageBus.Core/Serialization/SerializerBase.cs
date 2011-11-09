@@ -7,6 +7,8 @@
 
 	public abstract class SerializerBase : ISerializer
 	{
+		public abstract string ContentType { get; }
+
 		public void Serialize(Stream output, object message)
 		{
 			try

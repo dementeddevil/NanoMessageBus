@@ -11,7 +11,7 @@
 
 	public class DeliveryContext
 	{
-		public EnvelopeMessage Receive(TimeSpan timeout)
+		public virtual EnvelopeMessage Receive(TimeSpan timeout)
 		{
 			if (!this.subscription.Next(timeout.Milliseconds, out this.delivery))
 				return null;
@@ -21,9 +21,9 @@
 
 			var headers = new Dictionary<string, string>();
 
-			var keys = properties.Headers.Keys.Cast<string>().Where(key => key.StartsWith("x-envelope-"));
+			var keys = properties.Headers.Keys.Cast<string>().Where(key => key.StartsWith(EnvelopeHeader));
 			foreach (var key in keys)
-				headers[key.Substring(0, "x-envelope-".Length)] = (string)properties.Headers[key];
+				headers[key.Substring(0, EnvelopeHeader.Length)] = (string)properties.Headers[key];
 
 			// TODO: get TTL from attributes of first logical message
 			// TODO: get return address
@@ -35,7 +35,6 @@
 				headers,
 				messages);
 		}
-
 		private ICollection<object> Deserialize()
 		{
 			// TODO: deserialization/casting failures result in forwarding the message to a poison message exchange
@@ -44,7 +43,7 @@
 				return (ICollection<object>)this.serializer.Deserialize(stream);
 		}
 
-		public void AcknowledgeDelivery()
+		public virtual void AcknowledgeDelivery()
 		{
 			if (this.delivery != null && this.acknowledge)
 				this.subscription.Ack(this.delivery);
@@ -57,6 +56,7 @@
 			this.acknowledge = acknowledge;
 		}
 
+		private const string EnvelopeHeader = "x-envelope-";
 		private readonly ISerializer serializer;
 		private readonly Subscription subscription;
 		private readonly bool acknowledge;
