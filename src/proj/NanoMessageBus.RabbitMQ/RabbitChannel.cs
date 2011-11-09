@@ -1,99 +1,133 @@
-﻿namespace NanoMessageBus.RabbitMQ
-{
-	using System;
-	using System.Collections;
-	using System.IO;
-	using System.Linq;
-	using Endpoints;
-	using global::RabbitMQ.Client;
-	using Serialization;
+﻿////namespace NanoMessageBus.RabbitMQ
+////{
+////    using System;
+////    using System.Collections.Generic;
+////    using System.IO;
+////    using System.Linq;
+////    using System.Runtime.Serialization;
+////    using Endpoints;
+////    using Serialization;
 
-	public class RabbitChannel : ISendToEndpoints, IReceiveFromEndpoints
-	{
-		public virtual Uri EndpointAddress { get; private set; }
+////    public class RabbitChannel : ISendToEndpoints, IReceiveFromEndpoints
+////    {
+////        //// TODO: logging
 
-		public virtual void Send(EnvelopeMessage message, params Uri[] recipients)
-		{
-			var channel = this.channelFactory();
+////        public Uri EndpointAddress { get; private set; }
 
-			var properties = this.GetProperties(channel, message);
-			var payload = this.SerializePayload(message);
-			var routingKey = GetRoutingKey(message);
+////        public void Send(EnvelopeMessage message, params Uri[] recipients)
+////        {
+////            recipients = recipients ?? new Uri[0];
+////            if (recipients.Length == 0)
+////                return;
 
-			foreach (var exchange in recipients.Select(GetExchange))
-				channel.BasicPublish(exchange, routingKey, properties, payload);
-		}
-		private IBasicProperties GetProperties(IModel channel, EnvelopeMessage message)
-		{
-			var properties = channel.CreateBasicProperties();
+////            var connector = this.connectorFactory(); // TODO: catch connection errors
+////            var serializer = this.serializerFactory(string.Empty);
 
-			properties.MessageId = message.MessageId.ToString();
-			properties.ReplyTo = (message.ReturnAddress ?? new Uri(string.Empty)).ToString();
-			properties.SetPersistent(message.Persistent);
-			properties.ContentEncoding = string.Empty; // TODO
-			properties.ContentType = this.serializer.ContentType;
-			properties.Expiration = (SystemTime.UtcNow + message.TimeToLive).ToString();
+////            var pending = new RabbitMessage
+////            {
+////                MessageId = message.MessageId,
+////                ProducerId = string.Empty, // TODO?
+////                CorrelationId = string.Empty, // TODO?
+////                ContentEncoding = string.Empty, // TODO
+////                ContentType = serializer.ContentType,
+////                Durable = message.Persistent,
+////                Expiration = message.Expiration(),
+////                MessageType = message.MessageType(),
+////                ReplyTo = this.EndpointAddress.ToString(), // TODO
+////                RoutingKey = message.RoutingKey(),
+////                UserId = string.Empty, // TODO?
+////                Headers = message.Headers,
+////                Body = message.Serialize(serializer),
+////            };
 
-			if (message.Headers.Count > 0)
-				properties.Headers = properties.Headers ?? new Hashtable();
+////            foreach (var address in recipients.Select(x => new RabbitAddress(x)))
+////                connector.Send(pending, address);
+////        }
 
-			foreach (var item in message.Headers)
-				properties.Headers[item.Key] = item.Value;
+////        public EnvelopeMessage Receive()
+////        {
+////            // TODO: catch connection errors
+////            var connector = this.connectorFactory();
+////            var message = connector.Receive(DefaultReceiveWait);
 
-			return properties;
-		}
-		private byte[] SerializePayload(EnvelopeMessage message)
-		{
-			using (var stream = new MemoryStream())
-			{
-				this.serializer.Serialize(stream, message.LogicalMessages);
-				return stream.ToArray();
-			}
-		}
-		private static string GetRoutingKey(EnvelopeMessage message)
-		{
-			var first = message.LogicalMessages.First();
-			return (first.GetType().FullName ?? string.Empty).ToLowerInvariant();
-		}
-		private static string GetExchange(Uri recipient)
-		{
-			return recipient.AbsolutePath.Substring(1); // remove leading slash
-		}
+////            if (this.ForwardWhenExpired(message))
+////                return null;
 
-		public virtual EnvelopeMessage Receive()
-		{
-			var timeout = TimeSpan.FromMilliseconds(500); // TODO: evaluate sleep timeout vs WaitOne
-			var context = this.delivery();
-			return context.Receive(timeout);
-		}
+////            var logicalMessages = this.TryDeserialize(message);
+////            if (logicalMessages == null)
+////                return null; // message cannot be deserialized
 
-		public RabbitChannel(
-			Uri localAddress,
-			Func<IModel> channelFactory,
-			Func<DeliveryContext> delivery,
-			ISerializer serializer)
-		{
-			this.EndpointAddress = localAddress;
-			this.channelFactory = channelFactory;
-			this.delivery = delivery;
-			this.serializer = serializer;
-		}
-		~RabbitChannel()
-		{
-			this.Dispose(false);
-		}
+////            // TODO: reply-to address and TTL
+////            return new EnvelopeMessage(
+////                message.MessageId,
+////                null,
+////                TimeSpan.MaxValue,
+////                message.Durable,
+////                message.Headers,
+////                logicalMessages);
+////        }
+////        private ICollection<object> TryDeserialize(RabbitMessage message)
+////        {
+////            try
+////            {
+////                return (ICollection<object>)this.Deserialize(message);
+////            }
+////            catch (SerializationException e)
+////            {
+////                this.ForwardWhenPoison(message, e);
+////            }
+////            catch (InvalidCastException e)
+////            {
+////                this.ForwardWhenPoison(message, e);
+////            }
 
-		public void Dispose()
-		{
-			this.Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-		protected virtual void Dispose(bool disposing)
-		{
-		}
+////            return null;
+////        }
+////        private object Deserialize(RabbitMessage message)
+////        {
+////            var serializer = this.serializerFactory(message.ContentType);
+////            using (var stream = new MemoryStream(message.Body))
+////                return serializer.Deserialize(stream);
+////        }
 
-		private readonly Func<IModel> channelFactory;
-		private readonly Func<DeliveryContext> delivery;
-		private readonly ISerializer serializer;
-	}
-}
+////        private bool ForwardWhenExpired(RabbitMessage message)
+////        {
+////            if (message.Expiration >= SystemTime.UtcNow)
+////                return false;
+
+////            // TODO: forward to dead letter exchange
+////            return true;
+////        }
+////        private void ForwardWhenPoison(RabbitMessage message, Exception exception)
+////        {
+////            // TODO: forward to poison messager exchange
+////        }
+
+////        public RabbitChannel(
+////            Uri localAddress,
+////            Func<RabbitConnector> connectorFactory,
+////            Func<string, ISerializer> serializerFactory)
+////        {
+////            this.EndpointAddress = localAddress;
+////            this.connectorFactory = connectorFactory;
+////            this.serializerFactory = serializerFactory;
+////        }
+////        ~RabbitChannel()
+////        {
+////            this.Dispose(false);
+////        }
+
+////        public void Dispose()
+////        {
+////            this.Dispose(true);
+////            GC.SuppressFinalize(this);
+////        }
+////        protected virtual void Dispose(bool disposing)
+////        {
+////        }
+
+////        private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
+////        private readonly Func<RabbitConnector> connectorFactory;
+////        private readonly Func<string, ISerializer> serializerFactory;
+////    }
+////}

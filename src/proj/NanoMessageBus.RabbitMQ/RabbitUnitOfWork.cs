@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using Handlers;
-	using global::RabbitMQ.Client;
 
 	public class RabbitUnitOfWork : IHandleUnitOfWork
 	{
@@ -19,17 +18,17 @@
 
 			this.Clear();
 			this.completed = true;
-			this.channel.TxCommit();
+			this.connector.CommitTransaction();
 		}
 		public virtual void Clear()
 		{
 			this.callbacks.Clear();
 		}
 
-		public RabbitUnitOfWork(IModel channel)
+		public RabbitUnitOfWork(RabbitConnector connector)
 		{
-			this.channel = channel;
-			channel.TxSelect(); // mark as transactional
+			this.connector = connector;
+			connector.BeginTransaction();
 		}
 		~RabbitUnitOfWork()
 		{
@@ -48,11 +47,11 @@
 
 			this.disposed = true;
 			if (!this.completed)
-				this.channel.TxRollback();
+				this.connector.RollbackTransaction();
 		}
 
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
-		private readonly IModel channel;
+		private readonly RabbitConnector connector;
 		private bool completed;
 		private bool disposed;
 	}
