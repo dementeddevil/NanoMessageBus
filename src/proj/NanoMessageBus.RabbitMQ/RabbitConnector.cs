@@ -110,7 +110,8 @@
 			if (string.IsNullOrEmpty(address.Queue))
 				throw new ArgumentException("The address provided does not indicate a queue.", "address");
 
-			// a new subscription with RabbitTransactionType.None will put a message on the channel immediately
+			// a new subscription with RabbitTransactionType.None will cause the server to place
+			// the configured number of messages (default prefetch=1) into the local channel buffer
 			this.subscription = new Subscription(
 				this.channel,
 				address.Queue,

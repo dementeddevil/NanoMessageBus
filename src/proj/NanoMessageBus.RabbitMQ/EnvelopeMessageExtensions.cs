@@ -45,5 +45,19 @@
 			var name = message.LogicalMessages.First().GetType().FullName ?? string.Empty;
 			return name.ToLowerInvariant();
 		}
+
+		public static int FailureCount(this EnvelopeMessage message, string headerKey)
+		{
+			if (message == null || message.Headers == null)
+				return 0;
+
+			string value;
+			return message.Headers.TryGetValue(headerKey, out value) ? value.ToInt() : 0;
+		}
+		private static int ToInt(this string value)
+		{
+			int parsed;
+			return int.TryParse(value ?? string.Empty, out parsed) ? parsed : 0;
+		}
 	}
 }

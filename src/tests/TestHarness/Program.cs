@@ -19,7 +19,7 @@
 
 			SendMessage();
 			
-			//ReceiveMessage();
+			// ReceiveMessage();
 			ReceiveAndSend();
 
 			Connection.Dispose();
@@ -106,6 +106,7 @@
 				var message = receiver.Receive();
 
 				sender.Send(Build(address.Raw), new Uri("rabbitmq://localhost/MyExchange"));
+				sender.Send(Build(address.Raw), new Uri("rabbitmq://localhost/dead-letter-exchange"));
 
 				trx.Complete();
 			}
