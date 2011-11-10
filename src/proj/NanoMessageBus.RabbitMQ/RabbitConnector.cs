@@ -12,8 +12,8 @@
 	
 	public partial class RabbitConnector : IDisposable
 	{
-		public IHandleUnitOfWork UnitOfWork { get; private set; }
-		public RabbitMessage CurrentMessage { get; private set; }
+		public virtual IHandleUnitOfWork UnitOfWork { get; private set; }
+		public virtual RabbitMessage CurrentMessage { get; private set; }
 
 		public virtual void Send(RabbitMessage message, RabbitAddress address)
 		{

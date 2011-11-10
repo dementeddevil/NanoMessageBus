@@ -5,13 +5,9 @@
 
 	public class RabbitFaultedMessageHandler
 	{
-		public virtual bool ForwardToDeadLetterExchange()
+		public virtual void ForwardToDeadLetterExchange()
 		{
-			if (this.message.Expiration >= SystemTime.UtcNow)
-				return false;
-
 			this.connector.Send(this.message, this.deadLetterExchange);
-			return true;
 		}
 
 		public virtual void HandleMessageFailure(Exception exception)
