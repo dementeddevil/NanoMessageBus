@@ -29,19 +29,21 @@
 		{
 			using (var channel = Connection.CreateModel())
 			{
-				channel.ExchangeDeclare("MyExchange", ExchangeType.Fanout, true);
-				channel.QueueDeclare("MyQueue", true, false, false, null);
-				channel.QueueBind("MyQueue", "MyExchange", string.Empty);
-				channel.QueuePurge("MyQueue");
-
-				channel.ExchangeDeclare("dead-letter-exchange", ExchangeType.Fanout, true);
-				channel.QueueDeclare("dlq", true, false, false, null);
-				channel.QueueBind("dlq", "dead-letter-exchange", string.Empty);
-
-				channel.ExchangeDeclare("poison-message-exchange", ExchangeType.Fanout, true);
-				channel.QueueDeclare("pmq", true, false, false, null);
-				channel.QueueBind("pmq", "poison-message-exchange", string.Empty);
+				Init(channel, "MyQueue", "MyExchange");
+				Init(channel, "dlq", "dead-letter-exchange");
+				Init(channel, "pmq", "poison-message-exchange");
 			}
+		}
+		private static void Init(object channel, string queue, string exchange)
+		{
+			new RabbitExchangeFactory(channel)
+				.Named(exchange)
+				.Fanout()
+				.Build();
+			new RabbitQueueFactory(channel)
+				.Named(queue)
+				.Bind(exchange, string.Empty)
+				.Build();
 		}
 
 		private static void SendMessage()
