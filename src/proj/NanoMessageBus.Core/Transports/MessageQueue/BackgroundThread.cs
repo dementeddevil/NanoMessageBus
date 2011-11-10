@@ -1,5 +1,6 @@
 namespace NanoMessageBus.Transports.MessageQueue
 {
+	using System;
 	using System.Threading;
 
 	public class BackgroundThread : IThread
@@ -21,6 +22,10 @@ namespace NanoMessageBus.Transports.MessageQueue
 			this.thread.Abort();
 		}
 
+		public BackgroundThread(Action startAction)
+			: this(((ThreadStart)(() => startAction())))
+		{
+		}
 		public BackgroundThread(ThreadStart startAction)
 		{
 			this.thread = new Thread(startAction) { IsBackground = true };

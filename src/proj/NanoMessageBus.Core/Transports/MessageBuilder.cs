@@ -21,20 +21,20 @@ namespace NanoMessageBus.Transports
 			return new EnvelopeMessage(
 				Guid.NewGuid(),
 				Guid.Empty,
-				this.localAddress,
+				this.replyAddress,
 				TimeSpan.MaxValue, // TODO: grab from DescriptionAttribute (careful of threading issues)
 				true,
 				null,
 				messages);
 		}
 
-		public MessageBuilder(IAppendHeaders appender, Uri localAddress)
+		public MessageBuilder(IAppendHeaders appender, Uri replyAddress)
 		{
 			this.appender = appender ?? new NullHeaderAppender();
-			this.localAddress = localAddress;
+			this.replyAddress = replyAddress;
 		}
 
 		private readonly IAppendHeaders appender;
-		private readonly Uri localAddress;
+		private readonly Uri replyAddress;
 	}
 }

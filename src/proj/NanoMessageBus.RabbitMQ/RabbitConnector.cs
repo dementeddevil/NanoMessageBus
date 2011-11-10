@@ -55,7 +55,8 @@
 
 			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 			BasicDeliverEventArgs result;
-			if (!this.subscription.Next((int)timeout.TotalMilliseconds, out result))
+			this.subscription.Next((int)timeout.TotalMilliseconds, out result);
+			if (result == null)
 				return null;
 
 			var properties = result.BasicProperties;

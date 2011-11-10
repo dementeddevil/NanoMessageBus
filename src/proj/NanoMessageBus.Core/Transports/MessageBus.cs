@@ -56,7 +56,7 @@ namespace NanoMessageBus.Transports
 			if (!list.Any())
 				return;
 
-			var transportMessage = this.builder.BuildMessage(this.context, messages);
+			var transportMessage = this.builder.BuildMessage(messages);
 			this.transport.Send(transportMessage, list);
 		}
 		private static object[] PopulatedMessagesOnly(object[] messages)
