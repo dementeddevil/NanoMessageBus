@@ -53,6 +53,7 @@
     <Compile Include="RabbitSenderEndpoint.cs" />
     <Compile Include="RabbitMessage.cs" />
     <Compile Include="RabbitReceiverEndpoint.cs" />
+    <Compile Include="RabbitSubscriptionStorage.cs" />
     <Compile Include="RabbitTransactionType.cs" />
     <Compile Include="RabbitUnitOfWork.cs" />
   </ItemGroup>
