@@ -3,37 +3,32 @@
 	using System;
 	using Handlers;
 
-	public class RabbitFaultedMessageHandle
+	public class RabbitFaultedMessageHandler
 	{
-		public virtual bool ForwardMessageWhenExpired()
+		public virtual bool ForwardToDeadLetterExchange()
 		{
-			if (message.Expiration >= SystemTime.UtcNow)
+			if (this.message.Expiration >= SystemTime.UtcNow)
 				return false;
 
 			this.connector.Send(this.message, this.deadLetterExchange);
 			return true;
 		}
-		public virtual void HandlePoisonMessage(Exception exception)
+
+		public virtual void HandleMessageFailure(Exception exception)
 		{
 			this.unitOfWork.Clear(); // don't perform any registered operations, e.g. publish, send, etc.
 
-			if (this.IsPoison(++this.message.RetryCount))
+			if (++this.message.RetryCount >= this.maxAttempts)
 				this.ForwardToPoisonMessageExchange(exception);
 			else
 				this.ForwardToRetryExchange();
 
 			this.unitOfWork.Complete(); // but still remove the incoming physical message from the queue
-
 		}
 		public virtual void ForwardToPoisonMessageExchange(Exception exception)
 		{
-			AppendException(exception, 0);
+			this.AppendException(exception, 0);
 			this.connector.Send(this.message, this.poisonMessageExchange);
-		}
-
-		private bool IsPoison(int failures)
-		{
-			return this.maxAttempts >= failures;
 		}
 		private void AppendException(Exception exception, int depth)
 		{
@@ -44,14 +39,14 @@
 			this.message.Headers[ExceptionHeader.FormatWith(depth, "message")] = exception.Message;
 			this.message.Headers[ExceptionHeader.FormatWith(depth, "stack")] = exception.StackTrace;
 
-			AppendException(exception.InnerException, depth + 1);
+			this.AppendException(exception.InnerException, depth + 1);
 		}
 		private void ForwardToRetryExchange()
 		{
 			this.connector.Send(this.message, null); // TODO
 		}
 
-		public RabbitFaultedMessageHandle(
+		public RabbitFaultedMessageHandler(
 			RabbitConnector connector,
 			RabbitAddress poisonMessageExchange,
 			RabbitAddress deadLetterExchange,

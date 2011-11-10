@@ -49,8 +49,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitAddress.cs" />
     <Compile Include="RabbitConnector.cs" />
-    <Compile Include="RabbitPoisonMessageHandler.cs" />
-    <Compile Include="RabbitFaultedMessageHandle.cs" />
+    <Compile Include="RabbitFaultedMessageHandler.cs" />
     <Compile Include="RabbitSenderEndpoint.cs" />
     <Compile Include="RabbitMessage.cs" />
     <Compile Include="RabbitReceiverEndpoint.cs" />

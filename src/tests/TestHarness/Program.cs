@@ -90,10 +90,8 @@
 
 			return new RabbitReceiverEndpoint(
 				() => connector,
-				deadLetterExchange,
-				poisonMessageExchange,
-				x => Serializer,
-				3);
+				() => new RabbitFaultedMessageHandler(connector, poisonMessageExchange, deadLetterExchange, 5),
+				x => Serializer);
 		}
 
 		private static void ReceiveAndSend()

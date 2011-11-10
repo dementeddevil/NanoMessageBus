@@ -5,18 +5,18 @@
 	using System.IO;
 	using System.Runtime.Serialization;
 	using Endpoints;
+	using Handlers;
 	using Serialization;
 
-	public class RabbitReceiverEndpoint : IReceiveFromEndpoints
+	public class RabbitReceiverEndpoint : IReceiveFromEndpoints, IHandlePoisonMessages
 	{
 		public virtual EnvelopeMessage Receive()
 		{
-			// TODO: catch connection errors
 			var message = this.connectorFactory().Receive(DefaultReceiveWait);
 			if (message == null)
 				return null;
 
-			if (this.ForwardWhenExpired(message))
+			if (this.faultHandler().ForwardToDeadLetterExchange())
 				return null;
 
 			var logicalMessages = this.TryDeserialize(message);
@@ -40,11 +40,11 @@
 			}
 			catch (SerializationException e)
 			{
-				this.poisonMessageHandler.ForwardToPoisonMessageExchange(message, e);
+				this.faultHandler().ForwardToPoisonMessageExchange(e);
 			}
 			catch (InvalidCastException e)
 			{
-				this.poisonMessageHandler.ForwardToPoisonMessageExchange(message, e);
+				this.faultHandler().ForwardToPoisonMessageExchange(e);
 			}
 
 			return null;
@@ -56,23 +56,26 @@
 				return serializer.Deserialize(stream);
 		}
 
-		private bool ForwardWhenExpired(RabbitMessage message)
+		public virtual bool IsPoison(EnvelopeMessage message)
 		{
-			if (message.Expiration >= SystemTime.UtcNow)
-				return false;
-
-			this.poisonMessageHandler.ForwardToDeadLetterExchange(message);
-			return true;
+			return false;
+		}
+		public virtual void ClearFailures(EnvelopeMessage message)
+		{
+		}
+		public virtual void HandleFailure(EnvelopeMessage message, Exception exception)
+		{
+			this.faultHandler().HandleMessageFailure(exception);
 		}
 
 		public RabbitReceiverEndpoint(
 			Func<RabbitConnector> connectorFactory,
-			RabbitPoisonMessageHandler poisonMessageHandler,
+			Func<RabbitFaultedMessageHandler> faultHandler,
 			Func<string, ISerializer> serializerFactory)
 		{
 			this.connectorFactory = connectorFactory;
 			this.serializerFactory = serializerFactory;
-			this.poisonMessageHandler = poisonMessageHandler;
+			this.faultHandler = faultHandler;
 		}
 		~RabbitReceiverEndpoint()
 		{
@@ -90,7 +93,7 @@
 
 		private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
 		private readonly Func<RabbitConnector> connectorFactory;
-		private readonly RabbitPoisonMessageHandler poisonMessageHandler;
+		private readonly Func<RabbitFaultedMessageHandler> faultHandler;
 		private readonly Func<string, ISerializer> serializerFactory;
 	}
 }
