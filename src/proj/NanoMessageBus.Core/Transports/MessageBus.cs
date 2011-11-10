@@ -61,7 +61,7 @@ namespace NanoMessageBus.Transports
 		}
 		private static object[] PopulatedMessagesOnly(object[] messages)
 		{
-			messages = (messages ?? new object[] { }).Where(x => x != null).ToArray();
+			messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
 			return messages;
 		}
 

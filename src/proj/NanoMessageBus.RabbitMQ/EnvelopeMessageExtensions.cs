@@ -24,7 +24,8 @@
 			if (message == null || message.LogicalMessages == null || message.LogicalMessages.Count == 0)
 				return string.Empty;
 
-			// TODO: read TTL attribute from message and use it if any exists.
+			// TODO: should attributes be provided as wireup or discovered at runtime?
+			// TODO: read message type attribute from message and use it if any exists.
 			return message.LogicalMessages.First().GetType().FullName;
 		}
 
@@ -41,6 +42,7 @@
 			if (message == null || message.LogicalMessages == null || message.LogicalMessages.Count == 0)
 				return string.Empty;
 
+			// TODO: should attributes be provided as wireup or discovered at runtime?
 			// TODO: read routing key attribute from message and use it if any exists.
 			var name = message.LogicalMessages.First().GetType().FullName ?? string.Empty;
 			return name.ToLowerInvariant();

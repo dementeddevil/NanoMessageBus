@@ -28,7 +28,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		}
 		private static byte[] ToByteArray(this string value)
 		{
-			return string.IsNullOrEmpty(value) ? new byte[] { } : Encoding.UTF8.GetBytes(value);
+			return string.IsNullOrEmpty(value) ? new byte[0] : Encoding.UTF8.GetBytes(value);
 		}
 	}
 }

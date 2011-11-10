@@ -20,7 +20,7 @@
 		{
 			this.Raw = address;
 
-			var auth = address.UserInfo.Split(new[] { ':' }); // TODO: user/pass is URL encoded
+			var auth = address.UserInfo.Split(new[] { '@' }); // TODO: user/pass is URL encoded
 			if (auth.Length > 0)
 				this.UserName = auth[0];
 			if (auth.Length > 1)

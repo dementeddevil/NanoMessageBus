@@ -7,7 +7,7 @@
 
 	public class RabbitSenderEndpoint : ISendToEndpoints
 	{
-		//// TODO: logging
+		public string ProducerId { get; set; }
 
 		public virtual void Send(EnvelopeMessage message, params Uri[] recipients)
 		{
@@ -15,12 +15,17 @@
 			if (recipients.Length == 0)
 				return;
 
-			var connector = this.connectorFactory(); // TODO: catch connection errors
-
-			var pending = new RabbitMessage
+			var pending = this.BuildMessage(message);
+			var connector = this.connectorFactory();
+			foreach (var address in recipients.Select(x => new RabbitAddress(x)))
+				connector.Send(pending, address);
+		}
+		private RabbitMessage BuildMessage(EnvelopeMessage message)
+		{
+			return new RabbitMessage
 			{
 				MessageId = message.MessageId,
-				ProducerId = string.Empty, // TODO?
+				ProducerId = this.ProducerId,
 				CorrelationId = message.CorrelationId,
 				ContentType = this.serializer.ContentType,
 				ContentEncoding = this.serializer.ContentEncoding,
@@ -32,15 +37,13 @@
 				Headers = message.Headers,
 				Body = message.Serialize(this.serializer),
 			};
-
-			foreach (var address in recipients.Select(x => new RabbitAddress(x)))
-				connector.Send(pending, address);
 		}
 
 		public RabbitSenderEndpoint(Func<RabbitConnector> connectorFactory, ISerializer serializer)
 		{
 			this.connectorFactory = connectorFactory;
 			this.serializer = serializer;
+			this.ProducerId = string.Empty;
 		}
 		~RabbitSenderEndpoint()
 		{

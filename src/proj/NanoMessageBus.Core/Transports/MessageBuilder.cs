@@ -17,6 +17,7 @@ namespace NanoMessageBus.Transports
 		}
 		private EnvelopeMessage BuildMessage(Type primary, ICollection<object> messages)
 		{
+			// TODO: should attributes be provided as wireup or discovered at runtime?
 			return new EnvelopeMessage(
 				Guid.NewGuid(),
 				Guid.Empty,

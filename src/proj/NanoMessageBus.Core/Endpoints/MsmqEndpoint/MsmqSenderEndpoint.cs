@@ -26,7 +26,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 		{
 			using (message)
 			{
-				foreach (var recipient in recipients ?? new Uri[] { })
+				foreach (var recipient in recipients ?? new Uri[0])
 					this.Send(recipient, message);
 			}
 		}

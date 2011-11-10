@@ -10,7 +10,6 @@
 
 	public class RabbitReceiverEndpoint : IReceiveFromEndpoints, IHandlePoisonMessages
 	{
-		// TODO: logging
 		public virtual EnvelopeMessage Receive()
 		{
 			// TODO: catch connection errors

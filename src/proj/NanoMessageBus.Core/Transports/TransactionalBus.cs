@@ -27,7 +27,7 @@ namespace NanoMessageBus.Transports
 
 		public TransactionalBus(IHandleUnitOfWork unitOfWork, MessageBus inner)
 		{
-			this.unitOfWork = unitOfWork; // TODO: Null UoW?
+			this.unitOfWork = unitOfWork;
 			this.inner = inner;
 		}
 

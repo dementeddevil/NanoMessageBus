@@ -12,7 +12,6 @@
 	
 	public partial class RabbitConnector : IDisposable
 	{
-		// TODO: logging and we need to be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 		public IHandleUnitOfWork UnitOfWork { get; private set; }
 		public RabbitMessage CurrentMessage { get; private set; }
 
@@ -42,12 +41,14 @@
 			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
 			properties.Type = message.MessageType;
 
+			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 			this.channel.BasicPublish(address.Exchange, message.RoutingKey, properties, message.Body);
 		}
 		public virtual RabbitMessage Receive(TimeSpan timeout)
 		{
 			this.ThrowWhenDisposed();
 
+			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 			BasicDeliverEventArgs result;
 			if (!this.subscription.Next((int)timeout.TotalMilliseconds, out result))
 				return null;

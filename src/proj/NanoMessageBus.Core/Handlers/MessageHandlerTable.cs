@@ -37,9 +37,8 @@ namespace NanoMessageBus.Handlers
 				yield return handler;
 			}
 
-			// TODO: change this to a INFO or DEBUG log since events/messages might implement an interface
 			if (!found)
-				Log.Warn(Diagnostics.NoRegisteredHandlersFound, message.GetType());
+				Log.Info(Diagnostics.NoRegisteredHandlersFound, message.GetType());
 		}
 		private IEnumerable<IHandleMessages<object>> GetHandlersForType(Type messageType)
 		{
@@ -48,7 +47,7 @@ namespace NanoMessageBus.Handlers
 				return routeCallbacks.Select(route => route(this.childContainer));
 
 			// if we don't have a handler registered for the messageType the event is logged above in GetHandlers()
-			return new IHandleMessages<object>[] { };
+			return new IHandleMessages<object>[0];
 		}
 
 		private class MessageHandler<TMessage> : IHandleMessages<object>

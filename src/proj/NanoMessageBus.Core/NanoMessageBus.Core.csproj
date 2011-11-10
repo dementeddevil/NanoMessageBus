@@ -64,6 +64,7 @@
     <Compile Include="Handlers\MessageTypeDiscoverer.cs" />
     <Compile Include="Handlers\NonTransactionalPoisonMessageHandler.cs" />
     <Compile Include="Handlers\NullMessageContext.cs" />
+    <Compile Include="Handlers\NullUnitOfWork.cs" />
     <Compile Include="Handlers\PoisonMessageHandler.cs" />
     <Compile Include="Handlers\TransactionScopeUnitOfWork.cs" />
     <Compile Include="Logging\ConsoleWindowLogger.cs" />
