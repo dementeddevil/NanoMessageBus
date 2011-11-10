@@ -17,6 +17,11 @@
 
 		public virtual void Send(RabbitMessage message, RabbitAddress address)
 		{
+			if (message == null)
+				throw new ArgumentNullException("message");
+			if (address == null)
+				throw new ArgumentNullException("address");
+
 			this.ThrowWhenDisposed();
 
 			var properties = this.channel.CreateBasicProperties();

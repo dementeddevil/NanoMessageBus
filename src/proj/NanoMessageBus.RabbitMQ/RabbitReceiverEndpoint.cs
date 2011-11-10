@@ -5,10 +5,9 @@
 	using System.IO;
 	using System.Runtime.Serialization;
 	using Endpoints;
-	using Handlers;
 	using Serialization;
 
-	public class RabbitReceiverEndpoint : IReceiveFromEndpoints, IHandlePoisonMessages
+	public class RabbitReceiverEndpoint : IReceiveFromEndpoints
 	{
 		public virtual EnvelopeMessage Receive()
 		{
@@ -41,11 +40,11 @@
 			}
 			catch (SerializationException e)
 			{
-				this.ForwardWhenPoison(message, e);
+				this.poisonMessageHandler.ForwardToPoisonMessageExchange(message, e);
 			}
 			catch (InvalidCastException e)
 			{
-				this.ForwardWhenPoison(message, e);
+				this.poisonMessageHandler.ForwardToPoisonMessageExchange(message, e);
 			}
 
 			return null;
@@ -62,70 +61,18 @@
 			if (message.Expiration >= SystemTime.UtcNow)
 				return false;
 
-			this.connectorFactory().Send(message, this.deadLetterExchange);
+			this.poisonMessageHandler.ForwardToDeadLetterExchange(message);
 			return true;
-		}
-		private void ForwardWhenPoison(RabbitMessage message, Exception exception)
-		{
-			AppendException(message, exception, 0);
-			this.connectorFactory().Send(message, this.poisonMessageExchange);
-		}
-
-		public bool IsPoison(EnvelopeMessage message)
-		{
-			var connector = this.connectorFactory().CurrentMessage;
-			return this.IsPoison(connector.RetryCount);
-		}
-		public void ClearFailures(EnvelopeMessage message)
-		{
-		}
-		public void HandleFailure(EnvelopeMessage message, Exception exception)
-		{
-			var connector = this.connectorFactory();
-			connector.UnitOfWork.Clear(); // don't perform any dispatch operations, e.g. publish/send/etc
-
-			var current = AppendException(connector.CurrentMessage, exception, 0);
-			var destination = this.GetMessageDestination(current);
-			connector.Send(current, destination);
-
-			connector.UnitOfWork.Complete(); // but still remove the incoming poison message from the queue
-		}
-
-		private static RabbitMessage AppendException(RabbitMessage message, Exception exception, int depth)
-		{
-			if (exception == null)
-				return message;
-
-			message.Headers[ExceptionHeader.FormatWith(depth, "type")] = exception.GetType().FullName;
-			message.Headers[ExceptionHeader.FormatWith(depth, "message")] = exception.Message;
-			message.Headers[ExceptionHeader.FormatWith(depth, "stack")] = exception.StackTrace;
-
-			return AppendException(message, exception.InnerException, depth + 1);
-		}
-		private RabbitAddress GetMessageDestination(RabbitMessage message)
-		{
-			if (this.IsPoison(++message.RetryCount))
-				return this.poisonMessageExchange;
-
-			return new RabbitAddress("/" + message.SourceExchange); // return to exchange for retry...
-		}
-		private bool IsPoison(int failures)
-		{
-			return this.maxAttempts >= failures;
 		}
 
 		public RabbitReceiverEndpoint(
 			Func<RabbitConnector> connectorFactory,
-			RabbitAddress deadLetterExchange,
-			RabbitAddress poisonMessageExchange,
-			Func<string, ISerializer> serializerFactory,
-			int maxAttempts)
+			RabbitPoisonMessageHandler poisonMessageHandler,
+			Func<string, ISerializer> serializerFactory)
 		{
 			this.connectorFactory = connectorFactory;
-			this.deadLetterExchange = deadLetterExchange;
-			this.poisonMessageExchange = poisonMessageExchange;
 			this.serializerFactory = serializerFactory;
-			this.maxAttempts = maxAttempts;
+			this.poisonMessageHandler = poisonMessageHandler;
 		}
 		~RabbitReceiverEndpoint()
 		{
@@ -141,12 +88,9 @@
 		{
 		}
 
-		private const string ExceptionHeader = "x-exception.{0}-{1}";
 		private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
 		private readonly Func<RabbitConnector> connectorFactory;
-		private readonly RabbitAddress deadLetterExchange;
-		private readonly RabbitAddress poisonMessageExchange;
+		private readonly RabbitPoisonMessageHandler poisonMessageHandler;
 		private readonly Func<string, ISerializer> serializerFactory;
-		private readonly int maxAttempts;
 	}
 }
