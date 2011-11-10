@@ -79,7 +79,7 @@
 		private void DeclarePrivateExchange()
 		{
 			var exchange = PrivateExchangeFormat.FormatWith(this.name);
-			this.channel.ExchangeDeclare(exchange, ExchangeType.Direct, !this.transient, this.disposable, null);
+			this.channel.ExchangeDeclare(exchange, ExchangeType.Fanout, !this.transient, this.disposable, null);
 			this.channel.QueueBind(this.name, exchange, string.Empty);
 		}
 		private void Clear()
