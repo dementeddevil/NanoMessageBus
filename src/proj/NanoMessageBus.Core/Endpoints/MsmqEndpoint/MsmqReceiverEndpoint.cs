@@ -16,13 +16,9 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 			Log.Info(Diagnostics.MessageReceived, message.BodyStream.Length, this.inputQueue.Address);
 
-			EnvelopeMessage result;
-
 			using (message)
 			using (message.BodyStream)
-				result = this.Deserialize(message);
-
-			return result;
+				return this.Deserialize(message);
 		}
 		private Message DequeueMessage()
 		{

@@ -19,9 +19,7 @@ namespace NanoMessageBus.Endpoints.MsmqEndpoint
 
 			queue.Dispose();
 			Log.Error(Diagnostics.NonTransactionalQueue, address.Canonical);
-			throw new EndpointException(string.Format(CultureInfo.InvariantCulture,
-				Diagnostics.NonTransactionalQueue,
-				address.Canonical));
+			throw new EndpointException(Diagnostics.NonTransactionalQueue.FormatWith(address.Canonical));
 		}
 		public static MsmqConnector OpenSend(MsmqAddress address, bool enlist)
 		{
