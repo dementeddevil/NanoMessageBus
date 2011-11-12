@@ -18,7 +18,7 @@
 				return null;
 
 			if (message.Expiration >= SystemTime.UtcNow)
-				this.faultHandler().ForwardToDeadLetterExchange();
+				this.faultHandler.ForwardToDeadLetterExchange(this.connector.Current);
 
 			var logicalMessages = this.TryDeserialize(message);
 			if (logicalMessages == null)
@@ -41,11 +41,11 @@
 			}
 			catch (SerializationException e)
 			{
-				this.faultHandler().ForwardToPoisonMessageExchange(e);
+				this.faultHandler.ForwardToPoisonMessageExchange(this.connector.Current, e);
 			}
 			catch (InvalidCastException e)
 			{
-				this.faultHandler().ForwardToPoisonMessageExchange(e);
+				this.faultHandler.ForwardToPoisonMessageExchange(this.connector.Current, e);
 			}
 
 			return null;
@@ -66,12 +66,12 @@
 		}
 		public virtual void HandleFailure(EnvelopeMessage message, Exception exception)
 		{
-			this.faultHandler().HandleMessageFailure(exception);
+			this.faultHandler.HandleMessageFailure(this.connector.Current, exception);
 		}
 
 		public RabbitReceiverEndpoint(
 			RabbitConnector connector,
-			Func<RabbitFaultedMessageHandler> faultHandler,
+			RabbitFaultedMessageHandler faultHandler,
 			Func<string, ISerializer> serializerFactory)
 		{
 			this.connector = connector;
@@ -94,7 +94,7 @@
 
 		private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
 		private readonly RabbitConnector connector;
-		private readonly Func<RabbitFaultedMessageHandler> faultHandler;
+		private readonly RabbitFaultedMessageHandler faultHandler;
 		private readonly Func<string, ISerializer> serializerFactory;
 	}
 }

@@ -71,7 +71,7 @@
 			return this;
 		}
 
-		public virtual RabbitConnector Connect()
+		public virtual RabbitConnector OpenConnection()
 		{
 			// ensure hosts and queue name have been properly set
 			this.ConnectTo(this.Hosts)

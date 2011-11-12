@@ -12,38 +12,20 @@
 	{
 		private static void Main()
 		{
-			var connector = new RabbitWireup()
-				.UseTransactions()
-				.ConnectAnonymouslyToLocalhost()
-				.ListenTo("MyQueue")
-				.Connect();
+			MessageHandlerTable<IComponentContext>.RegisterHandler(c => new Program());
 
-			var message = new RabbitMessage
-			{
-				Body = Encoding.UTF8.GetBytes("Hello, World!")
-			};
+			var builder = new ContainerBuilder();
+			builder.RegisterModule(new BusModule());
+			builder.RegisterModule(new TransportModule());
 
-			using (connector)
-			using (var uow = connector.Current.BeginUnitOfWork())
+			using (var container = builder.Build())
 			{
-				connector.Current.Send(message, "MyExchange");
-				uow.Complete();
+				var receiver = container.Resolve<IReceiveMessages>();
+				receiver.Start();
+
+				Console.WriteLine("Press any key to exit...");
+				Console.ReadLine();
 			}
-
-			////MessageHandlerTable<IComponentContext>.RegisterHandler(c => new Program());
-
-			////var builder = new ContainerBuilder();
-			////builder.RegisterModule(new BusModule());
-			////builder.RegisterModule(new TransportModule());
-
-			////using (var container = builder.Build())
-			////{
-			////    var receiver = container.Resolve<IReceiveMessages>();
-			////    receiver.Start();
-
-			////    Console.WriteLine("Press any key to exit...");
-			////    Console.ReadLine();
-			////}
 		}
 
 		public void Handle(string message)

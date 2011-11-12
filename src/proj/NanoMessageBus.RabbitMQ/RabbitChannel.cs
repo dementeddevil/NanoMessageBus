@@ -49,7 +49,7 @@
 			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 			BasicDeliverEventArgs delivery;
 			this.OpenSubscription().Next((int)timeout.TotalMilliseconds, out delivery);
-			return delivery == null ? null : new RabbitMessage(delivery);
+			return this.CurrentMessage = (delivery == null ? null : new RabbitMessage(delivery));
 		}
 		private Subscription OpenSubscription()
 		{
