@@ -17,7 +17,7 @@
 			if (message == null)
 				return null;
 
-			if (message.Expiration >= SystemTime.UtcNow)
+			if (message.Expiration < SystemTime.UtcNow)
 				this.faultHandler.ForwardToDeadLetterExchange(this.connector.Current);
 
 			var logicalMessages = this.TryDeserialize(message);

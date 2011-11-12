@@ -43,9 +43,8 @@
 			private void Acknowledge()
 			{
 				// TODO: try catch on ack?
-				var current = this.subscription();
-				if (current != null && this.transactionType != RabbitTransactionType.None)
-					current.Ack(); // single physical receive allowed per UoW
+				if (this.subscription != null && this.transactionType != RabbitTransactionType.None)
+					this.subscription.Ack(); // single physical receive allowed per UoW
 			}
 			private void Commit()
 			{
@@ -66,7 +65,7 @@
 
 			public RabbitUnitOfWork(
 				IModel channel,
-				Func<Subscription> subscription,
+				Subscription subscription,
 				RabbitTransactionType transactionType,
 				Action cleanup)
 			{
@@ -99,7 +98,7 @@
 
 			private readonly ICollection<Action> callbacks = new LinkedList<Action>();
 			private readonly IModel channel;
-			private readonly Func<Subscription> subscription;
+			private readonly Subscription subscription;
 			private readonly RabbitTransactionType transactionType;
 			private readonly Action cleanup;
 			private bool completed;

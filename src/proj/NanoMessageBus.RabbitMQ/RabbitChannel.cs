@@ -17,13 +17,12 @@
 		protected virtual IHandleUnitOfWork BeginUnitOfWork()
 		{
 			return this.unitOfWork ?? (this.unitOfWork = new RabbitUnitOfWork(
-				this.channel, () => this.subscription, this.options.TransactionType, this.DisposeUnitOfWork));
+				this.channel, this.subscription, this.options.TransactionType, this.DisposeUnitOfWork));
 		}
 		protected virtual void DisposeUnitOfWork()
 		{
 			this.unitOfWork = null;
 			this.CurrentMessage = null;
-			this.subscription = null;
 		}
 
 		public virtual void Send(RabbitMessage message, string receivingAgentExchange)
@@ -52,7 +51,10 @@
 			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
 			BasicDeliverEventArgs delivery;
 			this.OpenSubscription().Next((int)timeout.TotalMilliseconds, out delivery);
-			return this.CurrentMessage = (delivery == null ? null : new RabbitMessage(delivery));
+			if (delivery == null)
+				return null;
+
+			return this.CurrentMessage = new RabbitMessage(delivery);
 		}
 		private Subscription OpenSubscription()
 		{
@@ -66,7 +68,6 @@
 		{
 			this.connectionResolver = () => connectionResolver() as IConnection;
 			this.options = options;
-
 			this.EstablishChannel();
 		}
 		~RabbitChannel()
@@ -108,11 +109,9 @@
 		
 		private readonly Func<IConnection> connectionResolver;
 		private readonly RabbitWireup options;
-		
 		private IModel channel;
 		private Subscription subscription;
 		private IHandleUnitOfWork unitOfWork;
-
 		private bool disposed;
 	}
 }

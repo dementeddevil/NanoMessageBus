@@ -18,13 +18,12 @@
 		}
 		private RabbitChannel EstablishChannel()
 		{
-			this.ThrowWhenDisposed();
-
 			var storage = new ThreadStorage();
 			var channel = storage[ThreadKey] as RabbitChannel;
 			if (channel != null)
 				return channel;
 
+			this.ThrowWhenDisposed();
 			channel = new RabbitChannel(this.EstablishConnection, this.options);
 			storage[ThreadKey] = channel;
 
@@ -119,6 +118,9 @@
 			lock (this.locker)
 			{
 				// TODO: figure out how to signal channels such that they dispose themselves and remove themselves from TLS.
+				foreach (var channel in this.active)
+					this.current.Dispose(); // TODO: not multi-thread safe
+
 				this.active.Clear();
 
 				// TODO: abort channel with timeout?

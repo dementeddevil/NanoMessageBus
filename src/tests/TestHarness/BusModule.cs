@@ -15,16 +15,12 @@
 		protected override void Load(ContainerBuilder builder)
 		{
 			builder
-				.Register(c =>
-				{
-					var container = c.Resolve<ILifetimeScope>().BeginLifetimeScope();
-					return new MessageRouter(
-						container,
-						container.Resolve<IHandleUnitOfWork>(),
-						container.Resolve<ITransportMessages>(),
-						container.Resolve<ITrackMessageHandlers>(),
-						container.Resolve<IHandlePoisonMessages>());
-				})
+				.Register(c => new MessageRouter(
+				    c.Resolve<ILifetimeScope>(),
+				    c.Resolve<IHandleUnitOfWork>(),
+				    c.Resolve<ITransportMessages>(),
+				    c.Resolve<ITrackMessageHandlers>(),
+				    c.Resolve<IHandlePoisonMessages>()))
 				.As<IRouteMessagesToHandlers>()
 				.As<IMessageContext>()
 				.InstancePerLifetimeScope();
@@ -47,15 +43,19 @@
 					c = c.Resolve<IComponentContext>();
 					return new MessageReceiverWorkerThread(
 						c.Resolve<IReceiveFromEndpoints>(),
-						() => c.Resolve<IRouteMessagesToHandlers>(),
+						() => c.Resolve<ILifetimeScope>().BeginLifetimeScope().Resolve<IRouteMessagesToHandlers>(),
 						action => new BackgroundThread(action));
 				})
 				.As<IReceiveMessages>()
 				.InstancePerDependency();
 
+			MessageHandlerTable<IComponentContext>.RegisterHandler(c => new EnvelopeMessageHandler(
+				c.Resolve<ITrackMessageHandlers>(),
+				c.Resolve<IMessageContext>()));
+
 			builder
 				.Register(c => new TransactionalBus(
-					c.Resolve<IHandleUnitOfWork>(),
+					c.Resolve<IHandleUnitOfWork>(), // UoW scope vs thread scoping?
 					c.Resolve<MessageBus>()))
 				.As<IPublishMessages>()
 				.As<ISendMessages>()
@@ -96,7 +96,7 @@
 				.SingleInstance();
 		}
 
-		private const int Threads = 3;
+		private const int Threads = 1;
 		private static readonly Uri LocalAddress = new Uri("rabbitmq://localhost/?MyQueue");
 	}
 }

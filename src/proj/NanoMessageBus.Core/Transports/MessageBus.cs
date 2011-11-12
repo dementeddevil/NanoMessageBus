@@ -50,13 +50,13 @@ namespace NanoMessageBus.Transports
 			if (!addresses.Any())
 				Log.Warn(Diagnostics.DroppingMessage, primaryMessage.GetType());
 		}
-		private void Dispatch(IEnumerable messages, IEnumerable<Uri> addresses)
+		private void Dispatch(IEnumerable<object> messages, IEnumerable<Uri> addresses)
 		{
 			var list = addresses.ToArray();
 			if (!list.Any())
 				return;
 
-			var transportMessage = this.builder.BuildMessage(messages);
+			var transportMessage = this.builder.BuildMessage(messages.ToArray());
 			this.transport.Send(transportMessage, list);
 		}
 		private static object[] PopulatedMessagesOnly(object[] messages)

@@ -12,15 +12,11 @@
 		protected override void Load(ContainerBuilder builder)
 		{
 			builder
-				.Register(c => new BinarySerializer())
-				.As<ISerializer>()
-				.SingleInstance();
-
-			builder
 				.Register(c => new RabbitWireup()
 					.ConnectAnonymouslyToLocalhost()
 					.ListenTo(InputQueue.Queue)
-					.UseTransactions()
+					.MessagesPerChannel(32768)
+					////.UseTransactions()
 					.OpenConnection())
 				.As<RabbitConnector>()
 				.SingleInstance();
@@ -28,7 +24,8 @@
 			builder
 				.Register(c => c.Resolve<RabbitConnector>().Current)
 				.As<RabbitChannel>()
-				.InstancePerLifetimeScope(); // TODO: how to open a channel with a send only endpoint?
+				.InstancePerLifetimeScope() // TODO: how to open a channel with a send only endpoint?
+				.ExternallyOwned(); // these need to live for as long as the thread does.
 
 			builder
 				.Register(c => c.Resolve<RabbitChannel>().UnitOfWork)
@@ -38,7 +35,7 @@
 			builder
 				.Register(c => new RabbitSenderEndpoint(
 				    c.Resolve<RabbitConnector>(),
-				    c.Resolve<ISerializer>()))
+				    new BinarySerializer()))
 				.As<ISendToEndpoints>()
 				.SingleInstance();
 
