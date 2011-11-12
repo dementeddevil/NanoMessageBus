@@ -6,7 +6,7 @@
 	using global::RabbitMQ.Client;
 	using global::RabbitMQ.Client.MessagePatterns;
 
-	public partial class RabbitChannel
+	public partial class RabbitConnector1
 	{
 		private class RabbitUnitOfWork : IHandleUnitOfWork
 		{
@@ -70,13 +70,14 @@
 			public RabbitUnitOfWork(
 				IModel channel,
 				Subscription subscription,
-				RabbitTransactionType transactionType,
-				Action cleanup)
+				RabbitTransactionType transactionType)
 			{
 				this.channel = channel;
 				this.subscription = subscription;
 				this.transactionType = transactionType;
-				this.cleanup = cleanup ?? (() => { });
+
+				if (transactionType == RabbitTransactionType.Full)
+					this.channel.TxSelect();
 			}
 			~RabbitUnitOfWork()
 			{
@@ -96,15 +97,12 @@
 				this.disposed = true;
 				if (!this.completed)
 					this.Rollback();
-
-				this.cleanup();
 			}
 
 			private readonly ICollection<Action> callbacks = new LinkedList<Action>();
 			private readonly IModel channel;
 			private readonly Subscription subscription;
 			private readonly RabbitTransactionType transactionType;
-			private readonly Action cleanup;
 			private bool completed;
 			private bool disposed;
 		}

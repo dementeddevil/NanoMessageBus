@@ -43,7 +43,7 @@
 		}
 
 		public RabbitFaultedMessageHandler(
-			RabbitConnector connector,
+			RabbitConnector1 connector,
 			RabbitAddress poisonMessageExchange,
 			RabbitAddress deadLetterExchange,
 			int maxAttempts)
@@ -57,7 +57,7 @@
 		}
 
 		private const string ExceptionHeader = "x-exception.{0}-{1}";
-		private readonly RabbitConnector connector;
+		private readonly RabbitConnector1 connector;
 		private readonly IHandleUnitOfWork unitOfWork;
 		private readonly RabbitMessage message;
 		private readonly RabbitAddress poisonMessageExchange;

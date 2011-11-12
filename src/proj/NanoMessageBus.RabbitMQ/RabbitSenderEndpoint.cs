@@ -39,7 +39,7 @@
 			};
 		}
 
-		public RabbitSenderEndpoint(Func<RabbitConnector> connectorFactory, ISerializer serializer)
+		public RabbitSenderEndpoint(Func<RabbitConnector1> connectorFactory, ISerializer serializer)
 		{
 			this.connectorFactory = connectorFactory;
 			this.serializer = serializer;
@@ -59,7 +59,7 @@
 		{
 		}
 
-		private readonly Func<RabbitConnector> connectorFactory;
+		private readonly Func<RabbitConnector1> connectorFactory;
 		private readonly ISerializer serializer;
 	}
 }

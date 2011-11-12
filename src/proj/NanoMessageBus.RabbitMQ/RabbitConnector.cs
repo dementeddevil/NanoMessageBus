@@ -1,145 +1,105 @@
 ﻿namespace NanoMessageBus.RabbitMQ
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Text;
-	using Handlers;
+	using System.Net;
+	using System.Threading;
+	using Endpoints;
 	using global::RabbitMQ.Client;
-	using global::RabbitMQ.Client.Events;
-	using global::RabbitMQ.Client.MessagePatterns;
-	
-	public partial class RabbitConnector : IDisposable
+	using global::RabbitMQ.Client.Exceptions;
+
+	// this is singleton-scoped and opens up connections to RabbitChannel as necessary
+	public class RabbitConnector : IDisposable
 	{
-		public virtual IHandleUnitOfWork UnitOfWork { get; private set; }
-		public virtual RabbitMessage CurrentMessage { get; private set; }
-
-		public virtual void Send(RabbitMessage message, RabbitAddress address)
+		public RabbitChannel Current
 		{
-			if (message == null)
-				throw new ArgumentNullException("message");
-			if (address == null)
-				throw new ArgumentNullException("address");
-
-			this.ThrowWhenDisposed();
-
-			var properties = this.channel.CreateBasicProperties();
-
-			properties.MessageId = message.MessageId.ToString();
-			properties.AppId = message.ProducerId;
-			properties.ContentEncoding = message.ContentEncoding;
-			properties.ContentType = message.ContentType;
-			properties.SetPersistent(message.Durable);
-
-			properties.CorrelationId = message.CorrelationId.ToNull() ?? string.Empty;
-			properties.Expiration = message.Expiration.ToUniversalTime().ToString(DateTimeFormat);
-
-			properties.Headers = new Hashtable();
-			foreach (var item in message.Headers ?? new Dictionary<string, string>())
-				properties.Headers[item.Key] = item.Value;
-
-			if (message.RetryCount > 0)
-				properties.Headers[FailureCount] = message.RetryCount;
-
-			properties.ReplyTo = message.ReplyTo;
-			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
-			properties.Type = message.MessageType;
-
-			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
-			this.channel.BasicPublish(address.Exchange, message.RoutingKey, properties, message.Body);
+			get { return this.EstablishChannel(); }
 		}
-		public virtual RabbitMessage Receive(TimeSpan timeout)
+		private RabbitChannel EstablishChannel()
 		{
 			this.ThrowWhenDisposed();
 
-			// TODO: be sure we apply appropriate try/catch semantics here (if channel unavailable/connection lost)
-			BasicDeliverEventArgs result;
-			this.subscription.Next((int)timeout.TotalMilliseconds, out result);
-			if (result == null)
-				return null;
+			var storage = new ThreadStorage();
+			var channel = storage[ThreadKey] as RabbitChannel;
+			if (channel != null)
+				return channel;
 
-			var properties = result.BasicProperties;
-			var headers = ParseHeaders(properties.Headers);
+			channel = new RabbitChannel(this.EstablishConnection, this.options);
+			storage[ThreadKey] = channel;
 
-			return this.CurrentMessage = new RabbitMessage
+			lock (this.locker)
+				this.active.Add(channel);
+
+			return channel;
+		}
+
+		public object EstablishConnection()
+		{
+			this.ThrowWhenDisposed();
+
+			lock (this.locker)
 			{
-				MessageId = properties.MessageId.ToGuid(),
-				ProducerId = properties.AppId,
-				Created = properties.Timestamp.UnixTime.ToDateTime(),
-				MessageType = properties.Type,
-
-				ContentEncoding = properties.ContentEncoding,
-				ContentType = properties.ContentType,
-
-				Durable = properties.DeliveryMode == 2,
-				CorrelationId = properties.CorrelationId.ToGuid(),
-				Expiration = properties.Expiration.ToDateTime(),
-
-				Headers = headers,
-
-				ReplyTo = properties.ReplyTo, // TODO: convert to Uri?
-				UserId = properties.UserId,
-
-				DeliveryTag = result.DeliveryTag,
-				RetryCount = RetryCount(headers, result.Redelivered),
-				SourceExchange = result.Exchange,
-				RoutingKey = result.RoutingKey,
-				Body = result.Body
-			};
+				// TODO: while a connection is still good, return it
+				// when it fails, close it so that it's not removed
+				// perhaps this is where even a RabbitChannel can signal us if the model is closing?
+				return this.current ?? (this.current = this.TryConnect());
+			}
 		}
-		private static IDictionary<string, string> ParseHeaders(IDictionary value)
-		{
-			if (value == null)
-				return null;
-
-			return value.Cast<DictionaryEntry>()
-				.Select(x => (string)x.Key)
-				.ToDictionary(x => x, y => Encoding.UTF8.GetString((byte[])value[y]));
-		}
-		private static int RetryCount(IDictionary<string, string> headers, bool redelivered)
-		{
-			string value;
-			if (headers != null && headers.TryGetValue(FailureCount, out value))
-				return value.ToInt();
-
-			return redelivered ? 1 : 0;
-		}
-
 		private void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(RabbitConnector).Name, "The object has already been disposed.");
+			if (Interlocked.Increment(ref this.disposed) > 0)
+				throw new ObjectDisposedException("RabbitConnector", "The connector has already been disposed.");
 		}
-
-		public RabbitConnector(object connection, RabbitTransactionType transactionType)
-			: this(connection as IConnection)
+		private IConnection TryConnect()
 		{
-			this.UnitOfWork = new RabbitUnitOfWork(this.channel, null, transactionType);
-		}
-		public RabbitConnector(object connection, RabbitTransactionType transactionType, RabbitAddress address)
-			: this(connection as IConnection)
-		{
-			if (address == null)
-				throw new ArgumentNullException("address");
-			if (string.IsNullOrEmpty(address.Queue))
-				throw new ArgumentException("The address provided does not indicate a queue.", "address");
+			if (this.current != null && this.current.IsOpen)
+				return this.current;
 
-			// a new subscription with RabbitTransactionType.None will cause the server to place
-			// the configured number of messages (default prefetch=1) into the local channel buffer
-			this.subscription = new Subscription(
-				this.channel,
-				address.Queue,
-				transactionType == RabbitTransactionType.None);
-
-			this.UnitOfWork = new RabbitUnitOfWork(this.channel, this.subscription, transactionType);
-		}
-		private RabbitConnector(IConnection connection)
-		{
+			var connection = this.options.Hosts.Select(TryConnect).FirstOrDefault();
 			if (connection == null)
-				throw new ArgumentNullException("connection");
+				throw new EndpointUnavailableException();
 
-			this.channel = connection.CreateModel(); // TODO: catch/dispose and rethrow wrapped exception
+			connection.ConnectionShutdown += (conn, reason) =>
+			{
+				// TODO: re-establish the connection if the shutdown was unexpected
+			};
+
+			return connection;
+		}
+		private static IConnection TryConnect(Uri host)
+		{
+			try
+			{
+				var factory = new ConnectionFactory { Address = host.ToString() };
+				return factory.CreateConnection();
+			}
+			catch (PossibleAuthenticationFailureException)
+			{
+				return null;
+			}
+			catch (ProtocolViolationException)
+			{
+				return null;
+			}
+			catch (ChannelAllocationException)
+			{
+				return null;
+			}
+			catch (OperationInterruptedException)
+			{
+				return null;
+			}
+		}
+
+		public RabbitConnector(RabbitConnectorOptions options)
+		{
+			// this class is responsible for opening *and maintaining* a connection to any
+			// of the Rabbit brokers specified and for performing any initialization
+			// necessary, e.g. declaring queues and exchanges
+			// and for providing a way for the suboordinate channels to get a reference to the
+			// underlying connection should the connection fail
+			this.options = options;
 		}
 		~RabbitConnector()
 		{
@@ -153,18 +113,26 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (this.disposed || !disposing)
-				return;
+			if (!disposing || Interlocked.Increment(ref this.disposed) > 1)
+				return; // already disposed
 
-			this.disposed = true;
-			this.UnitOfWork.Dispose();
-			this.channel.Dispose();
+			lock (this.locker)
+			{
+				// TODO: figure out how to signal channels such that they dispose themselves and remove themselves from TLS.
+				this.active.Clear();
+
+				// TODO: abort channel with timeout?
+				if (this.current != null)
+					this.current.Dispose();
+				this.current = null;
+			}
 		}
 
-		private const string FailureCount = "x-failure-count";
-		private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-		private readonly IModel channel;
-		private readonly Subscription subscription;
-		private bool disposed;
+		internal const string ThreadKey = "RabbitConnector";
+		private readonly object locker = new object();
+		private readonly ICollection<RabbitChannel> active = new LinkedList<RabbitChannel>();
+		private readonly RabbitConnectorOptions options;
+		private IConnection current;
+		private long disposed;
 	}
 }

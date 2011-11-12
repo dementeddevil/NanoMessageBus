@@ -69,7 +69,7 @@
 		}
 
 		public RabbitReceiverEndpoint(
-			Func<RabbitConnector> connectorFactory,
+			Func<RabbitConnector1> connectorFactory,
 			Func<RabbitFaultedMessageHandler> faultHandler,
 			Func<string, ISerializer> serializerFactory)
 		{
@@ -92,7 +92,7 @@
 		}
 
 		private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
-		private readonly Func<RabbitConnector> connectorFactory;
+		private readonly Func<RabbitConnector1> connectorFactory;
 		private readonly Func<RabbitFaultedMessageHandler> faultHandler;
 		private readonly Func<string, ISerializer> serializerFactory;
 	}

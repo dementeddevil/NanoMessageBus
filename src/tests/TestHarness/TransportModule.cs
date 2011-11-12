@@ -26,13 +26,13 @@
 				.Register(c =>
 				{
 					var container = c.Resolve<ILifetimeScope>();
-					return new RabbitConnector(c.Resolve<IConnection>(), TransactionType, InputQueue);
+					return new RabbitConnector1(c.Resolve<IConnection>(), TransactionType, InputQueue);
 				})
-				.As<RabbitConnector>()
+				.As<RabbitConnector1>()
 				.InstancePerLifetimeScope();
 
 			builder
-				.Register(c => c.Resolve<RabbitConnector>().UnitOfWork)
+				.Register(c => c.Resolve<RabbitConnector1>().UnitOfWork)
 				.As<IHandleUnitOfWork>()
 				.InstancePerLifetimeScope();
 
@@ -41,7 +41,7 @@
 				{
 					c = c.Resolve<IComponentContext>();
 					return new RabbitSenderEndpoint(
-						() => c.Resolve<RabbitConnector>(),
+						() => c.Resolve<RabbitConnector1>(),
 						c.Resolve<ISerializer>());
 				})
 				.As<ISendToEndpoints>()
@@ -52,7 +52,7 @@
 				{
 					c = c.Resolve<IComponentContext>();
 					return new RabbitReceiverEndpoint(
-						() => c.Resolve<RabbitConnector>(),
+						() => c.Resolve<RabbitConnector1>(),
 						() => c.Resolve<RabbitFaultedMessageHandler>(),
 						contentType => c.Resolve<ISerializer>());
 				})
@@ -62,7 +62,7 @@
 
 			builder
 				.Register(c => new RabbitFaultedMessageHandler(
-					c.Resolve<RabbitConnector>(), DeadLetters, PoisonMessages, MaxAttempts))
+					c.Resolve<RabbitConnector1>(), DeadLetters, PoisonMessages, MaxAttempts))
 				.As<RabbitFaultedMessageHandler>()
 				.InstancePerLifetimeScope();
 
