@@ -31,7 +31,7 @@
 				.InstancePerLifetimeScope(); // TODO: how to open a channel with a send only endpoint?
 
 			builder
-				.Register(c => c.Resolve<RabbitChannel>().BeginUnitOfWork())
+				.Register(c => c.Resolve<RabbitChannel>().UnitOfWork)
 				.As<IHandleUnitOfWork>()
 				.InstancePerLifetimeScope(); // TODO: how to do transactions with send only endpoints?
 

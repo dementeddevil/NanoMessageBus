@@ -8,17 +8,20 @@
 
 	public partial class RabbitChannel : IDisposable
 	{
-		public virtual IHandleUnitOfWork UnitOfWork { get; private set; }
 		public virtual RabbitMessage CurrentMessage { get; private set; }
 
-		public virtual IHandleUnitOfWork BeginUnitOfWork()
+		public virtual IHandleUnitOfWork UnitOfWork
 		{
-			return this.UnitOfWork ?? (this.UnitOfWork = new RabbitUnitOfWork(
-				this.channel, this.subscription, this.options.TransactionType, this.DisposeUnitOfWork));
+			get { return this.BeginUnitOfWork(); }
 		}
-		private void DisposeUnitOfWork()
+		protected virtual IHandleUnitOfWork BeginUnitOfWork()
 		{
-			this.UnitOfWork = null;
+			return this.unitOfWork ?? (this.unitOfWork = new RabbitUnitOfWork(
+				this.channel, () => this.subscription, this.options.TransactionType, this.DisposeUnitOfWork));
+		}
+		protected virtual void DisposeUnitOfWork()
+		{
+			this.unitOfWork = null;
 			this.CurrentMessage = null;
 			this.subscription = null;
 		}
@@ -36,7 +39,7 @@
 			var routingKey = message.RoutingKey ?? string.Empty;
 			this.channel.BasicPublish(receivingAgentExchange, routingKey, serialized, message.Body);
 		}
-		private void ThrowWhenDisposed()
+		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
 				throw new ObjectDisposedException(typeof(RabbitChannel).Name, "The object has already been disposed.");
@@ -105,8 +108,11 @@
 		
 		private readonly Func<IConnection> connectionResolver;
 		private readonly RabbitWireup options;
+		
 		private IModel channel;
 		private Subscription subscription;
+		private IHandleUnitOfWork unitOfWork;
+
 		private bool disposed;
 	}
 }
