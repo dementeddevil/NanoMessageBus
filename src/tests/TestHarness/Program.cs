@@ -43,15 +43,15 @@
 		private static void Send(IComponentContext container)
 		{
 			var sender = container.Resolve<ISendMessages>();
-			for (var i = 0; i < 1000; i++)
+			for (var i = 0; i < 10000; i++)
 				sender.Send("Hello, World!");
 		}
 
 		private static void Receive(IComponentContext container)
 		{
 			MessageHandlerTable<IComponentContext>.RegisterHandler(c => new Program());
-			var receiver = container.Resolve<IReceiveMessages>();
-			receiver.Start();
+			var receiver = container.Resolve<ITransportMessages>();
+			receiver.StartListening();
 		}
 
 		private static readonly object locker = new object();
