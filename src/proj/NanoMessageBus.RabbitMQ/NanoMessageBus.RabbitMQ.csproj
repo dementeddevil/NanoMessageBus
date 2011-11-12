@@ -51,8 +51,7 @@
     <Compile Include="RabbitAddress.cs" />
     <Compile Include="RabbitChannel.cs" />
     <Compile Include="RabbitConnector.cs" />
-    <Compile Include="RabbitConnector1.cs" />
-    <Compile Include="RabbitConnectorOptions.cs" />
+    <Compile Include="RabbitWireup.cs" />
     <Compile Include="RabbitExchangeFactory.cs" />
     <Compile Include="RabbitFaultedMessageHandler.cs" />
     <Compile Include="RabbitQueueFactory.cs" />
@@ -61,7 +60,6 @@
     <Compile Include="RabbitReceiverEndpoint.cs" />
     <Compile Include="RabbitSubscriptionStorage.cs" />
     <Compile Include="RabbitTransactionType.cs" />
-    <Compile Include="RabbitUnitOfWork1.cs" />
     <Compile Include="ThreadStorage.cs" />
   </ItemGroup>
   <ItemGroup>

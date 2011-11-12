@@ -12,64 +12,64 @@
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder
-				.Register(c => new BinarySerializer())
-				.As<ISerializer>()
-				.SingleInstance();
+			////builder
+			////    .Register(c => new BinarySerializer())
+			////    .As<ISerializer>()
+			////    .SingleInstance();
 
-			builder
-				.Register(c => new ConnectionFactory().CreateConnection())
-				.As<IConnection>()
-				.SingleInstance();
+			////builder
+			////    .Register(c => new ConnectionFactory().CreateConnection())
+			////    .As<IConnection>()
+			////    .SingleInstance();
 
-			builder
-				.Register(c =>
-				{
-					var container = c.Resolve<ILifetimeScope>();
-					return new RabbitConnector1(c.Resolve<IConnection>(), TransactionType, InputQueue);
-				})
-				.As<RabbitConnector1>()
-				.InstancePerLifetimeScope();
+			////builder
+			////    .Register(c =>
+			////    {
+			////        var container = c.Resolve<ILifetimeScope>();
+			////        return new RabbitConnector1(c.Resolve<IConnection>(), TransactionType, InputQueue);
+			////    })
+			////    .As<RabbitConnector1>()
+			////    .InstancePerLifetimeScope();
 
-			builder
-				.Register(c => c.Resolve<RabbitConnector1>().UnitOfWork)
-				.As<IHandleUnitOfWork>()
-				.InstancePerLifetimeScope();
+			////builder
+			////    .Register(c => c.Resolve<RabbitConnector1>().UnitOfWork)
+			////    .As<IHandleUnitOfWork>()
+			////    .InstancePerLifetimeScope();
 
-			builder
-				.Register(c =>
-				{
-					c = c.Resolve<IComponentContext>();
-					return new RabbitSenderEndpoint(
-						() => c.Resolve<RabbitConnector1>(),
-						c.Resolve<ISerializer>());
-				})
-				.As<ISendToEndpoints>()
-				.SingleInstance();
+			////builder
+			////    .Register(c =>
+			////    {
+			////        c = c.Resolve<IComponentContext>();
+			////        return new RabbitSenderEndpoint(
+			////            () => c.Resolve<RabbitConnector1>(),
+			////            c.Resolve<ISerializer>());
+			////    })
+			////    .As<ISendToEndpoints>()
+			////    .SingleInstance();
 
-			builder
-				.Register(c =>
-				{
-					c = c.Resolve<IComponentContext>();
-					return new RabbitReceiverEndpoint(
-						() => c.Resolve<RabbitConnector1>(),
-						() => c.Resolve<RabbitFaultedMessageHandler>(),
-						contentType => c.Resolve<ISerializer>());
-				})
-				.As<IReceiveFromEndpoints>()
-				.As<IHandlePoisonMessages>()
-				.SingleInstance();
+			////builder
+			////    .Register(c =>
+			////    {
+			////        c = c.Resolve<IComponentContext>();
+			////        return new RabbitReceiverEndpoint(
+			////            () => c.Resolve<RabbitConnector1>(),
+			////            () => c.Resolve<RabbitFaultedMessageHandler>(),
+			////            contentType => c.Resolve<ISerializer>());
+			////    })
+			////    .As<IReceiveFromEndpoints>()
+			////    .As<IHandlePoisonMessages>()
+			////    .SingleInstance();
 
-			builder
-				.Register(c => new RabbitFaultedMessageHandler(
-					c.Resolve<RabbitConnector1>(), DeadLetters, PoisonMessages, MaxAttempts))
-				.As<RabbitFaultedMessageHandler>()
-				.InstancePerLifetimeScope();
+			////builder
+			////    .Register(c => new RabbitFaultedMessageHandler(
+			////        c.Resolve<RabbitConnector1>(), DeadLetters, PoisonMessages, MaxAttempts))
+			////    .As<RabbitFaultedMessageHandler>()
+			////    .InstancePerLifetimeScope();
 
-			builder
-				.Register(c => new RabbitSubscriptionStorage())
-				.As<IStoreSubscriptions>()
-				.SingleInstance();
+			////builder
+			////    .Register(c => new RabbitSubscriptionStorage())
+			////    .As<IStoreSubscriptions>()
+			////    .SingleInstance();
 		}
 
 		private const int MaxAttempts = 3;

@@ -12,7 +12,8 @@
 	{
 		public virtual EnvelopeMessage Receive()
 		{
-			var message = this.connectorFactory().Receive(DefaultReceiveWait);
+			var channel = this.connector.Current;
+			var message = channel.Receive(DefaultReceiveWait);
 			if (message == null)
 				return null;
 
@@ -69,11 +70,11 @@
 		}
 
 		public RabbitReceiverEndpoint(
-			Func<RabbitConnector1> connectorFactory,
+			RabbitConnector connector,
 			Func<RabbitFaultedMessageHandler> faultHandler,
 			Func<string, ISerializer> serializerFactory)
 		{
-			this.connectorFactory = connectorFactory;
+			this.connector = connector;
 			this.serializerFactory = serializerFactory;
 			this.faultHandler = faultHandler;
 		}
@@ -92,7 +93,7 @@
 		}
 
 		private static readonly TimeSpan DefaultReceiveWait = TimeSpan.FromMilliseconds(500);
-		private readonly Func<RabbitConnector1> connectorFactory;
+		private readonly RabbitConnector connector;
 		private readonly Func<RabbitFaultedMessageHandler> faultHandler;
 		private readonly Func<string, ISerializer> serializerFactory;
 	}

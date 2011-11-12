@@ -7,7 +7,7 @@
 	{
 		public virtual void ForwardToDeadLetterExchange()
 		{
-			this.connector.Send(this.message, this.deadLetterExchange);
+			this.channel.Send(this.message, this.deadLetterExchange.Exchange);
 		}
 
 		public virtual void HandleMessageFailure(Exception exception)
@@ -24,7 +24,7 @@
 		public virtual void ForwardToPoisonMessageExchange(Exception exception)
 		{
 			this.AppendException(exception, 0);
-			this.connector.Send(this.message, this.poisonMessageExchange);
+			this.channel.Send(this.message, this.poisonMessageExchange.Exchange);
 		}
 		private void AppendException(Exception exception, int depth)
 		{
@@ -39,27 +39,27 @@
 		}
 		private void ForwardToRetryExchange()
 		{
-			this.connector.Send(this.message, null); // TODO
+			this.channel.Send(this.message, null); // TODO;
 		}
 
 		public RabbitFaultedMessageHandler(
-			RabbitConnector1 connector,
+			RabbitConnector connector,
 			RabbitAddress poisonMessageExchange,
 			RabbitAddress deadLetterExchange,
 			int maxAttempts)
 		{
-			this.connector = connector;
-			this.unitOfWork = connector.UnitOfWork;
-			this.message = connector.CurrentMessage;
+			this.channel = connector.Current;
+			this.message = this.channel.CurrentMessage;
+			this.unitOfWork = this.channel.UnitOfWork;
 			this.poisonMessageExchange = poisonMessageExchange;
 			this.deadLetterExchange = deadLetterExchange;
 			this.maxAttempts = maxAttempts;
 		}
 
 		private const string ExceptionHeader = "x-exception.{0}-{1}";
-		private readonly RabbitConnector1 connector;
-		private readonly IHandleUnitOfWork unitOfWork;
+		private readonly RabbitChannel channel;
 		private readonly RabbitMessage message;
+		private readonly IHandleUnitOfWork unitOfWork;
 		private readonly RabbitAddress poisonMessageExchange;
 		private readonly RabbitAddress deadLetterExchange;
 		private readonly int maxAttempts;

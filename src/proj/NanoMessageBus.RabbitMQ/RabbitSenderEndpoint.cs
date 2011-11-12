@@ -16,9 +16,9 @@
 				return;
 
 			var pending = this.BuildMessage(message);
-			var connector = this.connectorFactory();
-			foreach (var address in recipients.Select(x => new RabbitAddress(x)))
-				connector.Send(pending, address);
+			var channel = this.connector.Current;
+			foreach (var exchange in recipients.Select(x => new RabbitAddress(x).Exchange))
+				channel.Send(pending, exchange);
 		}
 		private RabbitMessage BuildMessage(EnvelopeMessage message)
 		{
@@ -39,9 +39,9 @@
 			};
 		}
 
-		public RabbitSenderEndpoint(Func<RabbitConnector1> connectorFactory, ISerializer serializer)
+		public RabbitSenderEndpoint(RabbitConnector connector, ISerializer serializer)
 		{
-			this.connectorFactory = connectorFactory;
+			this.connector = connector;
 			this.serializer = serializer;
 			this.ProducerId = string.Empty;
 		}
@@ -59,7 +59,7 @@
 		{
 		}
 
-		private readonly Func<RabbitConnector1> connectorFactory;
+		private readonly RabbitConnector connector;
 		private readonly ISerializer serializer;
 	}
 }

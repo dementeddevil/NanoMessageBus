@@ -48,7 +48,7 @@
 		}
 		private void ThrowWhenDisposed()
 		{
-			if (Interlocked.Increment(ref this.disposed) > 0)
+			if (Interlocked.Read(ref this.disposed) > 1)
 				throw new ObjectDisposedException("RabbitConnector", "The connector has already been disposed.");
 		}
 		private IConnection TryConnect()
@@ -60,10 +60,8 @@
 			if (connection == null)
 				throw new EndpointUnavailableException();
 
-			connection.ConnectionShutdown += (conn, reason) =>
-			{
-				// TODO: re-establish the connection if the shutdown was unexpected
-			};
+			// TODO: re-establish the connection if the shutdown was unexpected
+			connection.ConnectionShutdown += (conn, reason) => { };
 
 			return connection;
 		}
@@ -71,8 +69,10 @@
 		{
 			try
 			{
-				var factory = new ConnectionFactory { Address = host.ToString() };
-				return factory.CreateConnection();
+				if (host == null)
+					return new ConnectionFactory().CreateConnection();
+
+				return new ConnectionFactory { Address = host.ToString() }.CreateConnection();
 			}
 			catch (PossibleAuthenticationFailureException)
 			{
@@ -92,7 +92,7 @@
 			}
 		}
 
-		public RabbitConnector(RabbitConnectorOptions options)
+		public RabbitConnector(RabbitWireup options)
 		{
 			// this class is responsible for opening *and maintaining* a connection to any
 			// of the Rabbit brokers specified and for performing any initialization
@@ -131,7 +131,7 @@
 		internal const string ThreadKey = "RabbitConnector";
 		private readonly object locker = new object();
 		private readonly ICollection<RabbitChannel> active = new LinkedList<RabbitChannel>();
-		private readonly RabbitConnectorOptions options;
+		private readonly RabbitWireup options;
 		private IConnection current;
 		private long disposed;
 	}

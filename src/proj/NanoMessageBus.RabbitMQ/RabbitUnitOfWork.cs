@@ -64,7 +64,7 @@
 			private void ThrowWhenDisposed()
 			{
 				if (this.disposed)
-					throw new ObjectDisposedException(typeof(RabbitConnector1).Name, "The object has already been disposed.");
+					throw new ObjectDisposedException(typeof(RabbitUnitOfWork).Name, "The object has already been disposed.");
 			}
 
 			public RabbitUnitOfWork(

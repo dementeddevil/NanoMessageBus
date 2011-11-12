@@ -4,45 +4,51 @@
 	using System.Collections.Generic;
 	using System.Linq;
 
-	public class RabbitConnectorOptions
+	public class RabbitWireup
 	{
-		public virtual RabbitConnectorOptions ConnectTo(params Uri[] hosts)
+		public virtual RabbitWireup ConnectTo(params Uri[] hosts)
 		{
 			return this.ConnectTo((IEnumerable<Uri>)hosts);
 		}
-		public virtual RabbitConnectorOptions ConnectTo(IEnumerable<Uri> hosts)
+		public virtual RabbitWireup ConnectTo(IEnumerable<Uri> hosts)
 		{
-			this.Hosts = (hosts ?? new Uri[0]).Where(x => x != null).ToArray();
+			this.Hosts = (hosts ?? new Uri[0]).ToArray();
 			if (this.Hosts.Count == 0)
 				throw new ArgumentException("No hosts specified.", "hosts");
 
 			return this;
 		}
+		public virtual RabbitWireup ConnectAnonymouslyToLocalhost()
+		{
+			this.Hosts.Clear();
+			this.Hosts.Add(null);
+			return this;
+		}
 
-		public virtual RabbitConnectorOptions InitializeWith(params Action<object>[] uponConnection)
+		public virtual RabbitWireup InitializeWith(params Action<object>[] uponConnection)
 		{
 			return this.InitializeWith((IEnumerable<Action<object>>)uponConnection);
 		}
-		public virtual RabbitConnectorOptions InitializeWith(IEnumerable<Action<object>> uponConnection)
+		public virtual RabbitWireup InitializeWith(IEnumerable<Action<object>> uponConnection)
 		{
 			this.Initializers = (uponConnection ?? new Action<object>[0]).Where(x => x != null).ToArray();
 			return this;
 		}
 
-		public virtual RabbitConnectorOptions AcknowledgeMessages()
+		public virtual RabbitWireup AcknowledgeMessages()
 		{
 			if (this.TransactionType == RabbitTransactionType.None)
 				this.TransactionType = RabbitTransactionType.Acknowledge;
 
 			return this;
 		}
-		public virtual RabbitConnectorOptions UseTransactions()
+		public virtual RabbitWireup UseTransactions()
 		{
 			this.TransactionType = RabbitTransactionType.Full;
 			return this;
 		}
 
-		public virtual RabbitConnectorOptions ListenTo(string queueName)
+		public virtual RabbitWireup ListenTo(string queueName)
 		{
 			queueName = (queueName ?? string.Empty).Trim();
 			if (string.IsNullOrEmpty(queueName))
@@ -53,7 +59,7 @@
 			return this;
 		}
 
-		public virtual RabbitConnectorOptions MessagesPerChannel(int prefetchCount)
+		public virtual RabbitWireup MessagesPerChannel(int prefetchCount)
 		{
 			if (prefetchCount <= 0)
 				throw new ArgumentException("The buffer size must be positive.", "prefetchCount");
@@ -72,6 +78,11 @@
 				.ListenTo(this.QueueName);
 
 			return this.Current ?? (this.Current = new RabbitConnector(this));
+		}
+
+		public RabbitWireup()
+		{
+			this.Hosts = new LinkedList<Uri>();
 		}
 
 		internal ICollection<Uri> Hosts { get; private set; }
