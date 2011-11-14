@@ -4,10 +4,10 @@
 
 	public interface IMessagingChannel : IDisposable
 	{
-		MessageEnvelope CurrentMessage { get; }
+		EnvelopeMessage CurrentMessage { get; }
 		IChannelTransaction CurrentTransaction { get; }
 
-		void Send(MessageEnvelope envelope, params Uri[] destinations);
-		MessageEnvelope Receive(TimeSpan timeout);
+		void Send(EnvelopeMessage envelope, params Uri[] destinations);
+		EnvelopeMessage Receive(TimeSpan timeout);
 	}
 }

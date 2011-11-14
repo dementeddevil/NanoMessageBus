@@ -12,6 +12,6 @@
 		/// dispatched any of the channels within the group.
 		/// </summary>
 		/// <param name="envelope">The message envelope to be dispatched.</param>
-		void Dispatch(MessageEnvelope envelope);
+		void Dispatch(EnvelopeMessage envelope);
 	}
 }
