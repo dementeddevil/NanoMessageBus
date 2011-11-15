@@ -195,6 +195,14 @@ namespace NanoMessageBus.RabbitChannel.UnitTests
 		Because of = () => { };
 		It should_open_a_transaction_on_the_channel = () => { };
 	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_a_new_channel_for_receive
+	{
+		Establish context = () => { };
+		Because of = () => { };
+		It should_open_a_subscription_to_the_input_queue_specified = () => { };
+	}
 }
 
 // ReSharper enable InconsistentNaming
