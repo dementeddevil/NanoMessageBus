@@ -8,7 +8,7 @@
     <ProjectGuid>{797CE0A0-2F60-474A-BEAA-C5915A33A1DD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.ComponentTests</RootNamespace>
+    <RootNamespace>NanoMessageBus</RootNamespace>
     <AssemblyName>NanoMessageBus.ComponentTests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

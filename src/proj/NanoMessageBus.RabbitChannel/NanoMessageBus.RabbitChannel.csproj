@@ -44,9 +44,12 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="RabbitChannel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitChannelGroupConfiguration.cs" />
+    <Compile Include="RabbitConnector.cs" />
     <Compile Include="RabbitConnectorConfiguration.cs" />
+    <Compile Include="RabbitTransaction.cs" />
     <Compile Include="RabbitTransactionType.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +61,7 @@
     <Reference Include="RabbitMQ.Client">
       <HintPath>..\..\packages\RabbitMQ.Client.2.6.1\lib\net30\RabbitMQ.Client.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

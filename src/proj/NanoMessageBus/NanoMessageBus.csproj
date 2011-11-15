@@ -45,6 +45,8 @@
     <Compile Include="ChannelException.cs" />
     <Compile Include="ChannelConnectionException.cs" />
     <Compile Include="ConnectionState.cs" />
+    <Compile Include="DefaultChannelGroup.cs" />
+    <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="IChannelConfiguration.cs" />
     <Compile Include="IChannelGroup.cs" />
     <Compile Include="IChannelTransaction.cs" />
@@ -53,6 +55,7 @@
     <Compile Include="IMessagingChannel.cs" />
     <Compile Include="IMessagingHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\BinarySerializer.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
   </ItemGroup>
   <ItemGroup>

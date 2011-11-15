@@ -1,7 +1,7 @@
 ﻿#pragma warning disable 169
 // ReSharper disable InconsistentNaming
 
-namespace NanoMessageBus.RabbitChannel.UnitTests
+namespace NanoMessageBus.RabbitChannel
 {
 	using Machine.Specifications;
 
