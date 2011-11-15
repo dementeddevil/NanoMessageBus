@@ -1,0 +1,14 @@
+RabbitChannelConfiguration
+  .TryConnections(host1, host2, host3)  // channel group config
+  .AddChannelGroup("")
+    .WithMinThreads(1)
+    .WithMaxThreads(2)
+    .ForDispatchOnly()
+    .ListenTo("queue") // channel config?
+      .Exclusively()
+      .PurgeOnStartup()
+      .DeleteQueueOnShutdown()
+      .BindTo() // exchange route combinations
+      .WaitFor(2.Seconds())
+      .AcknowledgeOnly() // .FullTransaction()
+      .WithChannelBufferOf(128.Messages())

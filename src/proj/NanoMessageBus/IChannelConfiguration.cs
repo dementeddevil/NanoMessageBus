@@ -1,5 +1,7 @@
 ﻿namespace NanoMessageBus
 {
+	using System;
+
 	/// <summary>
 	/// Represents the minimum configuration necessary to establish a channel group.
 	/// </summary>
@@ -24,5 +26,10 @@
 		/// Gets a value indicating the maximum allowable number of worker threads to be allocated for work.
 		/// </summary>
 		int MaxThreads { get; }
+
+		/// <summary>
+		/// Gets the length of time to await the receipt of a message from a channel before resume other work.
+		/// </summary>
+		TimeSpan ReceiveTimeout { get; }
 	}
 }

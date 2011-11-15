@@ -12,6 +12,11 @@
 	public interface IChannelTransaction : IDisposable
 	{
 		/// <summary>
+		/// Gets a value indicating whether the transaction has been completed or rolled back.
+		/// </summary>
+		bool Finished { get; }
+
+		/// <summary>
 		/// Registers the associated action with the transaction.
 		/// </summary>
 		/// <param name="callback">The action to be invoked when the transaction is completed.</param>
