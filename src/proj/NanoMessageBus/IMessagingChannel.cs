@@ -36,9 +36,8 @@
 		void Send(EnvelopeMessage envelope, params Uri[] destinations);
 
 		/// <summary>
-		/// Receive the message from the channel, if any, and push it to the callback provided.
+		/// Receive the message from the channel, if any, and push it to the configuration-specified callback.
 		/// </summary>
-		/// <param name="callback">The callback to which any received messages will be directed.</param>
-		void Receive(MessageReceivedDelegate callback);
+		void Receive();
 	}
 }
