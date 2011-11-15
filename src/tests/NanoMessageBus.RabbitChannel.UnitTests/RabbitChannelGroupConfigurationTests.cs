@@ -169,6 +169,32 @@ namespace NanoMessageBus.RabbitChannel.UnitTests
 		Because of = () => { };
 		It should_invoke_the_wireup_callbacks_specified = () => { };
 	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_initializing_a_connection_for_receive
+	{
+		Establish context = () => { };
+		Because of = () => { };
+		It should_create_a_private_fanout_exchange = () => { };
+		It should_bind_the_input_queue_to_the_private_exchange = () => { };
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_a_new_channel
+	{
+		Establish context = () => { };
+		Because of = () => { };
+		It should_set_the_QOS_on_the_channel = () => { };
+		It should_open_a_transaction_on_the_channel = () => { };
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_a_new_channel_with_full_transactions
+	{
+		Establish context = () => { };
+		Because of = () => { };
+		It should_open_a_transaction_on_the_channel = () => { };
+	}
 }
 
 // ReSharper enable InconsistentNaming

@@ -1,9 +1,19 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using RabbitMQ.Client;
 
 	public class RabbitChannelGroupConfiguration : IChannelConfiguration
 	{
+		public virtual RabbitChannelGroupConfiguration InitializeConnection(IConnection connection)
+		{
+			return this;
+		}
+		public virtual RabbitChannelGroupConfiguration ConfigureChannel(IModel channel)
+		{
+			return this;
+		}
+
 		public virtual string ChannelGroup
 		{
 			get { return null; }
