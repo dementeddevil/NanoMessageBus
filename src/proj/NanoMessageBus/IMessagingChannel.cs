@@ -36,8 +36,13 @@
 		void Send(EnvelopeMessage envelope, params Uri[] destinations);
 
 		/// <summary>
-		/// Receive the message from the channel, if any, and push it to the configuration-specified callback.
+		/// Receive the message from the channel, if any, and dispatches it to the callback provided.
 		/// </summary>
-		void Receive();
+		/// <param name="callback">The callback to which the received message should be dispatched.</param>
+		/// <exception cref="ChannelConnectionException"></exception>
+		/// <remarks>
+		/// The timeout, if any, has been specified as part of the channel configuration.
+		/// </remarks>
+		void Receive(Action<IMessagingChannel> callback);
 	}
 }

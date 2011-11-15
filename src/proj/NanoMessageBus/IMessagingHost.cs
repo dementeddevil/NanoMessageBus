@@ -16,9 +16,10 @@
 		void Initialize();
 
 		/// <summary>
-		/// Begins streaming any available inbound messages to the callback provided to the channel configuration.
+		/// Begins streaming any available inbound messages to the callback provided.
 		/// </summary>
-		void BeginReceive();
+		/// <param name="callback">The callback to which any received messages should be dispatched.</param>
+		void BeginReceive(Action<IMessagingChannel> callback);
 
 		/// <summary>
 		/// For dispatch-only channel groups, it adds the message provided to an in-memory queue for
