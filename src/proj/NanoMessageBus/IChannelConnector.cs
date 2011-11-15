@@ -13,6 +13,11 @@
 	public interface IChannelConnector : IDisposable
 	{
 		/// <summary>
+		/// Gets a value indicating the current state underlying connection.
+		/// </summary>
+		ConnectionState CurrentState { get; }
+
+		/// <summary>
 		/// Gets the set of values which uniquely identify the channel groups to be created.
 		/// </summary>
 		IEnumerable<IChannelConfiguration> ChannelGroups { get; }
@@ -22,7 +27,7 @@
 		/// </summary>
 		/// <param name="channelGroup">The channel group indicating how the channel is to be configured.</param>
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
-		/// <exception cref="ChannelUnavailableException"></exception>
+		/// <exception cref="ChannelConnectionException"></exception>
 		/// <exception cref="SecurityException"></exception>
 		/// <returns>An open channel through which messages may be sent or received according to the configuration.</returns>
 		IMessagingChannel Connect(string channelGroup);

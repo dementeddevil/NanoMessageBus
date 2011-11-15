@@ -23,6 +23,12 @@
 		bool DispatchOnly { get; }
 
 		/// <summary>
+		/// Starts up all of the underlying connectors, opens up all channels, and otherwise prepares the
+		/// messaging host to process and dispatch messages.
+		/// </summary>
+		void Initialize();
+
+		/// <summary>
 		/// For dispatch-only channel groups, it adds the message provided to an in-memory queue for
 		/// asynchronous dispatch; for full-duplex channel groups (send/receive), it throws an
 		/// InvalidOperationException.

@@ -11,8 +11,7 @@
 	public interface IMessagingHost : IDisposable
 	{
 		/// <summary>
-		/// Starts up all of the underlying connectors, opens up all channels and their associated
-		/// channel groups, and otherwise prepares the messaging host to process and dispatch messages.
+		/// Creates all channel groups and the initializes each of them on their own thread.
 		/// </summary>
 		void Initialize();
 
