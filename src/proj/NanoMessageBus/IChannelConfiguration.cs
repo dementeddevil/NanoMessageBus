@@ -10,7 +10,7 @@
 		/// <summary>
 		/// Gets the value which uniquely identifies the named configuration or channel group.
 		/// </summary>
-		string Name { get; }
+		string ChannelGroup { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the connection is configured for dispatch or full duplex.
