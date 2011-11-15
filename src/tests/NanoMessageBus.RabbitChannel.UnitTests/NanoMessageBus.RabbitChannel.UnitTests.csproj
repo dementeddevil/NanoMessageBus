@@ -44,6 +44,10 @@
     <Compile Include="..\..\proj\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="RabbitConfigurationTests.cs" />
+    <Compile Include="RabbitTransactionTests.cs" />
+    <Compile Include="RabbitChannelTests.cs" />
+    <Compile Include="RabbitConnectorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitChannelGroupConfigurationTests.cs" />
   </ItemGroup>
