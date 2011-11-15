@@ -44,6 +44,7 @@
     </Compile>
     <Compile Include="ChannelException.cs" />
     <Compile Include="ChannelUnavailableException.cs" />
+    <Compile Include="IChannelConfiguration.cs" />
     <Compile Include="IChannelGroup.cs" />
     <Compile Include="IChannelTransaction.cs" />
     <Compile Include="IChannelConnector.cs" />

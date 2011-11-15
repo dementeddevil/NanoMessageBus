@@ -13,11 +13,18 @@
 	public interface IChannelConnector : IDisposable
 	{
 		/// <summary>
-		/// Connects to the underlying infrastructure and establishes the configured channel groups.
+		/// Gets the set of values which uniquely identify the channel groups to be created.
 		/// </summary>
-		/// <exception cref="SecurityException"></exception>
+		IEnumerable<IChannelConfiguration> ChannelGroups { get; }
+
+		/// <summary>
+		/// Opens a channel against the underlying connection.
+		/// </summary>
+		/// <param name="channelGroup">The channel group indicating how the channel is to be configured.</param>
+		/// <exception cref="ArgumentOutOfRangeException"></exception>
 		/// <exception cref="ChannelUnavailableException"></exception>
-		/// <returns>A set of configured channel groups.</returns>
-		IEnumerable<IChannelGroup> Connect();
+		/// <exception cref="SecurityException"></exception>
+		/// <returns>An open channel through which messages may be sent or received according to the configuration.</returns>
+		IMessagingChannel Connect(string channelGroup);
 	}
 }
