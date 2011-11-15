@@ -59,6 +59,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NanoMessageBus\NanoMessageBus.csproj">
+      <Project>{A038133C-7150-4E4F-83D3-174869171C8D}</Project>
+      <Name>NanoMessageBus</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
 </Project>
