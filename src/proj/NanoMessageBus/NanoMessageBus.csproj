@@ -42,14 +42,14 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Channels\ChannelException.cs" />
-    <Compile Include="Channels\ChannelUnavailableException.cs" />
-    <Compile Include="Channels\IChannelGroup.cs" />
-    <Compile Include="Channels\IChannelTransaction.cs" />
-    <Compile Include="Channels\IChannelConnector.cs" />
+    <Compile Include="ChannelException.cs" />
+    <Compile Include="ChannelUnavailableException.cs" />
+    <Compile Include="IChannelGroup.cs" />
+    <Compile Include="IChannelTransaction.cs" />
+    <Compile Include="IChannelConnector.cs" />
     <Compile Include="EnvelopeMessage.cs" />
-    <Compile Include="Channels\IMessagingChannel.cs" />
-    <Compile Include="Channels\IMessagingHost.cs" />
+    <Compile Include="IMessagingChannel.cs" />
+    <Compile Include="IMessagingHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,5 +61,6 @@
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

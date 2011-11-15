@@ -1,4 +1,4 @@
-﻿namespace NanoMessageBus.Channels
+﻿namespace NanoMessageBus
 {
 	public interface IChannelGroup
 	{

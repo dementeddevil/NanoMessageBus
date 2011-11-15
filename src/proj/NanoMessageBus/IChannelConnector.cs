@@ -1,4 +1,4 @@
-﻿namespace NanoMessageBus.Channels
+﻿namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;

@@ -8,7 +8,7 @@
     <ProjectGuid>{1E8E774B-0726-42CB-BC60-D01C79E8F42F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.Channels.RabbitChannel.ComponentTests</RootNamespace>
+    <RootNamespace>NanoMessageBus.RabbitChannel.ComponentTests</RootNamespace>
     <AssemblyName>NanoMessageBus.RabbitChannel.ComponentTests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
