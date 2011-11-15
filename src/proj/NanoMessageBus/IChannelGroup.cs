@@ -17,16 +17,15 @@
 		string Name { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether the channel group is configured for dispatch-only or
-		/// full-duplex (send/receive) operation.
-		/// </summary>
-		bool DispatchOnly { get; }
-
-		/// <summary>
 		/// Starts up all of the underlying connectors, opens up all channels, and otherwise prepares the
 		/// messaging host to process and dispatch messages.
 		/// </summary>
 		void Initialize();
+
+		/// <summary>
+		/// Begins streaming any available inbound messages to the callback provided to the channel configuration.
+		/// </summary>
+		void BeginReceive();
 
 		/// <summary>
 		/// For dispatch-only channel groups, it adds the message provided to an in-memory queue for

@@ -36,10 +36,9 @@
 		void Send(EnvelopeMessage envelope, params Uri[] destinations);
 
 		/// <summary>
-		/// Attempts to receive a message from the channel.
+		/// Receive the message from the channel, if any, and push it to the callback provided.
 		/// </summary>
-		/// <param name="timeout">The amount of time to wait before giving up.</param>
-		/// <returns>If a message was received within the timeout specified, it is returned; otherwise null.</returns>
-		EnvelopeMessage Receive(TimeSpan timeout);
+		/// <param name="callback">The callback to which any received messages will be directed.</param>
+		void Receive(MessageReceivedDelegate callback);
 	}
 }

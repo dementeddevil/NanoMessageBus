@@ -16,16 +16,27 @@
 		void Initialize();
 
 		/// <summary>
-		/// Begins streaming the inbound messages to the callback provided.
+		/// Begins streaming any available inbound messages to the callback provided to the channel configuration.
 		/// </summary>
-		/// <param name="callback">The callback to which all message streams will be directed.</param>
-		void BeginReceive(Action<IMessagingChannel, EnvelopeMessage> callback);
+		void BeginReceive();
 
 		/// <summary>
-		/// Gets the channel group for the key specified, if it exists.
+		/// For dispatch-only channel groups, it adds the message provided to an in-memory queue for
+		/// asynchronous dispatch; for full-duplex channel groups (send/receive), it throws an
+		/// InvalidOperationException.
 		/// </summary>
-		/// <param name="key">The key which uniquely identifies the desired channel group.</param>
-		/// <returns>If found, returns the requested channel group; otherwise, returns null.</returns>
-		IChannelGroup this[string key] { get; }
+		/// <exception cref="InvalidOperationException"></exception>
+		/// <param name="envelope">The message envelope to be dispatched.</param>
+		/// <param name="channelGroup">The channel group into which the message will be dispatched.</param>
+		void BeginDispatch(EnvelopeMessage envelope, string channelGroup);
+
+		/// <summary>
+		/// For dispatch-only channel groups, it blocks the current thread while dispatching the message provided;
+		/// for full-duplex channel groups (send/receive), it throws an InvalidOperationException.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"></exception>
+		/// <param name="envelope">The message envelope to be dispatched.</param>
+		/// <param name="channelGroup">The channel group into which the message will be dispatched.</param>
+		void Dispatch(EnvelopeMessage envelope, string channelGroup);
 	}
 }
