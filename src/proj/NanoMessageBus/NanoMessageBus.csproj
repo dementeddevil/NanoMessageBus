@@ -51,6 +51,7 @@
     <Compile Include="IMessagingChannel.cs" />
     <Compile Include="IMessagingHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\ISerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\CustomDictionary.xml">
