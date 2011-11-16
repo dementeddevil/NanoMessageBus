@@ -16,7 +16,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => new DefaultMessagingHost(null, EmptyChannelGroupFactory));
+			thrown = Catch.Exception(() => new DefaultMessagingHost(null, EmptyFactory));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -27,9 +27,12 @@ namespace NanoMessageBus
 	{
 		static Exception thrown;
 
+		Establish context = () =>
+			mockConnectors = null;
+
 		Because of = () =>
-			thrown = Catch.Exception(() =>
-				new DefaultMessagingHost(EmptyChannelConnectors, EmptyChannelGroupFactory));
+			thrown = Catch.Exception(() => 
+				new DefaultMessagingHost(Connectors, EmptyFactory));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -40,70 +43,67 @@ namespace NanoMessageBus
 	{
 		static Exception thrown;
 
+		Establish context = () =>
+			mockConnectors.Clear();
+
 		Because of = () =>
-			thrown = Catch.Exception(() => new DefaultMessagingHost(EmptyChannelConnectors, null));
+			thrown = Catch.Exception(() => new DefaultMessagingHost(Connectors, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_initializing_the_host
+	public class when_initializing_the_host : with_the_messaging_host
 	{
-		static readonly List<Mock<IChannelConnector>> connectors = new List<Mock<IChannelConnector>>();
 		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
 		static readonly Mock<IChannelConfiguration> config1 = new Mock<IChannelConfiguration>();
 		static readonly Mock<IChannelConfiguration> config2 = new Mock<IChannelConfiguration>();
 
-		static readonly Mock<DefaultChannelGroupFactory> factory = new Mock<DefaultChannelGroupFactory>();
-		static IMessagingHost host;
-
 		Establish context = () =>
 		{
-			connectors.Add(new Mock<IChannelConnector>());
-			connectors[0].SetupGet(x => x.ChannelGroups).Returns(new[] { config0.Object, config1.Object });
+			mockConnectors.Clear();
 
-			connectors.Add(new Mock<IChannelConnector>());
-			connectors[1].SetupGet(x => x.ChannelGroups).Returns(new[] { config2.Object });
+			mockConnectors.Add(new Mock<IChannelConnector>());
+			mockConnectors[0].SetupGet(x => x.ChannelGroups).Returns(new[] { config0.Object, config1.Object });
+			mockConnectors.Add(new Mock<IChannelConnector>());
+			mockConnectors[1].SetupGet(x => x.ChannelGroups).Returns(new[] { config2.Object });
 
 			config0.SetupGet(x => x.ChannelGroup).Returns("config0");
 			config1.SetupGet(x => x.ChannelGroup).Returns("config1");
 			config2.SetupGet(x => x.ChannelGroup).Returns("config2");
 
-			factory.Setup(x => x.Build(connectors[0].Object, config0.Object));
-			factory.Setup(x => x.Build(connectors[0].Object, config1.Object));
-			factory.Setup(x => x.Build(connectors[1].Object, config2.Object));
+			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object));
+			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config1.Object));
+			mockFactory.Setup(x => x.Build(mockConnectors[1].Object, config2.Object));
 
-			host = new DefaultMessagingHost(connectors.Select(x => x.Object), factory.Object.Build);
+			RebuildHost();
 		};
 
 		Because of = () =>
 		    host.Initialize();
 
 		It should_obtain_a_list_of_channel_groups_from_each_underlying_connector = () =>
-			connectors.ForEach(x => x.VerifyGet(mock => mock.ChannelGroups));
+			mockConnectors.ToList().ForEach(x => x.VerifyGet(mock => mock.ChannelGroups));
 			
 		It should_provide_each_config_and_its_associated_connector_to_the_factory = () =>
-			factory.VerifyAll();
+			mockFactory.VerifyAll();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_initializing_the_host_more_than_once
+	public class when_initializing_the_host_more_than_once : with_the_messaging_host
 	{
-		static readonly List<Mock<IChannelConnector>> connectors = new List<Mock<IChannelConnector>>();
 		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
-
-		static readonly Mock<DefaultChannelGroupFactory> factory = new Mock<DefaultChannelGroupFactory>();
-		static IMessagingHost host;
 
 		Establish context = () =>
 		{
-			connectors.Add(new Mock<IChannelConnector>());
-			connectors[0].SetupGet(x => x.ChannelGroups).Returns(new[] { config0.Object });
+			mockConnectors.Add(new Mock<IChannelConnector>());
+			mockConnectors[0].SetupGet(x => x.ChannelGroups).Returns(new[] { config0.Object });
 			config0.SetupGet(x => x.ChannelGroup).Returns("config0");
-			factory.Setup(x => x.Build(connectors[0].Object, config0.Object));
 
-			host = new DefaultMessagingHost(connectors.Select(x => x.Object), factory.Object.Build);
+			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object));
+
+			RebuildHost();
 		};
 
 		private Because of = () =>
@@ -114,14 +114,12 @@ namespace NanoMessageBus
 		};
 
 		It should_do_nothing = () =>
-			factory.Verify(x => x.Build(connectors[0].Object, config0.Object), Times.Once());
+			mockFactory.Verify(x => x.Build(Connectors[0], config0.Object), Times.Once());
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_initializing_a_disposed_host : with_the_messaging_host
 	{
-		static readonly IMessagingHost host = new DefaultMessagingHost(
-			PopulatedChannelConnectors, EmptyChannelGroupFactory);
 		static Exception thrown;
 
 		Establish context = () =>
@@ -145,8 +143,6 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_instructed_to_begin_receiving_messages_without_providing_a_callback : with_the_messaging_host
 	{
-		static readonly IMessagingHost host = new DefaultMessagingHost(
-			PopulatedChannelConnectors, EmptyChannelGroupFactory);
 		static Exception thrown;
 
 		Because of = () =>
@@ -159,8 +155,6 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_attempting_to_begin_receiving_messages_without_first_initializing_the_host : with_the_messaging_host
 	{
-		static readonly IMessagingHost host = new DefaultMessagingHost(
-			PopulatedChannelConnectors, EmptyChannelGroupFactory);
 		static Exception thrown;
 
 		Because of = () =>
@@ -173,8 +167,6 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_attempting_to_receive_messages_against_a_disposed_host : with_the_messaging_host
 	{
-		static readonly IMessagingHost host = new DefaultMessagingHost(
-			PopulatedChannelConnectors, EmptyChannelGroupFactory);
 		static Exception thrown;
 
 		Establish context = () =>
@@ -191,7 +183,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_a_new_callback_is_provided_for_receiving_messages
+	public class when_a_new_callback_is_provided_for_receiving_messages : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -199,7 +191,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_asynchronously_dispatching_a_message
+	public class when_asynchronously_dispatching_a_message : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -207,7 +199,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_synchronously_dispatching_a_message
+	public class when_synchronously_dispatching_a_message : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -215,7 +207,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_message_is_provided_to_asynchronously_dispatch
+	public class when_no_message_is_provided_to_asynchronously_dispatch : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -223,7 +215,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_message_is_provided_to_synchronously_dispatch
+	public class when_no_message_is_provided_to_synchronously_dispatch : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -231,7 +223,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_channel_group_is_specified_for_asynchronous_dispatch
+	public class when_no_channel_group_is_specified_for_asynchronous_dispatch : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -239,7 +231,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_channel_group_is_specified_for_synchronous_dispatch
+	public class when_no_channel_group_is_specified_for_synchronous_dispatch : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -247,7 +239,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_attempting_to_asynchronously_dispatching_a_message_without_first_initializing_the_host
+	public class when_attempting_to_asynchronously_dispatching_a_message_without_first_initializing_the_host : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -255,7 +247,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_attempting_to_synchronously_dispatching_a_message_without_first_initializing_the_host
+	public class when_attempting_to_synchronously_dispatching_a_message_without_first_initializing_the_host : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -263,7 +255,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_the_channel_group_specified_for_asynchronous_dispatch_doesnt_exist
+	public class when_the_channel_group_specified_for_asynchronous_dispatch_doesnt_exist : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -271,7 +263,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_the_channel_group_specified_for_synchronous_dispatch_doesnt_exist
+	public class when_the_channel_group_specified_for_synchronous_dispatch_doesnt_exist : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -279,7 +271,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_asynchronously_dispatching_against_a_disposed_host
+	public class when_asynchronously_dispatching_against_a_disposed_host : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -287,7 +279,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_synchronously_dispatching_against_a_disposed_host
+	public class when_synchronously_dispatching_against_a_disposed_host : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -295,7 +287,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_disposing_the_host
+	public class when_disposing_the_host : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -303,7 +295,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_disposing_the_host_more_than_once
+	public class when_disposing_the_host_more_than_once : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -312,13 +304,38 @@ namespace NanoMessageBus
 
 	public abstract class with_the_messaging_host
 	{
-		protected static readonly ChannelGroupFactory EmptyChannelGroupFactory = (c, cg) => null;
-		protected static readonly IEnumerable<IChannelConnector> EmptyChannelConnectors
-			= new IChannelConnector[0];
-		protected static readonly IList<IChannelConnector> PopulatedChannelConnectors = new[]
+		protected static readonly ChannelGroupFactory EmptyFactory = (c, cg) => null;
+		protected static IList<Mock<IChannelConnector>> mockConnectors;
+		protected static Mock<DefaultChannelGroupFactory> mockFactory;
+		protected static ChannelGroupFactory channelFactory;
+		protected static DefaultMessagingHost host;
+
+		protected static IList<IChannelConnector> Connectors
 		{
-			new Mock<IChannelConnector>().Object,
-			new Mock<IChannelConnector>().Object
+			get { return mockConnectors == null ? null : mockConnectors.Select(x => x.Object).ToList(); }
+		}
+
+		Establish context = () =>
+		{
+			mockConnectors = new List<Mock<IChannelConnector>> { new Mock<IChannelConnector>() };
+			mockFactory = new Mock<DefaultChannelGroupFactory>();
+			RebuildHost();
+		};
+		protected static void RebuildHost()
+		{
+			if (channelFactory == null && mockFactory != null)
+				channelFactory = (c, cfg) => mockFactory.Object.Build(c, cfg);
+
+			channelFactory = channelFactory ?? EmptyFactory;
+			host = new DefaultMessagingHost(Connectors, channelFactory);
+		}
+
+		Cleanup after = () =>
+		{
+			mockConnectors = null;
+			mockFactory = null;
+			channelFactory = null;
+			host = null;
 		};
 	}
 }
