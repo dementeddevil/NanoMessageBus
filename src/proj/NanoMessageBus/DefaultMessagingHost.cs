@@ -27,9 +27,41 @@
 
 		public virtual void BeginDispatch(EnvelopeMessage envelope, string channelGroup)
 		{
+			if (envelope == null)
+				throw new ArgumentNullException("envelope");
+			if (channelGroup == null)
+				throw new ArgumentNullException("channelGroup");
+
+			lock (this.groups)
+			{
+				this.ThrowWhenUninitialized();
+				this.ThrowWhenDisposed();
+
+				IChannelGroup group;
+				if (!this.groups.TryGetValue(channelGroup, out group))
+					throw new KeyNotFoundException("The key for the channel group provided was not found.");
+
+				group.BeginDispatch(envelope);
+			}
 		}
 		public virtual void Dispatch(EnvelopeMessage envelope, string channelGroup)
 		{
+			if (envelope == null)
+				throw new ArgumentNullException("envelope");
+			if (channelGroup == null)
+				throw new ArgumentNullException("channelGroup");
+
+			lock (this.groups)
+			{
+				this.ThrowWhenUninitialized();
+				this.ThrowWhenDisposed();
+
+				IChannelGroup group;
+				if (!this.groups.TryGetValue(channelGroup, out group))
+					throw new KeyNotFoundException("The key for the channel group provided was not found.");
+
+				group.Dispatch(envelope);
+			}
 		}
 
 		public virtual void BeginReceive(Action<IMessagingChannel> callback)
@@ -103,7 +135,7 @@
 				this.disposed = true;
 
 				foreach (var group in this.groups.Values)
-					group.Dispose();
+					group.Dispose(); // TODO: make sure this doesn't wrap around and result in a deadlock
 
 				this.groups.Clear();
 			}
