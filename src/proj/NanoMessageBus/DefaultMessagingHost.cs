@@ -41,6 +41,9 @@
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
+				this.ThrowWhenReceiving();
+
+				this.receiving = true;
 
 				foreach (var group in this.groups.Values)
 					group.BeginReceive(callback);
@@ -56,6 +59,11 @@
 		{
 			if (!this.initialized)
 				throw new InvalidOperationException("The host has not been initialized.");
+		}
+		private void ThrowWhenReceiving()
+		{
+			if (this.receiving)
+				throw new InvalidOperationException("A callback has already been provided.");
 		}
 
 		public DefaultMessagingHost(IEnumerable<IChannelConnector> connectors, ChannelGroupFactory factory)
@@ -104,6 +112,7 @@
 		private readonly IDictionary<string, IChannelGroup> groups = new Dictionary<string, IChannelGroup>();
 		private readonly ICollection<IChannelConnector> connectors;
 		private readonly ChannelGroupFactory factory;
+		private bool receiving;
 		private bool initialized;
 		private bool disposed;
 	}

@@ -149,7 +149,27 @@ namespace NanoMessageBus
 			host.BeginReceive(callback);
 
 		It should_pass_the_callback_to_the_underlying_connection_groups = () =>
-			mockGroup.VerifyAll();
+			mockGroup.Verify(x => x.BeginReceive(callback), Times.Once());
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_more_than_one_callback_has_been_provided_for_receiving_messages : with_the_messaging_host
+	{
+		static readonly Action<IMessagingChannel> callback = channel => { };
+		static Exception thrown;
+
+		Establish context = () =>
+		{
+			mockGroup.Setup(x => x.BeginReceive(callback));
+			host.Initialize();
+			host.BeginReceive(callback);
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.BeginReceive(callback));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -192,14 +212,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_more_than_one_callback_has_been_provided_for_receiving_messages : with_the_messaging_host
-	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_throw_an_exception = () => { };
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
