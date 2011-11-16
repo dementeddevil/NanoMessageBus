@@ -47,6 +47,7 @@
     <Compile Include="ChannelGroupFactory.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="DefaultChannelGroup.cs" />
+    <Compile Include="DefaultChannelGroupFactory.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="IChannelConfiguration.cs" />
     <Compile Include="IChannelGroup.cs" />
