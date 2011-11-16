@@ -18,7 +18,7 @@
 				this.initialized = true;
 			}
 		}
-		private void InitializeChannelGroups()
+		protected virtual void InitializeChannelGroups()
 		{
 			foreach (var connector in this.connectors)
 				foreach (var config in connector.ChannelGroups)
@@ -27,24 +27,13 @@
 
 		public virtual void BeginDispatch(EnvelopeMessage envelope, string channelGroup)
 		{
-			if (envelope == null)
-				throw new ArgumentNullException("envelope");
-			if (channelGroup == null)
-				throw new ArgumentNullException("channelGroup");
-
-			lock (this.groups)
-			{
-				this.ThrowWhenUninitialized();
-				this.ThrowWhenDisposed();
-
-				IChannelGroup group;
-				if (!this.groups.TryGetValue(channelGroup, out group))
-					throw new KeyNotFoundException("The key for the channel group provided was not found.");
-
-				group.BeginDispatch(envelope);
-			}
+			this.Dispatch(envelope, channelGroup, false);
 		}
 		public virtual void Dispatch(EnvelopeMessage envelope, string channelGroup)
+		{
+			this.Dispatch(envelope, channelGroup, true);
+		}
+		protected virtual void Dispatch(EnvelopeMessage envelope, string channelGroup, bool sync)
 		{
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
@@ -60,7 +49,10 @@
 				if (!this.groups.TryGetValue(channelGroup, out group))
 					throw new KeyNotFoundException("The key for the channel group provided was not found.");
 
-				group.Dispatch(envelope);
+				if (sync)
+					group.Dispatch(envelope);
+				else
+					group.BeginDispatch(envelope);
 			}
 		}
 
@@ -74,7 +66,6 @@
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenReceiving();
-
 				this.receiving = true;
 
 				foreach (var group in this.groups.Values)
@@ -82,17 +73,17 @@
 			}
 		}
 
-		private void ThrowWhenDisposed()
+		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
 				throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
 		}
-		private void ThrowWhenUninitialized()
+		protected virtual void ThrowWhenUninitialized()
 		{
 			if (!this.initialized)
 				throw new InvalidOperationException("The host has not been initialized.");
 		}
-		private void ThrowWhenReceiving()
+		protected virtual void ThrowWhenReceiving()
 		{
 			if (this.receiving)
 				throw new InvalidOperationException("A callback has already been provided.");
