@@ -28,7 +28,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Establish context = () =>
-			mockConnectors = null;
+			mockConnectors.Clear();
 
 		Because of = () =>
 			thrown = Catch.Exception(() => 
