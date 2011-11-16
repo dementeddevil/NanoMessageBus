@@ -135,11 +135,21 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_instructed_to_begin_receiving_messages
+	public class when_instructed_to_begin_receiving_messages : with_the_messaging_host
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_pass_the_callback_to_the_underlying_connection_groups = () => { };
+		static readonly Action<IMessagingChannel> callback = channel => { };
+
+		Establish context = () =>
+		{
+			mockGroup.Setup(x => x.BeginReceive(callback));
+			host.Initialize();
+		};
+
+		Because of = () =>
+			host.BeginReceive(callback);
+
+		It should_pass_the_callback_to_the_underlying_connection_groups = () =>
+			mockGroup.VerifyAll();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -185,7 +195,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_a_new_callback_is_provided_for_receiving_messages : with_the_messaging_host
+	public class when_more_than_one_callback_has_been_provided_for_receiving_messages : with_the_messaging_host
 	{
 		Establish context = () => { };
 		Because of = () => { };
@@ -344,7 +354,6 @@ namespace NanoMessageBus
 			mockGroup = new Mock<IChannelGroup>();
 
 			mockConfig.Setup(x => x.ChannelGroup).Returns(mockConfigurationGroupName);
-			mockGroup.Setup(x => x.Name).Returns(mockConfigurationGroupName);
 
 			mockConnectors = new List<Mock<IChannelConnector>> { new Mock<IChannelConnector>() };
 			mockConnectors[0].Setup(x => x.ChannelGroups).Returns(new[] { mockConfig.Object });

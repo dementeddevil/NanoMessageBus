@@ -41,6 +41,9 @@
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
+
+				foreach (var group in this.groups.Values)
+					group.BeginReceive(callback);
 			}
 		}
 
