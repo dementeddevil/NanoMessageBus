@@ -143,23 +143,55 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_instructed_to_begin_receiving_messages_without_providing_a_callback
+	public class when_instructed_to_begin_receiving_messages_without_providing_a_callback : with_the_messaging_host
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_throw_an_exception = () => { };
+		static readonly IMessagingHost host = new DefaultMessagingHost(
+			PopulatedChannelConnectors, EmptyChannelGroupFactory);
+		static Exception thrown;
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.BeginReceive(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_attempting_to_begin_receiving_messages_without_first_initializing_the_host
+	public class when_attempting_to_begin_receiving_messages_without_first_initializing_the_host : with_the_messaging_host
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_throw_an_exception = () => { };
+		static readonly IMessagingHost host = new DefaultMessagingHost(
+			PopulatedChannelConnectors, EmptyChannelGroupFactory);
+		static Exception thrown;
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.BeginReceive(c => { }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_attempting_to_receive_messages_against_a_disposed_host
+	public class when_attempting_to_receive_messages_against_a_disposed_host : with_the_messaging_host
+	{
+		static readonly IMessagingHost host = new DefaultMessagingHost(
+			PopulatedChannelConnectors, EmptyChannelGroupFactory);
+		static Exception thrown;
+
+		Establish context = () =>
+		{
+			host.Initialize();
+			host.Dispose();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.BeginReceive(c => { }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_a_new_callback_is_provided_for_receiving_messages
 	{
 		Establish context = () => { };
 		Because of = () => { };

@@ -25,12 +25,6 @@
 					this.groups[config.ChannelGroup] = this.factory(connector, config);
 		}
 
-		private void ThrowWhenDisposed()
-		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
-		}
-
 		public virtual void BeginDispatch(EnvelopeMessage envelope, string channelGroup)
 		{
 		}
@@ -40,6 +34,25 @@
 
 		public virtual void BeginReceive(Action<IMessagingChannel> callback)
 		{
+			if (callback == null)
+				throw new ArgumentNullException("callback");
+
+			lock (this.groups)
+			{
+				this.ThrowWhenDisposed();
+				this.ThrowWhenUninitialized();
+			}
+		}
+
+		private void ThrowWhenDisposed()
+		{
+			if (this.disposed)
+				throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
+		}
+		private void ThrowWhenUninitialized()
+		{
+			if (!this.initialized)
+				throw new InvalidOperationException("The host has not been initialized.");
 		}
 
 		public DefaultMessagingHost(IEnumerable<IChannelConnector> connectors, ChannelGroupFactory factory)
@@ -73,9 +86,8 @@
 
 			lock (this.groups)
 			{
-				if (this.disposed)
-					return;
-
+				// TODO: this statement isn't under test just yet
+				// if (this.disposed) return;
 				this.disposed = true;
 			}
 		}
