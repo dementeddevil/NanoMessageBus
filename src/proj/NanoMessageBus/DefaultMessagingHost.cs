@@ -86,9 +86,15 @@
 
 			lock (this.groups)
 			{
-				// TODO: this statement isn't under test just yet
-				// if (this.disposed) return;
+				if (this.disposed)
+					return;
+
 				this.disposed = true;
+
+				foreach (var group in this.groups.Values)
+					group.Dispose();
+
+				this.groups.Clear();
 			}
 		}
 

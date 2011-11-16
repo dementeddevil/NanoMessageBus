@@ -73,6 +73,7 @@ namespace NanoMessageBus
 			config1.SetupGet(x => x.ChannelGroup).Returns("config1");
 			config2.SetupGet(x => x.ChannelGroup).Returns("config2");
 
+			mockFactory = new Mock<DefaultChannelGroupFactory>();
 			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object));
 			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config1.Object));
 			mockFactory.Setup(x => x.Build(mockConnectors[1].Object, config2.Object));
@@ -101,6 +102,7 @@ namespace NanoMessageBus
 			mockConnectors[0].SetupGet(x => x.ChannelGroups).Returns(new[] { config0.Object });
 			config0.SetupGet(x => x.ChannelGroup).Returns("config0");
 
+			mockFactory = new Mock<DefaultChannelGroupFactory>();
 			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object));
 
 			RebuildHost();
@@ -289,17 +291,34 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_disposing_the_host : with_the_messaging_host
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_dispose_each_underlying_channel_group = () => { };
+		Establish context = () =>
+		{
+			mockGroup.Setup(x => x.Dispose());
+			host.Initialize();
+		};
+
+		Because of = () =>
+			host.Dispose();
+
+		It should_dispose_each_underlying_channel_group = () =>
+			mockGroup.Verify(x => x.Dispose(), Times.Once());
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_disposing_the_host_more_than_once : with_the_messaging_host
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_do_nothing = () => { };
+		Establish context = () =>
+		{
+			mockGroup.Setup(x => x.Dispose());
+			host.Initialize();
+			host.Dispose();
+		};
+
+		Because of = () =>
+			host.Dispose();
+
+		It should_do_nothing = () =>
+			mockGroup.Verify(x => x.Dispose(), Times.Once());
 	}
 
 	public abstract class with_the_messaging_host
@@ -307,6 +326,9 @@ namespace NanoMessageBus
 		protected static readonly ChannelGroupFactory EmptyFactory = (c, cg) => null;
 		protected static IList<Mock<IChannelConnector>> mockConnectors;
 		protected static Mock<DefaultChannelGroupFactory> mockFactory;
+		protected static string mockConfigurationGroupName;
+		protected static Mock<IChannelConfiguration> mockConfig;
+		protected static Mock<IChannelGroup> mockGroup;
 		protected static ChannelGroupFactory channelFactory;
 		protected static DefaultMessagingHost host;
 
@@ -317,8 +339,19 @@ namespace NanoMessageBus
 
 		Establish context = () =>
 		{
+			mockConfigurationGroupName = "Test Configuration Group";
+			mockConfig = new Mock<IChannelConfiguration>();
+			mockGroup = new Mock<IChannelGroup>();
+
+			mockConfig.Setup(x => x.ChannelGroup).Returns(mockConfigurationGroupName);
+			mockGroup.Setup(x => x.Name).Returns(mockConfigurationGroupName);
+
 			mockConnectors = new List<Mock<IChannelConnector>> { new Mock<IChannelConnector>() };
+			mockConnectors[0].Setup(x => x.ChannelGroups).Returns(new[] { mockConfig.Object });
+
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
+			mockFactory.Setup(x => x.Build(Connectors[0], mockConfig.Object)).Returns(mockGroup.Object);
+
 			RebuildHost();
 		};
 		protected static void RebuildHost()
@@ -332,8 +365,13 @@ namespace NanoMessageBus
 
 		Cleanup after = () =>
 		{
-			mockConnectors = null;
+			mockConfigurationGroupName = null;
+
+			mockConfig = null;
+			mockGroup = null;
 			mockFactory = null;
+			mockConnectors = null;
+
 			channelFactory = null;
 			host = null;
 		};
