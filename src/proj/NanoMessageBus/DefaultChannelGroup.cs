@@ -4,15 +4,10 @@
 
 	public class DefaultChannelGroup : IChannelGroup
 	{
-		public virtual string Name
-		{
-			get { return null; }
-		}
-		public virtual int ActiveThreads { get; private set; }
-
 		public virtual void Initialize()
 		{
 		}
+
 		public virtual void BeginDispatch(EnvelopeMessage envelope)
 		{
 		}
@@ -22,6 +17,14 @@
 
 		public virtual void BeginReceive(Action<IMessagingChannel> callback)
 		{
+		}
+
+		public DefaultChannelGroup()
+		{
+		}
+		~DefaultChannelGroup()
+		{
+			this.Dispose(false);
 		}
 
 		public void Dispose()

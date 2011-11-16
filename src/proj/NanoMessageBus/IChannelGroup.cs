@@ -12,13 +12,8 @@
 	public interface IChannelGroup : IDisposable
 	{
 		/// <summary>
-		/// Gets the name which uniquely identifies the channel group.
-		/// </summary>
-		string Name { get; }
-
-		/// <summary>
-		/// Starts up all of the underlying connectors, initializes all groups and their respective channels,
-		/// and otherwise prepares the messaging host to process and dispatch messages.
+		/// Starts up all of the underlying connectors, initializes all channels associated with the group,
+		/// and otherwise prepares the channel group to process and dispatch messages.
 		/// </summary>
 		void Initialize();
 
