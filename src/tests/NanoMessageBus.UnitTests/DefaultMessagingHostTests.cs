@@ -296,256 +296,6 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_asynchronously_dispatching_a_message : with_the_messaging_host
-	{
-		Establish context = () =>
-		{
-			mockGroup.Setup(x => x.BeginDispatch(mockMessage.Object, recipients));
-			host.Initialize();
-		};
-
-		Because of = () =>
-			host.BeginDispatch(defaultGroupName, mockMessage.Object, recipients);
-
-		It should_pass_the_message_to_the_specified_channel_group = () =>
-			mockGroup.Verify(x => x.BeginDispatch(mockMessage.Object, recipients), Times.Once());
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_synchronously_dispatching_a_message : with_the_messaging_host
-	{
-		Establish context = () =>
-		{
-			mockGroup.Setup(x => x.Dispatch(mockMessage.Object, recipients));
-			host.Initialize();
-		};
-
-		Because of = () =>
-			host.Dispatch(defaultGroupName, mockMessage.Object, recipients);
-
-		It should_pass_the_message_to_the_specified_channel_group = () =>
-			mockGroup.Verify(x => x.Dispatch(mockMessage.Object, recipients), Times.Once());
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_channel_group_is_specified_for_asynchronous_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(null, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_channel_group_is_specified_for_synchronous_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(null, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_message_is_provided_to_asynchronously_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, null, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_message_is_provided_to_synchronously_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, null, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_a_null_set_of_recipients_are_specified_for_asynchronous_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, mockMessage.Object, null));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_a_null_set_of_recipients_are_specified_for_synchronous_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, mockMessage.Object, null));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_recipients_are_specified_for_asynchronous_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-		{
-			recipients.Clear();
-			host.Initialize();
-		};
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_no_recipients_are_specified_for_synchronous_dispatch : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-		{
-			recipients.Clear();
-			host.Initialize();
-		};
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_attempting_to_asynchronously_dispatching_a_message_without_first_initializing_the_host : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_attempting_to_synchronously_dispatching_a_message_without_first_initializing_the_host : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_the_channel_group_specified_for_asynchronous_dispatch_doesnt_exist : with_the_messaging_host
-	{
-		const string ChannelGroup = "This group doesn't exist.";
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(ChannelGroup, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<KeyNotFoundException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_the_channel_group_specified_for_synchronous_dispatch_doesnt_exist : with_the_messaging_host
-	{
-		const string ChannelGroup = "This group doesn't exist.";
-		static Exception thrown;
-
-		Establish context = () =>
-			host.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(ChannelGroup, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<KeyNotFoundException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_asynchronously_dispatching_against_a_disposed_host : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-		{
-			host.Initialize();
-			host.Dispose();
-		};
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
-	public class when_synchronously_dispatching_against_a_disposed_host : with_the_messaging_host
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-		{
-			host.Initialize();
-			host.Dispose();
-		};
-
-		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, mockMessage.Object, recipients));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(DefaultMessagingHost))]
 	public class when_disposing_the_host : with_the_messaging_host
 	{
 		Establish context = () =>
@@ -584,13 +334,11 @@ namespace NanoMessageBus
 		protected static IList<Mock<IChannelConnector>> mockConnectors;
 		protected static Mock<DefaultChannelGroupFactory> mockFactory;
 		protected static string defaultGroupName;
-		protected static Mock<IChannelConfiguration> mockConfig;
+		static Mock<IChannelConfiguration> mockConfig;
 		protected static IList<Mock<IChannelConfiguration>> mockConfigs;
 		protected static Mock<IChannelGroup> mockGroup;
-		protected static ChannelGroupFactory channelFactory;
+		static ChannelGroupFactory channelFactory;
 		protected static DefaultMessagingHost host;
-		protected static Mock<ChannelMessage> mockMessage;
-		protected static ICollection<Uri> recipients;
 
 		protected static IList<IChannelConnector> Connectors
 		{
@@ -602,9 +350,7 @@ namespace NanoMessageBus
 			defaultGroupName = "Test Configuration Group";
 			mockConfig = new Mock<IChannelConfiguration>();
 			mockGroup = new Mock<IChannelGroup>();
-			mockMessage = new Mock<ChannelMessage>();
-			recipients = new List<Uri> { new Uri("http://localhost/") };
-
+			
 			mockConfig.Setup(x => x.ChannelGroup).Returns(defaultGroupName);
 			mockConfigs = new List<Mock<IChannelConfiguration>> { mockConfig };
 
@@ -636,8 +382,6 @@ namespace NanoMessageBus
 
 			channelFactory = null;
 			host = null;
-			mockMessage = null;
-			recipients = null;
 		};
 	}
 }

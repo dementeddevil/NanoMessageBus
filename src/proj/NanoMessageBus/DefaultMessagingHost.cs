@@ -38,45 +38,6 @@
 			}
 		}
 
-		public virtual void BeginDispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients)
-		{
-			this.Dispatch(channelGroup, message, recipients, false);
-		}
-		public virtual void Dispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients)
-		{
-			this.Dispatch(channelGroup, message, recipients, true);
-		}
-		protected virtual void Dispatch(
-			string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients, bool sync)
-		{
-			if (message == null)
-				throw new ArgumentNullException("message");
-			if (channelGroup == null)
-				throw new ArgumentNullException("channelGroup");
-
-			if (recipients == null)
-				throw new ArgumentNullException("recipients");
-
-			var list = recipients.Where(x => x != null).ToArray();
-			if (list.Length == 0)
-				throw new ArgumentException("No recipients specified.");
-
-			lock (this.groups)
-			{
-				this.ThrowWhenUninitialized();
-				this.ThrowWhenDisposed();
-
-				IChannelGroup group;
-				if (!this.groups.TryGetValue(channelGroup, out group))
-					throw new KeyNotFoundException("The key for the channel group provided was not found.");
-
-				if (sync)
-					group.Dispatch(message, list);
-				else
-					group.BeginDispatch(message, list);
-			}
-		}
-
 		public virtual void BeginReceive(Action<IMessagingChannel> callback)
 		{
 			if (callback == null)

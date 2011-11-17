@@ -4,8 +4,7 @@
 	{
 		public virtual IChannelGroup Build(IChannelConnector connector, IChannelConfiguration configuration)
 		{
-			// TODO
-			return new DefaultChannelGroup(); 
+			return new DefaultChannelGroup(connector, configuration); 
 		}
 	}
 }
