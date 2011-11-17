@@ -224,7 +224,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			host.BeginDispatch(mockMessage.Object, defaultGroupName);
+			host.BeginDispatch(defaultGroupName, mockMessage.Object);
 
 		It should_pass_the_message_to_the_specified_channel_group = () =>
 			mockGroup.Verify(x => x.BeginDispatch(mockMessage.Object), Times.Once());
@@ -240,7 +240,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			host.Dispatch(mockMessage.Object, defaultGroupName);
+			host.Dispatch(defaultGroupName, mockMessage.Object);
 
 		It should_pass_the_message_to_the_specified_channel_group = () =>
 			mockGroup.Verify(x => x.Dispatch(mockMessage.Object), Times.Once());
@@ -255,7 +255,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(null, defaultGroupName));
+			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -270,7 +270,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(null, defaultGroupName));
+			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -285,7 +285,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(mockMessage.Object, null));
+			thrown = Catch.Exception(() => host.BeginDispatch(null, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -300,7 +300,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(mockMessage.Object, null));
+			thrown = Catch.Exception(() => host.Dispatch(null, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -312,7 +312,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(mockMessage.Object, defaultGroupName));
+			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -324,7 +324,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(mockMessage.Object, defaultGroupName));
+			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -340,7 +340,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(mockMessage.Object, ChannelGroup));
+			thrown = Catch.Exception(() => host.BeginDispatch(ChannelGroup, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
@@ -356,7 +356,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(mockMessage.Object, ChannelGroup));
+			thrown = Catch.Exception(() => host.Dispatch(ChannelGroup, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
@@ -374,7 +374,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginDispatch(mockMessage.Object, defaultGroupName));
+			thrown = Catch.Exception(() => host.BeginDispatch(defaultGroupName, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -392,7 +392,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.Dispatch(mockMessage.Object, defaultGroupName));
+			thrown = Catch.Exception(() => host.Dispatch(defaultGroupName, mockMessage.Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();

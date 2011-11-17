@@ -25,15 +25,15 @@
 					this.groups[config.ChannelGroup] = this.factory(connector, config);
 		}
 
-		public virtual void BeginDispatch(ChannelMessage message, string channelGroup)
+		public virtual void BeginDispatch(string channelGroup, ChannelMessage message)
 		{
-			this.Dispatch(message, channelGroup, false);
+			this.Dispatch(channelGroup, message, false);
 		}
-		public virtual void Dispatch(ChannelMessage message, string channelGroup)
+		public virtual void Dispatch(string channelGroup, ChannelMessage message)
 		{
-			this.Dispatch(message, channelGroup, true);
+			this.Dispatch(channelGroup, message, true);
 		}
-		protected virtual void Dispatch(ChannelMessage message, string channelGroup, bool sync)
+		protected virtual void Dispatch(string channelGroup, ChannelMessage message, bool sync)
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
