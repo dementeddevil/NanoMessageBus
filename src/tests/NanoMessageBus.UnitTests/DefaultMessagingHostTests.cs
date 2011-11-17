@@ -215,6 +215,87 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
+	public class when_requesting_a_channel_group_without_initializing_the_host : with_the_messaging_host
+	{
+		static Exception thrown;
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.GetChannelGroup(defaultGroupName));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_no_channel_group_is_requested : with_the_messaging_host
+	{
+		static Exception thrown;
+
+		Establish context = () =>
+			host.Initialize();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.GetChannelGroup(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_the_requested_channel_group_doesnt_exist : with_the_messaging_host
+	{
+		static Exception thrown;
+
+		Establish context = () =>
+			host.Initialize();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.GetChannelGroup("Some channel group that doesn't exist."));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<KeyNotFoundException>();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_requesting_a_channel_group_from_a_disposed_host : with_the_messaging_host
+	{
+		static Exception thrown;
+
+		Establish context = () =>
+			host.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.GetChannelGroup(defaultGroupName));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_requesting_a_named_channel_group : with_the_messaging_host
+	{
+		static IChannelDispatch group;
+
+		Establish context = () =>
+		{
+			var otherConfig = new Mock<IChannelConfiguration>();
+			otherConfig.Setup(x => x.ChannelGroup).Returns("some other group");
+			mockConfigs.Add(otherConfig);
+
+			var otherGroup = new Mock<IChannelGroup>().Object;
+			mockFactory.Setup(x => x.Build(Connectors[0], otherConfig.Object)).Returns(otherGroup);
+
+			host.Initialize();
+		};
+
+		Because of = () =>
+			group = host.GetChannelGroup(defaultGroupName);
+
+		It should_return_the_correct_instance = () =>
+			ReferenceEquals(group, mockGroup.Object).ShouldBeTrue();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
 	public class when_asynchronously_dispatching_a_message : with_the_messaging_host
 	{
 		Establish context = () =>
@@ -504,6 +585,7 @@ namespace NanoMessageBus
 		protected static Mock<DefaultChannelGroupFactory> mockFactory;
 		protected static string defaultGroupName;
 		protected static Mock<IChannelConfiguration> mockConfig;
+		protected static IList<Mock<IChannelConfiguration>> mockConfigs;
 		protected static Mock<IChannelGroup> mockGroup;
 		protected static ChannelGroupFactory channelFactory;
 		protected static DefaultMessagingHost host;
@@ -524,9 +606,10 @@ namespace NanoMessageBus
 			recipients = new List<Uri> { new Uri("http://localhost/") };
 
 			mockConfig.Setup(x => x.ChannelGroup).Returns(defaultGroupName);
+			mockConfigs = new List<Mock<IChannelConfiguration>> { mockConfig };
 
 			mockConnectors = new List<Mock<IChannelConnector>> { new Mock<IChannelConnector>() };
-			mockConnectors[0].Setup(x => x.ChannelGroups).Returns(new[] { mockConfig.Object });
+			mockConnectors[0].Setup(x => x.ChannelGroups).Returns(mockConfigs.Select(x => x.Object));
 
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
 			mockFactory.Setup(x => x.Build(Connectors[0], mockConfig.Object)).Returns(mockGroup.Object);

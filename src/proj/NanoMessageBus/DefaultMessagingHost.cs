@@ -25,6 +25,19 @@
 					this.groups[config.ChannelGroup] = this.factory(connector, config);
 		}
 
+		public IChannelDispatch GetChannelGroup(string channelGroup)
+		{
+			if (channelGroup == null)
+				throw new ArgumentNullException("channelGroup");
+
+			lock (this.groups)
+			{
+				this.ThrowWhenDisposed();
+				this.ThrowWhenUninitialized();
+				return this.groups[channelGroup];
+			}
+		}
+
 		public virtual void BeginDispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients)
 		{
 			this.Dispatch(channelGroup, message, recipients, false);
