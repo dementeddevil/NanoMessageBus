@@ -30,7 +30,8 @@
 		/// <exception cref="KeyNotFoundException"></exception>
 		/// <param name="channelGroup">The channel group into which the message will be dispatched.</param>
 		/// <param name="message">The message to be dispatched.</param>
-		void BeginDispatch(string channelGroup, ChannelMessage message);
+		/// <param name="recipients">The recipients to whom a copy of the message will be dispatched.</param>
+		void BeginDispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients);
 
 		/// <summary>
 		/// For dispatch-only channel groups, it blocks the current thread while dispatching the message provided;
@@ -40,6 +41,7 @@
 		/// <exception cref="KeyNotFoundException"></exception>
 		/// <param name="channelGroup">The channel group into which the message will be dispatched.</param>
 		/// <param name="message">The message to be dispatched.</param>
-		void Dispatch(string channelGroup, ChannelMessage message);
+		/// <param name="recipients">The recipients to whom a copy of the message will be dispatched.</param>
+		void Dispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients);
 	}
 }

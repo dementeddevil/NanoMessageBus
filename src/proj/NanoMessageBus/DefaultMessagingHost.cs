@@ -25,20 +25,28 @@
 					this.groups[config.ChannelGroup] = this.factory(connector, config);
 		}
 
-		public virtual void BeginDispatch(string channelGroup, ChannelMessage message)
+		public virtual void BeginDispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients)
 		{
-			this.Dispatch(channelGroup, message, false);
+			this.Dispatch(channelGroup, message, recipients, false);
 		}
-		public virtual void Dispatch(string channelGroup, ChannelMessage message)
+		public virtual void Dispatch(string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients)
 		{
-			this.Dispatch(channelGroup, message, true);
+			this.Dispatch(channelGroup, message, recipients, true);
 		}
-		protected virtual void Dispatch(string channelGroup, ChannelMessage message, bool sync)
+		protected virtual void Dispatch(
+			string channelGroup, ChannelMessage message, IEnumerable<Uri> recipients, bool sync)
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
+
+			if (recipients == null)
+				throw new ArgumentNullException("recipients");
+
+			var list = recipients.Where(x => x != null).ToArray();
+			if (list.Length == 0)
+				throw new ArgumentException("No recipients specified.");
 
 			lock (this.groups)
 			{
@@ -50,9 +58,9 @@
 					throw new KeyNotFoundException("The key for the channel group provided was not found.");
 
 				if (sync)
-					group.Dispatch(message);
+					group.Dispatch(message, list);
 				else
-					group.BeginDispatch(message);
+					group.BeginDispatch(message, list);
 			}
 		}
 

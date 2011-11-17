@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using System.Collections.Generic;
 
 	public class DefaultChannelGroup : IChannelGroup
 	{
@@ -8,10 +9,10 @@
 		{
 		}
 
-		public virtual void BeginDispatch(ChannelMessage message)
+		public virtual void BeginDispatch(ChannelMessage message, IEnumerable<Uri> recipients)
 		{
 		}
-		public virtual void Dispatch(ChannelMessage message)
+		public virtual void Dispatch(ChannelMessage message, IEnumerable<Uri> recipients)
 		{
 		}
 
