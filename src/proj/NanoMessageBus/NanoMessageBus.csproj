@@ -53,7 +53,7 @@
     <Compile Include="IChannelGroup.cs" />
     <Compile Include="IChannelTransaction.cs" />
     <Compile Include="IChannelConnector.cs" />
-    <Compile Include="EnvelopeMessage.cs" />
+    <Compile Include="ChannelMessage.cs" />
     <Compile Include="IMessagingChannel.cs" />
     <Compile Include="IMessagingHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -68,6 +68,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

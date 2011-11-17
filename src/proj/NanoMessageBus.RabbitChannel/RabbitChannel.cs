@@ -8,7 +8,7 @@
 		{
 			get { return null; }
 		}
-		public virtual EnvelopeMessage CurrentMessage
+		public virtual ChannelMessage CurrentMessage
 		{
 			get { return null; }
 		}
@@ -19,7 +19,7 @@
 		public virtual void Receive(Action<IMessagingChannel> callback)
 		{
 		}
-		public virtual void Send(EnvelopeMessage envelope, params Uri[] destinations)
+		public virtual void Send(ChannelMessage message, params Uri[] destinations)
 		{
 		}
 

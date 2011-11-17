@@ -28,9 +28,9 @@
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="KeyNotFoundException"></exception>
-		/// <param name="envelope">The message envelope to be dispatched.</param>
+		/// <param name="message">The message to be dispatched.</param>
 		/// <param name="channelGroup">The channel group into which the message will be dispatched.</param>
-		void BeginDispatch(EnvelopeMessage envelope, string channelGroup);
+		void BeginDispatch(ChannelMessage message, string channelGroup);
 
 		/// <summary>
 		/// For dispatch-only channel groups, it blocks the current thread while dispatching the message provided;
@@ -38,8 +38,8 @@
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="KeyNotFoundException"></exception>
-		/// <param name="envelope">The message envelope to be dispatched.</param>
+		/// <param name="message">The message to be dispatched.</param>
 		/// <param name="channelGroup">The channel group into which the message will be dispatched.</param>
-		void Dispatch(EnvelopeMessage envelope, string channelGroup);
+		void Dispatch(ChannelMessage message, string channelGroup);
 	}
 }

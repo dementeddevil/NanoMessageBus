@@ -441,7 +441,7 @@ namespace NanoMessageBus
 		protected static Mock<IChannelGroup> mockGroup;
 		protected static ChannelGroupFactory channelFactory;
 		protected static DefaultMessagingHost host;
-		protected static Mock<EnvelopeMessage> mockMessage;
+		protected static Mock<ChannelMessage> mockMessage;
 
 		protected static IList<IChannelConnector> Connectors
 		{
@@ -453,7 +453,7 @@ namespace NanoMessageBus
 			defaultGroupName = "Test Configuration Group";
 			mockConfig = new Mock<IChannelConfiguration>();
 			mockGroup = new Mock<IChannelGroup>();
-			mockMessage = new Mock<EnvelopeMessage>();
+			mockMessage = new Mock<ChannelMessage>();
 
 			mockConfig.Setup(x => x.ChannelGroup).Returns(defaultGroupName);
 

@@ -28,15 +28,15 @@
 		/// asynchronous dispatch; for full-duplex channel groups (send/receive), it throws an exception.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
-		/// <param name="envelope">The message envelope to be dispatched.</param>
-		void BeginDispatch(EnvelopeMessage envelope);
+		/// <param name="message">The message to be dispatched.</param>
+		void BeginDispatch(ChannelMessage message);
 
 		/// <summary>
 		/// For dispatch-only channel groups, it blocks the current thread while dispatching the message provided;
 		/// for full-duplex channel groups (send/receive), it throws an exception.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
-		/// <param name="envelope">The message envelope to be dispatched.</param>
-		void Dispatch(EnvelopeMessage envelope);
+		/// <param name="message">The message to be dispatched.</param>
+		void Dispatch(ChannelMessage message);
 	}
 }

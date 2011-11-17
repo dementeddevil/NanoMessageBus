@@ -8,10 +8,10 @@
 		{
 		}
 
-		public virtual void BeginDispatch(EnvelopeMessage envelope)
+		public virtual void BeginDispatch(ChannelMessage message)
 		{
 		}
-		public virtual void Dispatch(EnvelopeMessage envelope)
+		public virtual void Dispatch(ChannelMessage message)
 		{
 		}
 

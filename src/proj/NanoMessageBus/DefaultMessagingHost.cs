@@ -25,18 +25,18 @@
 					this.groups[config.ChannelGroup] = this.factory(connector, config);
 		}
 
-		public virtual void BeginDispatch(EnvelopeMessage envelope, string channelGroup)
+		public virtual void BeginDispatch(ChannelMessage message, string channelGroup)
 		{
-			this.Dispatch(envelope, channelGroup, false);
+			this.Dispatch(message, channelGroup, false);
 		}
-		public virtual void Dispatch(EnvelopeMessage envelope, string channelGroup)
+		public virtual void Dispatch(ChannelMessage message, string channelGroup)
 		{
-			this.Dispatch(envelope, channelGroup, true);
+			this.Dispatch(message, channelGroup, true);
 		}
-		protected virtual void Dispatch(EnvelopeMessage envelope, string channelGroup, bool sync)
+		protected virtual void Dispatch(ChannelMessage message, string channelGroup, bool sync)
 		{
-			if (envelope == null)
-				throw new ArgumentNullException("envelope");
+			if (message == null)
+				throw new ArgumentNullException("message");
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
 
@@ -50,9 +50,9 @@
 					throw new KeyNotFoundException("The key for the channel group provided was not found.");
 
 				if (sync)
-					group.Dispatch(envelope);
+					group.Dispatch(message);
 				else
-					group.BeginDispatch(envelope);
+					group.BeginDispatch(message);
 			}
 		}
 
