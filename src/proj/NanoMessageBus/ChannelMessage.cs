@@ -44,7 +44,7 @@
 		/// </summary>
 		public virtual ICollection<object> Messages
 		{
-			get { return new ReadOnlyCollection<object>(this.messages); }
+			get { return this.immutable; }
 		}
 
 		/// <summary>
@@ -72,7 +72,8 @@
 			this.messageId = messageId;
 			this.returnAddress = returnAddress;
 			this.headers = headers ?? new Dictionary<string, string>();
-			this.messages = messages.ToArray();
+			this.messages = messages.Where(x => x != null).ToArray();
+			this.immutable = new ReadOnlyCollection<object>(this.messages);
 		}
 
 		/// <summary>
@@ -90,5 +91,8 @@
 		private readonly IDictionary<string, string> headers;
 		[DataMember(Order = 4, EmitDefaultValue = false, IsRequired = false, Name = "msgs")]
 		private readonly IList<object> messages;
+
+		[NonSerialized, IgnoreDataMember, XmlIgnore, SoapIgnore]
+		private readonly ICollection<object> immutable;
 	}
 }
