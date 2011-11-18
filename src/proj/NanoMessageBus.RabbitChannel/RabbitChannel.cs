@@ -19,7 +19,7 @@
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
 		}
-		public virtual void Send(ChannelMessage message, params Uri[] destinations)
+		public virtual void Send(ChannelEnvelope envelope)
 		{
 		}
 

@@ -15,7 +15,9 @@ namespace NanoMessageBus
 	{
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
 		static readonly ICollection<Uri> recipients = new HashSet<Uri>
-		{ ChannelEnvelope.LoopbackAddress, new Uri("msmq://testing"), null };
+		{
+			ChannelEnvelope.LoopbackAddress, new Uri("msmq://testing"), null
+		};
 		static ChannelEnvelope envelope;
 
 		Because of = () =>

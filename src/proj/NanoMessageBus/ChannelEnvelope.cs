@@ -18,12 +18,12 @@
 		/// <summary>
 		/// Gets the message to be dispatched.
 		/// </summary>
-		public ChannelMessage Message { get; private set; }
+		public virtual ChannelMessage Message { get; private set; }
 
 		/// <summary>
 		/// Gets the collection of recipients to which the message will be sent.
 		/// </summary>
-		public ICollection<Uri> Recipients { get; private set; }
+		public virtual ICollection<Uri> Recipients { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the ChannelEnvelope class.
@@ -31,6 +31,7 @@
 		/// <param name="message">The message to be dispatched</param>
 		/// <param name="recipients">The collection of recipients to which the message will be sent</param>
 		public ChannelEnvelope(ChannelMessage message, IEnumerable<Uri> recipients)
+			: this()
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
@@ -43,6 +44,13 @@
 
 			if (this.Recipients.Count == 0)
 				throw new ArgumentException("No recipients were provided.", "recipients");
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the ChannelEnvelope class.
+		/// </summary>
+		protected ChannelEnvelope()
+		{
 		}
 	}
 }

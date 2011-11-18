@@ -1,8 +1,6 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Linq;
 
 	public class DefaultChannelGroup : IChannelGroup
 	{
@@ -16,24 +14,18 @@
 			this.initialized = true;
 		}
 
-		public virtual void BeginDispatch(ChannelMessage message, IEnumerable<Uri> recipients)
+		public virtual void BeginDispatch(ChannelEnvelope envelope)
 		{
-			this.Dispatch(message, recipients, false);
+			this.Dispatch(envelope, false); // TODO: hand it off
 		}
-		public virtual void Dispatch(ChannelMessage message, IEnumerable<Uri> recipients)
+		public virtual void Dispatch(ChannelEnvelope envelope)
 		{
-			this.Dispatch(message, recipients, true);
+			this.Dispatch(envelope, true); // TODO: hand it off
 		}
-		protected virtual void Dispatch(ChannelMessage message, IEnumerable<Uri> recipients, bool sync)
+		protected virtual void Dispatch(ChannelEnvelope envelope, bool sync)
 		{
-			if (message == null)
-				throw new ArgumentNullException("message");
-			if (recipients == null)
-				throw new ArgumentNullException("recipients");
-
-			var list = recipients.Where(x => x != null).ToArray();
-			if (list.Length == 0)
-				throw new ArgumentException("No recipients specified.", "recipients");
+			if (envelope == null)
+				throw new ArgumentNullException("envelope");
 
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();

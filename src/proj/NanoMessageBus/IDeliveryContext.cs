@@ -24,11 +24,8 @@
 		/// <summary>
 		/// Sends the message specified to the destinations provided.
 		/// </summary>
-		/// <param name="message">The message containing the logical messages to be sent.</param>
-		/// <param name="destinations">The destinations to which the message should be sent.</param>
-		/// <remarks>
-		/// When no destinations are provided, the message is to be re-enqueued at the same location.
-		/// </remarks>
-		void Send(ChannelMessage message, params Uri[] destinations);
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
+		void Send(ChannelEnvelope envelope);
 	}
 }
