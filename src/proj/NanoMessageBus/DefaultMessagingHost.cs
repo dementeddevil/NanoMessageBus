@@ -38,7 +38,7 @@
 			}
 		}
 
-		public virtual void BeginReceive(Action<IMessagingChannel> callback)
+		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
 				throw new ArgumentNullException("callback");

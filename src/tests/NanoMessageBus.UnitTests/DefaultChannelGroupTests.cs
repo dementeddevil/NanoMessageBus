@@ -225,7 +225,7 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_attempting_to_receive_messages : with_a_channel_group
 	{
-		static readonly Action<IMessagingChannel> callback = channel => { };
+		static readonly Action<IDeliveryContext> callback = context => { };
 
 		Establish context = () =>
 			channelGroup.Initialize();
@@ -281,7 +281,7 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_more_than_one_callback_has_been_provided_for_receiving_messages : with_a_channel_group
 	{
-		static readonly Action<IMessagingChannel> callback = channel => { };
+		static readonly Action<IDeliveryContext> callback = channel => { };
 		static Exception thrown;
 
 		Establish context = () =>
@@ -300,7 +300,7 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_attempting_to_receive_from_a_dispatch_only_channel_group : with_a_channel_group
 	{
-		static readonly Action<IMessagingChannel> callback = channel => { };
+		static readonly Action<IDeliveryContext> callback = channel => { };
 		static Exception thrown;
 
 		Establish context = () =>

@@ -16,7 +16,7 @@
 		{
 			get { return null; }
 		}
-		public virtual void Receive(Action<IMessagingChannel> callback)
+		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
 		}
 		public virtual void Send(ChannelMessage message, params Uri[] destinations)

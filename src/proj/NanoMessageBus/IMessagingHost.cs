@@ -22,7 +22,7 @@
 		/// <param name="callback">The callback to which any received messages should be dispatched.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
-		void BeginReceive(Action<IMessagingChannel> callback);
+		void BeginReceive(Action<IDeliveryContext> callback);
 
 		/// <summary>
 		/// Obtains a reference to the channel group for the key specified.

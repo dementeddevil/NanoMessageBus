@@ -55,6 +55,7 @@
     <Compile Include="IChannelTransaction.cs" />
     <Compile Include="IChannelConnector.cs" />
     <Compile Include="ChannelMessage.cs" />
+    <Compile Include="IDeliveryContext.cs" />
     <Compile Include="IMessagingChannel.cs" />
     <Compile Include="IMessagingHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

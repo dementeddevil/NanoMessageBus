@@ -8,32 +8,12 @@
 	/// <remarks>
 	/// Instances of this class are single threaded and should not be shared between threads.
 	/// </remarks>
-	public interface IMessagingChannel : IDisposable
+	public interface IMessagingChannel : IDeliveryContext, IDisposable
 	{
 		/// <summary>
 		/// Gets the value which uniquely identifies the group to which this channel belongs.
 		/// </summary>
 		string ChannelGroup { get; }
-
-		/// <summary>
-		/// Gets the current inbound message being handled on the channel.
-		/// </summary>
-		ChannelMessage CurrentMessage { get; }
-
-		/// <summary>
-		/// Gets the current transaction associated with the channel, if transactions are available.
-		/// </summary>
-		IChannelTransaction CurrentTransaction { get; }
-
-		/// <summary>
-		/// Sends the message specified to the destinations provided.
-		/// </summary>
-		/// <param name="message">The message containing the logical messages to be sent.</param>
-		/// <param name="destinations">The destinations to which the message should be sent.</param>
-		/// <remarks>
-		/// When no destinations are provided, the message is to be re-enqueued at the same location.
-		/// </remarks>
-		void Send(ChannelMessage message, params Uri[] destinations);
 
 		/// <summary>
 		/// Receive the message from the channel, if any, and dispatches it to the callback provided.
@@ -43,6 +23,6 @@
 		/// <remarks>
 		/// The timeout, if any, has been specified as part of the channel configuration.
 		/// </remarks>
-		void Receive(Action<IMessagingChannel> callback);
+		void Receive(Action<IDeliveryContext> callback);
 	}
 }

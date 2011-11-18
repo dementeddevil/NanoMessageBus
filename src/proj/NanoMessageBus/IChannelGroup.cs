@@ -21,6 +21,6 @@
 		/// Begins streaming any available inbound messages to the callback provided.
 		/// </summary>
 		/// <param name="callback">The callback to which any received messages should be dispatched.</param>
-		void BeginReceive(Action<IMessagingChannel> callback);
+		void BeginReceive(Action<IDeliveryContext> callback);
 	}
 }
