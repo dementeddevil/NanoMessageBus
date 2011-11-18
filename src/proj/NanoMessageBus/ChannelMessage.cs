@@ -82,13 +82,13 @@
 		{
 		}
 
-		[DataMember(Order = 1, EmitDefaultValue = false, IsRequired = false)]
+		[DataMember(Order = 1, EmitDefaultValue = false, IsRequired = false, Name = "id")]
 		private readonly Guid messageId;
-		[DataMember(Order = 2, EmitDefaultValue = false, IsRequired = false)]
+		[DataMember(Order = 2, EmitDefaultValue = false, IsRequired = false, Name = "sender")]
 		private readonly Uri returnAddress;
-		[DataMember(Order = 3, EmitDefaultValue = false, IsRequired = false)]
+		[DataMember(Order = 3, EmitDefaultValue = false, IsRequired = false, Name = "head")]
 		private readonly IDictionary<string, string> headers;
-		[DataMember(Order = 4, EmitDefaultValue = false, IsRequired = false)]
+		[DataMember(Order = 4, EmitDefaultValue = false, IsRequired = false, Name = "msgs")]
 		private readonly IList<object> messages;
 	}
 }
