@@ -5,6 +5,7 @@ namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Configuration;
 	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
@@ -132,6 +133,20 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	public class when_initializing_does_not_create_any_channel_groups : with_the_messaging_host
+	{
+		static Exception thrown;
+
+		Establish context = () =>
+			mockConfigs.Clear();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.Initialize());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ConfigurationErrorsException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]

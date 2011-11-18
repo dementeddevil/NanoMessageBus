@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Configuration;
 	using System.Linq;
 
 	public class DefaultMessagingHost : IMessagingHost
@@ -23,6 +24,9 @@
 			foreach (var connector in this.connectors)
 				foreach (var config in connector.ChannelGroups)
 					this.groups[config.ChannelGroup] = this.factory(connector, config);
+
+			if (this.groups.Count == 0)
+				throw new ConfigurationErrorsException("No channel groups have been configured.");
 		}
 
 		public IChannelDispatch GetChannelGroup(string channelGroup)
