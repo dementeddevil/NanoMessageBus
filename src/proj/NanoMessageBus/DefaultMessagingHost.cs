@@ -23,10 +23,15 @@
 		{
 			foreach (var connector in this.connectors)
 				foreach (var config in connector.ChannelGroups)
-					this.groups[config.ChannelGroup] = this.factory(connector, config);
+					this.AddChannelGroup(config.ChannelGroup, this.factory(connector, config));
 
-			if (this.groups.Count == 0)
+			if (this.inbound.Count == 0)
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
+		}
+		protected virtual void AddChannelGroup(string name, IChannelGroup group)
+		{
+			var dictionary = group.DispatchOnly ? this.outbound : this.inbound;
+			dictionary[name] = group;
 		}
 
 		public virtual IChannelDispatch GetDispatchChannel(string channelGroup)
@@ -40,7 +45,7 @@
 				this.ThrowWhenUninitialized();
 
 				IChannelGroup group;
-				if (this.groups.TryGetValue(channelGroup, out group) && group.DispatchOnly)
+				if (this.outbound.TryGetValue(channelGroup, out group) && group.DispatchOnly)
 					return group;
 
 				throw new KeyNotFoundException("Could not find a dispatch-only channel group from the key provided.");
@@ -59,7 +64,7 @@
 				this.ThrowWhenReceiving();
 				this.receiving = true;
 
-				foreach (var group in this.groups.Values.Where(x => !x.DispatchOnly))
+				foreach (var group in this.inbound.Values)
 					group.BeginReceive(callback);
 			}
 		}
@@ -116,15 +121,16 @@
 
 				this.disposed = true;
 
-				foreach (var group in this.groups.Values)
+				foreach (var group in this.inbound.Values)
 					group.Dispose(); // TODO: make sure this doesn't wrap around and result in a deadlock
 
-				this.groups.Clear();
+				this.inbound.Clear();
 			}
 		}
 
 		private readonly object sync = new object();
-		private readonly IDictionary<string, IChannelGroup> groups = new Dictionary<string, IChannelGroup>();
+		private readonly IDictionary<string, IChannelGroup> inbound = new Dictionary<string, IChannelGroup>();
+		private readonly IDictionary<string, IChannelGroup> outbound = new Dictionary<string, IChannelGroup>();
 		private readonly ICollection<IChannelConnector> connectors;
 		private readonly ChannelGroupFactory factory;
 		private bool receiving;

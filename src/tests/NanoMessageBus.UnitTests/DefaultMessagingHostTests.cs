@@ -75,9 +75,9 @@ namespace NanoMessageBus
 			config2.SetupGet(x => x.ChannelGroup).Returns("config2");
 
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
-			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object));
-			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config1.Object));
-			mockFactory.Setup(x => x.Build(mockConnectors[1].Object, config2.Object));
+			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object)).Returns(mockGroup.Object);
+			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config1.Object)).Returns(mockGroup.Object);
+			mockFactory.Setup(x => x.Build(mockConnectors[1].Object, config2.Object)).Returns(mockGroup.Object);
 
 			RebuildHost();
 		};
@@ -104,7 +104,7 @@ namespace NanoMessageBus
 			config0.SetupGet(x => x.ChannelGroup).Returns("config0");
 
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
-			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object));
+			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object)).Returns(mockGroup.Object);
 
 			RebuildHost();
 		};
