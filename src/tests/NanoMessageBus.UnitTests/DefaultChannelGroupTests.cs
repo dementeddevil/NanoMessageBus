@@ -279,7 +279,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
-	public class when_more_than_one_callback_has_been_provided_for_receiving_messages : with_a_channel_group
+	public class when_more_than_one_callback_has_been_provided_for_receiving_messages_from_the_group : with_a_channel_group
 	{
 		static readonly Action<IDeliveryContext> callback = channel => { };
 		static Exception thrown;

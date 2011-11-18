@@ -137,7 +137,7 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_instructed_to_begin_receiving_messages : with_the_messaging_host
 	{
-		static readonly Action<IMessagingChannel> callback = channel => { };
+		static readonly Action<IDeliveryContext> callback = channel => { };
 
 		Establish context = () =>
 		{
@@ -153,9 +153,9 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_more_than_one_callback_has_been_provided_for_receiving_messages : with_the_messaging_host
+	public class when_more_than_one_callback_has_been_provided_for_receiving_messages_from_the_host : with_the_messaging_host
 	{
-		static readonly Action<IMessagingChannel> callback = channel => { };
+		static readonly Action<IDeliveryContext> callback = channel => { };
 		static Exception thrown;
 
 		Establish context = () =>
