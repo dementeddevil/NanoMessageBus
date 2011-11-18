@@ -44,6 +44,7 @@
     <Compile Include="..\..\proj\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ChannelEnvelopeTests.cs" />
     <Compile Include="DefaultChannelGroupTests.cs" />
     <Compile Include="DefaultMessagingHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

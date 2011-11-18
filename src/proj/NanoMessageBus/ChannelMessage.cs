@@ -72,7 +72,7 @@
 			this.messageId = messageId;
 			this.returnAddress = returnAddress;
 			this.headers = headers ?? new Dictionary<string, string>();
-			this.messages = messages.Where(x => x != null).ToArray();
+			this.messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
 			this.immutable = new ReadOnlyCollection<object>(this.messages);
 		}
 

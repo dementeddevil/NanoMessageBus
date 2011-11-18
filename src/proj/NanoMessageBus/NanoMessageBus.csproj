@@ -42,6 +42,7 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ChannelEnvelope.cs" />
     <Compile Include="ChannelException.cs" />
     <Compile Include="ChannelConnectionException.cs" />
     <Compile Include="ChannelGroupFactory.cs" />
