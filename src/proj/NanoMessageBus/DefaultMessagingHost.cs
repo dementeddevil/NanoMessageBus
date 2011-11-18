@@ -29,7 +29,7 @@
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
 		}
 
-		public IChannelDispatch GetDispatchChannel(string channelGroup)
+		public virtual IChannelDispatch GetDispatchChannel(string channelGroup)
 		{
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
