@@ -26,7 +26,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			channelGroup.BeginDispatch(envelope);
+			channelGroup.BeginDispatch(envelope, () => { });
 
 		It should_pass_the_message_to_underlying_connector;
 	}
@@ -53,7 +53,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, () => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -83,7 +83,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null, () => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -105,12 +105,27 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
+	public class when_no_completion_callback_is_provided_for_asynchronous_dispatch : with_a_channel_group
+	{
+		static Exception thrown;
+
+		Establish context = () =>
+			channelGroup.Initialize();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
 	public class when_attempting_to_asynchronously_dispatching_a_message_without_first_initializing_the_group : with_a_channel_group
 	{
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, () => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -140,7 +155,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, () => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -261,7 +276,7 @@ namespace NanoMessageBus
 
 	public abstract class with_a_channel_group
 	{
-		protected static IChannelGroup channelGroup;
+		protected static DefaultChannelGroup channelGroup;
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<IChannelConfiguration> mockConfig;
 		protected static ChannelEnvelope envelope;

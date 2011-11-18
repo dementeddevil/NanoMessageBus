@@ -14,8 +14,11 @@
 			this.initialized = true;
 		}
 
-		public virtual void BeginDispatch(ChannelEnvelope envelope)
+		public virtual void BeginDispatch(ChannelEnvelope envelope, Action completed)
 		{
+			if (completed == null)
+				throw new ArgumentNullException("completed");
+
 			this.Dispatch(envelope, false); // TODO: hand it off
 		}
 		public virtual void Dispatch(ChannelEnvelope envelope)
