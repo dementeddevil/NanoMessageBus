@@ -152,19 +152,31 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_instructed_to_begin_receiving_messages : with_the_messaging_host
 	{
+		static readonly Mock<IChannelGroup> otherGroup = new Mock<IChannelGroup>();
 		static readonly Action<IDeliveryContext> callback = channel => { };
 
 		Establish context = () =>
 		{
+			var otherConfig = new Mock<IChannelConfiguration>();
+			otherConfig.Setup(x => x.ChannelGroup).Returns("dispatch-only group");
+			mockConfigs.Add(otherConfig);
+
+			otherGroup.Setup(x => x.DispatchOnly).Returns(true); // default group is dispatch-only
+			mockFactory.Setup(x => x.Build(Connectors[0], otherConfig.Object)).Returns(otherGroup.Object);
+
 			mockGroup.Setup(x => x.BeginReceive(callback));
+
 			host.Initialize();
 		};
 
 		Because of = () =>
 			host.BeginReceive(callback);
 
-		It should_pass_the_callback_to_the_underlying_connection_groups = () =>
+		It should_pass_the_callback_to_the_full_duplex_channel_groups = () =>
 			mockGroup.Verify(x => x.BeginReceive(callback), Times.Once());
+
+		It should_NOT_pass_the_callback_to_the_dispatch_only_channel_groups = () =>
+			otherGroup.Verify(x => x.BeginReceive(callback), Times.Never());
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -235,7 +247,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetChannelGroup(defaultGroupName));
+			thrown = Catch.Exception(() => host.GetDispatchChannel(defaultGroupName));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -250,7 +262,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetChannelGroup(null));
+			thrown = Catch.Exception(() => host.GetDispatchChannel(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -265,7 +277,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetChannelGroup("Some channel group that doesn't exist."));
+			thrown = Catch.Exception(() => host.GetDispatchChannel("Some channel group that doesn't exist."));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
@@ -280,10 +292,25 @@ namespace NanoMessageBus
 			host.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetChannelGroup(defaultGroupName));
+			thrown = Catch.Exception(() => host.GetDispatchChannel(defaultGroupName));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(DefaultMessagingHost))]
+	public class when_requesting_a_full_duplex_channel_group_for_dispatch : with_the_messaging_host
+	{
+		static Exception thrown;
+
+		Establish context = () =>
+			host.Initialize();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => host.GetDispatchChannel(defaultGroupName));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<KeyNotFoundException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -297,6 +324,8 @@ namespace NanoMessageBus
 			otherConfig.Setup(x => x.ChannelGroup).Returns("some other group");
 			mockConfigs.Add(otherConfig);
 
+			mockGroup.Setup(x => x.DispatchOnly).Returns(true); // default group is dispatch-only
+
 			var otherGroup = new Mock<IChannelGroup>().Object;
 			mockFactory.Setup(x => x.Build(Connectors[0], otherConfig.Object)).Returns(otherGroup);
 
@@ -304,7 +333,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			group = host.GetChannelGroup(defaultGroupName);
+			group = host.GetDispatchChannel(defaultGroupName);
 
 		It should_return_the_correct_instance = () =>
 			ReferenceEquals(group, mockGroup.Object).ShouldBeTrue();

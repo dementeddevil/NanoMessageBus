@@ -36,6 +36,6 @@
 		/// <exception cref="KeyNotFoundException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
 		/// <returns>A reference to the outbound-based method of the desired channel group.</returns>
-		IChannelDispatch GetChannelGroup(string channelGroup);
+		IChannelDispatch GetDispatchChannel(string channelGroup);
 	}
 }

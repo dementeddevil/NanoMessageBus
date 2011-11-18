@@ -29,7 +29,7 @@
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
 		}
 
-		public IChannelDispatch GetChannelGroup(string channelGroup)
+		public IChannelDispatch GetDispatchChannel(string channelGroup)
 		{
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
@@ -38,7 +38,12 @@
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
-				return this.groups[channelGroup];
+
+				IChannelGroup group;
+				if (this.groups.TryGetValue(channelGroup, out group) && group.DispatchOnly)
+					return group;
+
+				throw new KeyNotFoundException("Could not find a dispatch-only channel group from the key provided.");
 			}
 		}
 
@@ -54,7 +59,7 @@
 				this.ThrowWhenReceiving();
 				this.receiving = true;
 
-				foreach (var group in this.groups.Values)
+				foreach (var group in this.groups.Values.Where(x => !x.DispatchOnly))
 					group.BeginReceive(callback);
 			}
 		}
