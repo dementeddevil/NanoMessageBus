@@ -34,7 +34,7 @@
 			dictionary[name] = group;
 		}
 
-		public virtual IChannelDispatch GetDispatchChannel(string channelGroup)
+		public virtual IOutboundChannel GetOutboundChannel(string channelGroup)
 		{
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");

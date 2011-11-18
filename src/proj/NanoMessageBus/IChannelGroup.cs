@@ -9,7 +9,7 @@
 	/// <remarks>
 	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
 	/// </remarks>
-	public interface IChannelGroup : IChannelDispatch, IDisposable
+	public interface IChannelGroup : IOutboundChannel, IDisposable
 	{
 		/// <summary>
 		/// Gets a value indicating whether the channel group is a dispatch-only (non-receiving) group.

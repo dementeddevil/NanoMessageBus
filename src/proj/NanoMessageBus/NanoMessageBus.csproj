@@ -50,7 +50,7 @@
     <Compile Include="DefaultChannelGroupFactory.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="IChannelConfiguration.cs" />
-    <Compile Include="IChannelDispatch.cs" />
+    <Compile Include="IOutboundChannel.cs" />
     <Compile Include="IChannelGroup.cs" />
     <Compile Include="IChannelTransaction.cs" />
     <Compile Include="IChannelConnector.cs" />

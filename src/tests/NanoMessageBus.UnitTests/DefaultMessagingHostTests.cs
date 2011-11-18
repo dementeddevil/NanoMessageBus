@@ -247,7 +247,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetDispatchChannel(defaultGroupName));
+			thrown = Catch.Exception(() => host.GetOutboundChannel(defaultGroupName));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -262,7 +262,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetDispatchChannel(null));
+			thrown = Catch.Exception(() => host.GetOutboundChannel(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -277,7 +277,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetDispatchChannel("Some channel group that doesn't exist."));
+			thrown = Catch.Exception(() => host.GetOutboundChannel("Some channel group that doesn't exist."));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
@@ -292,7 +292,7 @@ namespace NanoMessageBus
 			host.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetDispatchChannel(defaultGroupName));
+			thrown = Catch.Exception(() => host.GetOutboundChannel(defaultGroupName));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -307,7 +307,7 @@ namespace NanoMessageBus
 			host.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.GetDispatchChannel(defaultGroupName));
+			thrown = Catch.Exception(() => host.GetOutboundChannel(defaultGroupName));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
@@ -316,7 +316,7 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_requesting_a_named_channel_group : with_the_messaging_host
 	{
-		static IChannelDispatch group;
+		static IOutboundChannel group;
 
 		Establish context = () =>
 		{
@@ -333,7 +333,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			group = host.GetDispatchChannel(defaultGroupName);
+			group = host.GetOutboundChannel(defaultGroupName);
 
 		It should_return_the_correct_instance = () =>
 			ReferenceEquals(group, mockGroup.Object).ShouldBeTrue();

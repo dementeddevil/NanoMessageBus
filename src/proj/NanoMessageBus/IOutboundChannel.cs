@@ -9,7 +9,7 @@
 	/// <remarks>
 	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
 	/// </remarks>
-	public interface IChannelDispatch
+	public interface IOutboundChannel
 	{
 		/// <summary>
 		/// For dispatch-only channel groups, it adds the message provided to an in-memory queue for
@@ -20,7 +20,7 @@
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <param name="message">The message to be dispatched.</param>
 		/// <param name="recipients">The recipients to whom a copy of the message will be dispatched.</param>
-		void BeginDispatch(ChannelMessage message, IEnumerable<Uri> recipients);
+		void BeginDispatch(ChannelMessage message, IEnumerable<Uri> recipients);  // TODO: should this return IAsyncResult or should it take an extra callback parameter for completed
 
 		/// <summary>
 		/// For dispatch-only channel groups, it blocks the current thread while dispatching the message provided;
