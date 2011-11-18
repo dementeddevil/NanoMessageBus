@@ -9,7 +9,7 @@
 	{
 		public virtual void Initialize()
 		{
-			lock (this.groups)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 
@@ -34,7 +34,7 @@
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
 
-			lock (this.groups)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
@@ -47,7 +47,7 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
-			lock (this.groups)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
@@ -104,7 +104,7 @@
 			if (!disposing)
 				return;
 
-			lock (this.groups)
+			lock (this.sync)
 			{
 				if (this.disposed)
 					return;
@@ -118,6 +118,7 @@
 			}
 		}
 
+		private readonly object sync = new object();
 		private readonly IDictionary<string, IChannelGroup> groups = new Dictionary<string, IChannelGroup>();
 		private readonly ICollection<IChannelConnector> connectors;
 		private readonly ChannelGroupFactory factory;
