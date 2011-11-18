@@ -6,6 +6,11 @@
 
 	public class DefaultChannelGroup : IChannelGroup
 	{
+		public virtual bool DispatchOnly
+		{
+			get { return this.configuration.DispatchOnly; }
+		}
+
 		public virtual void Initialize()
 		{
 			this.initialized = true;
@@ -43,9 +48,7 @@
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenReceiving();
-
-			if (this.configuration.DispatchOnly)
-				return; // no-op
+			this.ThrowWhenDispatchOnly();
 
 			this.receiving = true; // TODO: hand the callback to the channels
 		}
@@ -64,6 +67,11 @@
 		{
 			if (!this.configuration.DispatchOnly)
 				throw new InvalidOperationException("Dispatch can only be performed using a dispatch-only channel group.");
+		}
+		protected virtual void ThrowWhenDispatchOnly()
+		{
+			if (this.configuration.DispatchOnly)
+				throw new InvalidOperationException("Dispatch-only channel groups cannot receive messages.");
 		}
 		protected virtual void ThrowWhenReceiving()
 		{

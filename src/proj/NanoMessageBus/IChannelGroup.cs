@@ -12,6 +12,11 @@
 	public interface IChannelGroup : IChannelDispatch, IDisposable
 	{
 		/// <summary>
+		/// Gets a value indicating whether the channel group is a dispatch-only (non-receiving) group.
+		/// </summary>
+		bool DispatchOnly { get; }
+
+		/// <summary>
 		/// Starts up all of the underlying connectors, initializes all channels associated with the group,
 		/// and otherwise prepares the channel group to process and dispatch messages.
 		/// </summary>

@@ -9,6 +9,16 @@ namespace NanoMessageBus
 	using Moq;
 	using It = Machine.Specifications.It;
 
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_constructing_a_new_channel_group : with_a_channel_group
+	{
+		Establish context = () =>
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+
+		It should_contain_the_same_dispatch_mode_as_the_configuration = () =>
+			channelGroup.DispatchOnly.ShouldBeTrue();
+	}
+
 	[Ignore("TODO")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_a_message_to_a_dispatch_only_group : with_a_channel_group
@@ -312,8 +322,8 @@ namespace NanoMessageBus
 		Because of = () =>
 			thrown = Catch.Exception(() => channelGroup.BeginReceive(callback));
 
-		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	public abstract class with_a_channel_group
