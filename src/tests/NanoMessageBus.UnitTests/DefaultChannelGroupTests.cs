@@ -26,20 +26,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			channelGroup.BeginDispatch(envelope, () => { });
-
-		It should_pass_the_message_to_underlying_connector;
-	}
-
-	[Ignore("TODO")]
-	[Subject(typeof(DefaultChannelGroup))]
-	public class when_synchronously_dispatching_a_message_to_a_dispatch_only_group : with_a_channel_group
-	{
-		Establish context = () =>
-			channelGroup.Initialize();
-
-		Because of = () =>
-			channelGroup.Dispatch(envelope);
+			channelGroup.BeginDispatch(envelope, trx => { });
 
 		It should_pass_the_message_to_underlying_connector;
 	}
@@ -53,22 +40,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, () => { }));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
-	public class when_synchronously_dispatching_to_a_full_duplex_group : with_a_channel_group
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			channelGroup.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.Dispatch(envelope));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -83,22 +55,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null, () => { }));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
-	public class when_no_message_is_provided_to_synchronously_dispatch : with_a_channel_group
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-			channelGroup.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.Dispatch(null));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null, trx => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -125,19 +82,7 @@ namespace NanoMessageBus
 		static Exception thrown;
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, () => { }));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
-	public class when_attempting_to_synchronously_dispatching_a_message_without_first_initializing_the_group : with_a_channel_group
-	{
-		static Exception thrown;
-
-		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.Dispatch(envelope));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -155,25 +100,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, () => { }));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
-	public class when_synchronously_dispatching_against_a_disposed_group : with_a_channel_group
-	{
-		static Exception thrown;
-
-		Establish context = () =>
-		{
-			channelGroup.Initialize();
-			channelGroup.Dispose();
-		};
-
-		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.Dispatch(envelope));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();

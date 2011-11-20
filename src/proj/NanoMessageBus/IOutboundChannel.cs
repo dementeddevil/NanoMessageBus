@@ -18,15 +18,6 @@
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
 		/// <param name="completed">The callback to be invoked when the dispatch has completed.</param>
-		void BeginDispatch(ChannelEnvelope envelope, Action completed);
-
-		/// <summary>
-		/// For dispatch-only channel groups, it blocks the current thread while dispatching the message provided;
-		/// for full-duplex channel groups (send/receive), it throws an exception.
-		/// </summary>
-		/// <exception cref="ArgumentNullException"></exception>
-		/// <exception cref="InvalidOperationException"></exception>
-		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
-		void Dispatch(ChannelEnvelope envelope); 
+		void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed);
 	}
 }

@@ -8,33 +8,22 @@
 		{
 			get { return this.configuration.DispatchOnly; }
 		}
-
 		public virtual void Initialize()
 		{
 			this.initialized = true;
 		}
-
-		public virtual void BeginDispatch(ChannelEnvelope envelope, Action completed)
-		{
-			if (completed == null)
-				throw new ArgumentNullException("completed");
-
-			this.Dispatch(envelope, false); // TODO: hand it off
-		}
-		public virtual void Dispatch(ChannelEnvelope envelope)
-		{
-			this.Dispatch(envelope, true); // TODO: hand it off
-		}
-		protected virtual void Dispatch(ChannelEnvelope envelope, bool sync)
+		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
 		{
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
 
+			if (completed == null)
+				throw new ArgumentNullException("completed");
+
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();
-			this.ThrowWhenFullDuplex();
+			this.ThrowWhenFullDuplex(); // TODO: hand it off
 		}
-
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
