@@ -21,14 +21,14 @@
 		bool DispatchOnly { get; }
 		
 		/// <summary>
-		/// Gets a value indicating the minimum number of worker threads to be allocated for work.
+		/// Gets a value indicating the minimum number of workers to be allocated for work.
 		/// </summary>
-		int MinThreads { get; }
+		int MinWorkers { get; }
 
 		/// <summary>
-		/// Gets a value indicating the maximum allowable number of worker threads to be allocated for work.
+		/// Gets a value indicating the maximum allowable number of workers to be allocated for work.
 		/// </summary>
-		int MaxThreads { get; }
+		int MaxWorkers { get; }
 
 		/// <summary>
 		/// Gets the length of time to await the receipt of a message from a channel before resume other work.

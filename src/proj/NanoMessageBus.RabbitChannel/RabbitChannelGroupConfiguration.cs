@@ -30,11 +30,11 @@
 		{
 			get { return false; }
 		}
-		public virtual int MinThreads
+		public virtual int MinWorkers
 		{
 			get { return 0; }
 		}
-		public virtual int MaxThreads
+		public virtual int MaxWorkers
 		{
 			get { return 0; }
 		}
