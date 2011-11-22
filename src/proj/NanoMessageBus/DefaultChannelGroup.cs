@@ -22,7 +22,10 @@
 
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();
-			this.ThrowWhenFullDuplex(); // TODO: hand it off
+			this.ThrowWhenFullDuplex();
+			
+			using (var channel = this.connector.Connect(this.configuration.ChannelGroup))
+				channel.Send(envelope); // TODO: add threading
 		}
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{

@@ -4,6 +4,7 @@
 namespace NanoMessageBus
 {
 	using System;
+	using System.Threading;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -18,17 +19,24 @@ namespace NanoMessageBus
 			channelGroup.DispatchOnly.ShouldBeTrue();
 	}
 
-	[Ignore("TODO")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_a_message_to_a_dispatch_only_group : with_a_channel_group
 	{
 		Establish context = () =>
+		{
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+			mockChannel.Setup(x => x.Send(envelope));
 			channelGroup.Initialize();
+		};
 
 		Because of = () =>
 			channelGroup.BeginDispatch(envelope, trx => { });
 
-		It should_pass_the_message_to_underlying_connector;
+		Because of_multi_threading = () =>
+			Thread.Sleep(100);
+
+		It should_pass_the_message_to_exactly_one_of_the_underlying_channels = () =>
+			mockChannel.Verify(x => x.Send(envelope), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -203,21 +211,30 @@ namespace NanoMessageBus
 
 	public abstract class with_a_channel_group
 	{
+		protected const string ChannelGroupName = "Test Channel Group";
 		protected static DefaultChannelGroup channelGroup;
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<IChannelConfiguration> mockConfig;
 		protected static ChannelEnvelope envelope;
+		protected static Mock<IMessagingChannel> mockChannel;
 
 		Establish context = () =>
 		{
 			mockConnector = new Mock<IChannelConnector>();
+			mockChannel = new Mock<IMessagingChannel>();
 			mockConfig = new Mock<IChannelConfiguration>();
 			envelope = new Mock<ChannelEnvelope>().Object;
+
+			mockConfig.Setup(x => x.ChannelGroup).Returns(ChannelGroupName);
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
+
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object);
 		};
 
 		Cleanup after = () =>
 		{
+			channelGroup.Dispose();
+
 			mockConnector = null;
 			mockConfig = null;
 			envelope = null;
