@@ -66,7 +66,27 @@
 			this.ThrowWhenReceiving();
 			this.ThrowWhenDispatchOnly();
 
-			this.receiving = true; // TODO: hand the callback to the channels
+			lock (this.locker)
+				this.receiving = this.TryReceive(callback);
+		}
+		protected virtual bool TryReceive(Action<IDeliveryContext> callback)
+		{
+			try
+			{
+				for (var i = 0; i < this.configuration.MinWorkers; i++)
+				{
+					using (var channel = this.connector.Connect(this.configuration.ChannelGroup))
+					{
+						channel.Receive(callback);
+					}
+				}
+
+				return true;
+			}
+			catch (ChannelConnectionException)
+			{
+				return false;
+			}
 		}
 
 		protected virtual void ThrowWhenDisposed()

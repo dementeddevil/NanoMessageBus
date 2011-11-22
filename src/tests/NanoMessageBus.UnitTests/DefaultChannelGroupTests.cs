@@ -177,18 +177,13 @@ namespace NanoMessageBus
 			thrown.ShouldBeOfType<ObjectDisposedException>();
 	}
 
-	[Ignore("TODO")]
 	[Subject(typeof(DefaultChannelGroup))]
-	public class when_attempting_to_receive_messages : with_a_channel_group
+	public class when_attempting_to_receive_messages_on_a_full_duplex_group : with_a_channel_group
 	{
-		static int invocations;
-		static readonly Action<IDeliveryContext> callback = context => { invocations++; };
-
 		Establish context = () =>
 		{
-			mockChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Callback(callback);
+			mockConfig.Setup(x => x.MinWorkers).Returns(MinWorkers);
+			mockChannel.Setup(x => x.Receive(callback));
 
 			channelGroup.Initialize();
 		};
@@ -200,7 +195,10 @@ namespace NanoMessageBus
 			Thread.Sleep(100);
 
 		It should_pass_the_callback_to_the_underlying_channel = () =>
-			invocations.ShouldEqual(1);
+			mockChannel.Verify(x => x.Receive(callback), Times.Exactly(MinWorkers));
+
+		const int MinWorkers = 3;
+		static readonly Action<IDeliveryContext> callback = context => { };
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
