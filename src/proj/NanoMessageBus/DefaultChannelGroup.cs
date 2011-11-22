@@ -8,10 +8,39 @@
 		{
 			get { return this.configuration.DispatchOnly; }
 		}
+
 		public virtual void Initialize()
 		{
-			this.initialized = true;
+			lock (this.locker)
+			{
+				if (this.initialized)
+					return;
+
+				this.initialized = true;
+
+				if (!this.TryInitialize())
+					this.TryInitialize();
+			}
 		}
+		protected virtual bool TryInitialize()
+		{
+			try
+			{
+				for (var i = 0; i < this.configuration.MinWorkers; i++)
+				{
+					using (this.connector.Connect(this.configuration.ChannelGroup))
+					{
+					}
+				}
+
+				return true;
+			}
+			catch (ChannelConnectionException)
+			{
+				return false;
+			}
+		}
+
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
 		{
 			if (envelope == null)
@@ -89,6 +118,7 @@
 			this.disposed = true;
 		}
 
+		private readonly object locker = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelConfiguration configuration;
 		private bool receiving;

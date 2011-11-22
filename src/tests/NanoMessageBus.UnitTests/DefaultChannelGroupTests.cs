@@ -20,6 +20,51 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
+	public class when_the_group_is_initialized : with_a_channel_group
+	{
+		Establish context = () =>
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
+
+		Because of = () =>
+			channelGroup.Initialize();
+
+		It should_establish_a_messaging_channel = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_the_group_is_initialized_more_than_once : with_a_channel_group
+	{
+		Establish context = () =>
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
+
+		Because of = () =>
+		{
+			channelGroup.Initialize();
+			channelGroup.Initialize();
+		};
+
+		It should_only_initialize_on_the_first_call = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
+	{
+		Establish context = () =>
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
+
+		Because of = () =>
+			channelGroup.Initialize();
+
+		Because of_multi_threading = () =>
+			Thread.Sleep(100);
+
+		It should_immediately_reattempt_to_establish_a_messaging_channel = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_a_message_to_a_dispatch_only_group : with_a_channel_group
 	{
 		Establish context = () =>
@@ -97,6 +142,24 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
+	public class when_the_configuration_specifies_more_than_one_worker : with_a_channel_group
+	{
+		const int MinWorkers = 3;
+
+		Establish context = () =>
+			mockConfig.Setup(x => x.MinWorkers).Returns(MinWorkers);
+
+		Because of = () =>
+			channelGroup.Initialize();
+
+		Because of_multi_threading = () =>
+			Thread.Sleep(100);
+
+		It should_open_a_channel_for_each_worker = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(MinWorkers));
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_against_a_disposed_group : with_a_channel_group
 	{
 		static Exception thrown;
@@ -118,15 +181,26 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_attempting_to_receive_messages : with_a_channel_group
 	{
-		static readonly Action<IDeliveryContext> callback = context => { };
+		static int invocations;
+		static readonly Action<IDeliveryContext> callback = context => { invocations++; };
 
 		Establish context = () =>
+		{
+			mockChannel
+				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
+				.Callback(callback);
+
 			channelGroup.Initialize();
+		};
 
 		Because of = () =>
 			channelGroup.BeginReceive(callback);
 
-		It should_pass_the_callback_to_the_underlying_channel;
+		Because of_multi_threading = () =>
+			Thread.Sleep(100);
+
+		It should_pass_the_callback_to_the_underlying_channel = () =>
+			invocations.ShouldEqual(1);
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
