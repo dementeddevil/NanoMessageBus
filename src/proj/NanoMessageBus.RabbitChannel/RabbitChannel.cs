@@ -9,7 +9,7 @@
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }
 
-		public virtual void Receive(Action<IDeliveryContext> callback)
+		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
 				throw new ArgumentNullException("callback");
@@ -74,12 +74,29 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
+			if (!disposing || this.disposed)
+				return;
+
+			lock (this.locker)
+			{
+				if (this.disposed)
+					return;
+
+				this.disposed = true;
+
+				if (this.subscription != null)
+					this.subscription.Dispose();
+
+				this.channel.Dispose();
+			}
 		}
 
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(500);
+		private readonly object locker = new object();
 		private readonly IModel channel;
 		private readonly RabbitTransactionType transactionType;
 		private readonly Func<RabbitSubscription> subscriptionFactory;
 		private RabbitSubscription subscription;
+		private bool disposed;
 	}
 }

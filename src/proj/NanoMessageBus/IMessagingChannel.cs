@@ -16,13 +16,13 @@
 		string ChannelGroup { get; }
 
 		/// <summary>
-		/// Receive the message from the channel, if any, and dispatches it to the callback provided.
+		/// Begins receiving messages from the channel and dispatches them to the callback provided.
 		/// </summary>
 		/// <param name="callback">The callback to which the received message should be dispatched.</param>
 		/// <exception cref="ChannelConnectionException"></exception>
 		/// <remarks>
 		/// The timeout, if any, has been specified as part of the channel configuration.
 		/// </remarks>
-		void Receive(Action<IDeliveryContext> callback);
+		void BeginReceive(Action<IDeliveryContext> callback);
 	}
 }

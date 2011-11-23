@@ -183,7 +183,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockConfig.Setup(x => x.MinWorkers).Returns(MinWorkers);
-			mockChannel.Setup(x => x.Receive(callback));
+			mockChannel.Setup(x => x.BeginReceive(callback));
 
 			channelGroup.Initialize();
 		};
@@ -195,7 +195,7 @@ namespace NanoMessageBus
 			Thread.Sleep(100);
 
 		It should_pass_the_callback_to_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.Receive(callback), Times.Exactly(MinWorkers));
+			mockChannel.Verify(x => x.BeginReceive(callback), Times.Exactly(MinWorkers));
 
 		const int MinWorkers = 3;
 		static readonly Action<IDeliveryContext> callback = context => { };

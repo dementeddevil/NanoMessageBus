@@ -5,7 +5,7 @@
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.MessagePatterns;
 
-	public class RabbitSubscription
+	public class RabbitSubscription : IDisposable
 	{
 		public virtual void BeginReceive(TimeSpan timeout, Action<RabbitMessage> callback)
 		{
@@ -33,6 +33,30 @@
 		}
 		protected RabbitSubscription()
 		{
+		}
+		~RabbitSubscription()
+		{
+			this.Dispose(false);
+		}
+
+		public virtual void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing)
+				return;
+
+			try
+			{
+				this.subscription.Close();
+			}
+			catch
+			{
+				return;
+			}
 		}
 
 		private readonly Subscription subscription;

@@ -45,7 +45,7 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			channel.Receive(delivery => { });
+			channel.BeginReceive(delivery => { });
 
 		It should_call_the_subscription_factory = () =>
 			invocations.ShouldEqual(1);
@@ -60,7 +60,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_opening_the_channel_to_receive_without_provding_a_callback : using_a_channel
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => channel.Receive(null));
+			thrown = Catch.Exception(() => channel.BeginReceive(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -77,7 +77,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription.Setup(x => x.AcknowledgeReceipt());
 			Initialize();
 
-			channel.Receive(delivery => { });
+			channel.BeginReceive(delivery => { });
 		};
 
 		Because of = () =>
@@ -91,7 +91,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_acknowledging_a_message_with_no_transaction : using_a_channel
 	{
 		Establish context = () =>
-			channel.Receive(delivery => { });
+			channel.BeginReceive(delivery => { });
 
 		Because of = () =>
 			channel.AcknowledgeMessage();
@@ -109,7 +109,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription.Setup(x => x.AcknowledgeReceipt());
 			Initialize();
 
-			channel.Receive(delivery => { });
+			channel.BeginReceive(delivery => { });
 		};
 
 		Because of = () =>
@@ -230,6 +230,51 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_NOT_invoke_commit_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Never());
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_disposing_a_channel : using_a_channel
+	{
+		Establish context = () =>
+			mockRealChannel.Setup(x => x.Dispose());
+
+		Because of = () =>
+			channel.Dispose();
+
+		It should_dispose_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.Dispose(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_disposing_a_receiving_channel : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockSubscription.Setup(x => x.Dispose());
+			channel.BeginReceive(delivery => { });
+		};
+
+		Because of = () =>
+			channel.Dispose();
+
+		It should_dispose_the_subscription = () =>
+			mockSubscription.Verify(x => x.Dispose(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_dispose_is_called_multiple_times : using_a_channel
+	{
+		Establish context = () =>
+			mockRealChannel.Setup(x => x.Dispose());
+
+		Because of = () =>
+		{
+			channel.Dispose();
+			channel.Dispose();
+		};
+
+		It should_only_dispose_the_underlying_resources_once = () =>
+			mockRealChannel.Verify(x => x.Dispose(), Times.Once());
 	}
 
 	public abstract class using_a_channel
