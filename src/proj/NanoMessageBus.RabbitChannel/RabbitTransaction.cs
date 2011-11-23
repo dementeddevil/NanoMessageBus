@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using RabbitMQ.Client;
 
 	public class RabbitTransaction : IChannelTransaction
 	{
@@ -50,12 +49,12 @@
 		protected virtual void AcknowledgeReceipt()
 		{
 			if (this.transactionType != RabbitTransactionType.None)
-				this.subscription.AcknowledgeReceipt();
+				this.channel.AcknowledgeMessage();
 		}
 		protected virtual void CommitChannel()
 		{
 			if (this.transactionType == RabbitTransactionType.Full)
-				this.channel.TxCommit();
+				this.channel.CommitTransaction();
 		}
 
 		public virtual void Rollback()
@@ -80,7 +79,7 @@
 		protected virtual void RollbackChannel()
 		{
 			if (this.transactionType == RabbitTransactionType.Full)
-				this.channel.TxRollback();
+				this.channel.RollbackTransaction();
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -99,11 +98,9 @@
 				throw new InvalidOperationException("The transaction has already committed.");
 		}
 
-		public RabbitTransaction(
-			IModel channel, RabbitSubscription subscription, RabbitTransactionType transactionType)
+		public RabbitTransaction(RabbitChannel channel, RabbitTransactionType transactionType)
 		{
 			this.channel = channel;
-			this.subscription = subscription;
 			this.transactionType = transactionType;
 		}
 		~RabbitTransaction()
@@ -127,8 +124,7 @@
 		}
 
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
-		private readonly IModel channel;
-		private readonly RabbitSubscription subscription;
+		private readonly RabbitChannel channel;
 		private readonly RabbitTransactionType transactionType;
 		private bool disposed;
 		private bool committed;

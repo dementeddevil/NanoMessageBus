@@ -6,7 +6,6 @@ namespace NanoMessageBus.RabbitChannel
 	using System;
 	using Machine.Specifications;
 	using Moq;
-	using RabbitMQ.Client;
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitTransaction))]
@@ -114,19 +113,19 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Acknowledge;
-			mockChannel.Setup(x => x.TxCommit());
-			mockSubscription.Setup(x => x.AcknowledgeReceipt());
-			InitializeTransaction();
+			mockChannel.Setup(x => x.CommitTransaction());
+			mockChannel.Setup(x => x.AcknowledgeMessage());
+			Initialize();
 		};
 
 		Because of = () =>
 			transaction.Commit();
 
 		It should_call_ack_on_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeReceipt(), Times.Once());
+			mockChannel.Verify(x => x.AcknowledgeMessage(), Times.Once());
 
 		It should_NOT_call_commit_on_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.TxCommit(), Times.Never());
+			mockChannel.Verify(x => x.CommitTransaction(), Times.Never());
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -135,19 +134,19 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Full;
-			mockChannel.Setup(x => x.TxCommit());
-			mockSubscription.Setup(x => x.AcknowledgeReceipt());
-			InitializeTransaction();
+			mockChannel.Setup(x => x.CommitTransaction());
+			mockChannel.Setup(x => x.AcknowledgeMessage());
+			Initialize();
 		};
 
 		Because of = () =>
 			transaction.Commit();
 
 		It should_call_ack_on_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeReceipt(), Times.Once());
+			mockChannel.Verify(x => x.AcknowledgeMessage(), Times.Once());
 
 		It should_commit_the_transaction_on_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.TxCommit(), Times.Once());
+			mockChannel.Verify(x => x.CommitTransaction(), Times.Once());
 	}
 	
 	[Subject(typeof(RabbitTransaction))]
@@ -199,15 +198,15 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Full;
-			mockChannel.Setup(x => x.TxRollback());
-			InitializeTransaction();
+			mockChannel.Setup(x => x.RollbackTransaction());
+			Initialize();
 		};
 
 		Because of = () =>
 			transaction.Rollback();
 
 		It should_rollback_the_transaction_against_the_underlying_model = () =>
-			mockChannel.Verify(x => x.TxRollback(), Times.Once());
+			mockChannel.Verify(x => x.RollbackTransaction(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -216,8 +215,8 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Full;
-			mockChannel.Setup(x => x.TxRollback());
-			InitializeTransaction();
+			mockChannel.Setup(x => x.RollbackTransaction());
+			Initialize();
 
 			transaction.Rollback();
 		};
@@ -226,7 +225,7 @@ namespace NanoMessageBus.RabbitChannel
 			transaction.Rollback();
 
 		It should_not_do_anything = () =>
-			mockChannel.Verify(x => x.TxRollback(), Times.Once());
+			mockChannel.Verify(x => x.RollbackTransaction(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -278,15 +277,15 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Full;
-			mockChannel.Setup(x => x.TxRollback());
-			InitializeTransaction();
+			mockChannel.Setup(x => x.RollbackTransaction());
+			Initialize();
 		};
 
 		Because of = () =>
 			transaction.Dispose();
 
 		It should_rollback_the_transaction_against_the_underlying_model = () =>
-			mockChannel.Verify(x => x.TxRollback(), Times.Once());
+			mockChannel.Verify(x => x.RollbackTransaction(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -295,8 +294,8 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Full;
-			mockChannel.Setup(x => x.TxRollback());
-			InitializeTransaction();
+			mockChannel.Setup(x => x.RollbackTransaction());
+			Initialize();
 
 			transaction.Dispose();
 		};
@@ -305,39 +304,29 @@ namespace NanoMessageBus.RabbitChannel
 			transaction.Dispose();
 
 		It should_rollback_the_transaction_against_the_underlying_model_exactly_once = () =>
-			mockChannel.Verify(x => x.TxRollback(), Times.Once());
+			mockChannel.Verify(x => x.RollbackTransaction(), Times.Once());
 	}
 
 	public abstract class using_a_transaction
 	{
-		protected static RabbitTransactionType transactionType = RabbitTransactionType.None;
-		protected static RabbitTransaction transaction;
-		protected static Mock<IModel> mockChannel;
-		protected static Mock<RabbitSubscription> mockSubscription;
-		protected static int invocations;
-		protected static Action callback = () => { invocations++; };
-
 		Establish context = () =>
 		{
-			mockChannel = new Mock<IModel>();
-			mockSubscription = new Mock<RabbitSubscription>();
-
-			InitializeTransaction();
+			invocations = 0;
+			transactionType = RabbitTransactionType.None;
+			mockChannel = new Mock<RabbitChannel>();
+			Initialize();
 		};
 
-		protected static void InitializeTransaction()
+		protected static void Initialize()
 		{
-			transaction = new RabbitTransaction(mockChannel.Object, mockSubscription.Object, transactionType);
+			transaction = new RabbitTransaction(mockChannel.Object, transactionType);
 		}
 
-		Cleanup after = () =>
-		{
-			invocations = 0;
-			transaction = null;
-			mockSubscription = null;
-			mockChannel = null;
-			transactionType = RabbitTransactionType.None;
-		};
+		protected static RabbitTransactionType transactionType = RabbitTransactionType.None;
+		protected static RabbitTransaction transaction;
+		protected static Mock<RabbitChannel> mockChannel;
+		protected static int invocations;
+		protected static Action callback = () => { invocations++; };
 	}
 
 	public class Subscription : RabbitMQ.Client.MessagePatterns.Subscription

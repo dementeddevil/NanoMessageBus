@@ -33,10 +33,8 @@
 			if (this.subscription == null)
 				throw new InvalidOperationException("The channel must first be opened for receive.");
 
-			if (this.transactionType == RabbitTransactionType.None)
-				return;
-
-			this.subscription.AcknowledgeReceipt(); // TODO: wrap exception if channel unavailable
+			if (this.transactionType != RabbitTransactionType.None)
+				this.subscription.AcknowledgeReceipt(); // TODO: wrap exception if channel unavailable
 		}
 		public virtual void CommitTransaction()
 		{
