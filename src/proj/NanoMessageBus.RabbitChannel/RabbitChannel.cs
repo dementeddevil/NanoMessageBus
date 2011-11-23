@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using RabbitMQ.Client;
 
 	public class RabbitChannel : IMessagingChannel
 	{
@@ -23,6 +24,16 @@
 		{
 		}
 
+		public RabbitChannel(IModel channel, RabbitTransactionType transactionType)
+		{
+			this.channel = channel;
+			this.transactionType = transactionType;
+		}
+		~RabbitChannel()
+		{
+			this.Dispose(false);
+		}
+
 		public void Dispose()
 		{
 			this.Dispose(true);
@@ -31,5 +42,8 @@
 		protected virtual void Dispose(bool disposing)
 		{
 		}
+
+		private readonly IModel channel;
+		private readonly RabbitTransactionType transactionType;
 	}
 }

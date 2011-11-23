@@ -1,41 +1,40 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.MessagePatterns;
 
 	public class RabbitSubscription
 	{
-		public virtual void AcknowledgeReceipt()
+		public virtual void BeginReceive(TimeSpan timeout, Action<RabbitMessage> callback)
 		{
-			if (this.current != null)
-				this.subscription.Ack(this.current.Delivery);
+			if (timeout < TimeSpan.Zero)
+				throw new ArgumentException("The timespan must be positive", "timeout");
 
-			this.current = null;
-		}
-		public virtual RabbitMessage Next(TimeSpan timeout)
-		{
-			this.current = null;
+			if (callback == null)
+				throw new ArgumentNullException("callback");
+
+			var milliseconds = (int)timeout.TotalMilliseconds;
 
 			BasicDeliverEventArgs delivery;
-			if (!this.subscription.Next((int)timeout.TotalMilliseconds, out delivery))
-				return null;
-
-			if (delivery == null)
-				return null; // even though delivery may technically succeed, it can still return null
-
-			return this.current = new RabbitMessage(delivery);
+			if (this.subscription.Next(milliseconds, out delivery) && delivery != null)
+				callback(new RabbitMessage(delivery)); // make this an event-based consumer
+		}
+		public virtual void AcknowledgeReceipt()
+		{
+			this.subscription.Ack();
 		}
 
-		public RabbitSubscription(Subscription subscription)
+		public RabbitSubscription(IModel channel, string queueName, RabbitTransactionType transactionType)
 		{
-			this.subscription = subscription;
+			this.subscription = new Subscription(
+				channel, queueName, transactionType == RabbitTransactionType.None);
 		}
 		protected RabbitSubscription()
 		{
 		}
 
 		private readonly Subscription subscription;
-		private RabbitMessage current;
 	}
 }
