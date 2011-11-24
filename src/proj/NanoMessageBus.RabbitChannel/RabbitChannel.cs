@@ -1,6 +1,8 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Linq;
+	using System.Runtime.Serialization;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 
@@ -24,16 +26,16 @@
 		}
 		protected virtual void BeginReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
-			this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
-
 			using (this.CurrentTransaction = new RabbitTransaction(this, this.configuration.TransactionType))
 				this.TryReceive(message, callback);
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
-			// TODO: on serialization failure, immediately forward to poison message exchange and ack/commit
 			try
 			{
+				// TODO: on serialization failure, immediately forward to poison message exchange and ack/commit
+				this.CurrentMessage = this.adapter.Build(message);
+
 				// TODO: *after* callback:
 				// 1. clear failure count for message (global per app or at least shared per channel group)
 				// 2. clear serialization cache for message (global per app or at least shared per channel group)
@@ -42,6 +44,10 @@
 			catch (ChannelConnectionException)
 			{
 				throw;
+			}
+			catch (SerializationException)
+			{
+				return; // TODO: send to poison message exchange and commit transaction
 			}
 			catch
 			{
@@ -57,10 +63,19 @@
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
 
-			this.ThrowWhenDisposed();
+			////var message = this.adapter.Build(envelope.Message);
 
-			//// TODO: convert then channel.BasicPublish() to each destination
-			//// TODO: wrap up the exception if the channel is unavailable
+			////foreach (var recipient in envelope.Recipients.Select(x => new RabbitAddress(x)))
+			////{
+			////    this.ThrowWhenDisposed();
+			////    this.Send(message, recipient);
+			////}
+		}
+		protected virtual void Send(BasicDeliverEventArgs message, RabbitAddress recipient)
+		{
+			////// TODO: wrap up the exception if the channel is unavailable
+			////this.CurrentTransaction.Register(() =>
+			////    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body));
 		}
 
 		public virtual void AcknowledgeMessage()
@@ -101,10 +116,12 @@
 
 		public RabbitChannel(
 			IModel channel,
+			RabbitMessageAdapter adapter,
 			RabbitChannelGroupConfiguration configuration,
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
+			this.adapter = adapter;
 			this.configuration = configuration;
 			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;
@@ -147,6 +164,7 @@
 
 		private readonly object locker = new object();
 		private readonly IModel channel;
+		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;
 		private readonly RabbitTransactionType transactionType;
 		private readonly Func<RabbitSubscription> subscriptionFactory;

@@ -51,7 +51,7 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
 
-			channel = new RabbitChannel(mockRealChannel.Object, mockConfiguration.Object, () =>
+			channel = new RabbitChannel(mockRealChannel.Object, mockAdapter.Object, mockConfiguration.Object, () =>
 			{
 				invocations++;
 				return mockSubscription.Object;
@@ -102,14 +102,18 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannel))]
 	public class when_receiving_a_message : using_a_channel
 	{
-		Establish context = () => mockSubscription
-			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
-			.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+		Establish context = () =>
+		{
+			mockAdapter.Setup(x => x.Build(message)).Returns(new Mock<ChannelMessage>().Object);
+			mockSubscription
+				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
+				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+		};
 
 		Because of = () =>
 		{
 			channel.BeginReceive(deliveryContext => delivery = deliveryContext);
-			dispatch(new BasicDeliverEventArgs());
+			dispatch(message);
 		};
 
 		It should_invoke_the_callback_provided = () =>
@@ -118,9 +122,16 @@ namespace NanoMessageBus.RabbitChannel
 		It should_begin_a_transaction = () =>
 			delivery.CurrentTransaction.ShouldNotBeNull();
 
+		It should_build_the_ChannelMessage = () =>
+			mockAdapter.Verify(x => x.Build(message), Times.Once());
+
+		It should_set_the_ChannelMessage_on_the_channel = () =>
+			channel.CurrentMessage.ShouldNotBeNull();
+
 		It should_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
 			delivery.CurrentTransaction.Finished.ShouldBeTrue();
 
+		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 		static Action<BasicDeliverEventArgs> dispatch;
 		static IDeliveryContext delivery;
 	}
@@ -483,6 +494,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockRealChannel = new Mock<IModel>();
+			mockAdapter = new Mock<RabbitMessageAdapter>();
 			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
 			mockSubscription = new Mock<RabbitSubscription>();
 
@@ -497,11 +509,12 @@ namespace NanoMessageBus.RabbitChannel
 		protected static void Initialize()
 		{
 			channel = new RabbitChannel(
-				mockRealChannel.Object, mockConfiguration.Object, () => mockSubscription.Object);
+				mockRealChannel.Object, mockAdapter.Object, mockConfiguration.Object, () => mockSubscription.Object);
 		}
 
 		protected const string DefaultChannelGroup = "some group name";
 		protected static Mock<IModel> mockRealChannel;
+		protected static Mock<RabbitMessageAdapter> mockAdapter;
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<RabbitSubscription> mockSubscription;
 		protected static RabbitChannel channel;

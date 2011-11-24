@@ -44,11 +44,13 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="RabbitAddress.cs" />
     <Compile Include="RabbitChannel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitChannelGroupConfiguration.cs" />
     <Compile Include="RabbitConnector.cs" />
     <Compile Include="RabbitConfiguration.cs" />
+    <Compile Include="RabbitMessageAdapter.cs" />
     <Compile Include="RabbitSubscription.cs" />
     <Compile Include="SubscriptionAdapter.cs" />
     <Compile Include="RabbitTransaction.cs" />
