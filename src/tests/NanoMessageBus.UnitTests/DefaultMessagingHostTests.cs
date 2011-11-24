@@ -14,20 +14,18 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_a_null_set_of_connectors_is_provided_during_construction : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => new DefaultMessagingHost(null, EmptyFactory));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_an_empty_set_of_connectors_is_provided_during_construction : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			mockConnectors.Clear();
 
@@ -37,13 +35,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_no_channel_group_factory_is_provided_during_construction : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			mockConnectors.Clear();
 
@@ -52,15 +50,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_initializing_the_host : with_the_messaging_host
 	{
-		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
-		static readonly Mock<IChannelConfiguration> config1 = new Mock<IChannelConfiguration>();
-		static readonly Mock<IChannelConfiguration> config2 = new Mock<IChannelConfiguration>();
-
 		Establish context = () =>
 		{
 			mockConnectors.Clear();
@@ -90,13 +86,15 @@ namespace NanoMessageBus
 			
 		It should_provide_each_config_and_its_associated_connector_to_the_factory = () =>
 			mockFactory.VerifyAll();
+
+		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
+		static readonly Mock<IChannelConfiguration> config1 = new Mock<IChannelConfiguration>();
+		static readonly Mock<IChannelConfiguration> config2 = new Mock<IChannelConfiguration>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_initializing_the_host_more_than_once : with_the_messaging_host
 	{
-		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
-
 		Establish context = () =>
 		{
 			mockConnectors.Add(new Mock<IChannelConnector>());
@@ -118,13 +116,13 @@ namespace NanoMessageBus
 
 		It should_do_nothing = () =>
 			mockFactory.Verify(x => x.Build(Connectors[0], config0.Object), Times.Once());
+
+		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_initializing_a_disposed_host : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			host.Dispose();
 
@@ -133,12 +131,12 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
 	}
 
 	public class when_initializing_does_not_create_any_channel_groups : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			mockConfigs.Clear();
 
@@ -147,14 +145,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ConfigurationErrorsException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_instructed_to_begin_receiving_messages : with_the_messaging_host
 	{
-		static readonly Mock<IChannelGroup> otherGroup = new Mock<IChannelGroup>();
-		static readonly Action<IDeliveryContext> callback = channel => { };
-
 		Establish context = () =>
 		{
 			var otherConfig = new Mock<IChannelConfiguration>();
@@ -177,14 +174,14 @@ namespace NanoMessageBus
 
 		It should_NOT_pass_the_callback_to_the_dispatch_only_channel_groups = () =>
 			otherGroup.Verify(x => x.BeginReceive(callback), Times.Never());
+
+		static readonly Mock<IChannelGroup> otherGroup = new Mock<IChannelGroup>();
+		static readonly Action<IDeliveryContext> callback = channel => { };
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_more_than_one_callback_has_been_provided_for_receiving_messages_from_the_host : with_the_messaging_host
 	{
-		static readonly Action<IDeliveryContext> callback = channel => { };
-		static Exception thrown;
-
 		Establish context = () =>
 		{
 			mockGroup.Setup(x => x.BeginReceive(callback));
@@ -197,37 +194,38 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
+
+		static readonly Action<IDeliveryContext> callback = channel => { };
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_instructed_to_begin_receiving_messages_without_providing_a_callback : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => host.BeginReceive(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_attempting_to_begin_receiving_messages_without_first_initializing_the_host : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => host.BeginReceive(c => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_attempting_to_receive_messages_against_a_disposed_host : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 		{
 			host.Initialize();
@@ -239,25 +237,25 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_requesting_a_channel_group_without_initializing_the_host : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => host.GetOutboundChannel(defaultGroupName));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_no_channel_group_is_requested : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			host.Initialize();
 
@@ -266,13 +264,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_the_requested_channel_group_doesnt_exist : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			host.Initialize();
 
@@ -281,13 +279,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_requesting_a_channel_group_from_a_disposed_host : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			host.Dispose();
 
@@ -296,13 +294,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_requesting_a_full_duplex_channel_group_for_dispatch : with_the_messaging_host
 	{
-		static Exception thrown;
-
 		Establish context = () =>
 			host.Initialize();
 
@@ -311,13 +309,13 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_requesting_a_named_channel_group : with_the_messaging_host
 	{
-		static IOutboundChannel group;
-
 		Establish context = () =>
 		{
 			var otherConfig = new Mock<IChannelConfiguration>();
@@ -337,6 +335,8 @@ namespace NanoMessageBus
 
 		It should_return_the_correct_instance = () =>
 			ReferenceEquals(group, mockGroup.Object).ShouldBeTrue();
+
+		static IOutboundChannel group;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -374,16 +374,6 @@ namespace NanoMessageBus
 
 	public abstract class with_the_messaging_host
 	{
-		protected static readonly ChannelGroupFactory EmptyFactory = (c, cg) => null;
-		protected static IList<Mock<IChannelConnector>> mockConnectors;
-		protected static Mock<DefaultChannelGroupFactory> mockFactory;
-		protected static string defaultGroupName;
-		static Mock<IChannelConfiguration> mockConfig;
-		protected static IList<Mock<IChannelConfiguration>> mockConfigs;
-		protected static Mock<IChannelGroup> mockGroup;
-		static ChannelGroupFactory channelFactory;
-		protected static DefaultMessagingHost host;
-
 		protected static IList<IChannelConnector> Connectors
 		{
 			get { return mockConnectors == null ? null : mockConnectors.Select(x => x.Object).ToList(); }
@@ -391,6 +381,7 @@ namespace NanoMessageBus
 
 		Establish context = () =>
 		{
+			channelFactory = null;
 			defaultGroupName = "Test Configuration Group";
 			mockConfig = new Mock<IChannelConfiguration>();
 			mockGroup = new Mock<IChannelGroup>();
@@ -415,18 +406,15 @@ namespace NanoMessageBus
 			host = new DefaultMessagingHost(Connectors, channelFactory);
 		}
 
-		Cleanup after = () =>
-		{
-			defaultGroupName = null;
-
-			mockConfig = null;
-			mockGroup = null;
-			mockFactory = null;
-			mockConnectors = null;
-
-			channelFactory = null;
-			host = null;
-		};
+		protected static readonly ChannelGroupFactory EmptyFactory = (c, cg) => null;
+		protected static IList<Mock<IChannelConnector>> mockConnectors;
+		protected static Mock<DefaultChannelGroupFactory> mockFactory;
+		protected static string defaultGroupName;
+		protected static IList<Mock<IChannelConfiguration>> mockConfigs;
+		protected static Mock<IChannelGroup> mockGroup;
+		protected static DefaultMessagingHost host;
+		static ChannelGroupFactory channelFactory;
+		static Mock<IChannelConfiguration> mockConfig;
 	}
 }
 

@@ -13,13 +13,6 @@ namespace NanoMessageBus
 	[Subject(typeof(ChannelEnvelope))]
 	public class when_constructing_a_new_channel_envelope
 	{
-		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
-		static readonly ICollection<Uri> recipients = new HashSet<Uri>
-		{
-			ChannelEnvelope.LoopbackAddress, new Uri("msmq://testing"), null
-		};
-		static ChannelEnvelope envelope;
-
 		Because of = () =>
 			envelope = new ChannelEnvelope(message, recipients);
 
@@ -31,55 +24,57 @@ namespace NanoMessageBus
 
 		It should_contain_all_the_recipients_specified = () =>
 			envelope.Recipients.ToList().ForEach(uri => recipients.Contains(uri));
+
+		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
+		static readonly ICollection<Uri> recipients = new HashSet<Uri>
+		{
+			ChannelEnvelope.LoopbackAddress, new Uri("msmq://testing"), null
+		};
+		static ChannelEnvelope envelope;
 	}
 
 	[Subject(typeof(ChannelEnvelope))]
 	public class when_constructing_an_envelope_without_providing_a_message
 	{
-		static readonly ICollection<Uri> recipients = new HashSet<Uri> { ChannelEnvelope.LoopbackAddress };
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => new ChannelEnvelope(null, recipients));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static readonly ICollection<Uri> recipients = new HashSet<Uri> { ChannelEnvelope.LoopbackAddress };
+		static Exception thrown;
 	}
 
 	[Subject(typeof(ChannelEnvelope))]
 	public class when_constructing_an_envelope_while_providing_a_null_set_of_recipients
 	{
-		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => new ChannelEnvelope(message, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
+		static Exception thrown;
 	}
 
 	[Subject(typeof(ChannelEnvelope))]
 	public class when_constructing_an_envelope_while_providing_an_empty_set_of_recipients
 	{
-		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
-		static Exception thrown;
-
 		Because of = () =>
 			thrown = Catch.Exception(() => new ChannelEnvelope(message, new List<Uri>()));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
+
+		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
+		static Exception thrown;
 	}
 
 	[Subject(typeof(ChannelEnvelope))]
 	public class when_attempting_to_modify_the_recipient_collection
 	{
-		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
-		static readonly ICollection<Uri> recipients = new[] { ChannelEnvelope.LoopbackAddress };
-		static ChannelEnvelope envelope;
-		static Exception thrown;
-
 		Establish context = () =>
 			envelope = new ChannelEnvelope(message, recipients);
 
@@ -88,6 +83,11 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<NotSupportedException>();
+
+		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
+		static readonly ICollection<Uri> recipients = new[] { ChannelEnvelope.LoopbackAddress };
+		static ChannelEnvelope envelope;
+		static Exception thrown;
 	}
 }
 
