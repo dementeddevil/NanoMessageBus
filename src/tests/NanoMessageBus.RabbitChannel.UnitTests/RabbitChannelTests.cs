@@ -74,7 +74,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Acknowledge;
-			mockSubscription.Setup(x => x.AcknowledgeReceipt());
+			mockSubscription.Setup(x => x.AcknowledgeMessage());
 			Initialize();
 
 			channel.BeginReceive(delivery => { });
@@ -84,7 +84,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeReceipt(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -97,7 +97,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_NOT_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeReceipt(), Times.Never());
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Never());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -106,7 +106,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			transactionType = RabbitTransactionType.Full;
-			mockSubscription.Setup(x => x.AcknowledgeReceipt());
+			mockSubscription.Setup(x => x.AcknowledgeMessage());
 			Initialize();
 
 			channel.BeginReceive(delivery => { });
@@ -116,7 +116,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeReceipt(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -129,7 +129,7 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeOfType<InvalidOperationException>();
 
 		It should_NOT_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeReceipt(), Times.Never());
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Never());
 
 		static Exception thrown;
 	}

@@ -4,10 +4,17 @@
 
 	public class RabbitMessage
 	{
-		public RabbitMessage(BasicDeliverEventArgs delivery) : this()
+		internal BasicDeliverEventArgs Delivery { get; set; }
+
+		public RabbitMessage(object delivery)
+			: this(delivery as BasicDeliverEventArgs)
 		{
 		}
-		protected RabbitMessage()
+		internal RabbitMessage(BasicDeliverEventArgs delivery) : this()
+		{
+			this.Delivery = delivery;
+		}
+		public RabbitMessage()
 		{
 		}
 	}
