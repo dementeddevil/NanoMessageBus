@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using RabbitMQ.Client.Events;
 
 	public class RabbitSubscription : IDisposable
 	{
@@ -30,8 +31,12 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
+			var retry = message as BasicDeliverEventArgs;
+			if (retry == null)
+				throw new ArgumentException("The message must be of type 'BasicDeliverEventArgs'.", "message");
+
 			this.ThrowWhenDisposed();
-			this.adapter.RetryMessage(message); // TODO: try/catch shutdown?
+			this.adapter.RetryMessage(retry); // TODO: try/catch shutdown?
 		}
 
 		protected virtual void ThrowWhenDisposed()

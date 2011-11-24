@@ -126,7 +126,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockRealSubscription.Setup(x => x.RetryMessage(Moq.It.IsAny<object>()));
 
 		Because of = () =>
-			subscription.RetryMessage(new RabbitMessage(new Mock<BasicDeliverEventArgs>().Object));
+			subscription.RetryMessage(new Mock<BasicDeliverEventArgs>().Object);
 
 		It should_pass_the_retry_attempt_to_the_underlying_subscription = () =>
 			mockRealSubscription.Verify(x => x.RetryMessage(Moq.It.IsAny<object>()), Times.Once());
@@ -139,7 +139,7 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.RetryMessage(new RabbitMessage()));
+			thrown = Catch.Exception(() => subscription.RetryMessage(new Mock<BasicDeliverEventArgs>().Object));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -158,6 +158,18 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_providing_a_message_of_the_incorrect_type_for_retry : using_a_subscription
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => subscription.RetryMessage(string.Empty));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentException>();
 
 		static Exception thrown;
 	}
