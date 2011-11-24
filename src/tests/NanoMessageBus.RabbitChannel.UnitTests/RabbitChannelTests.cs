@@ -102,6 +102,50 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_handling_a_message_throws_an_exception : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockSubscription.Setup(x => x.RetryMessage(message));
+			mockSubscription
+				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
+				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+		};
+
+		Because of = () =>
+		{
+			channel.BeginReceive(delivery => { throw new Exception("Message handling failed"); });
+			dispatch(message);
+		};
+
+		It should_add_the_message_to_the_retry_queue = () =>
+			mockSubscription.Verify(x => x.RetryMessage(message));
+
+		static Action<BasicDeliverEventArgs> dispatch;
+		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_handling_a_message_throws_a_ChannelConnectionException : using_a_channel
+	{
+		Establish context = () => mockSubscription
+			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
+			.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+
+		Because of = () =>
+		{
+			channel.BeginReceive(delivery => { throw new ChannelConnectionException(); });
+			thrown = Catch.Exception(() => dispatch(new BasicDeliverEventArgs()));
+		};
+
+		It should_throw_the_exception = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		static Action<BasicDeliverEventArgs> dispatch;
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>

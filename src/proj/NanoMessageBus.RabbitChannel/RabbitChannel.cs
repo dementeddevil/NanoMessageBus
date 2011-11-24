@@ -16,16 +16,30 @@
 
 			this.ThrowWhenSubscriptionExists();
 
-			// TODO: wrap up the following calls exception if channel unavailable
+			// TODO: wrap up the exceptions on the following calls if the channel is unavailable
 			this.subscription = this.subscriptionFactory();
 			this.subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg =>
-			{
-				this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
-				this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
-
-				callback(this);
-			});
+				this.BeginReceive(msg, callback));
 		}
+		protected virtual void BeginReceive<T>(T message, Action<IDeliveryContext> callback) where T : class
+		{
+			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
+			this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
+
+			try
+			{
+				callback(this);
+			}
+			catch (ChannelConnectionException)
+			{
+				throw;
+			}
+			catch
+			{
+				this.subscription.RetryMessage(message);
+			}
+		}
+
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			// TODO: convert then channel.BasicPublish() to each destination
