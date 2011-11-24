@@ -5,7 +5,6 @@
 
 	public class RabbitChannel : IMessagingChannel
 	{
-		public virtual string ChannelGroup { get; private set; }
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }
 
@@ -48,12 +47,10 @@
 		}
 
 		public RabbitChannel(
-			string channelGroup,
 			IModel channel,
 			RabbitTransactionType transactionType,
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
-			this.ChannelGroup = channelGroup;
 			this.channel = channel;
 			this.transactionType = transactionType;
 			this.subscriptionFactory = subscriptionFactory;

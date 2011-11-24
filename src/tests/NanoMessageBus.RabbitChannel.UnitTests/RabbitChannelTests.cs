@@ -10,13 +10,6 @@ namespace NanoMessageBus.RabbitChannel
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_establishing_a_channel : using_a_channel
-	{
-		It should_contain_the_name_provided = () =>
-			channel.ChannelGroup.ShouldEqual(DefaultChannelGroup);
-	}
-
-	[Subject(typeof(RabbitChannel))]
 	public class when_opening_a_transactional_channel : using_a_channel
 	{
 		Establish context = () =>
@@ -37,7 +30,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			channel = new RabbitChannel(DefaultChannelGroup, mockRealChannel.Object, transactionType, () =>
+			channel = new RabbitChannel(mockRealChannel.Object, transactionType, () =>
 			{
 				invocations++;
 				return mockSubscription.Object;
@@ -289,11 +282,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		protected static void Initialize()
 		{
-			channel = new RabbitChannel(
-				DefaultChannelGroup,
-				mockRealChannel.Object,
-				transactionType,
-				() => mockSubscription.Object);
+			channel = new RabbitChannel(mockRealChannel.Object, transactionType, () => mockSubscription.Object);
 		}
 
 		Cleanup after = () =>

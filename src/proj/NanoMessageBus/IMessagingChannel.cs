@@ -11,11 +11,6 @@
 	public interface IMessagingChannel : IDeliveryContext, IDisposable
 	{
 		/// <summary>
-		/// Gets the value which uniquely identifies the group to which this channel belongs.
-		/// </summary>
-		string ChannelGroup { get; }
-
-		/// <summary>
 		/// Begins receiving messages from the channel and dispatches them to the callback provided.
 		/// </summary>
 		/// <param name="callback">The callback to which the received message should be dispatched.</param>
