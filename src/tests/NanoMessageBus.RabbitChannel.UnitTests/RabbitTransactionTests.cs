@@ -386,11 +386,6 @@ namespace NanoMessageBus.RabbitChannel
 		protected static int invocations;
 		protected static Action callback = () => { invocations++; };
 	}
-
-	public class Subscription : RabbitMQ.Client.MessagePatterns.Subscription
-	{
-		public Subscription() : base(null, null) { }
-	}
 }
 
 // ReSharper enable InconsistentNaming

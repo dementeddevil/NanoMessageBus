@@ -190,7 +190,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockRealChannel.Setup(x => x.TxRollback());
 
 		Because of = () =>
-			channel.CommitTransaction();
+			channel.RollbackTransaction();
 
 		It should_NOT_invoke_commit_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Never());
@@ -208,7 +208,7 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			channel.CommitTransaction();
+			channel.RollbackTransaction();
 
 		It should_NOT_invoke_commit_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Never());
@@ -226,10 +226,10 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			channel.CommitTransaction();
+			channel.RollbackTransaction();
 
 		It should_NOT_invoke_commit_against_the_underlying_channel = () =>
-			mockRealChannel.Verify(x => x.TxRollback(), Times.Never());
+			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]

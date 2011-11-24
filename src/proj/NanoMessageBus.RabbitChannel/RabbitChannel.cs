@@ -44,7 +44,7 @@
 		public virtual void RollbackTransaction()
 		{
 			if (this.transactionType == RabbitTransactionType.Full)
-				this.channel.TxRollback(); // TODO: wrap exception if channel unavailable
+			    this.channel.TxRollback(); // TODO: wrap exception if channel unavailable
 		}
 
 		public RabbitChannel(
@@ -74,7 +74,7 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing || this.disposed)
+			if (!disposing)
 				return;
 
 			lock (this.locker)
