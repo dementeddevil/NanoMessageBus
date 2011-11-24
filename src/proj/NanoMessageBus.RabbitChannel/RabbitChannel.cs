@@ -18,7 +18,7 @@
 
 			// TODO: wrap up the exceptions on the following calls if the channel is unavailable
 			this.subscription = this.subscriptionFactory();
-			this.subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg =>
+			this.subscription.BeginReceive<BasicDeliverEventArgs>(this.configuration.ReceiveTimeout, msg =>
 				this.BeginReceive(msg, callback));
 		}
 		protected virtual void BeginReceive<T>(T message, Action<IDeliveryContext> callback) where T : class
@@ -127,7 +127,6 @@
 			}
 		}
 
-		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(500);
 		private readonly object locker = new object();
 		private readonly IModel channel;
 		private readonly RabbitChannelGroupConfiguration configuration;

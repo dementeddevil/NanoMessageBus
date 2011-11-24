@@ -49,6 +49,8 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
+
 			channel = new RabbitChannel(mockRealChannel.Object, mockConfiguration.Object, () =>
 			{
 				invocations++;
@@ -64,8 +66,9 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_open_the_subscription_to_receive = () =>
 			mockSubscription.Verify(x =>
-				x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()));
+				x.BeginReceive(timeout, Moq.It.IsAny<Action<BasicDeliverEventArgs>>()));
 
+		static readonly TimeSpan timeout = TimeSpan.FromMilliseconds(250);
 		static int invocations;
 	}
 
