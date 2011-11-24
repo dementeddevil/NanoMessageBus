@@ -93,6 +93,9 @@
 
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.TxSelect();
+
+			if (this.configuration.ChannelBuffer > 0)
+				this.channel.BasicQos(0, (ushort)this.configuration.ChannelBuffer, false);
 		}
 		protected RabbitChannel() { }
 		~RabbitChannel()
