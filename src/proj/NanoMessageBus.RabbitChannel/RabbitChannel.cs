@@ -14,6 +14,7 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
+			this.ThrowWhenDisposed();
 			this.ThrowWhenSubscriptionExists();
 
 			// TODO: wrap up the exceptions on the following calls if the channel is unavailable
@@ -51,25 +52,35 @@
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			// TODO: convert then channel.BasicPublish() to each destination
+
+			this.ThrowWhenDisposed();
 		}
 
 		public virtual void AcknowledgeMessage()
 		{
+			this.ThrowWhenDisposed();
 			this.ThrowWhenSubscriptionMissing();
 			if (this.transactionType != RabbitTransactionType.None)
 				this.subscription.AcknowledgeMessage(); // TODO: wrap exception if channel unavailable
 		}
 		public virtual void CommitTransaction()
 		{
+			this.ThrowWhenDisposed();
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.TxCommit(); // TODO: wrap exception if channel unavailable
 		}
 		public virtual void RollbackTransaction()
 		{
+			this.ThrowWhenDisposed();
 			if (this.transactionType == RabbitTransactionType.Full)
 			    this.channel.TxRollback(); // TODO: wrap exception if channel unavailable
 		}
 
+		protected virtual void ThrowWhenDisposed()
+		{
+			if (this.disposed)
+				throw new ObjectDisposedException("RabbitChannel");
+		}
 		protected virtual void ThrowWhenSubscriptionExists()
 		{
 			if (this.subscription != null)

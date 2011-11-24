@@ -344,7 +344,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_disposing_a_receiving_channel : using_a_channel
+	public class when_disposing_a_channel_with_a_subscription : using_a_channel
 	{
 		Establish context = () =>
 		{
@@ -373,6 +373,81 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_only_dispose_the_underlying_resources_once = () =>
 			mockRealChannel.Verify(x => x.Dispose(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_send_through_a_disposed_channel : using_a_channel
+	{
+		Establish context = () =>
+			channel.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Send(new Mock<ChannelEnvelope>().Object));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_receive_through_a_disposed_channel : using_a_channel
+	{
+		Establish context = () =>
+			channel.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.BeginReceive(context => { }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_acknowledge_a_message_against_a_disposed_channel : using_a_channel
+	{
+		Establish context = () =>
+			channel.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.RollbackTransaction());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_commit_a_transaction_against_a_disposed_channel : using_a_channel
+	{
+		Establish context = () =>
+			channel.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.CommitTransaction());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_rollback_a_transaction_against_a_disposed_channel : using_a_channel
+	{
+		Establish context = () =>
+			channel.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.RollbackTransaction());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
 	}
 
 	public abstract class using_a_channel
