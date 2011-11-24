@@ -4,10 +4,10 @@
 
 	public class BinarySerializer : ISerializer
 	{
-		public void Serialize(Stream destination, object graph)
+		public virtual void Serialize(Stream destination, object graph)
 		{
 		}
-		public T Deserialize<T>(Stream source)
+		public virtual T Deserialize<T>(Stream source, string contentEncoding = "")
 		{
 			return default(T);
 		}

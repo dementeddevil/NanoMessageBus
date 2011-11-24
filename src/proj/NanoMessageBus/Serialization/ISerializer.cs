@@ -13,7 +13,6 @@
 		/// <summary>
 		/// Serializes the object graph provided and writes a serialized representation to the output stream provided.
 		/// </summary>
-		/// <typeparam name="T">The type of object to be serialized</typeparam>
 		/// <param name="destination">The stream into which the serialized object graph should be written.</param>
 		/// <param name="graph">The object graph to be serialized.</param>
 		void Serialize(Stream destination, object graph);
@@ -23,7 +22,8 @@
 		/// </summary>
 		/// <typeparam name="T">The type of object to be deserialized.</typeparam>
 		/// <param name="source">The stream of bytes from which the object will be reconstructed.</param>
+		/// <param name="contentEncoding">The optional value which indicates the encoding used during serialization.</param>
 		/// <returns>The reconstructed object.</returns>
-		T Deserialize<T>(Stream source);
+		T Deserialize<T>(Stream source, string contentEncoding = "");
 	}
 }
