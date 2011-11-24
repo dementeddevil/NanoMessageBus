@@ -24,11 +24,14 @@
 		}
 		protected virtual void BeginReceive<T>(T message, Action<IDeliveryContext> callback) where T : class
 		{
-			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 			this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
 
-			// TODO: on serialization failure, immediately forward to poison message exchange
-			// and ack/commit
+			using (this.CurrentTransaction = new RabbitTransaction(this, this.configuration.TransactionType))
+				this.TryReceive(message, callback);
+		}
+		protected virtual void TryReceive<T>(T message, Action<IDeliveryContext> callback) where T : class
+		{
+			// TODO: on serialization failure, immediately forward to poison message exchange and ack/commit
 			try
 			{
 				// TODO: *after* callback:

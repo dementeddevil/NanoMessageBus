@@ -118,6 +118,9 @@ namespace NanoMessageBus.RabbitChannel
 		It should_begin_a_transaction = () =>
 			delivery.CurrentTransaction.ShouldNotBeNull();
 
+		It should_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
+			delivery.CurrentTransaction.Finished.ShouldBeTrue();
+
 		static Action<BasicDeliverEventArgs> dispatch;
 		static IDeliveryContext delivery;
 	}
@@ -127,10 +130,14 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			RequireTransaction(RabbitTransactionType.Full);
+			mockRealChannel.Setup(x => x.TxRollback());
 			mockSubscription.Setup(x => x.RetryMessage(message));
 			mockSubscription
 				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
 				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+
+			Initialize();
 		};
 
 		Because of = () =>
@@ -141,6 +148,9 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_add_the_message_to_the_retry_queue = () =>
 			mockSubscription.Verify(x => x.RetryMessage(message));
+
+		It should_finalize_and_dispose_the_outstanding_transaction_for_transactional_channel = () =>
+			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 
 		static Action<BasicDeliverEventArgs> dispatch;
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
