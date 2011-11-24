@@ -19,17 +19,17 @@
 
 			// TODO: wrap up the exceptions on the following calls if the channel is unavailable
 			this.subscription = this.subscriptionFactory();
-			this.subscription.BeginReceive<BasicDeliverEventArgs>(this.configuration.ReceiveTimeout, msg =>
+			this.subscription.BeginReceive(this.configuration.ReceiveTimeout, msg =>
 				this.BeginReceive(msg, callback));
 		}
-		protected virtual void BeginReceive<T>(T message, Action<IDeliveryContext> callback) where T : class
+		protected virtual void BeginReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
 
 			using (this.CurrentTransaction = new RabbitTransaction(this, this.configuration.TransactionType))
 				this.TryReceive(message, callback);
 		}
-		protected virtual void TryReceive<T>(T message, Action<IDeliveryContext> callback) where T : class
+		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			// TODO: on serialization failure, immediately forward to poison message exchange and ack/commit
 			try

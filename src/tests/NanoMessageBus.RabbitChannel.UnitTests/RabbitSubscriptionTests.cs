@@ -14,7 +14,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive<BasicDeliverEventArgs>(ZeroTimeout, msg => { }));
+				subscription.BeginReceive(ZeroTimeout, msg => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -28,7 +28,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			exception = Catch.Exception(() =>
-				subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, null));
+				subscription.BeginReceive(DefaultTimeout, null));
 
 		It should_throw_an_exception = () =>
 			exception.ShouldBeOfType<ArgumentNullException>();
@@ -44,7 +44,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg => { }));
+				subscription.BeginReceive(DefaultTimeout, msg => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -56,10 +56,10 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_receiving_a_message_from_a_subscription : using_a_subscription
 	{
 		Establish context = () => mockRealSubscription
-			.Setup(x => x.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout))
+			.Setup(x => x.BeginReceive(DefaultTimeout))
 			.Returns(new Mock<BasicDeliverEventArgs>().Object);
 
-		Because of = () => subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg =>
+		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
 		{
 			message = msg;
 			subscription.Dispose();
@@ -75,10 +75,10 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_receiving_messages_from_a_subscription : using_a_subscription
 	{
 		Establish context = () => mockRealSubscription
-			.Setup(x => x.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout))
+			.Setup(x => x.BeginReceive(DefaultTimeout))
 			.Returns(new Mock<BasicDeliverEventArgs>().Object);
 
-		Because of = () => subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg =>
+		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
 		{
 			if (MaxInvocations == ++invocations)
 				subscription.Dispose();
@@ -123,13 +123,13 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_retrying_message : using_a_subscription
 	{
 		Establish context = () =>
-			mockRealSubscription.Setup(x => x.RetryMessage(Moq.It.IsAny<object>()));
+			mockRealSubscription.Setup(x => x.RetryMessage(Moq.It.IsAny<BasicDeliverEventArgs>()));
 
 		Because of = () =>
 			subscription.RetryMessage(new Mock<BasicDeliverEventArgs>().Object);
 
 		It should_pass_the_retry_attempt_to_the_underlying_subscription = () =>
-			mockRealSubscription.Verify(x => x.RetryMessage(Moq.It.IsAny<object>()), Times.Once());
+			mockRealSubscription.Verify(x => x.RetryMessage(Moq.It.IsAny<BasicDeliverEventArgs>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -154,22 +154,10 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.RetryMessage<BasicDeliverEventArgs>(null));
+			thrown = Catch.Exception(() => subscription.RetryMessage(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
-	}
-
-	[Subject(typeof(RabbitSubscription))]
-	public class when_providing_a_message_of_the_incorrect_type_for_retry : using_a_subscription
-	{
-		Because of = () =>
-			thrown = Catch.Exception(() => subscription.RetryMessage(string.Empty));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
 
 		static Exception thrown;
 	}

@@ -5,7 +5,7 @@
 
 	public class RabbitSubscription : IDisposable
 	{
-		public virtual void BeginReceive<T>(TimeSpan timeout, Action<T> callback) where T : class
+		public virtual void BeginReceive(TimeSpan timeout, Action<BasicDeliverEventArgs> callback)
 		{
 			if (timeout < TimeSpan.Zero)
 				throw new ArgumentException("The timespan must be positive.", "timeout");
@@ -16,7 +16,7 @@
 
 			while (!this.disposed)
 			{
-				var delivery = this.adapter.BeginReceive<T>(timeout);
+				var delivery = this.adapter.BeginReceive(timeout);
 				if (delivery != null)
 					callback(delivery);	
 			}
@@ -26,17 +26,13 @@
 			this.ThrowWhenDisposed();
 			this.adapter.AcknowledgeMessage();
 		}
-		public virtual void RetryMessage<T>(T message) where T : class
+		public virtual void RetryMessage(BasicDeliverEventArgs message)
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
 
-			var retry = message as BasicDeliverEventArgs;
-			if (retry == null)
-				throw new ArgumentException("The message must be of type 'BasicDeliverEventArgs'.", "message");
-
 			this.ThrowWhenDisposed();
-			this.adapter.RetryMessage(retry); // TODO: try/catch shutdown?
+			this.adapter.RetryMessage(message); // TODO: try/catch shutdown?
 		}
 
 		protected virtual void ThrowWhenDisposed()

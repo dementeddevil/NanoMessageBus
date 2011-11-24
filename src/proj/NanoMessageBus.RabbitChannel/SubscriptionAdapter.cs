@@ -8,17 +8,17 @@
 
 	public class SubscriptionAdapter : IDisposable
 	{
-		public virtual T BeginReceive<T>(TimeSpan timeout) where T : class
+		public virtual BasicDeliverEventArgs BeginReceive(TimeSpan timeout)
 		{
 			BasicDeliverEventArgs delivery;
 			this.subscription.Next((int)timeout.TotalMilliseconds, out delivery);
-			return delivery as T;
+			return delivery;
 		}
 		public virtual void AcknowledgeMessage()
 		{
 			this.subscription.Ack();
 		}
-		public virtual void RetryMessage(object message)
+		public virtual void RetryMessage(BasicDeliverEventArgs message)
 		{
 			this.queue.Enqueue(message);
 		}
