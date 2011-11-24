@@ -54,9 +54,13 @@
 
 		public virtual void Send(ChannelEnvelope envelope)
 		{
-			// TODO: convert then channel.BasicPublish() to each destination
+			if (envelope == null)
+				throw new ArgumentNullException("envelope");
 
 			this.ThrowWhenDisposed();
+
+			//// TODO: convert then channel.BasicPublish() to each destination
+			//// TODO: wrap up the exception if the channel is unavailable
 		}
 
 		public virtual void AcknowledgeMessage()

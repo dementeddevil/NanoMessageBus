@@ -152,6 +152,9 @@ namespace NanoMessageBus.RabbitChannel
 		It should_finalize_and_dispose_the_outstanding_transaction_for_transactional_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 
+		It should_mark_the_transaction_a_finished = () =>
+			channel.CurrentTransaction.Finished.ShouldBeTrue();
+
 		static Action<BasicDeliverEventArgs> dispatch;
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 	}
@@ -172,7 +175,22 @@ namespace NanoMessageBus.RabbitChannel
 		It should_throw_the_exception = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();
 
+		It should_mark_the_transaction_a_finished = () =>
+			channel.CurrentTransaction.Finished.ShouldBeTrue();
+
 		static Action<BasicDeliverEventArgs> dispatch;
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_null_message : using_a_channel
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Send(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+
 		static Exception thrown;
 	}
 
