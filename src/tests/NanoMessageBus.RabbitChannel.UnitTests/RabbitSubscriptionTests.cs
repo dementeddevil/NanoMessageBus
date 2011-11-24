@@ -76,11 +76,21 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg => message = msg);
+			subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg =>
+			{
+				message = msg;
+				if (MaxInvocations == ++invocations)
+					subscription.Dispose();
+			});
+
+		It should_loop_until_the_subscription_is_disposed = () =>
+			invocations.ShouldEqual(MaxInvocations); // the loop occurred MaxInvocations times
 
 		It should_invoke_the_callback_with_the_received_message = () =>
 			message.ShouldNotBeNull();
 
+		const int MaxInvocations = 3;
+		static int invocations;
 		static BasicDeliverEventArgs message;
 	}
 

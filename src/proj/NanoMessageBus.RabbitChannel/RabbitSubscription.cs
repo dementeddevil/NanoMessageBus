@@ -13,10 +13,12 @@
 
 			this.ThrowWhenDisposed();
 
-			// TODO: while (!this.disposed) { ... }
-			var delivery = this.adapter.BeginReceive<T>(timeout);
-			if (delivery != null)
-				callback(delivery);
+			while (!this.disposed)
+			{
+				var delivery = this.adapter.BeginReceive<T>(timeout);
+				if (delivery != null)
+					callback(delivery);	
+			}
 		}
 		public virtual void AcknowledgeMessage()
 		{
