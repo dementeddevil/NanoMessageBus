@@ -62,6 +62,21 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_opening_the_channel_for_receive_more_than_once : using_a_channel
+	{
+		Establish context = () =>
+			channel.BeginReceive(delivery => { });
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.BeginReceive(delivery => { }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>

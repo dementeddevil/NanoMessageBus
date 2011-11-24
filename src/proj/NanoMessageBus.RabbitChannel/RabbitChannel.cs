@@ -13,8 +13,10 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
-			// TODO: wrap exception if channel unavailable
-			this.subscription = this.subscriptionFactory(); // TODO: ensure this only gets called once
+			if (this.subscription != null)
+				throw new InvalidOperationException("The channel already has a receive callback.");
+
+			this.subscription = this.subscriptionFactory(); // TODO: wrap exception if channel unavailable
 			this.subscription.BeginReceive(DefaultTimeout, msg =>
 			{
 				this.CurrentMessage = null; // TODO: convert from RabbitMessage

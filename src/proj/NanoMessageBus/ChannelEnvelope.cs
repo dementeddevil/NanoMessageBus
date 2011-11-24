@@ -40,9 +40,11 @@
 				throw new ArgumentNullException("recipients");
 
 			this.Message = message;
-			this.Recipients = new ReadOnlyCollection<Uri>(recipients.Where(x => x != null).ToArray());
 
-			if (this.Recipients.Count == 0)
+			var immutable = new ReadOnlyCollection<Uri>(recipients.Where(x => x != null).ToArray());
+			this.Recipients = immutable;
+
+			if (immutable.Count == 0)
 				throw new ArgumentException("No recipients were provided.", "recipients");
 		}
 
