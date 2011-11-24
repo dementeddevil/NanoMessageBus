@@ -13,8 +13,7 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
-			if (this.subscription != null)
-				throw new InvalidOperationException("The channel already has a receive callback.");
+			this.ThrowWhenSubscriptionExists();
 
 			this.subscription = this.subscriptionFactory(); // TODO: wrap exception if channel unavailable
 			this.subscription.BeginReceive(DefaultTimeout, msg =>
@@ -31,9 +30,7 @@
 
 		public virtual void AcknowledgeMessage()
 		{
-			if (this.subscription == null)
-				throw new InvalidOperationException("The channel must first be opened for receive.");
-
+			this.ThrowWhenSubscriptionMissing();
 			if (this.transactionType != RabbitTransactionType.None)
 				this.subscription.AcknowledgeMessage(); // TODO: wrap exception if channel unavailable
 		}
@@ -46,6 +43,17 @@
 		{
 			if (this.transactionType == RabbitTransactionType.Full)
 			    this.channel.TxRollback(); // TODO: wrap exception if channel unavailable
+		}
+
+		protected virtual void ThrowWhenSubscriptionExists()
+		{
+			if (this.subscription != null)
+				throw new InvalidOperationException("The channel already has a receive callback.");
+		}
+		protected virtual void ThrowWhenSubscriptionMissing()
+		{
+			if (this.subscription == null)
+				throw new InvalidOperationException("The channel must first be opened for receive.");
 		}
 
 		public RabbitChannel(
