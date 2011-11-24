@@ -14,6 +14,7 @@
 
 			this.ThrowWhenDisposed();
 
+			// TODO: should this be invoked in a while loop and how can we break out of the loop?
 			var delivery = this.adapter.BeginReceive<BasicDeliverEventArgs>(timeout);
 			if (delivery != null)
 				callback(new RabbitMessage(delivery)); // make this an event-based consumer

@@ -77,6 +77,29 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_receiving_a_message : using_a_channel
+	{
+		Establish context = () => mockSubscription
+			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<RabbitMessage>>()))
+			.Callback<TimeSpan, Action<RabbitMessage>>((first, second) => { dispatch = second; });
+
+		Because of = () =>
+		{
+			channel.BeginReceive(deliveryContext => delivery = deliveryContext);
+			dispatch(new RabbitMessage());
+		};
+
+		It should_invoke_the_callback_provided = () =>
+			delivery.ShouldNotBeNull();
+
+		It should_begin_a_transaction = () =>
+			delivery.CurrentTransaction.ShouldNotBeNull();
+
+		static Action<RabbitMessage> dispatch;
+		static IDeliveryContext delivery;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>

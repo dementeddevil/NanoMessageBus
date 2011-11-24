@@ -15,11 +15,14 @@
 
 			this.ThrowWhenSubscriptionExists();
 
-			this.subscription = this.subscriptionFactory(); // TODO: wrap exception if channel unavailable
+			// TODO: wrap up the following calls exception if channel unavailable
+			this.subscription = this.subscriptionFactory();
+
+			// TODO: problem this should only be called once but there's no loop...
 			this.subscription.BeginReceive(DefaultTimeout, msg =>
 			{
+				this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 				this.CurrentMessage = null; // TODO: convert from RabbitMessage
-				this.CurrentTransaction = null; // TODO: start new transaction
 
 				callback(this);
 			});
