@@ -49,7 +49,6 @@
     <Compile Include="RabbitChannelGroupConfiguration.cs" />
     <Compile Include="RabbitConnector.cs" />
     <Compile Include="RabbitConfiguration.cs" />
-    <Compile Include="RabbitMessage.cs" />
     <Compile Include="RabbitSubscription.cs" />
     <Compile Include="SubscriptionAdapter.cs" />
     <Compile Include="RabbitTransaction.cs" />
