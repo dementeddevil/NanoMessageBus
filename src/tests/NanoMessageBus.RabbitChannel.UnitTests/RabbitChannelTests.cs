@@ -7,6 +7,7 @@ namespace NanoMessageBus.RabbitChannel
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
+	using RabbitMQ.Client.Events;
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitChannel))]
@@ -44,7 +45,8 @@ namespace NanoMessageBus.RabbitChannel
 			invocations.ShouldEqual(1);
 
 		It should_open_the_subscription_to_receive = () =>
-			mockSubscription.Verify(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<RabbitMessage>>()));
+			mockSubscription.Verify(x =>
+				x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()));
 
 		static int invocations;
 	}
@@ -80,13 +82,13 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_receiving_a_message : using_a_channel
 	{
 		Establish context = () => mockSubscription
-			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<RabbitMessage>>()))
-			.Callback<TimeSpan, Action<RabbitMessage>>((first, second) => { dispatch = second; });
+			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
+			.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
 
 		Because of = () =>
 		{
 			channel.BeginReceive(deliveryContext => delivery = deliveryContext);
-			dispatch(new RabbitMessage());
+			dispatch(new BasicDeliverEventArgs());
 		};
 
 		It should_invoke_the_callback_provided = () =>
@@ -95,7 +97,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_begin_a_transaction = () =>
 			delivery.CurrentTransaction.ShouldNotBeNull();
 
-		static Action<RabbitMessage> dispatch;
+		static Action<BasicDeliverEventArgs> dispatch;
 		static IDeliveryContext delivery;
 	}
 

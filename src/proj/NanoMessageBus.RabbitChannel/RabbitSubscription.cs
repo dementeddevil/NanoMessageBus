@@ -1,11 +1,10 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
-	using RabbitMQ.Client.Events;
 
 	public class RabbitSubscription : IDisposable
 	{
-		public virtual void BeginReceive(TimeSpan timeout, Action<RabbitMessage> callback)
+		public virtual void BeginReceive<T>(TimeSpan timeout, Action<T> callback) where T : class
 		{
 			if (timeout < TimeSpan.Zero)
 				throw new ArgumentException("The timespan must be positive.", "timeout");
@@ -14,25 +13,23 @@
 
 			this.ThrowWhenDisposed();
 
-			// TODO: should this be invoked in a while loop and how can we break out of the loop?
-			var delivery = this.adapter.BeginReceive<BasicDeliverEventArgs>(timeout);
+			// TODO: while (!this.disposed) { ... }
+			var delivery = this.adapter.BeginReceive<T>(timeout);
 			if (delivery != null)
-				callback(new RabbitMessage(delivery)); // make this an event-based consumer
+				callback(delivery);
 		}
 		public virtual void AcknowledgeMessage()
 		{
 			this.ThrowWhenDisposed();
 			this.adapter.AcknowledgeMessage();
 		}
-		public virtual void RetryMessage(RabbitMessage message)
+		public virtual void RetryMessage<T>(T message) where T : class
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
 
 			this.ThrowWhenDisposed();
-
-			if (message.Delivery != null)
-				this.adapter.RetryMessage(message.Delivery); // TODO: try/catch shutdown?
+			this.adapter.RetryMessage(message); // TODO: try/catch shutdown?
 		}
 
 		protected virtual void ThrowWhenDisposed()

@@ -13,7 +13,8 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_a_negative_receive_timeout_is_specified : using_a_subscription
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.BeginReceive(ZeroTimeout, msg => { }));
+			thrown = Catch.Exception(() =>
+				subscription.BeginReceive<BasicDeliverEventArgs>(ZeroTimeout, msg => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -26,7 +27,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_attempting_to_receive_does_not_yield_any_messages : using_a_subscription
 	{
 		Because of = () =>
-			subscription.BeginReceive(DefaultTimeout, msg => invocations++);
+			subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg => invocations++);
 
 		It should_not_invoke_the_callback_provided = () =>
 			invocations.ShouldEqual(0);
@@ -38,7 +39,8 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_attempting_to_receive_without_providing_a_callback : using_a_subscription
 	{
 		Because of = () =>
-			exception = Catch.Exception(() => subscription.BeginReceive(DefaultTimeout, null));
+			exception = Catch.Exception(() =>
+				subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, null));
 
 		It should_throw_an_exception = () =>
 			exception.ShouldBeOfType<ArgumentNullException>();
@@ -53,7 +55,8 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.BeginReceive(DefaultTimeout, msg => { }));
+			thrown = Catch.Exception(() =>
+				subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -73,12 +76,12 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			subscription.BeginReceive(DefaultTimeout, msg => message = msg);
+			subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg => message = msg);
 
 		It should_invoke_the_callback_with_the_received_message = () =>
 			message.ShouldNotBeNull();
 
-		static RabbitMessage message;
+		static BasicDeliverEventArgs message;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -144,7 +147,7 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.RetryMessage(null));
+			thrown = Catch.Exception(() => subscription.RetryMessage<BasicDeliverEventArgs>(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();

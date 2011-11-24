@@ -2,6 +2,7 @@
 {
 	using System;
 	using RabbitMQ.Client;
+	using RabbitMQ.Client.Events;
 
 	public class RabbitChannel : IMessagingChannel
 	{
@@ -17,18 +18,17 @@
 
 			// TODO: wrap up the following calls exception if channel unavailable
 			this.subscription = this.subscriptionFactory();
-
-			// TODO: problem this should only be called once but there's no loop...
-			this.subscription.BeginReceive(DefaultTimeout, msg =>
+			this.subscription.BeginReceive<BasicDeliverEventArgs>(DefaultTimeout, msg =>
 			{
 				this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
-				this.CurrentMessage = null; // TODO: convert from RabbitMessage
+				this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
 
 				callback(this);
 			});
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{
+			// TODO: convert then channel.BasicPublish() to each destination
 		}
 
 		public virtual void AcknowledgeMessage()
