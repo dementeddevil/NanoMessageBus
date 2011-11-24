@@ -289,6 +289,44 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitTransaction))]
+	public class when_disposing_a_committed_transaction : using_a_transaction
+	{
+		Establish context = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			mockChannel.Setup(x => x.RollbackTransaction());
+			Initialize();
+
+			transaction.Commit();
+		};
+
+		Because of = () =>
+			transaction.Dispose();
+
+		It should_rollback_the_transaction_against_the_underlying_model = () =>
+			mockChannel.Verify(x => x.RollbackTransaction(), Times.Never());
+	}
+
+	[Subject(typeof(RabbitTransaction))]
+	public class when_disposing_a_rolled_back_transaction : using_a_transaction
+	{
+		Establish context = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			mockChannel.Setup(x => x.RollbackTransaction());
+			Initialize();
+
+			transaction.Rollback();
+		};
+
+		Because of = () =>
+			transaction.Dispose();
+
+		It should_rollback_the_transaction_against_the_underlying_model = () =>
+			mockChannel.Verify(x => x.RollbackTransaction(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitTransaction))]
 	public class when_disposing_a_transaction_more_than_once : using_a_transaction
 	{
 		Establish context = () =>
@@ -305,6 +343,26 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_rollback_the_transaction_against_the_underlying_model_exactly_once = () =>
 			mockChannel.Verify(x => x.RollbackTransaction(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitTransaction))]
+	public class when_dispose_raises_a_ChannelConnectionException : using_a_transaction
+	{
+		Establish context = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			mockChannel.Setup(x => x.RollbackTransaction()).Throws(new ChannelConnectionException());
+
+			Initialize();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => transaction.Dispose());
+
+		It should_suppress_the_transaction = () =>
+			thrown.ShouldBeNull();
+
+		static Exception thrown;
 	}
 
 	public abstract class using_a_transaction

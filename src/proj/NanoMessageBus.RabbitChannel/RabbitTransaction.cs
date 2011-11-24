@@ -120,7 +120,17 @@
 
 			this.disposed = true;
 			this.callbacks.Clear();
-			this.RollbackChannel();
+
+			if (this.committed || this.rolledBack)
+				return;
+
+			try
+			{
+				this.RollbackChannel();
+			}
+			catch (ChannelConnectionException)
+			{
+			}
 		}
 
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
