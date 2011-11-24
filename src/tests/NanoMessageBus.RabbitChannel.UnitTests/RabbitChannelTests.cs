@@ -16,7 +16,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockRealChannel.Setup(x => x.TxSelect());
-			transactionType = RabbitTransactionType.Full;
+			RequireTransaction(RabbitTransactionType.Full);
 		};
 
 		Because of = () =>
@@ -31,7 +31,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			channel = new RabbitChannel(mockRealChannel.Object, transactionType, () =>
+			channel = new RabbitChannel(mockRealChannel.Object, mockConfiguration.Object, () =>
 			{
 				invocations++;
 				return mockSubscription.Object;
@@ -150,7 +150,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			transactionType = RabbitTransactionType.Acknowledge;
+			RequireTransaction(RabbitTransactionType.Acknowledge);
 			mockSubscription.Setup(x => x.AcknowledgeMessage());
 			Initialize();
 
@@ -182,7 +182,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			transactionType = RabbitTransactionType.Full;
+			RequireTransaction(RabbitTransactionType.Full);
 			mockSubscription.Setup(x => x.AcknowledgeMessage());
 			Initialize();
 
@@ -229,7 +229,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			transactionType = RabbitTransactionType.Acknowledge;
+			RequireTransaction(RabbitTransactionType.Acknowledge);
 			Initialize();
 
 			mockRealChannel.Setup(x => x.TxCommit());
@@ -247,7 +247,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			transactionType = RabbitTransactionType.Full;
+			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
 
 			mockRealChannel.Setup(x => x.TxCommit());
@@ -278,7 +278,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			transactionType = RabbitTransactionType.Acknowledge;
+			RequireTransaction(RabbitTransactionType.Acknowledge);
 			Initialize();
 
 			mockRealChannel.Setup(x => x.TxRollback());
@@ -296,7 +296,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			transactionType = RabbitTransactionType.Full;
+			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
 
 			mockRealChannel.Setup(x => x.TxRollback());
@@ -358,28 +358,28 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			mockSubscription = new Mock<RabbitSubscription>();
 			mockRealChannel = new Mock<IModel>();
+			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
+			mockSubscription = new Mock<RabbitSubscription>();
 
+			RequireTransaction(RabbitTransactionType.None);
 			Initialize();
 		};
 
+		protected static void RequireTransaction(RabbitTransactionType transactionType)
+		{
+			mockConfiguration.Setup(x => x.TransactionType).Returns(transactionType);
+		}
 		protected static void Initialize()
 		{
-			channel = new RabbitChannel(mockRealChannel.Object, transactionType, () => mockSubscription.Object);
+			channel = new RabbitChannel(
+				mockRealChannel.Object, mockConfiguration.Object, () => mockSubscription.Object);
 		}
 
-		Cleanup after = () =>
-		{
-			mockSubscription = null;
-			mockRealChannel = null;
-			transactionType = RabbitTransactionType.None;
-		};
-
 		protected const string DefaultChannelGroup = "some group name";
-		protected static RabbitTransactionType transactionType = RabbitTransactionType.None;
-		protected static Mock<RabbitSubscription> mockSubscription;
 		protected static Mock<IModel> mockRealChannel;
+		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
+		protected static Mock<RabbitSubscription> mockSubscription;
 		protected static RabbitChannel channel;
 	}
 }

@@ -50,5 +50,9 @@
 		{
 			get { return 0; }
 		}
+		public virtual Uri PoisonMessageExchange
+		{
+			get { return null; }
+		}
 	}
 }

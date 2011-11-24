@@ -26,8 +26,13 @@
 			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 			this.CurrentMessage = null; // TODO: convert from BasicDeliverEventArgs
 
+			// TODO: on serialization failure, immediately forward to poison message exchange
+			// and ack/commit
 			try
 			{
+				// TODO: *after* callback:
+				// 1. clear failure count for message (global per app or at least shared per channel group)
+				// 2. clear serialization cache for message (global per app or at least shared per channel group)
 				callback(this);
 			}
 			catch (ChannelConnectionException)
@@ -36,7 +41,10 @@
 			}
 			catch
 			{
-				this.subscription.RetryMessage(message);
+				// TODO: increment failure count; if it exceeds configured amount, forward to poison message exchange (along with serialization info)
+				// adding message back to in-memory queue means another channel (within the same channel group)
+				// can pick it up for processing, therefore failure/serialization caches must be shared
+				this.subscription.RetryMessage(message); // TODO: if channel is unavailable
 			}
 		}
 
@@ -75,14 +83,15 @@
 
 		public RabbitChannel(
 			IModel channel,
-			RabbitTransactionType transactionType,
+			RabbitChannelGroupConfiguration configuration,
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
-			this.transactionType = transactionType;
+			this.configuration = configuration;
+			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;
 
-			if (transactionType == RabbitTransactionType.Full)
+			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.TxSelect();
 		}
 		protected RabbitChannel() { }
@@ -118,6 +127,7 @@
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(500);
 		private readonly object locker = new object();
 		private readonly IModel channel;
+		private readonly RabbitChannelGroupConfiguration configuration;
 		private readonly RabbitTransactionType transactionType;
 		private readonly Func<RabbitSubscription> subscriptionFactory;
 		private RabbitSubscription subscription;
