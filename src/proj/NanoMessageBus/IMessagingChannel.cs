@@ -18,6 +18,6 @@
 		/// <remarks>
 		/// The timeout, if any, has been specified as part of the channel configuration.
 		/// </remarks>
-		void BeginReceive(Action<IDeliveryContext> callback);
+		void Receive(Action<IDeliveryContext> callback);
 	}
 }

@@ -11,7 +11,7 @@
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }
 
-		public virtual void BeginReceive(Action<IDeliveryContext> callback)
+		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
 				throw new ArgumentNullException("callback");
@@ -19,12 +19,14 @@
 			this.ThrowWhenDisposed();
 			this.ThrowWhenSubscriptionExists();
 
-			// TODO: wrap up the exceptions on the following calls if the channel is unavailable
-			this.subscription = this.subscriptionFactory();
-			this.subscription.BeginReceive(this.configuration.ReceiveTimeout, msg =>
-				this.BeginReceive(msg, callback));
+			this.Try(() =>
+			{
+				this.subscription = this.subscriptionFactory();
+				this.subscription.BeginReceive(this.configuration.ReceiveTimeout, msg =>
+					this.Receive(msg, callback));	
+			});
 		}
-		protected virtual void BeginReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
+		protected virtual void Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			using (this.NewTransaction())
 				this.TryReceive(message, callback);
@@ -33,7 +35,6 @@
 		{
 			try
 			{
-				// TODO: on serialization failure, immediately forward to poison message exchange and ack/commit
 				this.CurrentMessage = this.adapter.Build(message);
 
 				// TODO: *after* callback:
@@ -41,21 +42,23 @@
 				// 2. clear serialization cache for message (global per app or at least shared per channel group)
 				callback(this);
 			}
-			catch (ChannelConnectionException)
-			{
-				throw;
-			}
 			catch (SerializationException)
 			{
-				this.Send(message, this.configuration.PoisonMessageExchange);
+				this.Send(message, this.configuration.PoisonMessageExchange); // TODO: add exception headers
 				this.CurrentTransaction.Commit();
+			}
+			catch (ChannelConnectionException)
+			{
+				throw; // this isn't something that can ben retried; TODO: should the channel be disposed here?
 			}
 			catch
 			{
+				// TODO: add exception headers
+
 				// TODO: increment failure count; if it exceeds configured amount, forward to poison message exchange (along with serialization info)
 				// adding message back to in-memory queue means another channel (within the same channel group)
 				// can pick it up for processing, therefore failure/serialization caches must be shared
-				this.subscription.RetryMessage(message); // TODO: if channel is unavailable
+				this.subscription.RetryMessage(message);
 			}
 		}
 
@@ -78,31 +81,33 @@
 			if (this.CurrentTransaction.Finished)
 				this.NewTransaction();
 
-			// TODO: wrap up the exception if the channel is unavailable
-			this.CurrentTransaction.Register(() =>
-			    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body));
+			this.CurrentTransaction.Register(() => this.Try(() =>
+			    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body)));
 		}
 
 		public virtual void AcknowledgeMessage()
 		{
 			this.ThrowWhenDisposed();
 			this.ThrowWhenSubscriptionMissing();
+
 			if (this.transactionType != RabbitTransactionType.None)
-				this.subscription.AcknowledgeMessage(); // TODO: wrap exception if channel unavailable
+				this.Try(this.subscription.AcknowledgeMessage);
 		}
 		public virtual void CommitTransaction()
 		{
 			this.ThrowWhenDisposed();
+
 			if (this.transactionType == RabbitTransactionType.Full)
-				this.channel.TxCommit(); // TODO: wrap exception if channel unavailable
+				this.Try(this.channel.TxCommit);
 
 			this.NewTransaction();
 		}
 		public virtual void RollbackTransaction()
 		{
 			this.ThrowWhenDisposed();
+
 			if (this.transactionType == RabbitTransactionType.Full)
-			    this.channel.TxRollback(); // TODO: wrap exception if channel unavailable
+				this.Try(this.channel.TxRollback);
 
 			this.NewTransaction();
 		}
@@ -126,6 +131,19 @@
 		protected virtual IChannelTransaction NewTransaction()
 		{
 			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
+		}
+
+		protected virtual void Try(Action callback)
+		{
+			try
+			{
+				callback();
+			}
+			catch
+			{
+				// TODO: catch the appropriate exception(s) and wrap them up as a ChannelUnavailableException
+				throw;
+			}
 		}
 
 		public RabbitChannel(
@@ -164,21 +182,17 @@
 			if (!disposing)
 				return;
 
-			lock (this.locker)
-			{
-				if (this.disposed)
-					return;
+			if (this.disposed)
+				return;
 
-				this.disposed = true;
+			this.disposed = true;
 
-				if (this.subscription != null)
-					this.subscription.Dispose();
+			if (this.subscription != null)
+				this.subscription.Dispose();
 
-				this.channel.Dispose();
-			}
+			this.channel.Dispose();
 		}
 
-		private readonly object locker = new object();
 		private readonly IModel channel;
 		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;

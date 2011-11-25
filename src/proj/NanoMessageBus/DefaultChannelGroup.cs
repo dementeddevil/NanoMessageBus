@@ -77,7 +77,7 @@
 				{
 					using (var channel = this.connector.Connect(this.configuration.ChannelGroup))
 					{
-						channel.BeginReceive(callback);
+						channel.Receive(callback);
 					}
 				}
 

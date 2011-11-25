@@ -60,7 +60,7 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 
 		It should_call_the_subscription_factory = () =>
 			invocations.ShouldEqual(1);
@@ -77,7 +77,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_opening_the_channel_to_receive_without_provding_a_callback : using_a_channel
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => channel.BeginReceive(null));
+			thrown = Catch.Exception(() => channel.Receive(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -89,10 +89,10 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_opening_the_channel_for_receive_more_than_once : using_a_channel
 	{
 		Establish context = () =>
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channel.BeginReceive(delivery => { }));
+			thrown = Catch.Exception(() => channel.Receive(delivery => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -113,7 +113,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			channel.BeginReceive(deliveryContext => delivery = deliveryContext);
+			channel.Receive(deliveryContext => delivery = deliveryContext);
 			dispatch(message);
 		};
 
@@ -154,7 +154,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			channel.BeginReceive(delivery => { throw new Exception("Message handling failed"); });
+			channel.Receive(delivery => { throw new Exception("Message handling failed"); });
 			dispatch(message);
 		};
 
@@ -200,7 +200,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 			dispatch(message);
 		};
 
@@ -229,7 +229,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			channel.BeginReceive(delivery => { throw new ChannelConnectionException(); });
+			channel.Receive(delivery => { throw new ChannelConnectionException(); });
 			thrown = Catch.Exception(() => dispatch(new BasicDeliverEventArgs()));
 		};
 
@@ -304,7 +304,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription.Setup(x => x.AcknowledgeMessage());
 			Initialize();
 
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 		};
 
 		Because of = () =>
@@ -318,7 +318,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_acknowledging_a_message_with_no_transaction : using_a_channel
 	{
 		Establish context = () =>
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 
 		Because of = () =>
 			channel.AcknowledgeMessage();
@@ -336,7 +336,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription.Setup(x => x.AcknowledgeMessage());
 			Initialize();
 
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 		};
 
 		Because of = () =>
@@ -478,7 +478,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockSubscription.Setup(x => x.Dispose());
-			channel.BeginReceive(delivery => { });
+			channel.Receive(delivery => { });
 		};
 
 		Because of = () =>
@@ -526,7 +526,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channel.BeginReceive(context => { }));
+			thrown = Catch.Exception(() => channel.Receive(context => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
