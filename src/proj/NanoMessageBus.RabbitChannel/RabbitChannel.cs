@@ -57,32 +57,33 @@
 			}
 			catch (SerializationException e)
 			{
-				this.adapter.AppendException(message, e);
-				this.Send(message, this.configuration.PoisonMessageExchange);
-				this.CurrentTransaction.Commit();
-				this.adapter.PurgeFromCache(message);
+				this.ForwardToPoisonMessageExchange(message, e);
 			}
 			catch (Exception e)
 			{
-				var nextAttempt = message.GetAttemptCount() + 1;
-				message.SetAttemptCount(nextAttempt);
-
-				if (nextAttempt > this.configuration.MaxAttempts)
-				{
-					this.adapter.AppendException(message, e);
-					message.SetAttemptCount(0);
-
-					this.NewTransaction();
-					this.Send(message, this.configuration.PoisonMessageExchange);
-					this.CurrentTransaction.Commit();
-
-					this.adapter.PurgeFromCache(message);
-				}
-				else
-				{
-					this.subscription.RetryMessage(message);
-				}
+				this.RetryMessage(message, e);
 			}
+		}
+		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
+		{
+			var nextAttempt = message.GetAttemptCount() + 1;
+			message.SetAttemptCount(nextAttempt);
+
+			if (nextAttempt > this.configuration.MaxAttempts)
+				this.ForwardToPoisonMessageExchange(message, exception);
+			else
+				this.subscription.RetryMessage(message);
+		}
+		protected virtual void ForwardToPoisonMessageExchange(BasicDeliverEventArgs message, Exception exception)
+		{
+			message.SetAttemptCount(0);
+			this.adapter.AppendException(message, exception);
+
+			this.NewTransaction();
+			this.Send(message, this.configuration.PoisonMessageExchange);
+			this.CurrentTransaction.Commit();
+
+			this.adapter.PurgeFromCache(message);
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)

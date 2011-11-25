@@ -9,6 +9,7 @@ namespace NanoMessageBus.RabbitChannel
 	using Moq;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Framing.v0_9_1;
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitChannel))]
@@ -239,7 +240,7 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			message = new BasicDeliverEventArgs
 			{
-				BasicProperties = new Mock<IBasicProperties>().Object,
+				BasicProperties = new BasicProperties(),
 				Body = new byte[] { 0, 1, 2, 3, 4 }
 			};
 

@@ -8,8 +8,7 @@
 	{
 		public static int GetAttemptCount(this BasicDeliverEventArgs message)
 		{
-			message.BasicProperties = message.BasicProperties ?? new BasicProperties();
-			message.BasicProperties.Headers = message.BasicProperties.Headers ?? new Hashtable();
+			message.EnsureMessage();
 
 			if (message.BasicProperties.Headers.Contains(AttemptCountHeader))
 				return (int)message.BasicProperties.Headers[AttemptCountHeader];
@@ -18,10 +17,17 @@
 		}
 		public static void SetAttemptCount(this BasicDeliverEventArgs message, int count)
 		{
+			message.EnsureMessage();
+
 			if (count == 0)
 				message.BasicProperties.Headers.Remove(AttemptCountHeader);
 			else
 				message.BasicProperties.Headers[AttemptCountHeader] = count;
+		}
+		private static void EnsureMessage(this BasicDeliverEventArgs message)
+		{
+			message.BasicProperties = message.BasicProperties ?? new BasicProperties();
+			message.BasicProperties.Headers = message.BasicProperties.Headers ?? new Hashtable();
 		}
 
 		private const string AttemptCountHeader = "x-retry-count";
