@@ -1,5 +1,6 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
+	using System;
 	using System.Collections;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Framing.v0_9;
@@ -40,6 +41,25 @@
 		{
 			message.BasicProperties = message.BasicProperties ?? new BasicProperties();
 			message.BasicProperties.Headers = message.BasicProperties.Headers ?? new Hashtable();
+		}
+
+		public static Guid ToGuid(this string value)
+		{
+			Guid parsed;
+			Guid.TryParse(value ?? string.Empty, out parsed);
+			return parsed;
+		}
+		public static DateTime ToDateTime(this string value)
+		{
+			DateTime parsed;
+			DateTime.TryParse(value, out parsed);
+			return parsed;
+		}
+		public static Uri ToUri(this string value)
+		{
+			Uri parsed;
+			Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out parsed);
+			return parsed;
 		}
 
 		private const string AttemptCountHeader = "x-retry-count";
