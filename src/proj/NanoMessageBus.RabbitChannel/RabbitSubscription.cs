@@ -5,7 +5,7 @@
 
 	public class RabbitSubscription : IDisposable
 	{
-		public virtual void BeginReceive(TimeSpan timeout, Action<BasicDeliverEventArgs> callback)
+		public virtual void BeginReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
 			if (timeout < TimeSpan.Zero)
 				throw new ArgumentException("The timespan must be positive.", "timeout");
@@ -15,10 +15,8 @@
 			this.ThrowWhenDisposed();
 
 			while (!this.disposed)
-			{
-				var delivery = this.adapter.BeginReceive(timeout);
-				callback(delivery);
-			}
+				if (!callback(this.adapter.BeginReceive(timeout)))
+					return;
 		}
 		public virtual void AcknowledgeMessage()
 		{

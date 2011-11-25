@@ -67,7 +67,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_open_the_subscription_to_receive = () =>
 			mockSubscription.Verify(x =>
-				x.BeginReceive(timeout, Moq.It.IsAny<Action<BasicDeliverEventArgs>>()));
+				x.BeginReceive(timeout, Moq.It.IsAny<Func<BasicDeliverEventArgs, bool>>()));
 
 		static readonly TimeSpan timeout = TimeSpan.FromMilliseconds(250);
 		static int invocations;
@@ -644,8 +644,8 @@ namespace NanoMessageBus.RabbitChannel
 			var timeout = TimeSpan.FromMilliseconds(100);
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
 			mockSubscription
-				.Setup(x => x.BeginReceive(timeout, Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
-				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+				.Setup(x => x.BeginReceive(timeout, Moq.It.IsAny<Func<BasicDeliverEventArgs, bool>>()))
+				.Callback<TimeSpan, Func<BasicDeliverEventArgs, bool>>((first, second) => { dispatch = second; });
 
 			RequireTransaction(RabbitTransactionType.None);
 			Initialize();
@@ -671,7 +671,7 @@ namespace NanoMessageBus.RabbitChannel
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<RabbitSubscription> mockSubscription;
 		protected static RabbitChannel channel;
-		static Action<BasicDeliverEventArgs> dispatch;
+		static Func<BasicDeliverEventArgs, bool> dispatch;
 	}
 }
 

@@ -14,7 +14,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive(ZeroTimeout, msg => { }));
+				subscription.BeginReceive(ZeroTimeout, msg => true));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -44,12 +44,27 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive(DefaultTimeout, msg => { }));
+				subscription.BeginReceive(DefaultTimeout, msg => true));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
 
 		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_the_callback_returns_false : using_a_subscription
+	{
+		Establish context = () =>
+			mockRealSubscription.Setup(x => x.BeginReceive(DefaultTimeout)).Returns((BasicDeliverEventArgs)null);
+
+		Because of = () =>
+			subscription.BeginReceive(DefaultTimeout, delivery => ++invocations > 1);
+
+		It should_invoke_the_callback_and_then_exit_the_receive_loop = () =>
+			invocations.ShouldEqual(1);
+
+		static int invocations;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -62,7 +77,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
 		{
 			message = msg;
-			subscription.Dispose(); // breaks out of the while loop
+			return false; // finished receiving
 		});
 
 		It should_invoke_the_callback_with_the_received_message = () =>
@@ -81,7 +96,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
 		{
 			invocations++;
-			subscription.Dispose(); // breaks out of the while loop
+			return false; // finished receiving
 		});
 
 		It should_invoke_the_callback = () =>
@@ -98,10 +113,7 @@ namespace NanoMessageBus.RabbitChannel
 			.Returns(new Mock<BasicDeliverEventArgs>().Object);
 
 		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
-		{
-			if (MaxInvocations == ++invocations)
-				subscription.Dispose();
-		});
+			MaxInvocations != ++invocations);
 
 		It should_loop_until_the_subscription_is_disposed = () =>
 			invocations.ShouldEqual(MaxInvocations);

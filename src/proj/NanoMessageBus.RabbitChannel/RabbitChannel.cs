@@ -28,14 +28,16 @@
 					this.Receive(msg, callback));
 			});
 		}
-		protected virtual void Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
+		protected virtual bool Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			this.CurrentMessage = null;
 			if (message == null)
-				return;
+				return true;
 
 			using (this.NewTransaction())
 				this.TryReceive(message, callback);
+
+			return true;
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
