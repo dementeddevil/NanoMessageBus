@@ -132,6 +132,25 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_no_message_is_received_from_the_subscription : using_a_channel
+	{
+		Establish context = () =>
+			channel.Receive(delivery => { });
+
+		Because of = () =>
+			Receive(null);
+
+		It should_have_a_fresh_transaction = () =>
+			channel.CurrentTransaction.Finished.ShouldBeFalse();
+
+		It should_set_the_CurrentMessage_on_the_channel_to_be_null = () =>
+			channel.CurrentMessage.ShouldBeNull();
+
+		It should_not_attempt_to_process_the_null_message = () =>
+			mockAdapter.Verify(x => x.Build((BasicDeliverEventArgs)null), Times.Never());
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_the_handling_of_a_message_throws_an_exception : using_a_channel
 	{
 		Establish context = () =>
@@ -172,8 +191,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription.Setup(x => x.AcknowledgeMessage());
 
 			mockRealChannel.Setup(x => x.TxCommit());
-			mockRealChannel
-				.Setup(x => x.BasicPublish(address, message.BasicProperties, message.Body));
+			mockRealChannel.Setup(x => x.BasicPublish(address, message.BasicProperties, message.Body));
 
 			var poisonExchange = new Mock<RabbitAddress>();
 			poisonExchange.Setup(x => x.Address).Returns(address);
@@ -556,6 +574,60 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_starting_to_receive_on_a_shutdown_channel : using_a_channel
+	{
+		Establish context = () =>
+			channel.BeginShutdown();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Receive(context => { }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelShutdownException>();
+
+		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_send_on_full_duplex_channel_that_is_shutting_down : using_a_channel
+	{
+		Establish context = () =>
+		{
+			channel.Receive(delivery => { }); // makes the channel full duplex
+
+			var mockEnvelope = new Mock<ChannelEnvelope>();
+			mockEnvelope.Setup(x => x.Recipients).Returns(new Uri[0]);
+			mockAdapter.Setup(x => x.Build(mockEnvelope.Object.Message));
+			envelope = mockEnvelope.Object;
+
+			channel.BeginShutdown();
+		};
+
+		Because of = () =>
+			channel.Send(envelope);
+
+		It should_allow_the_dispatch_to_proceed_so_that_the_transaction_can_complete = () =>
+			mockAdapter.Verify(x => x.Build(envelope.Message), Times.Once());
+
+		static ChannelEnvelope envelope;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_attempting_to_send_on_a_send_only_channel_that_is_shutting_down : using_a_channel
+	{
+		Establish context = () =>
+			channel.BeginShutdown();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Send(new Mock<ChannelEnvelope>().Object));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelShutdownException>();
 
 		static Exception thrown;
 	}

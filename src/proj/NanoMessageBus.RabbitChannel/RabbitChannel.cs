@@ -3,6 +3,7 @@
 	using System;
 	using System.Linq;
 	using System.Runtime.Serialization;
+	using System.Threading;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 
@@ -18,16 +19,21 @@
 
 			this.ThrowWhenDisposed();
 			this.ThrowWhenSubscriptionExists();
+			this.ThrowWhenShuttingDown();
 
 			this.Try(() =>
 			{
 				this.subscription = this.subscriptionFactory();
 				this.subscription.BeginReceive(this.configuration.ReceiveTimeout, msg =>
-					this.Receive(msg, callback));	
+					this.Receive(msg, callback));
 			});
 		}
 		protected virtual void Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
+			this.CurrentMessage = null;
+			if (message == null)
+				return;
+
 			using (this.NewTransaction())
 				this.TryReceive(message, callback);
 		}
@@ -68,6 +74,10 @@
 				throw new ArgumentNullException("envelope");
 
 			this.ThrowWhenDisposed();
+
+			if (this.subscription == null)
+				this.ThrowWhenShuttingDown();
+
 			var message = this.adapter.Build(envelope.Message);
 
 			foreach (var recipient in envelope.Recipients.Select(x => new RabbitAddress(x)))
@@ -112,6 +122,19 @@
 			this.NewTransaction();
 		}
 
+		public virtual void BeginShutdown()
+		{
+			// shutdown uses the pattern "volatile int32 reads, with cmpxch writes"
+			// which is safe for updates and cannot suffer torn reads.
+			// see CancellationTokenSource.cs in BCL Task Parallel Library source code.
+			Interlocked.Exchange(ref this.shutdown, ShuttingDown);
+		}
+
+		protected virtual void ThrowWhenShuttingDown()
+		{
+			if (this.shutdown == ShuttingDown)
+				throw new ChannelShutdownException();
+		}
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
@@ -192,5 +215,7 @@
 		private readonly Func<RabbitSubscription> subscriptionFactory;
 		private RabbitSubscription subscription;
 		private bool disposed;
+		private volatile int shutdown;
+		private const int ShuttingDown = 1;
 	}
 }

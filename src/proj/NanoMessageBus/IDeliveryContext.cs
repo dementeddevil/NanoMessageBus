@@ -25,6 +25,8 @@
 		/// Sends the message specified to the destinations provided.
 		/// </summary>
 		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="ChannelConnectionException"></exception>
+		/// <exception cref="ChannelShutdownException"></exception>
 		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
 		void Send(ChannelEnvelope envelope);
 	}

@@ -62,13 +62,32 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
 		{
 			message = msg;
-			subscription.Dispose();
+			subscription.Dispose(); // breaks out of the while loop
 		});
 
 		It should_invoke_the_callback_with_the_received_message = () =>
 			message.ShouldNotBeNull();
 
 		static BasicDeliverEventArgs message;
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_no_message_is_received_from_the_subscription_after_the_timeout_indicated : using_a_subscription
+	{
+		Establish context = () => mockRealSubscription
+			.Setup(x => x.BeginReceive(DefaultTimeout))
+			.Returns((BasicDeliverEventArgs)null);
+
+		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
+		{
+			invocations++;
+			subscription.Dispose(); // breaks out of the while loop
+		});
+
+		It should_invoke_the_callback = () =>
+			invocations.ShouldEqual(1);
+
+		static int invocations;
 	}
 
 	[Subject(typeof(RabbitSubscription))]

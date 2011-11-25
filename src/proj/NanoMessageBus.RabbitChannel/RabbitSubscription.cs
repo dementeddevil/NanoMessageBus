@@ -17,8 +17,7 @@
 			while (!this.disposed)
 			{
 				var delivery = this.adapter.BeginReceive(timeout);
-				if (delivery != null)
-					callback(delivery);	
+				callback(delivery);
 			}
 		}
 		public virtual void AcknowledgeMessage()
