@@ -50,7 +50,7 @@
 		{
 			get { return 0; }
 		}
-		public virtual Uri PoisonMessageExchange
+		public virtual RabbitAddress PoisonMessageExchange
 		{
 			get { return null; }
 		}

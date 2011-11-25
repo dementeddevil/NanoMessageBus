@@ -4,6 +4,7 @@
 namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Runtime.Serialization;
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
@@ -137,7 +138,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_handling_a_message_throws_an_exception : using_a_channel
+	public class when_the_handling_of_a_message_throws_an_exception : using_a_channel
 	{
 		Establish context = () =>
 		{
@@ -163,15 +164,64 @@ namespace NanoMessageBus.RabbitChannel
 		It should_finalize_and_dispose_the_outstanding_transaction_for_transactional_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 
-		It should_mark_the_transaction_a_finished = () =>
-			channel.CurrentTransaction.Finished.ShouldBeTrue();
-
 		static Action<BasicDeliverEventArgs> dispatch;
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_handling_a_message_throws_a_ChannelConnectionException : using_a_channel
+	public class when_the_handling_of_a_message_throws_a_SerializationException : using_a_channel
+	{
+		Establish context = () =>
+		{
+			message = new BasicDeliverEventArgs
+			{
+				BasicProperties = new Mock<IBasicProperties>().Object,
+				Body = new byte[] { 0, 1, 2, 3, 4 }
+			};
+
+			mockSubscription
+				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
+				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+			mockSubscription.Setup(x => x.AcknowledgeMessage());
+
+			mockRealChannel.Setup(x => x.TxCommit());
+			mockRealChannel
+				.Setup(x => x.BasicPublish(address, message.BasicProperties, message.Body));
+
+			var poisonExchange = new Mock<RabbitAddress>();
+			poisonExchange.Setup(x => x.Address).Returns(address);
+			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(poisonExchange.Object);
+
+			mockAdapter.Setup(x => x.Build(message)).Throws(new SerializationException());
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+		{
+			channel.BeginReceive(delivery => { });
+			dispatch(message);
+		};
+
+		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
+			mockRealChannel.Verify(x =>
+				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
+
+		It should_acknowledge_the_poison_message_from_the_receiving_queue_when_the_channels_uses_ack = () =>
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+
+		It should_commit_the_transaction_on_fully_transactional_channels = () =>
+			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
+
+		static BasicDeliverEventArgs message;
+		static Action<BasicDeliverEventArgs> dispatch;
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_the_handling_of_a_message_throws_a_ChannelConnectionException : using_a_channel
 	{
 		Establish context = () => mockSubscription
 			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
@@ -203,6 +253,46 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeOfType<ArgumentNullException>();
 
 		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockEnvelope = new Mock<ChannelEnvelope>();
+			mockEnvelope.Setup(x => x.Message).Returns(new Mock<ChannelMessage>().Object);
+			mockEnvelope.Setup(x => x.Recipients).Returns(new[]
+			{
+				ChannelEnvelope.LoopbackAddress,
+				ChannelEnvelope.LoopbackAddress
+			});
+
+			rabbitMessage = new BasicDeliverEventArgs
+			{
+				BasicProperties = new Mock<IBasicProperties>().Object,
+				Body = new byte[] { 0, 1, 2, 3, 4 }
+			};
+			mockAdapter.Setup(x => x.Build(mockEnvelope.Object.Message)).Returns(rabbitMessage);
+		};
+
+		Because of = () =>
+		{
+			channel.Send(mockEnvelope.Object);
+			channel.CurrentTransaction.Commit();
+		};
+
+		It should_build_a_message_specific_the_the_channel_from_the_message_provided = () =>
+			mockAdapter.Verify(x => x.Build(mockEnvelope.Object.Message), Times.Once());
+
+		It should_dispatch_the_message_to_the_recipients_specified = () =>
+			mockRealChannel.Verify(x => x.BasicPublish(
+				Moq.It.IsAny<PublicationAddress>(),
+				rabbitMessage.BasicProperties,
+				rabbitMessage.Body), Times.Exactly(mockEnvelope.Object.Recipients.Count));
+
+		static Mock<ChannelEnvelope> mockEnvelope;
+		static BasicDeliverEventArgs rabbitMessage;
 	}
 
 	[Subject(typeof(RabbitChannel))]

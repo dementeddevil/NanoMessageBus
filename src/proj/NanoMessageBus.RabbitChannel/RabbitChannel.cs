@@ -26,7 +26,8 @@
 		}
 		protected virtual void BeginReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
-			using (this.CurrentTransaction = new RabbitTransaction(this, this.configuration.TransactionType))
+			this.NewTransaction();
+			using (this.CurrentTransaction)
 				this.TryReceive(message, callback);
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
@@ -47,7 +48,8 @@
 			}
 			catch (SerializationException)
 			{
-				return; // TODO: send to poison message exchange and commit transaction
+				this.Send(message, this.configuration.PoisonMessageExchange);
+				this.CurrentTransaction.Commit();
 			}
 			catch
 			{
@@ -63,19 +65,23 @@
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
 
-			////var message = this.adapter.Build(envelope.Message);
+			this.ThrowWhenDisposed();
+			var message = this.adapter.Build(envelope.Message);
 
-			////foreach (var recipient in envelope.Recipients.Select(x => new RabbitAddress(x)))
-			////{
-			////    this.ThrowWhenDisposed();
-			////    this.Send(message, recipient);
-			////}
+			foreach (var recipient in envelope.Recipients.Select(x => new RabbitAddress(x)))
+			{
+				this.ThrowWhenDisposed();
+				this.Send(message, recipient);
+			}
 		}
 		protected virtual void Send(BasicDeliverEventArgs message, RabbitAddress recipient)
 		{
-			////// TODO: wrap up the exception if the channel is unavailable
-			////this.CurrentTransaction.Register(() =>
-			////    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body));
+			if (this.CurrentTransaction == null)
+				this.NewTransaction();
+
+			// TODO: wrap up the exception if the channel is unavailable
+			this.CurrentTransaction.Register(() =>
+			    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body));
 		}
 
 		public virtual void AcknowledgeMessage()
@@ -90,12 +96,16 @@
 			this.ThrowWhenDisposed();
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.TxCommit(); // TODO: wrap exception if channel unavailable
+
+			this.NewTransaction();
 		}
 		public virtual void RollbackTransaction()
 		{
 			this.ThrowWhenDisposed();
 			if (this.transactionType == RabbitTransactionType.Full)
 			    this.channel.TxRollback(); // TODO: wrap exception if channel unavailable
+
+			this.NewTransaction();
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -112,6 +122,11 @@
 		{
 			if (this.subscription == null)
 				throw new InvalidOperationException("The channel must first be opened for receive.");
+		}
+
+		protected virtual void NewTransaction()
+		{
+			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 		}
 
 		public RabbitChannel(
