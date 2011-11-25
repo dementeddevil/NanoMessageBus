@@ -26,8 +26,7 @@
 		}
 		protected virtual void BeginReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
-			this.NewTransaction();
-			using (this.CurrentTransaction)
+			using (this.NewTransaction())
 				this.TryReceive(message, callback);
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
@@ -76,7 +75,7 @@
 		}
 		protected virtual void Send(BasicDeliverEventArgs message, RabbitAddress recipient)
 		{
-			if (this.CurrentTransaction == null)
+			if (this.CurrentTransaction.Finished)
 				this.NewTransaction();
 
 			// TODO: wrap up the exception if the channel is unavailable
@@ -124,9 +123,9 @@
 				throw new InvalidOperationException("The channel must first be opened for receive.");
 		}
 
-		protected virtual void NewTransaction()
+		protected virtual IChannelTransaction NewTransaction()
 		{
-			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
+			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 		}
 
 		public RabbitChannel(
@@ -140,6 +139,8 @@
 			this.configuration = configuration;
 			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;
+
+			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.TxSelect();
