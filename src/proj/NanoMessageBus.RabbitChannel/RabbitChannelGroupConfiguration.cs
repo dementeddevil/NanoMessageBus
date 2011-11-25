@@ -54,5 +54,9 @@
 		{
 			get { return null; }
 		}
+		public virtual int MaxAttempts
+		{
+			get { return 0; }
+		}
 	}
 }

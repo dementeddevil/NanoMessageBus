@@ -1,5 +1,6 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
+	using System;
 	using RabbitMQ.Client.Events;
 	using Serialization;
 
@@ -13,6 +14,14 @@
 		public virtual BasicDeliverEventArgs Build(ChannelMessage message)
 		{
 			return null; // TODO
+		}
+
+		public virtual void AppendException(BasicDeliverEventArgs message, Exception exception)
+		{
+		}
+
+		public virtual void PurgeFromCache(BasicDeliverEventArgs message)
+		{
 		}
 
 		public RabbitMessageAdapter(ISerializer serializer) : this()

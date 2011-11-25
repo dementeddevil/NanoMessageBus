@@ -47,29 +47,41 @@
 			try
 			{
 				this.CurrentMessage = this.adapter.Build(message);
-
-				// TODO: *after* callback:
-				// 1. clear failure count for message (global per app or at least shared per channel group)
-				// 2. clear serialization cache for message (global per app or at least shared per channel group)
 				callback(this);
-			}
-			catch (SerializationException)
-			{
-				this.Send(message, this.configuration.PoisonMessageExchange); // TODO: add exception headers
-				this.CurrentTransaction.Commit();
+				this.adapter.PurgeFromCache(message);
 			}
 			catch (ChannelConnectionException)
 			{
-				throw; // this isn't something that can ben retried; TODO: should the channel be disposed here?
+				this.adapter.PurgeFromCache(message);
+				throw; // TODO: can't retry; dispose channel?
 			}
-			catch
+			catch (SerializationException e)
 			{
-				// TODO: add exception headers
+				this.adapter.AppendException(message, e);
+				this.Send(message, this.configuration.PoisonMessageExchange);
+				this.CurrentTransaction.Commit();
+				this.adapter.PurgeFromCache(message);
+			}
+			catch (Exception e)
+			{
+				var nextAttempt = message.GetAttemptCount() + 1;
+				message.SetAttemptCount(nextAttempt);
 
-				// TODO: increment failure count; if it exceeds configured amount, forward to poison message exchange (along with serialization info)
-				// adding message back to in-memory queue means another channel (within the same channel group)
-				// can pick it up for processing, therefore failure/serialization caches must be shared
-				this.subscription.RetryMessage(message);
+				if (nextAttempt > this.configuration.MaxAttempts)
+				{
+					this.adapter.AppendException(message, e);
+					message.SetAttemptCount(0);
+
+					this.NewTransaction();
+					this.Send(message, this.configuration.PoisonMessageExchange);
+					this.CurrentTransaction.Commit();
+
+					this.adapter.PurgeFromCache(message);
+				}
+				else
+				{
+					this.subscription.RetryMessage(message);
+				}
 			}
 		}
 

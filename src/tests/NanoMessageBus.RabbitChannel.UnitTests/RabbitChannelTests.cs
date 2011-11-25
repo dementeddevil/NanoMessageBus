@@ -127,6 +127,9 @@ namespace NanoMessageBus.RabbitChannel
 		It should_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
 			delivery.CurrentTransaction.Finished.ShouldBeTrue();
 
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
+
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 		static IDeliveryContext delivery;
 	}
@@ -155,6 +158,8 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			mockConfiguration.Setup(x => x.MaxAttempts).Returns(1); // allow one failure
+
 			mockRealChannel.Setup(x => x.TxRollback());
 			mockSubscription.Setup(x => x.RetryMessage(message));
 
@@ -171,10 +176,60 @@ namespace NanoMessageBus.RabbitChannel
 		It should_add_the_message_to_the_retry_queue = () =>
 			mockSubscription.Verify(x => x.RetryMessage(message));
 
-		It should_finalize_and_dispose_the_outstanding_transaction_for_transactional_channel = () =>
+		It should_increment_the_failure_count_on_the_message = () =>
+			message.GetAttemptCount().ShouldEqual(1);
+
+		It should_rollback_the_outstanding_transaction_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_message_processing_has_exceeded_the_maximum_configured_attempt_count : using_a_channel
+	{
+		Establish context = () =>
+		{
+			var poisonExchange = new Mock<RabbitAddress>();
+			poisonExchange.Setup(x => x.Address).Returns(address);
+			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(poisonExchange.Object);
+
+			mockConfiguration.Setup(x => x.MaxAttempts).Returns(FirstFailureIsPoisonMessage);
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+		{
+			channel.Receive(delivery => { throw thrown; });
+			Receive(message);
+		};
+
+		It should_append_the_exception_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendException(message, thrown));
+
+		It should_clear_the_failure_count_on_the_message = () =>
+			message.GetAttemptCount().ShouldEqual(0);
+
+		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
+			mockRealChannel.Verify(x =>
+				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
+
+		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+
+		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
+
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message));
+
+		const int FirstFailureIsPoisonMessage = 0;
+		static readonly Exception thrown = new Exception();
+		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -197,7 +252,7 @@ namespace NanoMessageBus.RabbitChannel
 			poisonExchange.Setup(x => x.Address).Returns(address);
 			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(poisonExchange.Object);
 
-			mockAdapter.Setup(x => x.Build(message)).Throws(new SerializationException());
+			mockAdapter.Setup(x => x.Build(message)).Throws(serializationException);
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
@@ -209,6 +264,9 @@ namespace NanoMessageBus.RabbitChannel
 			Receive(message);
 		};
 
+		It should_append_the_exception_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendException(message, serializationException));
+
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
 			mockRealChannel.Verify(x =>
 				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
@@ -219,7 +277,11 @@ namespace NanoMessageBus.RabbitChannel
 		It should_commit_the_transaction_on_fully_transactional_channels = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
 
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message));
+
 		static BasicDeliverEventArgs message;
+		static readonly Exception serializationException = new SerializationException();
 		static readonly PublicationAddress address =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
@@ -228,10 +290,13 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_the_handling_of_a_message_throws_a_ChannelConnectionException : using_a_channel
 	{
 		Establish context = () =>
-			channel.Receive(delivery => { throw new ChannelConnectionException(); });
+			channel.Receive(delivery => { throw connectionException; });
 
 		Because of = () =>
-			thrown = Catch.Exception(() => Receive(new BasicDeliverEventArgs()));
+			thrown = Catch.Exception(() => Receive(message));
+
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message));
 
 		It should_throw_the_exception = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();
@@ -239,6 +304,8 @@ namespace NanoMessageBus.RabbitChannel
 		It should_mark_the_transaction_a_finished = () =>
 			channel.CurrentTransaction.Finished.ShouldBeTrue();
 
+		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static readonly Exception connectionException = new ChannelConnectionException();
 		static Exception thrown;
 	}
 
