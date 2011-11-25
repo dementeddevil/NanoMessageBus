@@ -19,7 +19,10 @@
 			this.ThrowWhenRolledBack();
 			this.ThrowWhenCommitted();
 
-			this.callbacks.Add(callback);
+			if (this.transactionType == RabbitTransactionType.None)
+				callback();
+			else
+				this.callbacks.Add(callback);
 		}
 
 		public virtual void Commit()

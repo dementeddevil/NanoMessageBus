@@ -9,8 +9,40 @@ namespace NanoMessageBus.RabbitChannel
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitTransaction))]
-	public class when_an_action_is_registered_with_the_transaction : using_a_transaction
+	public class when_an_action_is_registered_with_a_non_transaction : using_a_transaction
 	{
+		Because of = () =>
+			transaction.Register(callback);
+
+		It should_invoke_the_callback_immediately = () =>
+			invocations.ShouldEqual(1);
+	}
+
+	[Subject(typeof(RabbitTransaction))]
+	public class when_an_action_is_registered_with_an_acknowledge_transaction : using_a_transaction
+	{
+		Establish setup = () =>
+		{
+			transactionType = RabbitTransactionType.Acknowledge;
+			Initialize();
+		};
+
+		Because of = () =>
+			transaction.Register(callback);
+
+		It should_not_invoke_the_callback = () =>
+			invocations.ShouldEqual(0);
+	}
+
+	[Subject(typeof(RabbitTransaction))]
+	public class when_an_action_is_registered_with_a_full_transaction : using_a_transaction
+	{
+		Establish setup = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			Initialize();
+		};
+
 		Because of = () =>
 			transaction.Register(callback);
 
