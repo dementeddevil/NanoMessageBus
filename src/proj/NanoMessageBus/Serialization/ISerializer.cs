@@ -11,6 +11,11 @@
 	public interface ISerializer
 	{
 		/// <summary>
+		/// Gets the value which indicates the encoding mechanism used.
+		/// </summary>
+		string ContentEncoding { get; }
+
+		/// <summary>
 		/// Serializes the object graph provided and writes a serialized representation to the output stream provided.
 		/// </summary>
 		/// <param name="destination">The stream into which the serialized object graph should be written.</param>

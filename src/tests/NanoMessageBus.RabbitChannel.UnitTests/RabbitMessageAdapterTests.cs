@@ -27,26 +27,6 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_no_message_is_supplied_to_build_a_wire_message_from_a_ChannelMessage : using_a_message_adapter
-	{
-		Because of = () =>
-			thrown = Catch.Exception(() => adapter.Build((ChannelMessage)null));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_no_message_is_supplied_to_which_an_exception_should_be_appended : using_a_message_adapter
-	{
-		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception()));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_building_a_ChannelMessage : using_a_message_adapter
 	{
 		Establish context = () =>
@@ -178,7 +158,39 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_no_message_is_supplied_when_purging_the_message_from_the_cache : using_a_message_adapter
+	public class when_no_message_is_supplied_to_build_a_wire_message_from_a_ChannelMessage : using_a_message_adapter
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => adapter.Build((ChannelMessage)null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_translating_a_ChannelMessage_into_a_wire_message : using_a_message_adapter
+	{
+		It should_serialize_the_ChannelMessage_payload;
+		It should_return_a_wire_message;
+		It should_populate_the_wire_message_with_the_correct_routing_key;
+		It should_populate_the_wire_message_with_the_correct_message_id;
+		It should_populate_the_wire_message_with_the_correct_correlation_id;
+		It should_populate_the_wire_message_with_the_correct_persistence_mode;
+		It should_populate_the_wire_message_with_the_correct_return_address;
+		It should_populate_the_wire_message_with_the_correct_creation_time;
+		It should_populate_the_wire_message_with_the_correct_expiration_time;
+		It should_populate_the_wire_message_with_the_correct_message_type;
+		It should_populate_the_wire_message_with_the_correct_content_encoding;
+		It should_populate_the_wire_message_with_the_correct_content_type;
+		It should_populate_the_wire_message_with_the_correct_app_id;
+		It should_populate_the_wire_message_with_the_correct_cluster_id;
+		It should_populate_the_wire_message_with_the_correct_user_id;
+		It should_populate_the_wire_message_with_the_correct_body;
+		It should_populate_the_wire_message_with_the_correct_headers;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_no_message_is_supplied_to_which_an_exception_should_be_appended : using_a_message_adapter
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception()));
@@ -252,6 +264,16 @@ namespace NanoMessageBus.RabbitChannel
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception multiple = new Exception("0", new Exception("1", new Exception("2")));
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_no_message_is_supplied_when_purging_the_message_from_the_cache : using_a_message_adapter
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception()));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]

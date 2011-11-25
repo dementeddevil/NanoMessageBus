@@ -89,10 +89,13 @@
 				headers[key] = encoding.GetString((byte[])properties.Headers[key]);
 		}
 
-		public virtual BasicDeliverEventArgs Build(ChannelMessage message)
+		public virtual BasicDeliverEventArgs Build(ChannelMessage message) // TODO: pass in IBasicProperties here
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
+
+			// appId should be set on the channel configuration
+			// require a new BasicProperties from IModel 
 
 			return null; // TODO
 		}

@@ -4,6 +4,10 @@
 
 	public class BinarySerializer : ISerializer
 	{
+		public virtual string ContentEncoding
+		{
+			get { return null; }
+		}
 		public virtual void Serialize(Stream destination, object graph)
 		{
 		}
