@@ -104,17 +104,12 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_receiving_a_message : using_a_channel
 	{
 		Establish context = () =>
-		{
 			mockAdapter.Setup(x => x.Build(message)).Returns(new Mock<ChannelMessage>().Object);
-			mockSubscription
-				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
-				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
-		};
 
 		Because of = () =>
 		{
 			channel.Receive(deliveryContext => delivery = deliveryContext);
-			dispatch(message);
+			Receive(message);
 		};
 
 		It should_invoke_the_callback_provided = () =>
@@ -133,7 +128,6 @@ namespace NanoMessageBus.RabbitChannel
 			delivery.CurrentTransaction.Finished.ShouldBeTrue();
 
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
-		static Action<BasicDeliverEventArgs> dispatch;
 		static IDeliveryContext delivery;
 	}
 
@@ -142,20 +136,17 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			RequireTransaction(RabbitTransactionType.Full);
 			mockRealChannel.Setup(x => x.TxRollback());
 			mockSubscription.Setup(x => x.RetryMessage(message));
-			mockSubscription
-				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
-				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
 
+			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
 		};
 
 		Because of = () =>
 		{
 			channel.Receive(delivery => { throw new Exception("Message handling failed"); });
-			dispatch(message);
+			Receive(message);
 		};
 
 		It should_add_the_message_to_the_retry_queue = () =>
@@ -164,7 +155,6 @@ namespace NanoMessageBus.RabbitChannel
 		It should_finalize_and_dispose_the_outstanding_transaction_for_transactional_channel = () =>
 			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 
-		static Action<BasicDeliverEventArgs> dispatch;
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 	}
 
@@ -179,9 +169,6 @@ namespace NanoMessageBus.RabbitChannel
 				Body = new byte[] { 0, 1, 2, 3, 4 }
 			};
 
-			mockSubscription
-				.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
-				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
 			mockSubscription.Setup(x => x.AcknowledgeMessage());
 
 			mockRealChannel.Setup(x => x.TxCommit());
@@ -201,7 +188,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 		{
 			channel.Receive(delivery => { });
-			dispatch(message);
+			Receive(message);
 		};
 
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
@@ -215,7 +202,6 @@ namespace NanoMessageBus.RabbitChannel
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
 
 		static BasicDeliverEventArgs message;
-		static Action<BasicDeliverEventArgs> dispatch;
 		static readonly PublicationAddress address =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
@@ -223,15 +209,11 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannel))]
 	public class when_the_handling_of_a_message_throws_a_ChannelConnectionException : using_a_channel
 	{
-		Establish context = () => mockSubscription
-			.Setup(x => x.BeginReceive(Moq.It.IsAny<TimeSpan>(), Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
-			.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+		Establish context = () =>
+			channel.Receive(delivery => { throw new ChannelConnectionException(); });
 
 		Because of = () =>
-		{
-			channel.Receive(delivery => { throw new ChannelConnectionException(); });
-			thrown = Catch.Exception(() => dispatch(new BasicDeliverEventArgs()));
-		};
+			thrown = Catch.Exception(() => Receive(new BasicDeliverEventArgs()));
 
 		It should_throw_the_exception = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();
@@ -239,7 +221,6 @@ namespace NanoMessageBus.RabbitChannel
 		It should_mark_the_transaction_a_finished = () =>
 			channel.CurrentTransaction.Finished.ShouldBeTrue();
 
-		static Action<BasicDeliverEventArgs> dispatch;
 		static Exception thrown;
 	}
 
@@ -588,6 +569,12 @@ namespace NanoMessageBus.RabbitChannel
 			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
 			mockSubscription = new Mock<RabbitSubscription>();
 
+			var timeout = TimeSpan.FromMilliseconds(100);
+			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
+			mockSubscription
+				.Setup(x => x.BeginReceive(timeout, Moq.It.IsAny<Action<BasicDeliverEventArgs>>()))
+				.Callback<TimeSpan, Action<BasicDeliverEventArgs>>((first, second) => { dispatch = second; });
+
 			RequireTransaction(RabbitTransactionType.None);
 			Initialize();
 		};
@@ -601,6 +588,10 @@ namespace NanoMessageBus.RabbitChannel
 			channel = new RabbitChannel(
 				mockRealChannel.Object, mockAdapter.Object, mockConfiguration.Object, () => mockSubscription.Object);
 		}
+		protected static void Receive(BasicDeliverEventArgs message)
+		{
+			dispatch(message);
+		}
 
 		protected const string DefaultChannelGroup = "some group name";
 		protected static Mock<IModel> mockRealChannel;
@@ -608,6 +599,7 @@ namespace NanoMessageBus.RabbitChannel
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<RabbitSubscription> mockSubscription;
 		protected static RabbitChannel channel;
+		static Action<BasicDeliverEventArgs> dispatch;
 	}
 }
 

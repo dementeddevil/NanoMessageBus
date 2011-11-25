@@ -132,18 +132,10 @@
 		{
 			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 		}
-
 		protected virtual void Try(Action callback)
 		{
-			try
-			{
-				callback();
-			}
-			catch
-			{
-				// TODO: catch the appropriate exception(s) and wrap them up as a ChannelUnavailableException
-				throw;
-			}
+			// TODO: catch the appropriate exception(s) and wrap them up as a ChannelUnavailableException
+			callback();
 		}
 
 		public RabbitChannel(
