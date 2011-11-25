@@ -17,17 +17,18 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
-			var translated = this.LoadFromCache(message);
+			// note that we lock twice, once to try and load from the cache, and once to save
+			// the reason is that we don't want to block during deserialization which may take a while.
+			var translated = this.TryFromCache(message);
 			if (translated != null)
 				return translated;
 
-			translated = this.Translate(message); // we lock twice because serialization may take a while
-			this.AppendHeaders(translated, message.BasicProperties);
+			translated = this.TryTranslate(message);
 
 			lock (this.cache)
 				return this.cache[message] = translated; // can potentially be overwritten, but that's okay
 		}
-		protected virtual ChannelMessage LoadFromCache(BasicDeliverEventArgs message)
+		protected virtual ChannelMessage TryFromCache(BasicDeliverEventArgs message)
 		{
 			lock (this.cache)
 			{
@@ -36,9 +37,26 @@
 				return cached;
 			}
 		}
+		protected virtual ChannelMessage TryTranslate(BasicDeliverEventArgs message)
+		{
+			try
+			{
+				var result = this.Translate(message);
+				this.AppendHeaders(result, message.BasicProperties);
+				return result;
+			}
+			catch (SerializationException)
+			{
+				throw;
+			}
+			catch (Exception e)
+			{
+				throw new SerializationException(e.Message, e);
+			}
+		}
 		protected virtual ChannelMessage Translate(BasicDeliverEventArgs message)
 		{
-			var payload = this.TryDeserialize(message);
+			var payload = this.Deserialize(message.Body, message.BasicProperties.ContentEncoding);
 			var properties = message.BasicProperties;
 
 			return new ChannelMessage(
@@ -51,21 +69,6 @@
 				Expiration = properties.Expiration.ToDateTime(),
 				Persistent = properties.DeliveryMode == Persistent
 			};
-		}
-		protected virtual object[] TryDeserialize(BasicDeliverEventArgs message)
-		{
-			try
-			{
-				return this.Deserialize(message.Body, message.BasicProperties.ContentEncoding);
-			}
-			catch (SerializationException)
-			{
-				throw;
-			}
-			catch (Exception e)
-			{
-				throw new SerializationException(e.Message, e);
-			}
 		}
 		protected virtual object[] Deserialize(byte[] body, string contentEncoding)
 		{

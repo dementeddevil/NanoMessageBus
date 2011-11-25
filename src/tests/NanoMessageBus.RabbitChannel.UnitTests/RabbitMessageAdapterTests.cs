@@ -154,12 +154,22 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_deserializing_a_wire_message_throws_an_exception : using_a_message_adapter
+	public class when_deserializing_a_wire_message_throws_any_exception : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
 			.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>()))
 			.Throws(new Exception());
 
+		Because of = () =>
+			thrown = Catch.Exception(() => adapter.Build(EmptyMessage()));
+
+		It should_wrap_the_exception_inside_of_a_SerializationException = () =>
+			thrown.ShouldBeOfType<SerializationException>();
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_the_wire_message_is_malformed : using_a_message_adapter
+	{
 		Because of = () =>
 			thrown = Catch.Exception(() => adapter.Build(new BasicDeliverEventArgs()));
 
@@ -202,7 +212,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_append_the_exception_stack_trace = () =>
 			message.GetHeader("x-exception0-stacktrace").ShouldNotBeNull();
 
-		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception simple = new Exception();
 	}
 
@@ -221,7 +231,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_append_the_inner_exception_stack_trace = () =>
 			message.GetHeader("x-exception1-stacktrace").ShouldNotBeNull();
 
-		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception nested = new Exception("outer", new Exception("inner"));
 	}
 
@@ -240,7 +250,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_append_each_layer_of_theexception_stack_trace = () =>
 			message.GetHeader("x-exception2-stacktrace").ShouldNotBeNull();
 
-		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception multiple = new Exception("0", new Exception("1", new Exception("2")));
 	}
 
@@ -248,7 +258,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_purging_a_message_which_has_not_been_tracked : using_a_message_adapter
 	{
 		Because of = () =>
-			cached = adapter.PurgeFromCache(new BasicDeliverEventArgs());
+			cached = adapter.PurgeFromCache(EmptyMessage());
 
 		It should_indicate_that_the_message_was_not_found_in_the_cache = () =>
 			cached.ShouldBeFalse();
