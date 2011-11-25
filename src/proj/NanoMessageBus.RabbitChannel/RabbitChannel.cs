@@ -53,7 +53,7 @@
 			catch (ChannelConnectionException)
 			{
 				this.adapter.PurgeFromCache(message);
-				throw; // TODO: can't retry; dispose channel?
+				throw;
 			}
 			catch (SerializationException e)
 			{
@@ -172,8 +172,7 @@
 		}
 		protected virtual void Try(Action callback)
 		{
-			// TODO: catch the appropriate exception(s) and wrap them up as a ChannelUnavailableException
-			callback();
+			callback(); // TODO: catch and wrap RabbitMQ.Client-specific exceptions in a ChannelUnavailableException
 		}
 
 		public RabbitChannel(

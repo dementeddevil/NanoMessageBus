@@ -18,12 +18,24 @@
 		public static void SetAttemptCount(this BasicDeliverEventArgs message, int count)
 		{
 			message.EnsureMessage();
-
-			if (count == 0)
-				message.BasicProperties.Headers.Remove(AttemptCountHeader);
-			else
-				message.BasicProperties.Headers[AttemptCountHeader] = count;
+			message.SetHeader(AttemptCountHeader, count);
 		}
+
+		public static object GetHeader(this BasicDeliverEventArgs message, string key)
+		{
+			message.EnsureMessage();
+			return message.BasicProperties.Headers.Contains(key) ? message.BasicProperties.Headers[key] : null;
+		}
+		public static void SetHeader<T>(this BasicDeliverEventArgs message, string key, T value)
+		{
+			message.EnsureMessage();
+
+			if (Equals(value, default(T)))
+				message.BasicProperties.Headers.Remove(key);
+			else
+				message.BasicProperties.Headers[key] = value;
+		}
+
 		private static void EnsureMessage(this BasicDeliverEventArgs message)
 		{
 			message.BasicProperties = message.BasicProperties ?? new BasicProperties();
