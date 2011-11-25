@@ -3,7 +3,6 @@
 	using System;
 	using System.Linq;
 	using System.Runtime.Serialization;
-	using System.Threading;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 
@@ -32,7 +31,7 @@
 		{
 			this.CurrentMessage = null;
 
-			if (this.shutdown == ShuttingDown)
+			if (this.shutdown)
 				return false;
 
 			if (message == null)
@@ -41,7 +40,7 @@
 			using (this.NewTransaction())
 				this.TryReceive(message, callback);
 
-			return this.shutdown == KeepAlive;
+			return this.shutdown == false;
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
@@ -130,15 +129,12 @@
 
 		public virtual void BeginShutdown()
 		{
-			// shutdown uses the pattern "volatile int32 reads, with cmpxch writes"
-			// which is safe for updates and cannot suffer torn reads.
-			// see CancellationTokenSource.cs in BCL Task Parallel Library source code.
-			Interlocked.Exchange(ref this.shutdown, ShuttingDown);
+			this.shutdown = true;
 		}
 
 		protected virtual void ThrowWhenShuttingDown()
 		{
-			if (this.shutdown == ShuttingDown)
+			if (this.shutdown)
 				throw new ChannelShutdownException();
 		}
 		protected virtual void ThrowWhenDisposed()
@@ -221,8 +217,6 @@
 		private readonly Func<RabbitSubscription> subscriptionFactory;
 		private RabbitSubscription subscription;
 		private bool disposed;
-		private volatile int shutdown;
-		private const int ShuttingDown = 1;
-		private const int KeepAlive = 0;
+		private volatile bool shutdown;
 	}
 }
