@@ -31,13 +31,17 @@
 		protected virtual bool Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			this.CurrentMessage = null;
+
+			if (this.shutdown == ShuttingDown)
+				return false;
+
 			if (message == null)
 				return true;
 
 			using (this.NewTransaction())
 				this.TryReceive(message, callback);
 
-			return true;
+			return this.shutdown == KeepAlive;
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
@@ -219,5 +223,6 @@
 		private bool disposed;
 		private volatile int shutdown;
 		private const int ShuttingDown = 1;
+		private const int KeepAlive = 0;
 	}
 }

@@ -579,7 +579,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_starting_to_receive_on_a_shutdown_channel : using_a_channel
+	public class when_initiating_receive_on_a_shutdown_channel : using_a_channel
 	{
 		Establish context = () =>
 			channel.BeginShutdown();
@@ -591,6 +591,24 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeOfType<ChannelShutdownException>();
 
 		static Exception thrown;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_receiving_a_message_on_a_shutdown_channel : using_a_channel
+	{
+		Establish context = () =>
+		{
+			channel.Receive(delivery => { });
+			channel.BeginShutdown();
+		};
+
+		Because of = () =>
+			Receive(message);
+
+		It should_not_process_the_message = () =>
+			mockAdapter.Verify(x => x.Build(message), Times.Never());
+
+		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 	}
 
 	[Subject(typeof(RabbitChannel))]
