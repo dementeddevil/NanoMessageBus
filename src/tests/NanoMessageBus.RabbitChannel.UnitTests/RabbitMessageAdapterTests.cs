@@ -136,16 +136,16 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_deserializing_a_wire_message_throws_any_exception : using_a_message_adapter
+	public class when_unable_to_deserialize_a_wire_message_body : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
 			.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>()))
-			.Throws(new Exception());
+			.Throws(new SerializationException());
 
 		Because of = () =>
 			thrown = Catch.Exception(() => adapter.Build(EmptyMessage()));
 
-		It should_wrap_the_exception_inside_of_a_SerializationException = () =>
+		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<SerializationException>();
 	}
 
@@ -251,6 +251,20 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_unable_to_serialize_a_ChannelMessage_payload : using_a_message_adapter
+	{
+		Establish context = () => mockSerializer
+			.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), Moq.It.IsAny<object>()))
+			.Throws(new SerializationException());
+
+		Because of = () =>
+			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<SerializationException>();
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_a_malformd_ChannelMessage_payload_is_provided : using_a_message_adapter
 	{
 		Because of = () =>
@@ -274,7 +288,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_no_exception_is_supplied_when_appending_an_exception : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception()));
+			thrown = Catch.Exception(() => adapter.AppendException(EmptyMessage(), null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();

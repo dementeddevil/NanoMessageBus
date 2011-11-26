@@ -108,6 +108,8 @@
 		{
 			return new BasicDeliverEventArgs
 			{
+				Body = this.serializer.Serialize(message.Messages),
+				RoutingKey = this.configuration.LookupRoutingKey(message),
 				BasicProperties = new BasicProperties
 				{
 					MessageId = message.MessageId.ToString(),
@@ -121,9 +123,7 @@
 					Type = message.Messages.First().GetType().FullName,
 					Headers = new Hashtable((IDictionary)message.Headers),
 					Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime())
-				},
-				RoutingKey = this.configuration.LookupRoutingKey(message),
-				Body = this.serializer.Serialize(message.Messages)
+				}
 			};
 		}
 
