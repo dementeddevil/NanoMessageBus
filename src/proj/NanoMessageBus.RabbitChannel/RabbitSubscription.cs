@@ -29,7 +29,7 @@
 				throw new ArgumentNullException("message");
 
 			this.ThrowWhenDisposed();
-			this.adapter.RetryMessage(message); // TODO: try/catch shutdown?
+			this.adapter.RetryMessage(message);
 		}
 
 		protected virtual void ThrowWhenDisposed()
