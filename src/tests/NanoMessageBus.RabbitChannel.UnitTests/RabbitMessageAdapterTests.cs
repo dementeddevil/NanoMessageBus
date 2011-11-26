@@ -5,7 +5,9 @@ namespace NanoMessageBus.RabbitChannel
 {
 	using System;
 	using System.Collections;
+	using System.Collections.Generic;
 	using System.IO;
+	using System.Linq;
 	using System.Runtime.Serialization;
 	using System.Text;
 	using Machine.Specifications;
@@ -170,23 +172,82 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_translating_a_ChannelMessage_into_a_wire_message : using_a_message_adapter
 	{
-		It should_serialize_the_ChannelMessage_payload;
-		It should_return_a_wire_message;
-		It should_populate_the_wire_message_with_the_correct_routing_key;
-		It should_populate_the_wire_message_with_the_correct_message_id;
-		It should_populate_the_wire_message_with_the_correct_correlation_id;
-		It should_populate_the_wire_message_with_the_correct_persistence_mode;
-		It should_populate_the_wire_message_with_the_correct_return_address;
-		It should_populate_the_wire_message_with_the_correct_creation_time;
-		It should_populate_the_wire_message_with_the_correct_expiration_time;
-		It should_populate_the_wire_message_with_the_correct_message_type;
-		It should_populate_the_wire_message_with_the_correct_content_encoding;
+		Establish context = () =>
+		{
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("rabbitmq://localhost/"),
+				new Dictionary<string, string>(),
+				new object[] { "1", 2, 3.0, 4.0M })
+			{
+				Persistent = true,
+				Expiration = DateTime.Parse("2010-07-01 12:34:56")
+			};
+
+			message.Headers["a"] = "b";
+			message.Headers["c"] = "d";
+
+			mockSerializer
+				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
+				.Callback<Stream, object>((stream, graph) => stream.Write(body, 0, body.Length));
+		};
+
+		Because of = () =>
+			result = adapter.Build(message);
+
+		It should_serialize_the_ChannelMessage_payload = () =>
+			mockSerializer.Verify(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages), Times.Once());
+
+		It should_return_a_wire_message = () =>
+			result.ShouldNotBeNull();
+
+		It should_populate_the_wire_message_with_the_correct_routing_key; // TODO
+
+		It should_populate_the_wire_message_with_the_correct_message_id = () =>
+			result.BasicProperties.MessageId.ToGuid().ShouldEqual(message.MessageId);
+
+		It should_populate_the_wire_message_with_the_correct_correlation_id = () =>
+			result.BasicProperties.CorrelationId.ToGuid().ShouldEqual(message.CorrelationId);
+
+		It should_populate_the_wire_message_with_the_correct_persistence_mode = () =>
+			result.BasicProperties.DeliveryMode.ShouldEqual((byte)2);
+
+		It should_populate_the_wire_message_with_the_correct_return_address; // TODO
+
+		It should_populate_the_wire_message_with_the_correct_creation_time; // TODO
+
+		It should_populate_the_wire_message_with_the_correct_expiration_time; // TODO: this needs to be something that Rabbit can understand
+
+		It should_populate_the_wire_message_with_the_correct_message_type = () =>
+			result.BasicProperties.Type.ShouldEqual(message.Messages.First().GetType().FullName);
+
+		It should_populate_the_wire_message_with_the_correct_content_encoding = () =>
+			result.BasicProperties.ContentEncoding.ShouldEqual(DefaultContentEncoding);
+
 		It should_populate_the_wire_message_with_the_correct_content_type;
-		It should_populate_the_wire_message_with_the_correct_app_id;
-		It should_populate_the_wire_message_with_the_correct_cluster_id;
-		It should_populate_the_wire_message_with_the_correct_user_id;
-		It should_populate_the_wire_message_with_the_correct_body;
-		It should_populate_the_wire_message_with_the_correct_headers;
+
+		It should_populate_the_wire_message_with_the_correct_app_id = () =>
+			result.BasicProperties.AppId.ShouldEqual(DefaultAppId);
+
+		It should_populate_the_wire_message_with_the_correct_cluster_id = () =>
+			result.BasicProperties.ClusterId.ShouldBeEmpty();
+
+		It should_populate_the_wire_message_with_the_correct_user_id = () =>
+			result.BasicProperties.UserId.ShouldBeEmpty();
+
+		It should_populate_the_wire_message_with_the_correct_body = () =>
+			result.Body.SequenceEqual(body).ShouldBeTrue();
+
+		It should_populate_the_wire_message_with_the_correct_headers = () =>
+		{
+			foreach (var item in message.Headers)
+				result.BasicProperties.Headers[item.Key].ShouldEqual(item.Value);
+		};
+
+		static readonly byte[] body = new byte[] { 1, 2, 3, 4, 5, 6 };
+		static ChannelMessage message;
+		static BasicDeliverEventArgs result;
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
@@ -332,7 +393,13 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockSerializer = new Mock<ISerializer>();
-			adapter = new RabbitMessageAdapter(mockSerializer.Object);
+			mockSerializer.Setup(x => x.ContentEncoding).Returns(DefaultContentEncoding);
+
+			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
+			mockConfiguration.Setup(x => x.Serializer).Returns(mockSerializer.Object);
+			mockConfiguration.Setup(x => x.ApplicationId).Returns(DefaultAppId);
+
+			adapter = new RabbitMessageAdapter(mockConfiguration.Object);
 		};
 
 		protected static BasicDeliverEventArgs EmptyMessage()
@@ -344,6 +411,9 @@ namespace NanoMessageBus.RabbitChannel
 			};
 		}
 
+		protected const string DefaultContentEncoding = "some crazy encoding scheme";
+		protected const string DefaultAppId = "my producer application";
+		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<ISerializer> mockSerializer;
 		protected static RabbitMessageAdapter adapter;
 		protected static Exception thrown;

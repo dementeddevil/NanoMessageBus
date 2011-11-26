@@ -2,6 +2,7 @@
 {
 	using System;
 	using RabbitMQ.Client;
+	using Serialization;
 
 	public class RabbitChannelGroupConfiguration : IChannelConfiguration
 	{
@@ -57,6 +58,14 @@
 		public virtual int MaxAttempts
 		{
 			get { return 0; }
+		}
+		public virtual ISerializer Serializer
+		{
+			get { return null; }
+		}
+		public virtual string ApplicationId
+		{
+			get { return null; }
 		}
 	}
 }

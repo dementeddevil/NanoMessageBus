@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
@@ -8,6 +9,7 @@
 	using System.Text;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Framing.v0_9_1;
 	using Serialization;
 
 	public class RabbitMessageAdapter
@@ -94,10 +96,32 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
-			// appId should be set on the channel configuration
-			// require a new BasicProperties from IModel 
-
-			return null; // TODO
+			return new BasicDeliverEventArgs
+			{
+				BasicProperties = new BasicProperties
+				{
+					AppId = this.configuration.ApplicationId,
+					ContentEncoding = this.serializer.ContentEncoding,
+					ContentType = string.Empty, // TODO
+					CorrelationId = message.CorrelationId.ToString(),
+					MessageId = message.MessageId.ToString(),
+					DeliveryMode = message.Persistent ? Persistent : Transient,
+					Expiration = message.Expiration.ToString(), // TODO: make this meaningful
+					ReplyTo = message.ReturnAddress.ToString(), // TODO: make this meaningful
+					Type = message.Messages.First().GetType().FullName,
+					Headers = new Hashtable((IDictionary)message.Headers),
+					Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime())
+				},
+				Body = this.Serialize(message.Messages)
+			};
+		}
+		protected virtual byte[] Serialize(object graph)
+		{
+			using (var stream = new MemoryStream())
+			{
+				this.serializer.Serialize(stream, graph);
+				return stream.ToArray();
+			}
 		}
 
 		public virtual void AppendException(BasicDeliverEventArgs message, Exception exception)
@@ -128,19 +152,22 @@
 				return this.cache.Remove(message);
 		}
 
-		public RabbitMessageAdapter(ISerializer serializer) : this()
+		public RabbitMessageAdapter(RabbitChannelGroupConfiguration configuration) : this()
 		{
-			this.serializer = serializer;
+			this.configuration = configuration;
+			this.serializer = configuration.Serializer;
 		}
 		protected RabbitMessageAdapter()
 		{
 		}
 
-		private const int Persistent = 2;
+		private const byte Transient = 1;
+		private const byte Persistent = 2;
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
 		private readonly IDictionary<BasicDeliverEventArgs, ChannelMessage> cache =
 			new Dictionary<BasicDeliverEventArgs, ChannelMessage>();
+		private readonly RabbitChannelGroupConfiguration configuration;
 		private readonly ISerializer serializer;
 	}
 }
