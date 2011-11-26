@@ -46,9 +46,7 @@
 		{
 			try
 			{
-				this.CurrentMessage = this.adapter.Build(message);
-				callback(this);
-				this.adapter.PurgeFromCache(message);
+				this.HandleMessage(message, callback);
 			}
 			catch (ChannelConnectionException)
 			{
@@ -63,6 +61,17 @@
 			{
 				this.RetryMessage(message, e);
 			}
+		}
+		private void HandleMessage(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
+		{
+			this.CurrentMessage = this.adapter.Build(message);
+
+			if (this.CurrentMessage == null)
+				this.ForwardToDeadLetterExchange(message);
+			else
+				callback(this);
+
+			this.adapter.PurgeFromCache(message);
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
 		{
@@ -84,6 +93,11 @@
 			this.CurrentTransaction.Commit();
 
 			this.adapter.PurgeFromCache(message);
+		}
+		protected virtual void ForwardToDeadLetterExchange(BasicDeliverEventArgs message)
+		{
+			this.Send(message, this.configuration.DeadLetterExchange);
+			this.CurrentTransaction.Commit();
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)

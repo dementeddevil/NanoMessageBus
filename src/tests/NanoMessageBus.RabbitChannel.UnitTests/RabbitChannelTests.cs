@@ -155,6 +155,54 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_the_message_received_has_expired : using_a_channel
+	{
+		Establish context = () =>
+		{
+			message = new BasicDeliverEventArgs
+			{
+				BasicProperties = new BasicProperties
+				{
+					Expiration = SystemTime.EpochTime.ToString()
+				},
+				Body = new byte[] { 1, 2, 3, 4 }
+			};
+
+			var deadLetterExchange = new Mock<RabbitAddress>();
+			deadLetterExchange.Setup(x => x.Address).Returns(address);
+			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(deadLetterExchange.Object);
+
+			mockAdapter.Setup(x => x.Build(message)).Returns((ChannelMessage)null);
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+		{
+			channel.Receive(deliveryContext => { });
+			Receive(message);
+		};
+
+		It should_dispatch_the_message_to_the_configured_dead_letter_exchange = () =>
+			mockRealChannel.Verify(x =>
+				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
+
+		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+
+		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
+
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
+
+		static BasicDeliverEventArgs message;
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_the_handling_of_a_message_throws_an_exception : using_a_channel
 	{
 		Establish context = () =>
@@ -740,7 +788,12 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription
 				.Setup(x => x.BeginReceive(timeout, Moq.It.IsAny<Func<BasicDeliverEventArgs, bool>>()))
 				.Callback<TimeSpan, Func<BasicDeliverEventArgs, bool>>((first, second) => { dispatch = second; });
+
 			mockRealChannel.Setup(x => x.CreateBasicProperties()).Returns(new BasicProperties());
+
+			mockAdapter
+				.Setup(x => x.Build(Moq.It.IsAny<BasicDeliverEventArgs>()))
+				.Returns(new Mock<ChannelMessage>().Object);
 
 			RequireTransaction(RabbitTransactionType.None);
 			Initialize();

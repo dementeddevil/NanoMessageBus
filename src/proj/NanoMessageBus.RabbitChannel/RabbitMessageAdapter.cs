@@ -8,7 +8,6 @@
 	using System.Text;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
-	using RabbitMQ.Client.Framing.v0_9_1;
 	using Serialization;
 
 	public class RabbitMessageAdapter
@@ -42,7 +41,8 @@
 			try
 			{
 				var result = this.Translate(message);
-				this.AppendHeaders(result, message.BasicProperties);
+				if (result != null)
+					this.AppendHeaders(result, message.BasicProperties);
 				return result;
 			}
 			catch (SerializationException)
@@ -57,14 +57,14 @@
 		protected virtual ChannelMessage Translate(BasicDeliverEventArgs message)
 		{
 			var properties = message.BasicProperties;
-			var contentFormat = properties.ContentFormat();
 			var expiration = properties.Expiration.ToDateTime();
 			expiration = expiration == DateTime.MinValue ? DateTime.MaxValue : expiration;
 
-			object[] payload = null;
-			if (expiration >= SystemTime.UtcNow)
-				payload = this.serializer.Deserialize<object[]>(
-					message.Body, contentFormat, properties.ContentEncoding);
+			if (expiration <= SystemTime.UtcNow)
+				return null;
+
+			var payload = this.serializer.Deserialize<object[]>(
+				message.Body, properties.ContentFormat(), properties.ContentEncoding);
 
 			return new ChannelMessage(
 				properties.MessageId.ToGuid(),
@@ -128,13 +128,15 @@
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();
 
+			var payload = this.serializer.Serialize(message.Messages);
+
 			properties.Headers = new Hashtable((IDictionary)message.Headers);
 			properties.Type = message.Messages.First().GetType().FullName;
 			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
 
 			return new BasicDeliverEventArgs
 			{
-				Body = this.serializer.Serialize(message.Messages),
+				Body = payload,
 				RoutingKey = this.configuration.LookupRoutingKey(message),
 				BasicProperties = properties
 			};

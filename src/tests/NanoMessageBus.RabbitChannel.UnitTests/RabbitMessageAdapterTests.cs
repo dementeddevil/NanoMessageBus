@@ -131,10 +131,7 @@ namespace NanoMessageBus.RabbitChannel
 			result = adapter.Build(message);
 
 		It should_build_the_resulting_message = () =>
-			result.ShouldNotBeNull();
-
-		It should_not_deserialize_the_payload = () =>
-			result.Messages.ShouldBeEmpty();
+			result.ShouldBeNull();
 
 		It should_not_invoke_the_serializer = () =>
 			mockSerializer.Verify(
