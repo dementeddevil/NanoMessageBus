@@ -58,10 +58,13 @@
 		{
 			var properties = message.BasicProperties;
 			var contentFormat = properties.ContentFormat();
+			var expiration = properties.Expiration.ToDateTime();
+			expiration = expiration == DateTime.MinValue ? DateTime.MaxValue : expiration;
 
-			// TODO: if the message is already expired, don't deserialize the payload (it will just be forwarded)
-			var payload = this.serializer.Deserialize<object[]>(
-				message.Body, contentFormat, properties.ContentEncoding);
+			object[] payload = null;
+			if (expiration >= SystemTime.UtcNow)
+				payload = this.serializer.Deserialize<object[]>(
+					message.Body, contentFormat, properties.ContentEncoding);
 
 			return new ChannelMessage(
 				properties.MessageId.ToGuid(),

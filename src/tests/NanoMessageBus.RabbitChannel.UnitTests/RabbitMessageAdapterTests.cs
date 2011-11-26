@@ -42,7 +42,7 @@ namespace NanoMessageBus.RabbitChannel
 				ContentEncoding = "content encoding",
 				CorrelationId = Guid.NewGuid().ToString(),
 				DeliveryMode = 2, // persistent
-				Expiration = DateTime.Parse("2000-01-02 03:04:05").ToString(),
+				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToString(),
 				Headers = new Hashtable(),
 				MessageId = Guid.NewGuid().ToString(),
 				Type = "message type",
@@ -116,6 +116,33 @@ namespace NanoMessageBus.RabbitChannel
 		static ChannelMessage result;
 		static readonly object[] deserialized = new object[] { 1, 2, 3.0, 4.0M };
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_the_wire_message_is_expired : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			message = EmptyMessage();
+			message.BasicProperties.Expiration = SystemTime.UtcNow.AddMinutes(-1).ToString();
+		};
+
+		Because of = () =>
+			result = adapter.Build(message);
+
+		It should_build_the_resulting_message = () =>
+			result.ShouldNotBeNull();
+
+		It should_not_deserialize_the_payload = () =>
+			result.Messages.ShouldBeEmpty();
+
+		It should_not_invoke_the_serializer = () =>
+			mockSerializer.Verify(
+				x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()),
+				Times.Never());
+
+		static BasicDeliverEventArgs message;
+		static ChannelMessage result;
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
