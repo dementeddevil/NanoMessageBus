@@ -203,6 +203,35 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_an_expired_message_is_received_but_no_dead_letter_exchange_is_configured : using_a_channel
+	{
+		Establish context = () =>
+		{
+			message = new BasicDeliverEventArgs
+			{
+				BasicProperties = new BasicProperties { Expiration = SystemTime.EpochTime.ToString() }
+			};
+
+			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns((RabbitAddress)null);
+			mockAdapter.Setup(x => x.Build(message)).Returns((ChannelMessage)null);
+
+			Initialize();
+		};
+
+		Because of = () =>
+		{
+			channel.Receive(deliveryContext => { });
+			Receive(message);
+		};
+
+		It should_drop_the_message = () =>
+			mockRealChannel.Verify(x =>
+				x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), message.BasicProperties, message.Body), Times.Never());
+
+		static BasicDeliverEventArgs message;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_the_handling_of_a_message_throws_an_exception : using_a_channel
 	{
 		Establish context = () =>

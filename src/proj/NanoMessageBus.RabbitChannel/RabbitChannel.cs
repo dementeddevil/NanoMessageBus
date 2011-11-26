@@ -123,6 +123,9 @@
 			if (this.CurrentTransaction.Finished)
 				this.NewTransaction();
 
+			if (recipient == null)
+				return;
+
 			this.CurrentTransaction.Register(() => this.Try(() =>
 			    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body)));
 		}

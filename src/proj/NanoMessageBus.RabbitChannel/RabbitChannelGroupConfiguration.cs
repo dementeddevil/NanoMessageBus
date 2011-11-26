@@ -62,7 +62,7 @@
 		}
 		public virtual RabbitAddress DeadLetterExchange
 		{
-			get { return null; }
+			get { return null; } // null is allowed (which drops the message)
 		}
 		public virtual int MaxAttempts
 		{
