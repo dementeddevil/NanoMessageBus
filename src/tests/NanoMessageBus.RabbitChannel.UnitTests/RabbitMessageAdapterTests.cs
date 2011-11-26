@@ -38,7 +38,7 @@ namespace NanoMessageBus.RabbitChannel
 			{
 				AppId = "appId",
 				ClusterId = "clusterId",
-				ContentType = "content type",
+				ContentType = "content type+" + DefaultContentFormat,
 				ContentEncoding = "content encoding",
 				CorrelationId = Guid.NewGuid().ToString(),
 				DeliveryMode = 2, // persistent
@@ -55,7 +55,7 @@ namespace NanoMessageBus.RabbitChannel
 			message.BasicProperties.Headers["MyHeader"] = Encoding.UTF8.GetBytes("MyValue");
 
 			mockSerializer
-				.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), message.BasicProperties.ContentEncoding))
+				.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
 				.Returns(deserialized);
 		};
 
@@ -64,7 +64,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_deserialize_the_payload = () =>
 			mockSerializer.Verify(x =>
-				x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), message.BasicProperties.ContentEncoding),
+				x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding),
 				Times.Once());
 
 		It should_return_a_ChannelMessage = () =>
@@ -139,7 +139,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_unable_to_deserialize_a_wire_message_body : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
-			.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>()))
+			.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
 			.Throws(new SerializationException());
 
 		Because of = () =>
@@ -177,7 +177,7 @@ namespace NanoMessageBus.RabbitChannel
 			message = new ChannelMessage(
 				Guid.NewGuid(),
 				Guid.NewGuid(),
-				new Uri("rabbitmq://localhost/"),
+				new Uri("direct://MyExchange/RoutingKey"),
 				new Dictionary<string, string>(),
 				new object[] { "1", 2, 3.0, 4.0M });
 			message.Headers["a"] = "b";
@@ -185,6 +185,8 @@ namespace NanoMessageBus.RabbitChannel
 			message.Persistent = true;
 			message.Expiration = DateTime.Parse("2010-07-01 12:34:56");
 
+			mockSerializer.Setup(x => x.ContentEncoding).Returns(DefaultContentEncoding);
+			mockConfiguration.Setup(x => x.ApplicationId).Returns(DefaultAppId);
 			mockConfiguration.Setup(x => x.LookupRoutingKey(message)).Returns(DefaultRoutingKey);
 			mockSerializer
 				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
@@ -212,11 +214,11 @@ namespace NanoMessageBus.RabbitChannel
 		It should_populate_the_wire_message_with_the_correct_persistence_mode = () =>
 			result.BasicProperties.DeliveryMode.ShouldEqual((byte)2);
 
-		It should_populate_the_wire_message_with_the_correct_return_address; // TODO
+		It should_populate_the_wire_message_with_the_correct_return_address = () =>
+			result.BasicProperties.ReplyTo.ShouldEqual(message.ReturnAddress.ToString());
 
-		It should_populate_the_wire_message_with_the_correct_creation_time; // TODO
-
-		It should_populate_the_wire_message_with_the_correct_expiration_time; // TODO: this needs to be something that Rabbit can understand
+		It should_populate_the_wire_message_with_the_correct_expiration_time = () =>
+			result.BasicProperties.Expiration.ShouldEqual(message.Expiration.ToString());
 
 		It should_populate_the_wire_message_with_the_correct_message_type = () =>
 			result.BasicProperties.Type.ShouldEqual(message.Messages.First().GetType().FullName);
@@ -224,7 +226,8 @@ namespace NanoMessageBus.RabbitChannel
 		It should_populate_the_wire_message_with_the_correct_content_encoding = () =>
 			result.BasicProperties.ContentEncoding.ShouldEqual(DefaultContentEncoding);
 
-		It should_populate_the_wire_message_with_the_correct_content_type;
+		It should_populate_the_wire_message_with_the_correct_content_type = () =>
+			result.BasicProperties.ContentType.ShouldEqual("application/vnd.nmb.msg+" + DefaultContentFormat);
 
 		It should_populate_the_wire_message_with_the_correct_app_id = () =>
 			result.BasicProperties.AppId.ShouldEqual(DefaultAppId);
@@ -244,6 +247,8 @@ namespace NanoMessageBus.RabbitChannel
 				result.BasicProperties.Headers[item.Key].ShouldEqual(item.Value);
 		};
 
+		const string DefaultContentEncoding = "some crazy encoding scheme";
+		const string DefaultAppId = "my producer application";
 		const string DefaultRoutingKey = "configured routing key";
 		static readonly byte[] body = new byte[] { 1, 2, 3, 4, 5, 6 };
 		static ChannelMessage message;
@@ -417,12 +422,10 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockSerializer = new Mock<ISerializer>();
-			mockSerializer.Setup(x => x.ContentEncoding).Returns(DefaultContentEncoding);
+			mockSerializer.Setup(x => x.ContentFormat).Returns(DefaultContentFormat);
 
 			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
 			mockConfiguration.Setup(x => x.Serializer).Returns(mockSerializer.Object);
-			mockConfiguration.Setup(x => x.ApplicationId).Returns(DefaultAppId);
-
 			adapter = new RabbitMessageAdapter(mockConfiguration.Object);
 		};
 
@@ -435,8 +438,7 @@ namespace NanoMessageBus.RabbitChannel
 			};
 		}
 
-		protected const string DefaultContentEncoding = "some crazy encoding scheme";
-		protected const string DefaultAppId = "my producer application";
+		protected const string DefaultContentFormat = "json";
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<ISerializer> mockSerializer;
 		protected static RabbitMessageAdapter adapter;

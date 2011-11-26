@@ -16,6 +16,11 @@
 		string ContentEncoding { get; }
 
 		/// <summary>
+		/// Gets the MIME-type suffix (json, xml, binary, etc.)
+		/// </summary>
+		string ContentFormat { get; }
+
+		/// <summary>
 		/// Serializes the object graph provided and writes a serialized representation to the output stream provided.
 		/// </summary>
 		/// <param name="destination">The stream into which the serialized object graph should be written.</param>
@@ -27,8 +32,9 @@
 		/// </summary>
 		/// <typeparam name="T">The type of object to be deserialized.</typeparam>
 		/// <param name="source">The stream of bytes from which the object will be reconstructed.</param>
-		/// <param name="contentEncoding">The optional value which indicates the encoding used during serialization.</param>
+		/// <param name="format">The optional value which indicates the format used during serialization.</param>
+		/// <param name="encoding">The optional value which indicates the encoding used during serialization.</param>
 		/// <returns>The reconstructed object.</returns>
-		T Deserialize<T>(Stream source, string contentEncoding = "");
+		T Deserialize<T>(Stream source, string format, string encoding = "");
 	}
 }

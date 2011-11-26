@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
-	using System.IO;
 	using System.Linq;
 	using System.Runtime.Serialization;
 	using System.Text;
@@ -19,8 +18,7 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
-			// note that we lock twice, once to try and load from the cache, and once to save
-			// the reason is that we don't want to block during deserialization which may take a while.
+			// we lock twice because we don't want to block during deserialization
 			var translated = this.TryFromCache(message);
 			if (translated != null)
 				return translated;
@@ -59,7 +57,11 @@
 		protected virtual ChannelMessage Translate(BasicDeliverEventArgs message)
 		{
 			var properties = message.BasicProperties;
-			var payload = this.serializer.Deserialize<object[]>(message.Body, properties.ContentEncoding);
+			var contentFormat = properties.ContentFormat();
+
+			// TODO: if the message is already expired, don't deserialize the payload (it will just be forwarded)
+			var payload = this.serializer.Deserialize<object[]>(
+				message.Body, contentFormat, properties.ContentEncoding);
 
 			return new ChannelMessage(
 				properties.MessageId.ToGuid(),
@@ -106,6 +108,10 @@
 		}
 		protected virtual BasicDeliverEventArgs Translate(ChannelMessage message)
 		{
+			var expiration = message.Expiration == DateTime.MinValue ? null : message.Expiration.ToString();
+			var contentType = string.IsNullOrEmpty(this.serializer.ContentFormat)
+				? ContentType : ContentType + "+" + this.serializer.ContentFormat;
+
 			return new BasicDeliverEventArgs
 			{
 				Body = this.serializer.Serialize(message.Messages),
@@ -116,10 +122,10 @@
 					CorrelationId = message.CorrelationId.ToString(),
 					AppId = this.configuration.ApplicationId,
 					ContentEncoding = this.serializer.ContentEncoding,
-					ContentType = string.Empty, // TODO
+					ContentType = contentType,
 					DeliveryMode = message.Persistent ? Persistent : Transient,
-					Expiration = message.Expiration.ToString(), // TODO: make this meaningful
-					ReplyTo = message.ReturnAddress.ToString(), // TODO: make this meaningful
+					Expiration = expiration,
+					ReplyTo = message.ReturnAddress.ToString(),
 					Type = message.Messages.First().GetType().FullName,
 					Headers = new Hashtable((IDictionary)message.Headers),
 					Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime())
@@ -166,6 +172,7 @@
 
 		private const byte Transient = 1;
 		private const byte Persistent = 2;
+		private const string ContentType = "application/vnd.nmb.msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
 		private readonly IDictionary<BasicDeliverEventArgs, ChannelMessage> cache =

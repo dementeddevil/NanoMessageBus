@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections;
+	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Framing.v0_9;
 
@@ -60,6 +61,13 @@
 			Uri parsed;
 			Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out parsed);
 			return parsed;
+		}
+
+		public static string ContentFormat(this IBasicProperties properties)
+		{
+			var contentType = properties.ContentType ?? string.Empty;
+			var formatIndex = contentType.LastIndexOf("+");
+			return formatIndex == -1 ? string.Empty : contentType.Substring(formatIndex + 1);
 		}
 
 		private const string AttemptCountHeader = "x-retry-count";

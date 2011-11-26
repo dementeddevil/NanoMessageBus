@@ -12,10 +12,11 @@
 				return destination.ToArray();
 			}
 		}
-		public static T Deserialize<T>(this ISerializer serializer, byte[] source, string contentEncoding)
+		public static T Deserialize<T>(
+			this ISerializer serializer, byte[] source, string format, string encoding = "")
 		{
 			using (var stream = new MemoryStream(source))
-				return serializer.Deserialize<T>(stream, contentEncoding);
+				return serializer.Deserialize<T>(stream, format, encoding);
 		}
 	}
 }

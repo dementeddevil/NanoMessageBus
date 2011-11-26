@@ -60,6 +60,10 @@
 		{
 			get { return null; }
 		}
+		public virtual RabbitAddress DeadLetterExchange
+		{
+			get { return null; }
+		}
 		public virtual int MaxAttempts
 		{
 			get { return 0; }
@@ -71,6 +75,10 @@
 		public virtual string ApplicationId
 		{
 			get { return null; }
+		}
+		public virtual Uri ReturnAddress
+		{
+			get { return null; } // it's very possible for this to null, e.g. send-only endpoints.
 		}
 	}
 }
