@@ -14,7 +14,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive(ZeroTimeout, msg => true));
+				subscription.BeginReceive(ZeroTimeout, DisposeCallback));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -44,7 +44,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive(DefaultTimeout, msg => true));
+				subscription.BeginReceive(DefaultTimeout, DisposeCallback));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -63,8 +63,16 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_invoke_the_callback_and_then_exit_the_receive_loop = () =>
 			invocations.ShouldEqual(1);
+	}
 
-		static int invocations;
+	[Subject(typeof(RabbitSubscription))]
+	public class when_a_subscription_is_disposed_during_receive : using_a_subscription
+	{
+		Because of = () =>
+			subscription.BeginReceive(DefaultTimeout, DisposeCallback);
+
+		It should_exit_the_receive_loop = () =>
+			true.ShouldBeTrue(); // the fact that we got here means the loop exited
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -101,8 +109,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_invoke_the_callback = () =>
 			invocations.ShouldEqual(1);
-
-		static int invocations;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -119,7 +125,6 @@ namespace NanoMessageBus.RabbitChannel
 			invocations.ShouldEqual(MaxInvocations);
 
 		const int MaxInvocations = 3;
-		static int invocations;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -210,6 +215,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			invocations = 0;
 			mockRealSubscription = new Mock<SubscriptionAdapter>();
 			subscription = new RabbitSubscription(mockRealSubscription.Object);
 		};
@@ -217,6 +223,12 @@ namespace NanoMessageBus.RabbitChannel
 		protected static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(1);
 		protected static Mock<SubscriptionAdapter> mockRealSubscription;
 		protected static RabbitSubscription subscription;
+		protected static int invocations;
+		protected static readonly Func<BasicDeliverEventArgs, bool> DisposeCallback = context =>
+		{
+			subscription.Dispose();
+			return true;
+		};
 	}
 }
 

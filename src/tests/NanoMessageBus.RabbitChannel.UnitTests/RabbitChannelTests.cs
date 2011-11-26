@@ -341,6 +341,8 @@ namespace NanoMessageBus.RabbitChannel
 				Body = new byte[] { 0, 1, 2, 3, 4 }
 			};
 			mockAdapter.Setup(x => x.Build(mockEnvelope.Object.Message)).Returns(rabbitMessage);
+
+			channel.CurrentTransaction.Dispose(); // mark the previous transaction as complete
 		};
 
 		Because of = () =>
@@ -357,6 +359,9 @@ namespace NanoMessageBus.RabbitChannel
 				Moq.It.IsAny<PublicationAddress>(),
 				rabbitMessage.BasicProperties,
 				rabbitMessage.Body), Times.Exactly(mockEnvelope.Object.Recipients.Count));
+
+		It should_mark_the_current_transaction_as_finished = () =>
+			channel.CurrentTransaction.Finished.ShouldBeTrue();
 
 		static Mock<ChannelEnvelope> mockEnvelope;
 		static BasicDeliverEventArgs rabbitMessage;
