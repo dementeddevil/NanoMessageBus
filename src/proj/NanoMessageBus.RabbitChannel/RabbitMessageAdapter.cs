@@ -91,14 +91,17 @@
 				headers[key] = encoding.GetString((byte[])properties.Headers[key]);
 		}
 
-		public virtual BasicDeliverEventArgs Build(ChannelMessage message) // TODO: pass in IBasicProperties here
+		public virtual BasicDeliverEventArgs Build(ChannelMessage message, IBasicProperties properties)
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
 
+			if (properties == null)
+				throw new ArgumentNullException("properties");
+
 			try
 			{
-				return this.Translate(message);
+				return this.Translate(message, properties);
 			}
 			catch (SerializationException)
 			{
@@ -109,30 +112,31 @@
 				throw new SerializationException(e.Message, e);
 			}
 		}
-		protected virtual BasicDeliverEventArgs Translate(ChannelMessage message)
+		protected virtual BasicDeliverEventArgs Translate(ChannelMessage message, IBasicProperties properties)
 		{
-			var expiration = message.Expiration == DateTime.MinValue ? null : message.Expiration.ToString();
-			var contentType = string.IsNullOrEmpty(this.serializer.ContentFormat)
+			properties.MessageId = message.MessageId.ToString();
+			properties.CorrelationId = message.CorrelationId.ToString();
+			properties.AppId = this.configuration.ApplicationId;
+			properties.ContentEncoding = this.serializer.ContentEncoding;
+
+			properties.ContentType = string.IsNullOrEmpty(this.serializer.ContentFormat)
 				? ContentType : ContentType + "+" + this.serializer.ContentFormat;
+
+			properties.SetPersistent(message.Persistent);
+			properties.Expiration = message.Expiration == DateTime.MinValue ? null : message.Expiration.ToString();
+
+			if (message.ReturnAddress != null)
+				properties.ReplyTo = message.ReturnAddress.ToString();
+
+			properties.Headers = new Hashtable((IDictionary)message.Headers);
+			properties.Type = message.Messages.First().GetType().FullName;
+			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
 
 			return new BasicDeliverEventArgs
 			{
 				Body = this.serializer.Serialize(message.Messages),
 				RoutingKey = this.configuration.LookupRoutingKey(message),
-				BasicProperties = new BasicProperties
-				{
-					MessageId = message.MessageId.ToString(),
-					CorrelationId = message.CorrelationId.ToString(),
-					AppId = this.configuration.ApplicationId,
-					ContentEncoding = this.serializer.ContentEncoding,
-					ContentType = contentType,
-					DeliveryMode = message.Persistent ? Persistent : Transient,
-					Expiration = expiration,
-					ReplyTo = message.ReturnAddress.ToString(),
-					Type = message.Messages.First().GetType().FullName,
-					Headers = new Hashtable((IDictionary)message.Headers),
-					Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime())
-				}
+				BasicProperties = properties
 			};
 		}
 
@@ -173,9 +177,8 @@
 		{
 		}
 
-		private const byte Transient = 1;
 		private const byte Persistent = 2;
-		private const string ContentType = "application/vnd.nmb.msg";
+		private const string ContentType = "application/vnd.nmb.rabbit-msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
 		private readonly IDictionary<BasicDeliverEventArgs, ChannelMessage> cache =

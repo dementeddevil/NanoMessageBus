@@ -22,7 +22,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_no_message_is_supplied_to_build_a_ChannelMessage_from_a_wire_message : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.Build((BasicDeliverEventArgs)null));
+			thrown = Catch.Exception(() => adapter.Build(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -190,7 +190,17 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_no_message_is_supplied_to_build_a_wire_message_from_a_ChannelMessage : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.Build((ChannelMessage)null));
+			thrown = Catch.Exception(() => adapter.Build(null, new BasicProperties()));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_no_basic_properties_are_supplied_to_build_a_wire_message : using_a_message_adapter
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -221,7 +231,7 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			result = adapter.Build(message);
+			result = adapter.Build(message, new BasicProperties());
 
 		It should_serialize_the_ChannelMessage_payload = () =>
 			mockSerializer.Verify(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages), Times.Once());
@@ -254,7 +264,7 @@ namespace NanoMessageBus.RabbitChannel
 			result.BasicProperties.ContentEncoding.ShouldEqual(DefaultContentEncoding);
 
 		It should_populate_the_wire_message_with_the_correct_content_type = () =>
-			result.BasicProperties.ContentType.ShouldEqual("application/vnd.nmb.msg+" + DefaultContentFormat);
+			result.BasicProperties.ContentType.ShouldEqual("application/vnd.nmb.rabbit-msg+" + DefaultContentFormat);
 
 		It should_populate_the_wire_message_with_the_correct_app_id = () =>
 			result.BasicProperties.AppId.ShouldEqual(DefaultAppId);
@@ -290,7 +300,7 @@ namespace NanoMessageBus.RabbitChannel
 			.Throws(new SerializationException());
 
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object));
+			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object, new BasicProperties()));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<SerializationException>();
@@ -300,7 +310,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_a_malformd_ChannelMessage_payload_is_provided : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object));
+			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object, new BasicProperties()));
 
 		It should_wrap_the_exception_inside_of_a_SerializationException = () =>
 			thrown.ShouldBeOfType<SerializationException>();

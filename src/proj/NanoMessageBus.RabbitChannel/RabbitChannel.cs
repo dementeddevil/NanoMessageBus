@@ -96,7 +96,7 @@
 			if (this.subscription == null)
 				this.ThrowWhenShuttingDown();
 
-			var message = this.adapter.Build(envelope.Message);
+			var message = this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
 
 			foreach (var recipient in envelope.Recipients.Select(x => new RabbitAddress(x)))
 			{

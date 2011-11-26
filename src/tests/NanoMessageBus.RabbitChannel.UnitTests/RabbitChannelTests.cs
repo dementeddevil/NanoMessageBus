@@ -151,7 +151,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.CurrentMessage.ShouldBeNull();
 
 		It should_not_attempt_to_process_the_null_message = () =>
-			mockAdapter.Verify(x => x.Build((BasicDeliverEventArgs)null), Times.Never());
+			mockAdapter.Verify(x => x.Build(null), Times.Never());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -337,10 +337,13 @@ namespace NanoMessageBus.RabbitChannel
 
 			rabbitMessage = new BasicDeliverEventArgs
 			{
-				BasicProperties = new Mock<IBasicProperties>().Object,
+				BasicProperties = mockRealChannel.Object.CreateBasicProperties(),
 				Body = new byte[] { 0, 1, 2, 3, 4 }
 			};
-			mockAdapter.Setup(x => x.Build(mockEnvelope.Object.Message)).Returns(rabbitMessage);
+
+			mockAdapter
+				.Setup(x => x.Build(mockEnvelope.Object.Message, mockRealChannel.Object.CreateBasicProperties()))
+				.Returns(rabbitMessage);
 
 			channel.CurrentTransaction.Dispose(); // mark the previous transaction as complete
 		};
@@ -351,8 +354,8 @@ namespace NanoMessageBus.RabbitChannel
 			channel.CurrentTransaction.Commit();
 		};
 
-		It should_build_a_message_specific_the_the_channel_from_the_message_provided = () =>
-			mockAdapter.Verify(x => x.Build(mockEnvelope.Object.Message), Times.Once());
+		It should_build_a_wire_message_from_the_ChannelMessage_provided = () =>
+			mockAdapter.Verify(x => x.Build(mockEnvelope.Object.Message, mockRealChannel.Object.CreateBasicProperties()), Times.Once());
 
 		It should_dispatch_the_message_to_the_recipients_specified = () =>
 			mockRealChannel.Verify(x => x.BasicPublish(
@@ -693,7 +696,7 @@ namespace NanoMessageBus.RabbitChannel
 
 			var mockEnvelope = new Mock<ChannelEnvelope>();
 			mockEnvelope.Setup(x => x.Recipients).Returns(new Uri[0]);
-			mockAdapter.Setup(x => x.Build(mockEnvelope.Object.Message));
+			mockAdapter.Setup(x => x.Build(mockEnvelope.Object.Message, mockRealChannel.Object.CreateBasicProperties()));
 			envelope = mockEnvelope.Object;
 
 			channel.BeginShutdown();
@@ -703,7 +706,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.Send(envelope);
 
 		It should_allow_the_dispatch_to_proceed_so_that_the_transaction_can_complete = () =>
-			mockAdapter.Verify(x => x.Build(envelope.Message), Times.Once());
+			mockAdapter.Verify(x => x.Build(envelope.Message, mockRealChannel.Object.CreateBasicProperties()), Times.Once());
 
 		static ChannelEnvelope envelope;
 	}
@@ -737,6 +740,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockSubscription
 				.Setup(x => x.BeginReceive(timeout, Moq.It.IsAny<Func<BasicDeliverEventArgs, bool>>()))
 				.Callback<TimeSpan, Func<BasicDeliverEventArgs, bool>>((first, second) => { dispatch = second; });
+			mockRealChannel.Setup(x => x.CreateBasicProperties()).Returns(new BasicProperties());
 
 			RequireTransaction(RabbitTransactionType.None);
 			Initialize();
