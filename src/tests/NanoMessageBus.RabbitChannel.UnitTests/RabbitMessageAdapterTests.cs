@@ -179,15 +179,13 @@ namespace NanoMessageBus.RabbitChannel
 				Guid.NewGuid(),
 				new Uri("rabbitmq://localhost/"),
 				new Dictionary<string, string>(),
-				new object[] { "1", 2, 3.0, 4.0M })
-			{
-				Persistent = true,
-				Expiration = DateTime.Parse("2010-07-01 12:34:56")
-			};
-
+				new object[] { "1", 2, 3.0, 4.0M });
 			message.Headers["a"] = "b";
 			message.Headers["c"] = "d";
+			message.Persistent = true;
+			message.Expiration = DateTime.Parse("2010-07-01 12:34:56");
 
+			mockConfiguration.Setup(x => x.LookupRoutingKey(message)).Returns(DefaultRoutingKey);
 			mockSerializer
 				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
 				.Callback<Stream, object>((stream, graph) => stream.Write(body, 0, body.Length));
@@ -202,7 +200,8 @@ namespace NanoMessageBus.RabbitChannel
 		It should_return_a_wire_message = () =>
 			result.ShouldNotBeNull();
 
-		It should_populate_the_wire_message_with_the_correct_routing_key; // TODO
+		It should_populate_the_wire_message_with_the_correct_routing_key = () =>
+			result.RoutingKey.ShouldEqual(DefaultRoutingKey);
 
 		It should_populate_the_wire_message_with_the_correct_message_id = () =>
 			result.BasicProperties.MessageId.ToGuid().ShouldEqual(message.MessageId);
@@ -245,9 +244,20 @@ namespace NanoMessageBus.RabbitChannel
 				result.BasicProperties.Headers[item.Key].ShouldEqual(item.Value);
 		};
 
+		const string DefaultRoutingKey = "configured routing key";
 		static readonly byte[] body = new byte[] { 1, 2, 3, 4, 5, 6 };
 		static ChannelMessage message;
 		static BasicDeliverEventArgs result;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_a_malformd_ChannelMessage_payload_is_provided : using_a_message_adapter
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object));
+
+		It should_wrap_the_exception_inside_of_a_SerializationException = () =>
+			thrown.ShouldBeOfType<SerializationException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]

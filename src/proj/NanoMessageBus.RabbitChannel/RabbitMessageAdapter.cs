@@ -58,8 +58,8 @@
 		}
 		protected virtual ChannelMessage Translate(BasicDeliverEventArgs message)
 		{
-			var payload = this.Deserialize(message.Body, message.BasicProperties.ContentEncoding);
 			var properties = message.BasicProperties;
+			var payload = this.serializer.Deserialize<object[]>(message.Body, properties.ContentEncoding);
 
 			return new ChannelMessage(
 				properties.MessageId.ToGuid(),
@@ -71,11 +71,6 @@
 				Expiration = properties.Expiration.ToDateTime(),
 				Persistent = properties.DeliveryMode == Persistent
 			};
-		}
-		protected virtual object[] Deserialize(byte[] body, string contentEncoding)
-		{
-			using (var stream = new MemoryStream(body))
-				return this.serializer.Deserialize<object[]>(stream, contentEncoding);
 		}
 		protected virtual void AppendHeaders(ChannelMessage message, IBasicProperties properties)
 		{
@@ -96,15 +91,30 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
+			try
+			{
+				return this.Translate(message);
+			}
+			catch (SerializationException)
+			{
+				throw;
+			}
+			catch (Exception e)
+			{
+				throw new SerializationException(e.Message, e);
+			}
+		}
+		protected virtual BasicDeliverEventArgs Translate(ChannelMessage message)
+		{
 			return new BasicDeliverEventArgs
 			{
 				BasicProperties = new BasicProperties
 				{
+					MessageId = message.MessageId.ToString(),
+					CorrelationId = message.CorrelationId.ToString(),
 					AppId = this.configuration.ApplicationId,
 					ContentEncoding = this.serializer.ContentEncoding,
 					ContentType = string.Empty, // TODO
-					CorrelationId = message.CorrelationId.ToString(),
-					MessageId = message.MessageId.ToString(),
 					DeliveryMode = message.Persistent ? Persistent : Transient,
 					Expiration = message.Expiration.ToString(), // TODO: make this meaningful
 					ReplyTo = message.ReturnAddress.ToString(), // TODO: make this meaningful
@@ -112,16 +122,9 @@
 					Headers = new Hashtable((IDictionary)message.Headers),
 					Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime())
 				},
-				Body = this.Serialize(message.Messages)
+				RoutingKey = this.configuration.LookupRoutingKey(message),
+				Body = this.serializer.Serialize(message.Messages)
 			};
-		}
-		protected virtual byte[] Serialize(object graph)
-		{
-			using (var stream = new MemoryStream())
-			{
-				this.serializer.Serialize(stream, graph);
-				return stream.ToArray();
-			}
 		}
 
 		public virtual void AppendException(BasicDeliverEventArgs message, Exception exception)

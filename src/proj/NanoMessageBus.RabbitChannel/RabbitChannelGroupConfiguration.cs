@@ -15,6 +15,11 @@
 			return this;
 		}
 
+		public virtual string LookupRoutingKey(ChannelMessage message)
+		{
+			return null;
+		}
+
 		public virtual string ChannelGroup
 		{
 			get { return null; }
