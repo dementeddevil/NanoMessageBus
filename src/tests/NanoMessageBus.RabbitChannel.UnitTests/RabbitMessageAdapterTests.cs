@@ -130,8 +130,11 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			result = adapter.Build(message);
 
-		It should_build_the_resulting_message = () =>
+		It should_not_build_a_ChannelMessage = () =>
 			result.ShouldBeNull();
+
+		It should_not_cache_the_wire_message_or_the_ChannelMessage = () =>
+			adapter.PurgeFromCache(message).ShouldBeFalse();
 
 		It should_not_invoke_the_serializer = () =>
 			mockSerializer.Verify(

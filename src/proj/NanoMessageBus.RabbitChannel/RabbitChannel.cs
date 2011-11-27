@@ -69,9 +69,11 @@
 			if (this.CurrentMessage == null)
 				this.ForwardToDeadLetterExchange(message);
 			else
+			{
 				callback(this);
+				this.adapter.PurgeFromCache(message);
+			}
 
-			this.adapter.PurgeFromCache(message);
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
 		{

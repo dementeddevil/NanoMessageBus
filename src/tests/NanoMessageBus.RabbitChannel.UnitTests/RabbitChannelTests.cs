@@ -194,8 +194,8 @@ namespace NanoMessageBus.RabbitChannel
 		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
 
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
+		It should_NOT_purge_the_message_from_the_adapter_cache_because_it_should_never_have_been_cached = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Never());
 
 		static BasicDeliverEventArgs message;
 		static readonly PublicationAddress address =
