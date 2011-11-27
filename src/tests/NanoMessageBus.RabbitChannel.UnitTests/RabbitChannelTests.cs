@@ -238,7 +238,6 @@ namespace NanoMessageBus.RabbitChannel
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly PublicationAddress address =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
-		
 	}
 
 	[Subject(typeof(RabbitChannel))]
