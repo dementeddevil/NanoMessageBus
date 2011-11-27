@@ -128,13 +128,10 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			result = adapter.Build(message);
+			thrown = Catch.Exception(() => adapter.Build(message));
 
-		It should_not_build_a_ChannelMessage = () =>
-			result.ShouldBeNull();
-
-		It should_not_cache_the_wire_message_or_the_ChannelMessage = () =>
-			adapter.PurgeFromCache(message).ShouldBeFalse();
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<DeadLetterException>();
 
 		It should_not_invoke_the_serializer = () =>
 			mockSerializer.Verify(
@@ -142,7 +139,6 @@ namespace NanoMessageBus.RabbitChannel
 				Times.Never());
 
 		static BasicDeliverEventArgs message;
-		static ChannelMessage result;
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]

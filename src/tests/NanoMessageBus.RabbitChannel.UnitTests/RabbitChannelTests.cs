@@ -4,6 +4,7 @@
 namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Collections;
 	using System.Runtime.Serialization;
 	using Machine.Specifications;
 	using Moq;
@@ -172,7 +173,7 @@ namespace NanoMessageBus.RabbitChannel
 			deadLetterExchange.Setup(x => x.Address).Returns(address);
 			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(deadLetterExchange.Object);
 
-			mockAdapter.Setup(x => x.Build(message)).Returns((ChannelMessage)null);
+			mockAdapter.Setup(x => x.Build(message)).Throws(new DeadLetterException());
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
@@ -194,12 +195,50 @@ namespace NanoMessageBus.RabbitChannel
 		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
 
-		It should_NOT_purge_the_message_from_the_adapter_cache_because_it_should_never_have_been_cached = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Never());
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static BasicDeliverEventArgs message;
 		static readonly PublicationAddress address =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_the_receive_callback_considers_the_message_to_be_a_dead_letter : using_a_channel
+	{
+		Establish context = () =>
+		{
+			var deadLetterExchange = new Mock<RabbitAddress>();
+			deadLetterExchange.Setup(x => x.Address).Returns(address);
+			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(deadLetterExchange.Object);
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+		{
+			channel.Receive(deliveryContext => { throw new DeadLetterException(); });
+			Receive(message);
+		};
+
+		It should_dispatch_the_message_to_the_configured_dead_letter_exchange = () =>
+			mockRealChannel.Verify(x =>
+				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
+
+		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
+			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+
+		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
+
+		It should_purge_the_message_from_the_adapter_cache = () =>
+			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
+
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+		
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -840,6 +879,14 @@ namespace NanoMessageBus.RabbitChannel
 		protected static void Receive(BasicDeliverEventArgs message)
 		{
 			dispatch(message);
+		}
+		protected static BasicDeliverEventArgs EmptyMessage()
+		{
+			return new BasicDeliverEventArgs
+			{
+				Body = new byte[0],
+				BasicProperties = new BasicProperties { Headers = new Hashtable() }
+			};
 		}
 
 		protected const string DefaultChannelGroup = "some group name";

@@ -32,21 +32,23 @@
 			this.CurrentMessage = null;
 
 			if (this.shutdown)
-				return false;
+				return FinishedReceiving;
 
 			if (message == null)
-				return true;
+				return ContinueReceiving;
 
 			using (this.NewTransaction())
 				this.TryReceive(message, callback);
 
-			return this.shutdown == false;
+			return !this.shutdown;
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			try
 			{
-				this.HandleMessage(message, callback);
+				this.CurrentMessage = this.adapter.Build(message);
+				callback(this);
+				this.adapter.PurgeFromCache(message);
 			}
 			catch (ChannelConnectionException)
 			{
@@ -57,23 +59,14 @@
 			{
 				this.ForwardToPoisonMessageExchange(message, e);
 			}
+			catch (DeadLetterException)
+			{
+				this.ForwardToDeadLetterExchange(message);
+			}
 			catch (Exception e)
 			{
 				this.RetryMessage(message, e);
 			}
-		}
-		private void HandleMessage(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
-		{
-			this.CurrentMessage = this.adapter.Build(message);
-
-			if (this.CurrentMessage == null)
-				this.ForwardToDeadLetterExchange(message);
-			else
-			{
-				callback(this);
-				this.adapter.PurgeFromCache(message);
-			}
-
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
 		{
@@ -89,17 +82,18 @@
 		{
 			message.SetAttemptCount(0);
 			this.adapter.AppendException(message, exception);
-
-			this.NewTransaction();
-			this.Send(message, this.configuration.PoisonMessageExchange);
-			this.CurrentTransaction.Commit();
-
-			this.adapter.PurgeFromCache(message);
+			this.ForwardToExchange(message, this.configuration.PoisonMessageExchange);
 		}
 		protected virtual void ForwardToDeadLetterExchange(BasicDeliverEventArgs message)
 		{
-			this.Send(message, this.configuration.DeadLetterExchange);
+			this.ForwardToExchange(message, this.configuration.DeadLetterExchange);
+		}
+		protected virtual void ForwardToExchange(BasicDeliverEventArgs message, RabbitAddress address)
+		{
+			this.NewTransaction();
+			this.Send(message, address);
 			this.CurrentTransaction.Commit();
+			this.adapter.PurgeFromCache(message);
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)
@@ -241,6 +235,8 @@
 			this.channel.Dispose();
 		}
 
+		private const bool ContinueReceiving = true;
+		private const bool FinishedReceiving = false; // returning false means the receiving handler will exit.
 		private readonly IModel channel;
 		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;

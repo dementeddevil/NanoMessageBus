@@ -43,11 +43,14 @@
 			try
 			{
 				var result = this.Translate(message);
-				if (result != null)
-					this.AppendHeaders(result, message.BasicProperties);
+				this.AppendHeaders(result, message.BasicProperties);
 				return result;
 			}
 			catch (SerializationException)
+			{
+				throw;
+			}
+			catch (DeadLetterException)
 			{
 				throw;
 			}
@@ -63,7 +66,7 @@
 			expiration = expiration == DateTime.MinValue ? DateTime.MaxValue : expiration;
 
 			if (expiration <= SystemTime.UtcNow)
-				return null;
+				throw new DeadLetterException();
 
 			var payload = this.serializer.Deserialize<object[]>(
 				message.Body, properties.ContentFormat(), properties.ContentEncoding);
