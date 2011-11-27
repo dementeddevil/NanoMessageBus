@@ -22,12 +22,8 @@
 			if (translated != null)
 				return translated;
 
-			translated = this.TryTranslate(message);
-			if (translated == null)
-				return null;
-
 			lock (this.cache)
-				return this.cache[message] = translated; // can potentially be overwritten, but that's okay
+				return this.cache[message] = this.TryTranslate(message);
 		}
 		protected virtual ChannelMessage TryFromCache(BasicDeliverEventArgs message)
 		{

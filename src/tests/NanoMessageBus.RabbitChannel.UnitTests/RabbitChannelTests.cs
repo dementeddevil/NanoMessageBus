@@ -251,7 +251,7 @@ namespace NanoMessageBus.RabbitChannel
 			};
 
 			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns((RabbitAddress)null);
-			mockAdapter.Setup(x => x.Build(message)).Returns((ChannelMessage)null);
+			mockAdapter.Setup(x => x.Build(message)).Throws(new DeadLetterException());
 
 			Initialize();
 		};
