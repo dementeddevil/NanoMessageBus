@@ -287,10 +287,10 @@ namespace NanoMessageBus
 		{
 			mockConnector = new Mock<IChannelConnector>();
 			mockChannel = new Mock<IMessagingChannel>();
-			mockConfig = new Mock<IChannelConfiguration>();
+			mockConfig = new Mock<IChannelGroupConfiguration>();
 			envelope = new Mock<ChannelEnvelope>().Object;
 
-			mockConfig.Setup(x => x.ChannelGroup).Returns(ChannelGroupName);
+			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object);
@@ -302,7 +302,7 @@ namespace NanoMessageBus
 		protected const string ChannelGroupName = "Test Channel Group";
 		protected static DefaultChannelGroup channelGroup;
 		protected static Mock<IChannelConnector> mockConnector;
-		protected static Mock<IChannelConfiguration> mockConfig;
+		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static ChannelEnvelope envelope;
 		protected static Mock<IMessagingChannel> mockChannel;
 	}

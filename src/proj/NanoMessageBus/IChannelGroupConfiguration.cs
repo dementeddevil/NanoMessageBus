@@ -8,12 +8,12 @@
 	/// <remarks>
 	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
 	/// </remarks>
-	public interface IChannelConfiguration
+	public interface IChannelGroupConfiguration
 	{
 		/// <summary>
 		/// Gets the value which uniquely identifies the named configuration or channel group.
 		/// </summary>
-		string ChannelGroup { get; }
+		string GroupName { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether the connection is configured for dispatch or full duplex.

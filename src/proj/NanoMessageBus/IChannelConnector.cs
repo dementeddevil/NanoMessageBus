@@ -20,7 +20,7 @@
 		/// <summary>
 		/// Gets the set of values which uniquely identify the channel groups to be created.
 		/// </summary>
-		IEnumerable<IChannelConfiguration> ChannelGroups { get; }
+		IEnumerable<IChannelGroupConfiguration> ChannelGroups { get; }
 
 		/// <summary>
 		/// Opens a channel against the underlying connection.

@@ -4,7 +4,7 @@
 	using RabbitMQ.Client;
 	using Serialization;
 
-	public class RabbitChannelGroupConfiguration : IChannelConfiguration
+	public class RabbitChannelGroupConfiguration : IChannelGroupConfiguration
 	{
 		public virtual RabbitChannelGroupConfiguration InitializeConnection(IConnection connection)
 		{
@@ -20,7 +20,7 @@
 			return null;
 		}
 
-		public virtual string ChannelGroup
+		public virtual string GroupName
 		{
 			get { return null; }
 		}

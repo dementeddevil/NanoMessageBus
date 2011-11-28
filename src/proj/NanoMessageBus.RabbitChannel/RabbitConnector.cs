@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using RabbitMQ.Client;
 
 	public class RabbitConnector : IChannelConnector
 	{
@@ -9,13 +10,25 @@
 		{
 			get { return 0; }
 		}
-		public virtual IEnumerable<IChannelConfiguration> ChannelGroups
+		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
-			get { return new IChannelConfiguration[0]; }
+			get { return new IChannelGroupConfiguration[0]; }
 		}
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			return null;
+		}
+
+		public RabbitConnector(ConnectionFactory factory)
+		{
+			this.factory = factory;
+		}
+		protected RabbitConnector()
+		{
+		}
+		~RabbitConnector()
+		{
+			this.Dispose(false);
 		}
 
 		public void Dispose()
@@ -25,6 +38,11 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
+			if (!disposing)
+				return;
 		}
+
+		private readonly ConnectionFactory factory;
+		private IConnection connection;
 	}
 }

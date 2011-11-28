@@ -7,5 +7,5 @@
 	/// <param name="configuration">The configuration of the channel group to be constructed.</param>
 	/// <returns>A new object instance of the named channel group specified.</returns>
 	public delegate IChannelGroup ChannelGroupFactory(
-		IChannelConnector connector, IChannelConfiguration configuration);
+		IChannelConnector connector, IChannelGroupConfiguration configuration);
 }

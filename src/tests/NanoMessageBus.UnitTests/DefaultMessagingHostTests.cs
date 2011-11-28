@@ -66,9 +66,9 @@ namespace NanoMessageBus
 			mockConnectors.Add(new Mock<IChannelConnector>());
 			mockConnectors[1].SetupGet(x => x.ChannelGroups).Returns(new[] { config2.Object });
 
-			config0.SetupGet(x => x.ChannelGroup).Returns("config0");
-			config1.SetupGet(x => x.ChannelGroup).Returns("config1");
-			config2.SetupGet(x => x.ChannelGroup).Returns("config2");
+			config0.SetupGet(x => x.GroupName).Returns("config0");
+			config1.SetupGet(x => x.GroupName).Returns("config1");
+			config2.SetupGet(x => x.GroupName).Returns("config2");
 
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
 			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object)).Returns(mockGroup.Object);
@@ -87,9 +87,9 @@ namespace NanoMessageBus
 		It should_provide_each_config_and_its_associated_connector_to_the_factory = () =>
 			mockFactory.VerifyAll();
 
-		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
-		static readonly Mock<IChannelConfiguration> config1 = new Mock<IChannelConfiguration>();
-		static readonly Mock<IChannelConfiguration> config2 = new Mock<IChannelConfiguration>();
+		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
+		static readonly Mock<IChannelGroupConfiguration> config1 = new Mock<IChannelGroupConfiguration>();
+		static readonly Mock<IChannelGroupConfiguration> config2 = new Mock<IChannelGroupConfiguration>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -99,7 +99,7 @@ namespace NanoMessageBus
 		{
 			mockConnectors.Add(new Mock<IChannelConnector>());
 			mockConnectors[0].SetupGet(x => x.ChannelGroups).Returns(new[] { config0.Object });
-			config0.SetupGet(x => x.ChannelGroup).Returns("config0");
+			config0.SetupGet(x => x.GroupName).Returns("config0");
 
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
 			mockFactory.Setup(x => x.Build(mockConnectors[0].Object, config0.Object)).Returns(mockGroup.Object);
@@ -117,7 +117,7 @@ namespace NanoMessageBus
 		It should_do_nothing = () =>
 			mockFactory.Verify(x => x.Build(Connectors[0], config0.Object), Times.Once());
 
-		static readonly Mock<IChannelConfiguration> config0 = new Mock<IChannelConfiguration>();
+		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -154,8 +154,8 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			var otherConfig = new Mock<IChannelConfiguration>();
-			otherConfig.Setup(x => x.ChannelGroup).Returns("dispatch-only group");
+			var otherConfig = new Mock<IChannelGroupConfiguration>();
+			otherConfig.Setup(x => x.GroupName).Returns("dispatch-only group");
 			mockConfigs.Add(otherConfig);
 
 			otherGroup.Setup(x => x.DispatchOnly).Returns(true); // default group is dispatch-only
@@ -318,8 +318,8 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			var otherConfig = new Mock<IChannelConfiguration>();
-			otherConfig.Setup(x => x.ChannelGroup).Returns("some other group");
+			var otherConfig = new Mock<IChannelGroupConfiguration>();
+			otherConfig.Setup(x => x.GroupName).Returns("some other group");
 			mockConfigs.Add(otherConfig);
 
 			mockGroup.Setup(x => x.DispatchOnly).Returns(true); // default group is dispatch-only
@@ -383,11 +383,11 @@ namespace NanoMessageBus
 		{
 			channelFactory = null;
 			defaultGroupName = "Test Configuration Group";
-			mockConfig = new Mock<IChannelConfiguration>();
+			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockGroup = new Mock<IChannelGroup>();
 			
-			mockConfig.Setup(x => x.ChannelGroup).Returns(defaultGroupName);
-			mockConfigs = new List<Mock<IChannelConfiguration>> { mockConfig };
+			mockConfig.Setup(x => x.GroupName).Returns(defaultGroupName);
+			mockConfigs = new List<Mock<IChannelGroupConfiguration>> { mockConfig };
 
 			mockConnectors = new List<Mock<IChannelConnector>> { new Mock<IChannelConnector>() };
 			mockConnectors[0].Setup(x => x.ChannelGroups).Returns(mockConfigs.Select(x => x.Object));
@@ -410,11 +410,11 @@ namespace NanoMessageBus
 		protected static IList<Mock<IChannelConnector>> mockConnectors;
 		protected static Mock<DefaultChannelGroupFactory> mockFactory;
 		protected static string defaultGroupName;
-		protected static IList<Mock<IChannelConfiguration>> mockConfigs;
+		protected static IList<Mock<IChannelGroupConfiguration>> mockConfigs;
 		protected static Mock<IChannelGroup> mockGroup;
 		protected static DefaultMessagingHost host;
 		static ChannelGroupFactory channelFactory;
-		static Mock<IChannelConfiguration> mockConfig;
+		static Mock<IChannelGroupConfiguration> mockConfig;
 	}
 }
 

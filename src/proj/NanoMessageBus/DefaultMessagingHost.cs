@@ -23,7 +23,7 @@
 		{
 			foreach (var connector in this.connectors)
 				foreach (var config in connector.ChannelGroups)
-					this.AddChannelGroup(config.ChannelGroup, this.factory(connector, config));
+					this.AddChannelGroup(config.GroupName, this.factory(connector, config));
 
 			if (this.inbound.Count == 0)
 				throw new ConfigurationErrorsException("No channel groups have been configured.");

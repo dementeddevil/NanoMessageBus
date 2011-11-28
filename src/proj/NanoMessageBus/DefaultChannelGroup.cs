@@ -28,7 +28,7 @@
 			{
 				for (var i = 0; i < this.configuration.MinWorkers; i++)
 				{
-					using (this.connector.Connect(this.configuration.ChannelGroup))
+					using (this.connector.Connect(this.configuration.GroupName))
 					{
 					}
 				}
@@ -53,7 +53,7 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 			
-			using (var channel = this.connector.Connect(this.configuration.ChannelGroup))
+			using (var channel = this.connector.Connect(this.configuration.GroupName))
 				channel.Send(envelope); // TODO: add threading
 		}
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
@@ -75,7 +75,7 @@
 			{
 				for (var i = 0; i < this.configuration.MinWorkers; i++)
 				{
-					using (var channel = this.connector.Connect(this.configuration.ChannelGroup))
+					using (var channel = this.connector.Connect(this.configuration.GroupName))
 					{
 						channel.Receive(callback);
 					}
@@ -115,7 +115,7 @@
 				throw new InvalidOperationException("A callback has already been provided.");
 		}
 
-		public DefaultChannelGroup(IChannelConnector connector, IChannelConfiguration configuration)
+		public DefaultChannelGroup(IChannelConnector connector, IChannelGroupConfiguration configuration)
 		{
 			this.connector = connector;
 			this.configuration = configuration;
@@ -140,7 +140,7 @@
 
 		private readonly object locker = new object();
 		private readonly IChannelConnector connector;
-		private readonly IChannelConfiguration configuration;
+		private readonly IChannelGroupConfiguration configuration;
 		private bool receiving;
 		private bool initialized;
 		private bool disposed;

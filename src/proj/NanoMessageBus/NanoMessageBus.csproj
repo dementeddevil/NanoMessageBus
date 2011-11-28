@@ -53,7 +53,7 @@
     <Compile Include="DefaultChannelGroupFactory.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="IChannelConfiguration.cs" />
+    <Compile Include="IChannelGroupConfiguration.cs" />
     <Compile Include="IOutboundChannel.cs" />
     <Compile Include="IChannelGroup.cs" />
     <Compile Include="IChannelTransaction.cs" />
