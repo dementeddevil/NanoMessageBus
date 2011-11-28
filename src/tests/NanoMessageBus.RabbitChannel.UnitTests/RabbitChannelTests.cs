@@ -169,10 +169,7 @@ namespace NanoMessageBus.RabbitChannel
 				Body = new byte[] { 1, 2, 3, 4 }
 			};
 
-			var deadLetterExchange = new Mock<RabbitAddress>();
-			deadLetterExchange.Setup(x => x.Address).Returns(address);
-			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(deadLetterExchange.Object);
-
+			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(address);
 			mockAdapter.Setup(x => x.Build(message)).Throws(new DeadLetterException());
 
 			RequireTransaction(RabbitTransactionType.Full);
@@ -199,8 +196,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static BasicDeliverEventArgs message;
-		static readonly PublicationAddress address =
-			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -208,9 +204,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			var deadLetterExchange = new Mock<RabbitAddress>();
-			deadLetterExchange.Setup(x => x.Address).Returns(address);
-			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(deadLetterExchange.Object);
+			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(address);
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
@@ -236,8 +230,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
-		static readonly PublicationAddress address =
-			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -306,10 +299,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			var poisonExchange = new Mock<RabbitAddress>();
-			poisonExchange.Setup(x => x.Address).Returns(address);
-			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(poisonExchange.Object);
-
+			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(address);
 			mockConfiguration.Setup(x => x.MaxAttempts).Returns(FirstFailureIsPoisonMessage);
 
 			RequireTransaction(RabbitTransactionType.Full);
@@ -344,8 +334,7 @@ namespace NanoMessageBus.RabbitChannel
 		const int FirstFailureIsPoisonMessage = 0;
 		static readonly Exception thrown = new Exception();
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
-		static readonly PublicationAddress address =
-			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -363,11 +352,7 @@ namespace NanoMessageBus.RabbitChannel
 
 			mockRealChannel.Setup(x => x.TxCommit());
 			mockRealChannel.Setup(x => x.BasicPublish(address, message.BasicProperties, message.Body));
-
-			var poisonExchange = new Mock<RabbitAddress>();
-			poisonExchange.Setup(x => x.Address).Returns(address);
-			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(poisonExchange.Object);
-
+			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(address);
 			mockAdapter.Setup(x => x.Build(message)).Throws(serializationException);
 
 			RequireTransaction(RabbitTransactionType.Full);
@@ -398,8 +383,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		static BasicDeliverEventArgs message;
 		static readonly Exception serializationException = new SerializationException();
-		static readonly PublicationAddress address =
-			new PublicationAddress(string.Empty, string.Empty, string.Empty);
+		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
 	}
 
 	[Subject(typeof(RabbitChannel))]

@@ -52,11 +52,11 @@
 		{
 			get { return 0; }
 		}
-		public virtual RabbitAddress PoisonMessageExchange
+		public virtual PublicationAddress PoisonMessageExchange
 		{
 			get { return null; }
 		}
-		public virtual RabbitAddress DeadLetterExchange
+		public virtual PublicationAddress DeadLetterExchange
 		{
 			get { return null; } // null is allowed (which drops the message)
 		}

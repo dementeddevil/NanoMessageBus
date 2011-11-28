@@ -3,17 +3,13 @@
 	using System;
 	using RabbitMQ.Client;
 
-	public class RabbitAddress
+	public class RabbitAddress : PublicationAddress
 	{
-		public virtual PublicationAddress Address
-		{
-			get { return null; }
-		}
-
 		public RabbitAddress(Uri address) : this()
 		{
 		}
 		protected RabbitAddress()
+			: base(string.Empty, string.Empty, string.Empty)
 		{
 		}
 	}

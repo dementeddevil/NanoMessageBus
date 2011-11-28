@@ -88,7 +88,7 @@
 		{
 			this.ForwardToExchange(message, this.configuration.DeadLetterExchange);
 		}
-		protected virtual void ForwardToExchange(BasicDeliverEventArgs message, RabbitAddress address)
+		protected virtual void ForwardToExchange(BasicDeliverEventArgs message, PublicationAddress address)
 		{
 			this.NewTransaction();
 			this.Send(message, address);
@@ -114,7 +114,7 @@
 				this.Send(message, recipient);
 			}
 		}
-		protected virtual void Send(BasicDeliverEventArgs message, RabbitAddress recipient)
+		protected virtual void Send(BasicDeliverEventArgs message, PublicationAddress recipient)
 		{
 			if (this.CurrentTransaction.Finished)
 				this.NewTransaction();
@@ -123,7 +123,7 @@
 				return;
 
 			this.CurrentTransaction.Register(() => this.Try(() =>
-			    this.channel.BasicPublish(recipient.Address, message.BasicProperties, message.Body)));
+			    this.channel.BasicPublish(recipient, message.BasicProperties, message.Body)));
 		}
 
 		public virtual void AcknowledgeMessage()
