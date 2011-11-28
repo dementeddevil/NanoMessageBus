@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using RabbitMQ.Client;
 
 	public class RabbitConnector : IChannelConnector
@@ -19,9 +20,13 @@
 			return null;
 		}
 
-		public RabbitConnector(ConnectionFactory factory)
+		public RabbitConnector(ConnectionFactory factory, IEnumerable<IChannelGroupConfiguration> configuration)
+			: this()
 		{
 			this.factory = factory;
+			this.configuration = configuration
+				.Where(x => x != null)
+				.ToDictionary(x => x.GroupName, x => x);
 		}
 		protected RabbitConnector()
 		{
@@ -42,6 +47,7 @@
 				return;
 		}
 
+		private readonly IDictionary<string, IChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
 		private IConnection connection;
 	}
