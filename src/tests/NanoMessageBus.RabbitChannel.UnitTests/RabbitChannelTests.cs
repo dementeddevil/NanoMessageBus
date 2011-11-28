@@ -196,7 +196,8 @@ namespace NanoMessageBus.RabbitChannel
 			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static BasicDeliverEventArgs message;
-		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -230,7 +231,8 @@ namespace NanoMessageBus.RabbitChannel
 			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
-		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -243,7 +245,7 @@ namespace NanoMessageBus.RabbitChannel
 				BasicProperties = new BasicProperties { Expiration = SystemTime.EpochTime.ToString() }
 			};
 
-			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns((RabbitAddress)null);
+			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns((PublicationAddress)null);
 			mockAdapter.Setup(x => x.Build(message)).Throws(new DeadLetterException());
 
 			Initialize();
@@ -334,7 +336,8 @@ namespace NanoMessageBus.RabbitChannel
 		const int FirstFailureIsPoisonMessage = 0;
 		static readonly Exception thrown = new Exception();
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
-		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -383,7 +386,8 @@ namespace NanoMessageBus.RabbitChannel
 
 		static BasicDeliverEventArgs message;
 		static readonly Exception serializationException = new SerializationException();
-		static readonly PublicationAddress address = new Mock<RabbitAddress>().Object;
+		static readonly PublicationAddress address =
+			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
 
 	[Subject(typeof(RabbitChannel))]

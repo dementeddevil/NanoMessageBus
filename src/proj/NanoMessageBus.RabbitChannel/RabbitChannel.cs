@@ -108,7 +108,7 @@
 
 			var message = this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
 
-			foreach (var recipient in envelope.Recipients.Select(x => new RabbitAddress(x)))
+			foreach (var recipient in envelope.Recipients.Select(x => PublicationAddress.Parse(x.ToString())))
 			{
 				this.ThrowWhenDisposed();
 				this.Send(message, recipient);
