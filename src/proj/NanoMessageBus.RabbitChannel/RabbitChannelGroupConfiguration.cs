@@ -28,10 +28,6 @@
 		{
 			get { return null; }
 		}
-		public virtual string PrivateExchange
-		{
-			get { return null; }
-		}
 		public virtual bool DispatchOnly
 		{
 			get { return false; }
