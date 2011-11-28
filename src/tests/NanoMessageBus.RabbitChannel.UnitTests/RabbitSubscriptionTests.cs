@@ -216,12 +216,12 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			invocations = 0;
-			mockRealSubscription = new Mock<SubscriptionAdapter>();
+			mockRealSubscription = new Mock<Subscription>();
 			subscription = new RabbitSubscription(mockRealSubscription.Object);
 		};
 
 		protected static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(1);
-		protected static Mock<SubscriptionAdapter> mockRealSubscription;
+		protected static Mock<Subscription> mockRealSubscription;
 		protected static RabbitSubscription subscription;
 		protected static int invocations;
 		protected static readonly Func<BasicDeliverEventArgs, bool> DisposeCallback = context =>

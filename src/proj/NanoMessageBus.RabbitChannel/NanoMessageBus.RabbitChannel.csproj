@@ -53,7 +53,7 @@
     <Compile Include="RabbitConfiguration.cs" />
     <Compile Include="RabbitMessageAdapter.cs" />
     <Compile Include="RabbitSubscription.cs" />
-    <Compile Include="SubscriptionAdapter.cs" />
+    <Compile Include="Subscription.cs" />
     <Compile Include="RabbitTransaction.cs" />
     <Compile Include="RabbitTransactionType.cs" />
   </ItemGroup>

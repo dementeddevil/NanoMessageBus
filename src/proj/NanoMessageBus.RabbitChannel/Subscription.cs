@@ -3,10 +3,9 @@
 	using System;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
-	using RabbitMQ.Client.MessagePatterns;
 	using RabbitMQ.Util;
 
-	public class SubscriptionAdapter : IDisposable
+	public class Subscription : IDisposable
 	{
 		public virtual BasicDeliverEventArgs BeginReceive(TimeSpan timeout)
 		{
@@ -23,15 +22,15 @@
 			this.queue.Enqueue(message);
 		}
 
-		public SubscriptionAdapter(IModel channel, string queueName, bool ack) : this()
+		public Subscription(IModel channel, string queueName, bool ack) : this()
 		{
-			this.subscription = new Subscription(channel, queueName, !ack);
+			this.subscription = new RabbitMQ.Client.MessagePatterns.Subscription(channel, queueName, !ack);
 			this.queue = ((QueueingBasicConsumer)this.subscription.Consumer).Queue;
 		}
-		protected SubscriptionAdapter()
+		protected Subscription()
 		{
 		}
-		~SubscriptionAdapter()
+		~Subscription()
 		{
 			this.Dispose(false);
 		}
@@ -56,7 +55,7 @@
 			}
 		}
 
-		private readonly Subscription subscription;
+		private readonly RabbitMQ.Client.MessagePatterns.Subscription subscription;
 		private readonly SharedQueue queue;
 	}
 }

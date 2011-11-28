@@ -38,7 +38,7 @@
 				throw new ObjectDisposedException("RabbitSubscription");
 		}
 
-		public RabbitSubscription(SubscriptionAdapter adapter)
+		public RabbitSubscription(Subscription adapter)
 		{
 			this.adapter = adapter;
 		}
@@ -64,7 +64,7 @@
 			this.adapter.Dispose();
 		}
 
-		private readonly SubscriptionAdapter adapter;
+		private readonly Subscription adapter;
 		private bool disposed;
 	}
 }
