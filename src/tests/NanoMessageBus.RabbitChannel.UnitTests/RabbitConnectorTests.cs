@@ -59,7 +59,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_contain_each_channel_group_config_provided = () =>
 			mockConfigs.Select(x => x.Object).SequenceEqual(connector.ChannelGroups).ShouldBeTrue();
 
-		It should_be_in_a_closed_status = () =>
+		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
 	}
 
@@ -109,10 +109,10 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			connector.Connect(DefaultGroupName);
 
-		It should_open_a_connection = () =>
+		It should_open_a_new_connection = () =>
 			mockFactory.Verify(x => x.CreateConnection(connector.MaxRedirects), Times.Once());
 
-		It should_show_an_open_connection_status = () =>
+		It should_be_in_an_open_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Open);
 
 		It should_initialize_all_channel_group_configurations_against_the_model = () =>
@@ -131,7 +131,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_utilize_the_existing_connection = () =>
 			mockFactory.Verify(x => x.CreateConnection(connector.MaxRedirects), Times.Once());
 
-		It should_show_an_open_connection_status = () =>
+		It should_be_in_an_open_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Open);
 	}
 
@@ -144,7 +144,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_return_a_messaging_channel = () =>
 			channel.ShouldNotBeNull();
 
-		It should_maintain_an_open_connection_status = () =>
+		It should_maintain_an_open_connection_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Open);
 	}
 
@@ -157,7 +157,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
 
-		It should_mark_the_connector_status_as_closed = () =>
+		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
 
 		It should_throw_an_exception = () =>
@@ -175,7 +175,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
 
-		It should_mark_the_connector_status_as_unauthenticated = () =>
+		It be_in_an_unauthenticated_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Unauthenticated);
 
 		It should_throw_an_exception = () =>
@@ -197,7 +197,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_shutdown_the_connection = () =>
 			mockConnection.Verify(x => x.Dispose());
 
-		It should_mark_the_connection_status_as_closed = () =>
+		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
 
 		It should_throw_an_exception = () =>
@@ -207,6 +207,30 @@ namespace NanoMessageBus.RabbitChannel
 			ReferenceEquals(thrown.InnerException, raised).ShouldBeTrue();
 
 		static readonly Exception raised = new Exception("some exception");
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_establishing_a_channel_after_the_connection_has_become_unavailable : using_a_connector
+	{
+		Establish context = () =>
+		{
+			// TODO: connection factory throws first time, but not second time
+			Catch.Exception(() => connector.Connect(DefaultGroupName));
+		};
+
+		Because of = () =>
+			connector.Connect(DefaultGroupName);
+
+		It should_open_a_new_connection = () =>
+			mockFactory.Verify(x => x.CreateConnection(connector.MaxRedirects), Times.Exactly(2));
+
+		It should_be_in_an_open_state = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Open);
+
+		It should_initialize_all_channel_group_configurations_against_the_model = () =>
+			mockConfigs
+				.ToList()
+				.ForEach(cfg => cfg.Verify(x => x.InitializeBroker(mockDefaultChannel.Object), Times.Once()));
 	}
 
 	public abstract class using_a_connector
