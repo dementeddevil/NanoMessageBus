@@ -22,9 +22,12 @@
 			this.queue.Enqueue(message);
 		}
 
-		public Subscription(IModel channel, string queueName, bool ack) : this()
+		public Subscription(IModel channel, RabbitChannelGroupConfiguration config) : this()
 		{
-			this.subscription = new RabbitMQ.Client.MessagePatterns.Subscription(channel, queueName, !ack);
+			this.subscription = new RabbitMQ.Client.MessagePatterns.Subscription(
+				channel,
+				config.InputQueue,
+				config.TransactionType == RabbitTransactionType.None);
 			this.queue = ((QueueingBasicConsumer)this.subscription.Consumer).Queue;
 		}
 		protected Subscription()

@@ -195,7 +195,7 @@
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
-			this.adapter = adapter;
+			this.adapter = adapter; // why not just pass in the group instead the group *and* adapter?
 			this.configuration = configuration;
 			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;

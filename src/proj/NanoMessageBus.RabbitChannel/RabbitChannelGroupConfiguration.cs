@@ -6,15 +6,9 @@
 
 	public class RabbitChannelGroupConfiguration : IChannelGroupConfiguration
 	{
-		public virtual RabbitChannelGroupConfiguration InitializeConnection(IConnection connection)
+		public virtual void InitializeBroker(IModel channel)
 		{
-			return this;
 		}
-		public virtual RabbitChannelGroupConfiguration ConfigureChannel(IModel channel)
-		{
-			return this;
-		}
-
 		public virtual string LookupRoutingKey(ChannelMessage message)
 		{
 			return null;
@@ -27,6 +21,10 @@
 		public virtual string InputQueue
 		{
 			get { return null; }
+		}
+		public virtual Uri ReturnAddress
+		{
+			get { return null; } // it's very possible for this to null, e.g. send-only endpoints.
 		}
 		public virtual bool DispatchOnly
 		{
@@ -72,9 +70,9 @@
 		{
 			get { return null; }
 		}
-		public virtual Uri ReturnAddress
+		public virtual RabbitMessageAdapter MessageAdapter
 		{
-			get { return null; } // it's very possible for this to null, e.g. send-only endpoints.
+			get { return null; }
 		}
 	}
 }

@@ -31,8 +31,12 @@
 		Unavailable,
 
 		/// <summary>
-		/// Indicates that the current security credentials are incorrect or insufficient for
-		/// the request privileges on the account.
+		/// Indicates that the current security credentials are incorrect.
+		/// </summary>
+		Unauthenticated,
+
+		/// <summary>
+		/// Indicates that the current security context does not contain the necessary privileges.
 		/// </summary>
 		Unauthorized
 	}
