@@ -89,10 +89,11 @@
 			this.CurrentState = ConnectionState.Closing;
 
 			if (channel != null)
-				channel.Dispose();
+				channel.Abort();
 
+			// dispose can throw while abort does the exact same thing without throwing
 			if (this.connection != null)
-				this.connection.Dispose();
+				this.connection.Abort();
 
 			this.connection = null;
 			this.CurrentState = state;

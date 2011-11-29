@@ -232,7 +232,8 @@
 			if (this.subscription != null)
 				this.subscription.Dispose();
 
-			this.channel.Dispose();
+			// dispose can throw while abort does the exact same thing without throwing
+			this.channel.Abort();
 		}
 
 		private const bool ContinueReceiving = true;

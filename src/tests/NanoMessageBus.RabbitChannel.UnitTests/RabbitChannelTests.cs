@@ -647,7 +647,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.Dispose();
 
 		It should_dispose_the_underlying_channel = () =>
-			mockRealChannel.Verify(x => x.Dispose(), Times.Once());
+			mockRealChannel.Verify(x => x.Abort(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -679,7 +679,7 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		It should_only_dispose_the_underlying_resources_once = () =>
-			mockRealChannel.Verify(x => x.Dispose(), Times.Once());
+			mockRealChannel.Verify(x => x.Abort(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]

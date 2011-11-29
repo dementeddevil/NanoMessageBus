@@ -192,10 +192,10 @@ namespace NanoMessageBus.RabbitChannel
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
 
 		It should_dispose_the_created_channel = () =>
-			mockDefaultChannel.Verify(x => x.Dispose(), Times.Once());
+			mockDefaultChannel.Verify(x => x.Abort(), Times.Once());
 
 		It should_shutdown_the_connection = () =>
-			mockConnection.Verify(x => x.Dispose());
+			mockConnection.Verify(x => x.Abort());
 
 		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
@@ -244,7 +244,7 @@ namespace NanoMessageBus.RabbitChannel
 			connector.Dispose();
 
 		It should_close_the_underlying_connection = () =>
-			mockConnection.Verify(x => x.Dispose(), Times.Once());
+			mockConnection.Verify(x => x.Abort(), Times.Once());
 
 		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
@@ -263,7 +263,7 @@ namespace NanoMessageBus.RabbitChannel
 			connector.Dispose();
 
 		It should_close_the_underlying_connection_exactly_once = () =>
-			mockConnection.Verify(x => x.Dispose(), Times.Once());
+			mockConnection.Verify(x => x.Abort(), Times.Once());
 
 		It should_remain_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
