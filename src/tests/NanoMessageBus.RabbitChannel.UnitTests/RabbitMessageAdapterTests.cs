@@ -266,10 +266,10 @@ namespace NanoMessageBus.RabbitChannel
 			result.BasicProperties.AppId.ShouldEqual(DefaultAppId);
 
 		It should_populate_the_wire_message_with_the_correct_cluster_id = () =>
-			result.BasicProperties.ClusterId.ShouldBeEmpty();
+			result.BasicProperties.ClusterId.ShouldBeNull();
 
 		It should_populate_the_wire_message_with_the_correct_user_id = () =>
-			result.BasicProperties.UserId.ShouldBeEmpty();
+			result.BasicProperties.UserId.ShouldBeNull();
 
 		It should_populate_the_wire_message_with_the_correct_body = () =>
 			result.Body.SequenceEqual(body).ShouldBeTrue();
