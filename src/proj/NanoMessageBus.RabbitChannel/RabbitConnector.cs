@@ -89,6 +89,7 @@
 			if (this.connection != null)
 				this.connection.Dispose();
 
+			this.connection = null;
 			this.CurrentState = ConnectionState.Closed;
 		}
 

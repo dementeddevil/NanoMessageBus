@@ -214,8 +214,9 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			// TODO: connection factory throws first time, but not second time
+			mockDefaultConfig.Setup(x => x.InitializeBroker(mockDefaultChannel.Object)).Throws(new Exception());
 			Catch.Exception(() => connector.Connect(DefaultGroupName));
+			mockDefaultConfig.Setup(x => x.InitializeBroker(mockDefaultChannel.Object));
 		};
 
 		Because of = () =>
@@ -230,7 +231,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_initialize_all_channel_group_configurations_against_the_model = () =>
 			mockConfigs
 				.ToList()
-				.ForEach(cfg => cfg.Verify(x => x.InitializeBroker(mockDefaultChannel.Object), Times.Once()));
+				.ForEach(cfg => cfg.Verify(x => x.InitializeBroker(mockDefaultChannel.Object), Times.Exactly(2)));
 	}
 
 	public abstract class using_a_connector
