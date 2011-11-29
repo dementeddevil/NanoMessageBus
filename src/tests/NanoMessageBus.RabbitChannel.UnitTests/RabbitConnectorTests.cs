@@ -149,7 +149,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitConnector))]
-	public class when_establish_the_underlying_connection_throws_an_exception : using_a_connector
+	public class when_establishing_the_underlying_connection_throws_an_exception : using_a_connector
 	{
 		Establish context = () =>
 			mockFactory.Setup(x => x.CreateConnection(connector.MaxRedirects)).Throws(new Exception());
@@ -165,7 +165,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitConnector))]
-	public class when_establish_the_underlying_connection_throws_an_authentication_related_exception : using_a_connector
+	public class when_establishing_the_underlying_connection_throws_an_authentication_related_exception : using_a_connector
 	{
 		Establish context = () =>
 			mockFactory
@@ -177,6 +177,24 @@ namespace NanoMessageBus.RabbitChannel
 
 		It be_in_an_unauthenticated_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Unauthenticated);
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_establishing_the_underlying_connection_throws_because_the_socket_disconnected : using_a_connector
+	{
+		Establish context = () =>
+			mockFactory
+				.Setup(x => x.CreateConnection(connector.MaxRedirects))
+				.Throws(new OperationInterruptedException(null));
+
+		Because of = () =>
+			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
+
+		It be_in_a_disconnected_state = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Disconnected);
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();

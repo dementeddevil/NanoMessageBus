@@ -56,18 +56,21 @@
 			{
 				channel = this.EstablishConnection().CreateModel();
 				this.InitializeConfigurations(channel);
-				return channel;
 			}
 			catch (PossibleAuthenticationFailureException e)
 			{
-				this.ShutdownConnection(channel, ConnectionState.Unauthenticated);
-				throw new ChannelConnectionException(e.Message, e);
+				this.ShutdownConnection(channel, ConnectionState.Unauthenticated, e);
+			}
+			catch (OperationInterruptedException e)
+			{
+				this.ShutdownConnection(channel, ConnectionState.Disconnected, e);
 			}
 			catch (Exception e)
 			{
-				this.ShutdownConnection(channel, ConnectionState.Closed);
-				throw new ChannelConnectionException(e.Message, e);
+				this.ShutdownConnection(channel, ConnectionState.Closed, e);
 			}
+
+			return channel;
 		}
 		protected virtual IConnection EstablishConnection()
 		{
@@ -84,7 +87,7 @@
 			foreach (var config in this.configuration.Values)
 				config.InitializeBroker(model);
 		}
-		protected virtual void ShutdownConnection(IModel channel, ConnectionState state)
+		protected virtual void ShutdownConnection(IModel channel, ConnectionState state, Exception exception)
 		{
 			this.CurrentState = ConnectionState.Closing;
 
@@ -97,6 +100,9 @@
 
 			this.connection = null;
 			this.CurrentState = state;
+
+			if (exception != null)
+				throw new ChannelConnectionException(exception.Message, exception);
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -147,7 +153,7 @@
 					return;
 
 				this.disposed = true;
-				this.ShutdownConnection(null, ConnectionState.Closed);
+				this.ShutdownConnection(null, ConnectionState.Closed, null);
 			}
 		}
 

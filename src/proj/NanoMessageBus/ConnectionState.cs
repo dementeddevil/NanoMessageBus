@@ -28,7 +28,7 @@
 		/// <summary>
 		/// The endpoint was previously available and attempts to re-open the connection are being made.
 		/// </summary>
-		Unavailable,
+		Disconnected,
 
 		/// <summary>
 		/// Indicates that the current security credentials are incorrect.
