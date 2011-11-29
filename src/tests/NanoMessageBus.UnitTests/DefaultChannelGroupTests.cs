@@ -19,6 +19,7 @@ namespace NanoMessageBus
 			channelGroup.DispatchOnly.ShouldBeTrue();
 	}
 
+	[Ignore("not implemented yet")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_the_group_is_initialized : with_a_channel_group
 	{
@@ -32,6 +33,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
 	}
 
+	[Ignore("not implemented yet")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_the_group_is_initialized_more_than_once : with_a_channel_group
 	{
@@ -48,6 +50,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
 	}
 
+	[Ignore("not implemented yet")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
 	{
