@@ -6,7 +6,7 @@
 	public enum ConnectionState
 	{
 		/// <summary>
-		/// The connection is closed and no operations can be performed.
+		/// The connection is closed and no operations can be performed until the connection is reestablished.
 		/// </summary>
 		Closed,
 

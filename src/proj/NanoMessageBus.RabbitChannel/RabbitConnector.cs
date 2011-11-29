@@ -59,15 +59,15 @@
 			}
 			catch (PossibleAuthenticationFailureException e)
 			{
-				this.ShutdownConnection(channel, ConnectionState.Unauthenticated, e);
+				this.Close(channel, ConnectionState.Unauthenticated, e);
 			}
 			catch (OperationInterruptedException e)
 			{
-				this.ShutdownConnection(channel, ConnectionState.Disconnected, e);
+				this.Close(channel, ConnectionState.Disconnected, e);
 			}
 			catch (Exception e)
 			{
-				this.ShutdownConnection(channel, ConnectionState.Closed, e);
+				this.Close(channel, ConnectionState.Closed, e);
 			}
 
 			return channel;
@@ -87,23 +87,6 @@
 			foreach (var config in this.configuration.Values)
 				config.InitializeBroker(model);
 		}
-		protected virtual void ShutdownConnection(IModel channel, ConnectionState state, Exception exception)
-		{
-			this.CurrentState = ConnectionState.Closing;
-
-			if (channel != null)
-				channel.Abort();
-
-			// dispose can throw while abort does the exact same thing without throwing
-			if (this.connection != null)
-				this.connection.Abort((ushort)this.shutdownTimeout.TotalMilliseconds);
-
-			this.connection = null;
-			this.CurrentState = state;
-
-			if (exception != null)
-				throw new ChannelConnectionException(exception.Message, exception);
-		}
 
 		protected virtual void ThrowWhenDisposed()
 		{
@@ -120,7 +103,7 @@
 				throw new ArgumentNullException("factory");
 
 			this.factory = factory;
-			this.shutdownTimeout = shutdownTimeout;
+			this.shutdownTimeout = (int)shutdownTimeout.TotalMilliseconds;
 			this.configuration = (configuration ?? new RabbitChannelGroupConfiguration[0])
 				.Where(x => x != null)
 				.Where(x => !string.IsNullOrEmpty(x.GroupName))
@@ -153,13 +136,30 @@
 					return;
 
 				this.disposed = true;
-				this.ShutdownConnection(null, ConnectionState.Closed, null);
+				this.Close(null, ConnectionState.Closed);
 			}
+		}
+		protected virtual void Close(IModel channel, ConnectionState state, Exception exception = null)
+		{
+			this.CurrentState = ConnectionState.Closing;
+
+			if (channel != null)
+				channel.Abort();
+
+			// dispose can throw while abort does the exact same thing without throwing
+			if (this.connection != null)
+				this.connection.Abort(this.shutdownTimeout);
+
+			this.connection = null;
+			this.CurrentState = state;
+
+			if (exception != null)
+				throw new ChannelConnectionException(exception.Message, exception);
 		}
 
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
-		private readonly TimeSpan shutdownTimeout;
+		private readonly int shutdownTimeout;
 		private readonly object locker = new object();
 		private IConnection connection;
 		private bool disposed;
