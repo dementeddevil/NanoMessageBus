@@ -234,6 +234,54 @@ namespace NanoMessageBus.RabbitChannel
 				.ForEach(cfg => cfg.Verify(x => x.InitializeBroker(mockDefaultChannel.Object), Times.Exactly(2)));
 	}
 
+	[Subject(typeof(RabbitConnector))]
+	public class when_disposing_an_open_connector : using_a_connector
+	{
+		Establish context = () =>
+			connector.Connect(DefaultGroupName);
+
+		Because of = () =>
+			connector.Dispose();
+
+		It should_close_the_underlying_connection = () =>
+			mockConnection.Verify(x => x.Dispose(), Times.Once());
+
+		It should_be_in_a_closed_state = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_disposing_an_open_connector_more_that_once : using_a_connector
+	{
+		Establish context = () =>
+		{
+			connector.Connect(DefaultGroupName);
+			connector.Dispose();
+		};
+
+		Because of = () =>
+			connector.Dispose();
+
+		It should_close_the_underlying_connection_exactly_once = () =>
+			mockConnection.Verify(x => x.Dispose(), Times.Once());
+
+		It should_remain_in_a_closed_state = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_attempting_to_establish_a_channel_with_a_disposed_connector : using_a_connector
+	{
+		Establish context = () =>
+			connector.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
 	public abstract class using_a_connector
 	{
 		Establish context = () =>

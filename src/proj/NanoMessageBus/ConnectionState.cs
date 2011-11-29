@@ -26,7 +26,7 @@
 		Closing,
 
 		/// <summary>
-		/// The connection is available and attempts to re-open the connection are being made.
+		/// The endpoint was previously available and attempts to re-open the connection are being made.
 		/// </summary>
 		Unavailable,
 

@@ -17,18 +17,13 @@
 
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
-			var group = this.GetChannelGroup(channelGroup);
+			var config = this.GetChannelGroupConfiguration(channelGroup);
+			this.ThrowWhenDisposed();
+
 			lock (this.locker)
-			{
-				var channel = this.EstablishChannel();
-				return new RabbitChannel(
-					channel,
-					group.MessageAdapter,
-					group,
-					() => new RabbitSubscription(new Subscription(channel, group)));
-			}
+				return this.EstablishChannel(config);
 		}
-		protected virtual RabbitChannelGroupConfiguration GetChannelGroup(string channelGroup)
+		protected virtual RabbitChannelGroupConfiguration GetChannelGroupConfiguration(string channelGroup)
 		{
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
@@ -42,6 +37,17 @@
 
 			return config;
 		}
+		protected virtual IMessagingChannel EstablishChannel(RabbitChannelGroupConfiguration config)
+		{
+			this.ThrowWhenDisposed();
+
+			var channel = this.EstablishChannel();
+			return new RabbitChannel(
+				channel,
+				config.MessageAdapter,
+				config,
+				() => new RabbitSubscription(new Subscription(channel, config)));
+		}
 		protected virtual IModel EstablishChannel()
 		{
 			IModel channel = null;
@@ -54,13 +60,12 @@
 			}
 			catch (PossibleAuthenticationFailureException e)
 			{
-				this.ShutdownConnection(channel);
-				this.CurrentState = ConnectionState.Unauthenticated;
+				this.ShutdownConnection(channel, ConnectionState.Unauthenticated);
 				throw new ChannelConnectionException(e.Message, e);
 			}
 			catch (Exception e)
 			{
-				this.ShutdownConnection(channel);
+				this.ShutdownConnection(channel, ConnectionState.Closed);
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}
@@ -79,7 +84,7 @@
 			foreach (var config in this.configuration.Values)
 				config.InitializeBroker(model);
 		}
-		protected virtual void ShutdownConnection(IModel channel)
+		protected virtual void ShutdownConnection(IModel channel, ConnectionState state)
 		{
 			this.CurrentState = ConnectionState.Closing;
 
@@ -90,7 +95,13 @@
 				this.connection.Dispose();
 
 			this.connection = null;
-			this.CurrentState = ConnectionState.Closed;
+			this.CurrentState = state;
+		}
+
+		protected virtual void ThrowWhenDisposed()
+		{
+			if (this.disposed)
+				throw new ObjectDisposedException("RabbitConnector");
 		}
 
 		public RabbitConnector(
@@ -124,13 +135,23 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing)
+			if (!disposing || this.disposed)
 				return;
+
+			lock (this.locker)
+			{
+				if (this.disposed)
+					return;
+
+				this.disposed = true;
+				this.ShutdownConnection(null, ConnectionState.Closed);
+			}
 		}
 
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
 		private readonly object locker = new object();
 		private IConnection connection;
+		private bool disposed;
 	}
 }
