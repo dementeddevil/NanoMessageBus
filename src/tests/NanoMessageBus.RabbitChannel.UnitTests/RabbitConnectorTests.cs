@@ -151,7 +151,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 			mockFactory
 				.Setup(x => x.CreateConnection(connector.MaxRedirects))
-				.Throws(new PossibleAuthenticationFailureException("", null));
+				.Throws(new PossibleAuthenticationFailureException(string.Empty, null));
 
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));

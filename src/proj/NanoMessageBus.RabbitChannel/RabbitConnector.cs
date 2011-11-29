@@ -18,12 +18,6 @@
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			var group = this.GetChannelGroup(channelGroup);
-
-			// when establishing a connection, lock
-			// once the connection is established, loop through each channel group config
-			// synchronously (while still blocking) and invoke the initialize for that group
-			// then return a new CG for the given connection
-
 			lock (this.locker)
 			{
 				var channel = this.EstablishChannel();
@@ -58,7 +52,7 @@
 				this.InitializeConfigurations(channel);
 				return channel;
 			}
-			catch(PossibleAuthenticationFailureException e)
+			catch (PossibleAuthenticationFailureException e)
 			{
 				this.ShutdownConnection(channel);
 				this.CurrentState = ConnectionState.Unauthenticated;
