@@ -93,7 +93,7 @@
 
 			// dispose can throw while abort does the exact same thing without throwing
 			if (this.connection != null)
-				this.connection.Abort();
+				this.connection.Abort((ushort)this.shutdownTimeout.TotalMilliseconds);
 
 			this.connection = null;
 			this.CurrentState = state;
@@ -107,12 +107,14 @@
 
 		public RabbitConnector(
 			ConnectionFactory factory,
+			TimeSpan shutdownTimeout,
 			IEnumerable<RabbitChannelGroupConfiguration> configuration) : this()
 		{
 			if (factory == null)
 				throw new ArgumentNullException("factory");
 
 			this.factory = factory;
+			this.shutdownTimeout = shutdownTimeout;
 			this.configuration = (configuration ?? new RabbitChannelGroupConfiguration[0])
 				.Where(x => x != null)
 				.Where(x => !string.IsNullOrEmpty(x.GroupName))
@@ -136,7 +138,7 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing || this.disposed)
+			if (!disposing)
 				return;
 
 			lock (this.locker)
@@ -151,6 +153,7 @@
 
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
+		private readonly TimeSpan shutdownTimeout;
 		private readonly object locker = new object();
 		private IConnection connection;
 		private bool disposed;

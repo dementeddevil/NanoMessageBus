@@ -17,7 +17,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				new RabbitConnector(null, new[] { new Mock<RabbitChannelGroupConfiguration>().Object }));
+				Create(null, new[] { new Mock<RabbitChannelGroupConfiguration>().Object }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -27,7 +27,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_no_channel_group_configurations_are_provided_during_construction : using_a_connector
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => new RabbitConnector(new ConnectionFactory(), null));
+			thrown = Catch.Exception(() => Create(new ConnectionFactory(), null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -38,7 +38,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				new RabbitConnector(new ConnectionFactory(), new RabbitChannelGroupConfiguration[0]));
+				Create(new ConnectionFactory(), new RabbitChannelGroupConfiguration[0]));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -195,7 +195,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockDefaultChannel.Verify(x => x.Abort(), Times.Once());
 
 		It should_shutdown_the_connection = () =>
-			mockConnection.Verify(x => x.Abort());
+			mockConnection.Verify(x => x.Abort(ShutdownTimeout));
 
 		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
@@ -206,6 +206,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_wrap_the_original_exception = () =>
 			ReferenceEquals(thrown.InnerException, raised).ShouldBeTrue();
 
+		const int ShutdownTimeout = 0;
 		static readonly Exception raised = new Exception("some exception");
 	}
 
@@ -238,16 +239,23 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_disposing_an_open_connector : using_a_connector
 	{
 		Establish context = () =>
+		{
+			shutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout);
+			Initialize();
+
 			connector.Connect(DefaultGroupName);
+		};
 
 		Because of = () =>
 			connector.Dispose();
 
 		It should_close_the_underlying_connection = () =>
-			mockConnection.Verify(x => x.Abort(), Times.Once());
+			mockConnection.Verify(x => x.Abort(ShutdownTimeout), Times.Once());
 
 		It should_be_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
+
+		const int ShutdownTimeout = 100;
 	}
 
 	[Subject(typeof(RabbitConnector))]
@@ -255,6 +263,8 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			Initialize();
+
 			connector.Connect(DefaultGroupName);
 			connector.Dispose();
 		};
@@ -263,7 +273,8 @@ namespace NanoMessageBus.RabbitChannel
 			connector.Dispose();
 
 		It should_close_the_underlying_connection_exactly_once = () =>
-			mockConnection.Verify(x => x.Abort(), Times.Once());
+			mockConnection
+				.Verify(x => x.Abort(Moq.It.IsAny<int>()), Times.Once());
 
 		It should_remain_in_a_closed_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
@@ -286,6 +297,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			shutdownTimeout = TimeSpan.Zero;
 			mockFactory = new Mock<ConnectionFactory>();
 			mockConnection = new Mock<IConnection>();
 			mockFactory.Setup(x => x.CreateConnection(Moq.It.IsAny<int>())).Returns(mockConnection.Object);
@@ -302,7 +314,12 @@ namespace NanoMessageBus.RabbitChannel
 
 		protected static void Initialize()
 		{
-			connector = new RabbitConnector(mockFactory.Object, mockConfigs.Select(x => x.Object));
+			connector = Create(mockFactory.Object, mockConfigs.Select(x => x.Object));
+		}
+		protected static RabbitConnector Create(
+			ConnectionFactory factory, IEnumerable<RabbitChannelGroupConfiguration> configs)
+		{
+			return new RabbitConnector(factory, shutdownTimeout, configs);
 		}
 
 		protected const string DefaultGroupName = "default group";
@@ -311,6 +328,7 @@ namespace NanoMessageBus.RabbitChannel
 		protected static Mock<RabbitChannelGroupConfiguration> mockDefaultConfig;
 		protected static Mock<IModel> mockDefaultChannel;
 		protected static ICollection<Mock<RabbitChannelGroupConfiguration>> mockConfigs;
+		protected static TimeSpan shutdownTimeout;
 		protected static RabbitConnector connector;
 
 		protected static IMessagingChannel channel;

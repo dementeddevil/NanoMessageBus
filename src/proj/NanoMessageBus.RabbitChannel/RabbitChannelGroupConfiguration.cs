@@ -42,10 +42,6 @@
 		{
 			get { return TimeSpan.Zero; }
 		}
-		public virtual TimeSpan ShutdownTimeout
-		{
-			get { return TimeSpan.Zero; }
-		}
 		public virtual RabbitTransactionType TransactionType
 		{
 			get { return RabbitTransactionType.None; }
