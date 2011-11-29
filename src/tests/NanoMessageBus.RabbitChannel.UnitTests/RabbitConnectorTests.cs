@@ -13,7 +13,7 @@ namespace NanoMessageBus.RabbitChannel
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitConnector))]
-	public class when_no_connection_factory_is_provided : using_a_connector
+	public class when_no_connection_factory_is_provided_during_construction : using_a_connector
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
@@ -24,7 +24,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitConnector))]
-	public class when_no_channel_group_configurations_are_provided : using_a_connector
+	public class when_no_channel_group_configurations_are_provided_during_construction : using_a_connector
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() => new RabbitConnector(new ConnectionFactory(), null));
@@ -34,7 +34,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitConnector))]
-	public class when_an_empty_set_of_channel_group_configurations_are_provided : using_a_connector
+	public class when_an_empty_set_of_channel_group_configurations_are_provided_during_construction : using_a_connector
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
@@ -42,6 +42,25 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_a_connector_is_constructed : using_a_connector
+	{
+		Establish context = () =>
+		{
+			var mockGroup2 = new Mock<RabbitChannelGroupConfiguration>();
+			mockGroup2.Setup(x => x.GroupName).Returns("group 2");
+			mockConfigs.Add(mockGroup2);
+
+			Initialize();
+		};
+
+		It should_contain_each_channel_group_config_provided = () =>
+			mockConfigs.Select(x => x.Object).SequenceEqual(connector.ChannelGroups).ShouldBeTrue();
+
+		It should_be_in_a_closed_status = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
 	}
 
 	[Subject(typeof(RabbitConnector))]

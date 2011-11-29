@@ -12,7 +12,7 @@
 		public virtual int MaxRedirects { get; set; }
 		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
-			get { return new IChannelGroupConfiguration[0]; }
+			get { return this.configuration.Values; }
 		}
 
 		public virtual IMessagingChannel Connect(string channelGroup)
