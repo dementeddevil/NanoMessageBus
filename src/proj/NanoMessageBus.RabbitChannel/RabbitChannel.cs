@@ -190,13 +190,12 @@
 
 		public RabbitChannel(
 			IModel channel,
-			RabbitMessageAdapter adapter,
 			RabbitChannelGroupConfiguration configuration,
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
-			this.adapter = adapter; // why not just pass in the group instead the group *and* adapter?
 			this.configuration = configuration;
+			this.adapter = configuration.MessageAdapter;
 			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;
 

@@ -54,7 +54,7 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
 
-			channel = new RabbitChannel(mockRealChannel.Object, mockAdapter.Object, mockConfiguration.Object, () =>
+			channel = new RabbitChannel(mockRealChannel.Object, mockConfiguration.Object, () =>
 			{
 				invocations++;
 				return mockSubscription.Object;
@@ -840,6 +840,7 @@ namespace NanoMessageBus.RabbitChannel
 
 			var timeout = TimeSpan.FromMilliseconds(100);
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
+			mockConfiguration.Setup(x => x.MessageAdapter).Returns(mockAdapter.Object);
 			mockSubscription
 				.Setup(x => x.BeginReceive(timeout, Moq.It.IsAny<Func<BasicDeliverEventArgs, bool>>()))
 				.Callback<TimeSpan, Func<BasicDeliverEventArgs, bool>>((first, second) => { dispatch = second; });
@@ -861,7 +862,7 @@ namespace NanoMessageBus.RabbitChannel
 		protected static void Initialize()
 		{
 			channel = new RabbitChannel(
-				mockRealChannel.Object, mockAdapter.Object, mockConfiguration.Object, () => mockSubscription.Object);
+				mockRealChannel.Object, mockConfiguration.Object, () => mockSubscription.Object);
 		}
 		protected static void Receive(BasicDeliverEventArgs message)
 		{
