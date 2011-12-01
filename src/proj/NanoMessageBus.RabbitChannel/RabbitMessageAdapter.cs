@@ -130,10 +130,11 @@
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();
 
-			var payload = this.serializer.Serialize(message.Messages.ToArray());
+			var messages = (message.Messages ?? new object[0]).ToArray();
+			var payload = this.serializer.Serialize(messages);
 
 			properties.Headers = new Hashtable((IDictionary)message.Headers);
-			properties.Type = message.Messages.First().GetType().FullName;
+			properties.Type = messages[0].GetType().FullName;
 			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
 
 			return new BasicDeliverEventArgs
