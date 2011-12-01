@@ -84,7 +84,7 @@
 		protected virtual void InitializeConfigurations(IModel model)
 		{
 			foreach (var config in this.configuration.Values)
-				config.InitializeBroker(model);
+				config.ConfigureChannel(model);
 		}
 
 		protected virtual void ThrowWhenDisposed()

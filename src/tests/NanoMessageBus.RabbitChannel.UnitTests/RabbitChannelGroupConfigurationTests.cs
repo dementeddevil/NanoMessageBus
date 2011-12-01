@@ -11,6 +11,13 @@ namespace NanoMessageBus.RabbitChannel
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_creating_channel_group_configuration : using_channel_config
+	{
+		It should_default_to_dispatch_only = () =>
+			config.DispatchOnly.ShouldBeTrue();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_the_channel_group_name : using_channel_config
 	{
 		Because of = () =>
@@ -21,13 +28,20 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_no_channel_group_name_is_specified : using_channel_config
+	public class when_a_null_channel_group_name_is_specified : using_channel_config
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() => config.WithGroupName(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_group_name_is_specified : using_channel_config
+	{
+		It should_contain_the_default_value = () =>
+			config.GroupName.ShouldEqual("all");
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -201,6 +215,16 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_the_channel_buffer_is_beyond_65535_messages : using_channel_config
+	{
+		Because of = () =>
+			config.WithChannelBuffer(ushort.MaxValue + 1);
+
+		It should_truncate_the_value_to_a_maximum_of_65535 = () =>
+			config.ChannelBuffer.ShouldEqual(ushort.MaxValue);
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -403,21 +427,49 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_input_queue_exclusivity : using_channel_config
 	{
-		It should_build_the_channel_with_the_exclusive_value_specified;
+		Establish context = () =>
+			config.WithInputQueue("some-queue").WithExclusiveReceive();
+
+		Because of = () => Configure();
+
+		It should_build_the_channel_with_the_exclusive_value_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, true, null));
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_input_queue_durability : using_channel_config
+	{
+		Establish context = () =>
+			config.WithInputQueue("some-queue").WithTransientQueue();
+
+		Because of = () => Configure();
+
+		It should_build_the_channel_with_the_exclusive_value_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, false, false, false, null));
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_marking_the_queue_to_be_purged_at_startup : using_channel_config
 	{
-		It should_invoke_purge_when_initializing_the_connection;
+		Establish context = () =>
+			config.WithInputQueue("my queue").WithCleanQueue();
+
+		Because of = () => Configure();
+
+		It should_invoke_purge_when_initializing_the_connection = () =>
+			mockChannel.Verify(x => x.QueuePurge(config.InputQueue), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_marking_the_queue_for_deletion_at_shutdown : using_channel_config
+	public class when_marking_a_dispatch_only_config_to_purge_at_startup : using_channel_config
 	{
-		It should_mark_the_queue_for_deletion_when_initializing_the_connection;
+		Because of = () => Configure();
+
+		It should_NOT_invoke_purge_when_initializing_the_connection = () =>
+			mockChannel.Verify(x => x.QueuePurge(config.InputQueue), Times.Never());
 	}
 
+	[Ignore("TODO: creating exchanges and binding the queue to those exchanges")]
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_initializing_the_connection : using_channel_config
 	{
@@ -425,35 +477,31 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_initializing_a_connection_for_receive : using_channel_config
+	public class when_configuring_a_new_receive_channel : using_channel_config
 	{
-		It should_;
-	}
+		Establish context = () =>
+			config.WithInputQueue("some-queue");
 
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_configuring_a_new_channel : using_channel_config
-	{
-		It should_set_the_QOS_on_the_channel;
-		It should_open_a_transaction_on_the_channel;
-	}
+		Because of = () => Configure();
 
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_configuring_a_new_channel_with_full_transactions : using_channel_config
-	{
-		It should_open_a_transaction_on_the_channel;
-	}
-
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_configuring_a_new_channel_for_receive : using_channel_config
-	{
-		It should_open_a_subscription_to_the_input_queue_specified;
+		It should_set_the_QOS_on_the_channel = () =>
+			mockChannel.Verify(x => x.BasicQos(0, (ushort)config.ChannelBuffer, false), Times.Once());
 	}
 
 	public abstract class using_channel_config
 	{
 		Establish context = () =>
+		{
+			mockChannel = new Mock<IModel>();
 			config = new RabbitChannelGroupConfiguration();
+		};
 
+		protected static void Configure()
+		{
+			config.ConfigureChannel(mockChannel.Object);
+		}
+
+		protected static Mock<IModel> mockChannel;
 		protected static RabbitChannelGroupConfiguration config;
 		protected static Exception thrown;
 	}

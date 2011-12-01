@@ -100,7 +100,7 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			var mockGroup2 = new Mock<RabbitChannelGroupConfiguration>();
 			mockGroup2.Setup(x => x.GroupName).Returns("group 2");
-			mockGroup2.Setup(x => x.InitializeBroker(mockDefaultChannel.Object));
+			mockGroup2.Setup(x => x.ConfigureChannel(mockDefaultChannel.Object));
 			mockConfigs.Add(mockGroup2);
 
 			Initialize();
@@ -116,7 +116,7 @@ namespace NanoMessageBus.RabbitChannel
 			connector.CurrentState.ShouldEqual(ConnectionState.Open);
 
 		It should_initialize_all_channel_group_configurations_against_the_model = () =>
-			mockConfigs.ToList().ForEach(cfg => cfg.Verify(x => x.InitializeBroker(mockDefaultChannel.Object)));
+			mockConfigs.ToList().ForEach(cfg => cfg.Verify(x => x.ConfigureChannel(mockDefaultChannel.Object)));
 	}
 
 	[Subject(typeof(RabbitConnector))]
@@ -204,7 +204,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_initializing_the_channel_group_configurations_throws_an_exception : using_a_connector
 	{
 		Establish context = () =>
-			mockDefaultConfig.Setup(x => x.InitializeBroker(mockDefaultChannel.Object)).Throws(raised);
+			mockDefaultConfig.Setup(x => x.ConfigureChannel(mockDefaultChannel.Object)).Throws(raised);
 
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
@@ -233,9 +233,9 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			mockDefaultConfig.Setup(x => x.InitializeBroker(mockDefaultChannel.Object)).Throws(new Exception());
+			mockDefaultConfig.Setup(x => x.ConfigureChannel(mockDefaultChannel.Object)).Throws(new Exception());
 			Catch.Exception(() => connector.Connect(DefaultGroupName));
-			mockDefaultConfig.Setup(x => x.InitializeBroker(mockDefaultChannel.Object));
+			mockDefaultConfig.Setup(x => x.ConfigureChannel(mockDefaultChannel.Object));
 		};
 
 		Because of = () =>
@@ -250,7 +250,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_initialize_all_channel_group_configurations_against_the_model = () =>
 			mockConfigs
 				.ToList()
-				.ForEach(cfg => cfg.Verify(x => x.InitializeBroker(mockDefaultChannel.Object), Times.Exactly(2)));
+				.ForEach(cfg => cfg.Verify(x => x.ConfigureChannel(mockDefaultChannel.Object), Times.Exactly(2)));
 	}
 
 	[Subject(typeof(RabbitConnector))]

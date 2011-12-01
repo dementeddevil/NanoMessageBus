@@ -6,9 +6,24 @@
 
 	public class RabbitChannelGroupConfiguration : IChannelGroupConfiguration
 	{
-		public virtual void InitializeBroker(IModel channel)
+		public virtual void ConfigureChannel(IModel channel)
 		{
+			this.ConfigureReceiverChannel(channel);
 		}
+		protected virtual void ConfigureReceiverChannel(IModel channel)
+		{
+			if (this.DispatchOnly)
+				return;
+
+			channel.QueueDeclare(
+				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.ExclusiveQueue, null);
+
+			if (this.PurgeOnStartup)
+				channel.QueuePurge(this.InputQueue);
+
+			channel.BasicQos(0, (ushort)this.ChannelBuffer, false);
+		}
+
 		public virtual string LookupRoutingKey(ChannelMessage message)
 		{
 			return null;
@@ -29,6 +44,9 @@
 		public virtual ISerializer Serializer { get; private set; }
 		public virtual string ApplicationId { get; private set; }
 		public virtual RabbitMessageAdapter MessageAdapter { get; private set; }
+		protected virtual bool ExclusiveQueue { get; private set; }
+		protected virtual bool PurgeOnStartup { get; private set; }
+		protected virtual bool DurableQueue { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
@@ -71,6 +89,21 @@
 
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithExclusiveReceive()
+		{
+			this.ExclusiveQueue = true;
+			return this;
+		}
+		public virtual RabbitChannelGroupConfiguration WithTransientQueue()
+		{
+			this.DurableQueue = false;
+			return this;
+		}
+		public virtual RabbitChannelGroupConfiguration WithCleanQueue()
+		{
+			this.PurgeOnStartup = true;
+			return this;
+		}
 		public virtual RabbitChannelGroupConfiguration WithDispatchOnly()
 		{
 			this.DispatchOnly = true;
@@ -87,6 +120,9 @@
 		{
 			if (maxMessageBufer < 0)
 				throw new ArgumentException("A non-negative buffer size is required.", "maxMessageBufer");
+
+			if (maxMessageBufer > ushort.MaxValue)
+				maxMessageBufer = ushort.MaxValue;
 
 			this.ChannelBuffer = maxMessageBufer;
 			return this;
@@ -142,6 +178,7 @@
 
 		public RabbitChannelGroupConfiguration()
 		{
+			this.GroupName = DefaultGroupName;
 			this.ApplicationId = DefaultAppId;
 			this.ReceiveTimeout = DefaultReceiveTimeout;
 			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
@@ -151,11 +188,14 @@
 				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
 			this.MessageAdapter = new RabbitMessageAdapter(this);
 			this.Serializer = DefaultSerializer;
+			this.DispatchOnly = true;
+			this.DurableQueue = true;
 		}
 
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 1;
 		private const int DefaultChannelBuffer = 1024;
+		private const string DefaultGroupName = "all";
 		private const string DefaultReturnAddressFormat = "direct://default/my-queue-name";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultAppId = "rabbit-endpoint";
