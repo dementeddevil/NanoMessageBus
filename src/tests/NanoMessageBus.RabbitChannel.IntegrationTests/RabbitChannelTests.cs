@@ -68,7 +68,6 @@ namespace NanoMessageBus.RabbitChannel
 				var receiver = connector.Connect("receive");
 				receiver.Receive(delivery =>
 				{
-					// sending to the PME throws an exception
 					received = (Guid)delivery.CurrentMessage.Messages.First();
 					receiver.BeginShutdown();
 				});
