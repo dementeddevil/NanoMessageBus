@@ -21,7 +21,6 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeOfType<ArgumentException>();
 
 		static readonly TimeSpan ZeroTimeout = TimeSpan.FromMilliseconds(-1);
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -49,8 +48,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -136,12 +133,10 @@ namespace NanoMessageBus.RabbitChannel
 			.Throws(new OperationInterruptedException(null));
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.BeginReceive(DefaultTimeout, message => true));
+			thrown = Catch.Exception(() => subscription.BeginReceive(DefaultTimeout, DisposeCallback));
 
 		It should_throw_a_ChannelConnectionException = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -168,8 +163,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -196,8 +189,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -211,8 +202,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -246,6 +235,7 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 			return true;
 		};
+		protected static Exception thrown;
 	}
 }
 

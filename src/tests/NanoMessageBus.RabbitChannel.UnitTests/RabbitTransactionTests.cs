@@ -61,8 +61,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -76,8 +74,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -91,8 +87,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -103,8 +97,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -192,8 +184,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -207,8 +197,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -271,8 +259,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -286,8 +272,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -393,8 +377,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_suppress_the_transaction = () =>
 			thrown.ShouldBeNull();
-
-		static Exception thrown;
 	}
 
 	public abstract class using_a_transaction
@@ -417,6 +399,7 @@ namespace NanoMessageBus.RabbitChannel
 		protected static Mock<RabbitChannel> mockChannel;
 		protected static int invocations;
 		protected static Action callback = () => { invocations++; };
+		protected static Exception thrown;
 	}
 }
 

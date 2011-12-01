@@ -19,8 +19,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -35,8 +33,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -50,8 +46,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -131,8 +125,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	public class when_initializing_does_not_create_any_channel_groups : with_the_messaging_host
@@ -145,8 +137,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ConfigurationErrorsException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -196,7 +186,6 @@ namespace NanoMessageBus
 			thrown.ShouldBeOfType<InvalidOperationException>();
 
 		static readonly Action<IDeliveryContext> callback = channel => { };
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -207,8 +196,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -219,8 +206,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -237,8 +222,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -249,8 +232,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -264,8 +245,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -279,8 +258,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -294,8 +271,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -309,8 +284,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<KeyNotFoundException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -415,6 +388,7 @@ namespace NanoMessageBus
 		protected static DefaultMessagingHost host;
 		static ChannelGroupFactory channelFactory;
 		static Mock<IChannelGroupConfiguration> mockConfig;
+		protected static Exception thrown;
 	}
 }
 

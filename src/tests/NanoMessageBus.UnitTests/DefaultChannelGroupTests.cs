@@ -98,8 +98,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -113,8 +111,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -128,8 +124,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -140,8 +134,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -176,8 +168,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -212,8 +202,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -224,8 +212,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -242,8 +228,6 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -262,7 +246,6 @@ namespace NanoMessageBus
 			thrown.ShouldBeOfType<InvalidOperationException>();
 
 		static readonly Action<IDeliveryContext> callback = channel => { };
-		static Exception thrown;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -281,7 +264,6 @@ namespace NanoMessageBus
 			thrown.ShouldBeOfType<InvalidOperationException>();
 
 		static readonly Action<IDeliveryContext> callback = channel => { };
-		static Exception thrown;
 	}
 
 	public abstract class with_a_channel_group
@@ -308,6 +290,7 @@ namespace NanoMessageBus
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static ChannelEnvelope envelope;
 		protected static Mock<IMessagingChannel> mockChannel;
+		protected static Exception thrown;
 	}
 }
 
