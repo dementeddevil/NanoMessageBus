@@ -8,6 +8,13 @@
 
 	public static class ExtensionMethods
 	{
+		public static PublicationAddress ToPublicationAddress(this Uri uri)
+		{
+			var address = PublicationAddress.Parse(uri.ToString());
+			return address.ExchangeName.AsLower() == "default"
+				? new PublicationAddress(ExchangeType.Direct, string.Empty, address.RoutingKey) : address;
+		}
+
 		public static string AsLower(this string value)
 		{
 			return (value ?? string.Empty).ToLowerInvariant();

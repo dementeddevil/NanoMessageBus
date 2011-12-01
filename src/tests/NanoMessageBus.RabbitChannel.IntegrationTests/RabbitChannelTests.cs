@@ -75,10 +75,10 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		Because of = () =>
-			channel.Send(BuildEnvelope(message, new Uri("fanout://system.guid")));
+			channel.Send(BuildEnvelope(message, new Uri("direct://default/my-queue")));
 
 		It should_wait_a_little_bit_to_receive_the_message = () =>
-			Thread.Sleep(50);
+			Thread.Sleep(150);
 
 		It should_receive_the_message_that_was_sent = () =>
 			received.ShouldEqual(message);

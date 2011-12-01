@@ -109,7 +109,7 @@
 
 			var message = this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
 
-			foreach (var recipient in envelope.Recipients.Select(x => PublicationAddress.Parse(x.ToString())))
+			foreach (var recipient in envelope.Recipients.Select(x => x.ToPublicationAddress()))
 			{
 				this.ThrowWhenDisposed();
 				this.Send(message, recipient);

@@ -468,6 +468,46 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_to_the_default_exchange : using_a_channel
+	{
+		Establish context = () =>
+		{
+			var properties = new BasicProperties();
+
+			mockRealChannel
+				.Setup(x => x.CreateBasicProperties())
+				.Returns(properties);
+
+			mockAdapter
+				.Setup(x => x.Build(envelope.Message, properties))
+				.Returns(new BasicDeliverEventArgs());
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Callback<PublicationAddress, IBasicProperties, byte[]>((address, p, b) => result = address);
+		};
+
+		Because of = () =>
+			channel.Send(envelope);
+
+		It should_have_a_publication_address_with_an_empty_exchange = () =>
+			result.ExchangeName.ShouldBeEmpty();
+
+		It should_have_a_publication_address_with_a_direct_exchange_type = () =>
+			result.ExchangeType.ShouldEqual(ExchangeType.Direct);
+
+		It should_have_a_publication_address_with_the_correct_routing_key = () =>
+			result.RoutingKey.ShouldEqual("MyRoutingKey");
+
+		static readonly Uri recipient = new Uri("fanout://default/MyRoutingKey");
+		static readonly ChannelEnvelope envelope = SimpleEnvelope(recipient);
+		static PublicationAddress result;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>
@@ -919,6 +959,12 @@ namespace NanoMessageBus.RabbitChannel
 				Body = new byte[0],
 				BasicProperties = new BasicProperties { Headers = new Hashtable() }
 			};
+		}
+		protected static ChannelEnvelope SimpleEnvelope(Uri recipient)
+		{
+			return new ChannelEnvelope(
+				new ChannelMessage(Guid.NewGuid(), Guid.NewGuid(), null, null, new object[] { 1, 2, 3 }),
+				new[] { recipient });
 		}
 
 		protected const string DefaultChannelGroup = "some group name";
