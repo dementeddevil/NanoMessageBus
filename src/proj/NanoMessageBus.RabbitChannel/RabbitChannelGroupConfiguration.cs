@@ -1,7 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
-	using System.Text.RegularExpressions;
+	using System.Linq;
 	using RabbitMQ.Client;
 	using Serialization;
 
@@ -34,8 +34,10 @@
 
 		public virtual string LookupRoutingKey(ChannelMessage message)
 		{
-			// http://blog.springsource.org/2011/04/01/routing-topologies-for-performance-and-scalability-with-rabbitmq/
-			return null;
+			// The current strategy is to have an exchange per message type and then have each application queue
+			// bind to the exchange it wants based up the types of messages it wants to receive--this makes the
+			// routing key mostly irrelevant.  Even so, it's provided here for easy customization.
+			return message.Messages.First().GetType().FullName;
 		}
 
 		public virtual string GroupName { get; private set; }

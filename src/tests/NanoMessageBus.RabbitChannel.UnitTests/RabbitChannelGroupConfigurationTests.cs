@@ -547,6 +547,26 @@ namespace NanoMessageBus.RabbitChannel
 		It should_invoke_the_wireup_callbacks_specified;
 	}
 
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_looking_up_a_routing_key : using_channel_config
+	{
+		Establish context = () =>
+		{
+			mockMessage = new Mock<ChannelMessage>();
+			mockMessage.Setup(x => x.Messages).Returns(logicalMessages);
+		};
+
+		Because of = () =>
+			routingKey = config.LookupRoutingKey(mockMessage.Object);
+
+		It should_use_the_type_name_of_the_first_logical_message_in_the_ChannelMessage = () =>
+			routingKey.ShouldEqual("System.String");
+
+		static readonly object[] logicalMessages = new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 };
+		static Mock<ChannelMessage> mockMessage;
+		static string routingKey;
+	}
+
 	public abstract class using_channel_config
 	{
 		Establish context = () =>
