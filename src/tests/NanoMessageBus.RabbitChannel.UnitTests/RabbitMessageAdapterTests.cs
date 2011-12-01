@@ -372,11 +372,20 @@ namespace NanoMessageBus.RabbitChannel
 		It should_append_the_exception_message = () =>
 			message.GetHeader("x-exception0-message").ShouldNotBeNull();
 
+		It should_append_the_exception_message_as_a_string = () =>
+			message.GetHeader("x-exception0-message").ShouldBeOfType<string>();
+
 		It should_append_the_exception_type = () =>
 			message.GetHeader("x-exception0-type").ShouldNotBeNull();
 
+		It should_append_the_exception_type_as_a_string = () =>
+			message.GetHeader("x-exception0-type").ShouldBeOfType<string>();
+
 		It should_append_the_exception_stack_trace = () =>
 			message.GetHeader("x-exception0-stacktrace").ShouldNotBeNull();
+
+		It should_append_the_exception_stacktrace_as_a_string = () =>
+			message.GetHeader("x-exception0-stacktrace").ShouldBeOfType<string>();
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception simple = new Exception();

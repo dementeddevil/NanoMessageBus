@@ -159,7 +159,7 @@
 			if (exception == null)
 				return;
 
-			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "type"), exception.GetType());
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "type"), exception.GetType().ToString());
 			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "message"), exception.Message);
 			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "stacktrace"), exception.StackTrace ?? string.Empty);
 
