@@ -79,7 +79,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-		    host.Initialize();
+			host.Initialize();
 
 		It should_obtain_a_list_of_channel_groups_from_each_underlying_connector = () =>
 			mockConnectors.ToList().ForEach(x => x.VerifyGet(mock => mock.ChannelGroups));

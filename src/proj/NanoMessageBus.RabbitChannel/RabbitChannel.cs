@@ -124,7 +124,7 @@
 				return;
 
 			this.CurrentTransaction.Register(() => this.Try(() =>
-			    this.channel.BasicPublish(recipient, message.BasicProperties, message.Body)));
+				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body)));
 		}
 
 		public virtual void AcknowledgeMessage()
