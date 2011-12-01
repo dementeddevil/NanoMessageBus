@@ -123,9 +123,9 @@ namespace NanoMessageBus.RabbitChannel
 			config.WithDispatchOnly();
 
 		Because of = () =>
-			config.WithInputQueue("my-queue");
+			config.WithInputQueue("My-Queue");
 
-		It should_contain_the_queue_name_specified = () =>
+		It should_contain_the_lower_case_variant_of_thequeue_name_specified = () =>
 			config.InputQueue.ShouldEqual("my-queue");
 
 		It should_be_full_duplex = () =>
@@ -554,8 +554,8 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			routingKey = config.LookupRoutingKey(mockMessage.Object);
 
-		It should_use_the_type_name_of_the_first_logical_message_in_the_ChannelMessage = () =>
-			routingKey.ShouldEqual("System.String");
+		It should_use_the_lowercase_type_name_of_the_first_logical_message_in_the_ChannelMessage = () =>
+			routingKey.ShouldEqual("system.string");
 
 		static readonly object[] logicalMessages = new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 };
 		static Mock<ChannelMessage> mockMessage;
@@ -573,7 +573,8 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_declare_a_durable_fanout_exchange_for_each_type = () =>
 			types.ToList().ForEach(type => mockChannel.Verify(model =>
-				model.ExchangeDeclare(type.FullName, ExchangeType.Fanout, true, false, null), Times.Once()));
+				model.ExchangeDeclare(
+					type.FullName.AsLower(), ExchangeType.Fanout, true, false, null), Times.Once()));
 
 		static readonly IEnumerable<Type> types =
 			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());

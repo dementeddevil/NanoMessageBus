@@ -8,6 +8,11 @@
 
 	public static class ExtensionMethods
 	{
+		public static string AsLower(this string value)
+		{
+			return (value ?? string.Empty).ToLowerInvariant();
+		}
+
 		public static int GetAttemptCount(this BasicDeliverEventArgs message)
 		{
 			message.EnsureMessage();

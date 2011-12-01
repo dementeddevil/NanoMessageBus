@@ -17,7 +17,7 @@
 		protected virtual void DeclareExchanges(IModel channel)
 		{
 			foreach (var type in this.MessageTypes)
-				channel.ExchangeDeclare(type.FullName, ExchangeType.Fanout, true, false, null);
+				channel.ExchangeDeclare(type.FullName.AsLower(), ExchangeType.Fanout, true, false, null);
 		}
 		protected virtual void DeclareQueue(IModel channel)
 		{
@@ -50,7 +50,7 @@
 			// The current strategy is to have an exchange per message type and then have each application queue
 			// bind to the exchange it wants based up the types of messages it wants to receive--this makes the
 			// routing key mostly irrelevant.  Even so, it's provided here for easy customization.
-			return message.Messages.First().GetType().FullName;
+			return message.Messages.First().GetType().FullName.AsLower();
 		}
 
 		public virtual string GroupName { get; private set; }
@@ -110,8 +110,11 @@
 			if (name == null)
 				throw new ArgumentNullException("name");
 
+			name = name.AsLower();
+
 			if (!this.ReturnAddressSpecified)
 				this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(name));
+
 			this.InputQueue = name;
 			this.AutoDelete = this.InputQueue.Length == 0;
 			this.DispatchOnly = false;
