@@ -14,65 +14,152 @@
 			return null;
 		}
 
-		public virtual string GroupName
+		public virtual string GroupName { get; private set; }
+		public virtual string InputQueue { get; private set; }
+		public virtual Uri ReturnAddress { get; private set; } // it's very possible for this to null, e.g. send-only endpoints.
+		public virtual bool DispatchOnly { get; private set; }
+		public virtual int MinWorkers { get; private set; }
+		public virtual int MaxWorkers { get; private set; }
+		public virtual TimeSpan ReceiveTimeout { get; private set; }
+		public virtual RabbitTransactionType TransactionType { get; private set; }
+		public virtual int ChannelBuffer { get; private set; }
+		public virtual PublicationAddress PoisonMessageExchange { get; private set; }
+		public virtual PublicationAddress DeadLetterExchange { get; private set; } // null is allowed (which drops the message)
+		public virtual int MaxAttempts { get; private set; }
+		public virtual ISerializer Serializer { get; private set; }
+		public virtual string ApplicationId { get; private set; }
+		public virtual RabbitMessageAdapter MessageAdapter { get; private set; }
+
+		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
-			get { return null; }
+			if (name == null)
+				throw new ArgumentNullException("name");
+
+			this.GroupName = name;
+			return this;
 		}
-		public virtual string InputQueue
+		public virtual RabbitChannelGroupConfiguration WithReceiveTimeout(TimeSpan timeout)
 		{
-			get { return null; }
+			if (timeout < TimeSpan.Zero)
+				throw new ArgumentException("Timeout must be positive", "timeout");
+
+			this.ReceiveTimeout = timeout;
+			return this;
 		}
-		public virtual Uri ReturnAddress
+		public virtual RabbitChannelGroupConfiguration WithWorkers(int min, int max)
 		{
-			get { return null; } // it's very possible for this to null, e.g. send-only endpoints.
+			if (min <= 0)
+				throw new ArgumentException("At least one worker must be specified.", "min");
+
+			if (min > max)
+				throw new ArgumentException(
+					"The maximum workers specified must be at least the same as the minimum specified.", "max");
+
+			this.MinWorkers = min;
+			this.MaxWorkers = max;
+
+			return this;
 		}
-		public virtual bool DispatchOnly
+		public virtual RabbitChannelGroupConfiguration WithInputQueue(string name)
 		{
-			get { return false; }
+			if (string.IsNullOrEmpty(name))
+				throw new ArgumentNullException("name");
+
+			this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(name));
+			this.InputQueue = name;
+			this.DispatchOnly = false;
+
+			return this;
 		}
-		public virtual int MinWorkers
+		public virtual RabbitChannelGroupConfiguration WithDispatchOnly()
 		{
-			get { return 0; }
+			this.DispatchOnly = true;
+			this.InputQueue = null;
+
+			return this;
 		}
-		public virtual int MaxWorkers
+		public virtual RabbitChannelGroupConfiguration WithTransaction(RabbitTransactionType transaction)
 		{
-			get { return 0; }
+			this.TransactionType = transaction;
+			return this;
 		}
-		public virtual TimeSpan ReceiveTimeout
+		public virtual RabbitChannelGroupConfiguration WithChannelBuffer(int maxMessageBufer)
 		{
-			get { return TimeSpan.Zero; }
+			if (maxMessageBufer < 0)
+				throw new ArgumentException("A non-negative buffer size is required.", "maxMessageBufer");
+
+			this.ChannelBuffer = maxMessageBufer;
+			return this;
 		}
-		public virtual RabbitTransactionType TransactionType
+		public virtual RabbitChannelGroupConfiguration WithReturnAddress(Uri address)
 		{
-			get { return RabbitTransactionType.None; }
+			if (address == null)
+				throw new ArgumentNullException("address");
+
+			this.ReturnAddress = address;
+			return this;
 		}
-		public virtual int ChannelBuffer
+		public virtual RabbitChannelGroupConfiguration WithPoisonMessageExchange(string exchange)
 		{
-			get { return 0; }
+			if (exchange == null)
+				throw new ArgumentNullException("exchange");
+
+			this.PoisonMessageExchange = new PublicationAddress(ExchangeType.Fanout, exchange, string.Empty);
+			return this;
 		}
-		public virtual PublicationAddress PoisonMessageExchange
+		public virtual RabbitChannelGroupConfiguration WithDeadLetterExchange(string exchange)
 		{
-			get { return null; }
+			if (exchange == null)
+				throw new ArgumentNullException("exchange");
+
+			this.DeadLetterExchange = new PublicationAddress(ExchangeType.Fanout, exchange, string.Empty);
+			return this;
 		}
-		public virtual PublicationAddress DeadLetterExchange
+		public virtual RabbitChannelGroupConfiguration WithMaxAttempts(int attempts)
 		{
-			get { return null; } // null is allowed (which drops the message)
+			if (attempts <= 0)
+				throw new ArgumentException("The maximum number of attempts must be positive", "attempts");
+
+			this.MaxAttempts = attempts;
+			return this;
 		}
-		public virtual int MaxAttempts
+		public virtual RabbitChannelGroupConfiguration WithApplicationId(string identifier)
 		{
-			get { return 0; }
+			if (identifier == null)
+				throw new ArgumentNullException("identifier");
+
+			this.ApplicationId = identifier.Trim();
+			return this;
 		}
-		public virtual ISerializer Serializer
+		public virtual RabbitChannelGroupConfiguration WithSerializer(ISerializer serializer)
 		{
-			get { return null; }
+			if (serializer == null)
+				throw new ArgumentNullException("serializer");
+
+			this.Serializer = serializer;
+			return this;
 		}
-		public virtual string ApplicationId
+
+		public RabbitChannelGroupConfiguration()
 		{
-			get { return null; }
+			this.ApplicationId = DefaultAppId;
+			this.ReceiveTimeout = DefaultReceiveTimeout;
+			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
+			this.ChannelBuffer = DefaultChannelBuffer;
+			this.MaxAttempts = DefaultMaxAttempts;
+			this.PoisonMessageExchange = new PublicationAddress(
+				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
+			this.MessageAdapter = new RabbitMessageAdapter(this);
+			this.Serializer = DefaultSerializer;
 		}
-		public virtual RabbitMessageAdapter MessageAdapter
-		{
-			get { return null; }
-		}
+
+		private const int DefaultWorkerCount = 1;
+		private const int DefaultMaxAttempts = 1;
+		private const int DefaultChannelBuffer = 1024;
+		private const string DefaultReturnAddressFormat = "direct://default/my-queue-name";
+		private const string DefaultPoisonMessageExchange = "poison-messages";
+		private const string DefaultAppId = "rabbit-endpoint";
+		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(500);
+		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 	}
 }
