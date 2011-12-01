@@ -10,9 +10,20 @@
 	{
 		public virtual void ConfigureChannel(IModel channel)
 		{
+			this.DeclareSystemExchange(channel, this.PoisonMessageExchange);
+			this.DeclareSystemExchange(channel, this.DeadLetterExchange);
 			this.DeclareExchanges(channel);
 			this.DeclareQueue(channel);
 			this.BindQueue(channel);
+		}
+		protected virtual void DeclareSystemExchange(IModel channel, PublicationAddress address)
+		{
+			if (this.DispatchOnly || address == null)
+				return;
+
+			channel.ExchangeDeclare(address.ExchangeName, address.ExchangeType, true, false, null);
+			channel.QueueDeclare(address.ExchangeName, true, false, false, null);
+			channel.QueueBind(address.ExchangeName, address.ExchangeName, address.RoutingKey, null);
 		}
 		protected virtual void DeclareExchanges(IModel channel)
 		{

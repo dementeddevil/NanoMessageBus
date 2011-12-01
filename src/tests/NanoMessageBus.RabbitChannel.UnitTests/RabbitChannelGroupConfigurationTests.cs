@@ -461,13 +461,33 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_configuring_a_new_receive_channel : using_channel_config
 	{
-		Establish context = () =>
-			config.WithInputQueue("some-queue");
+		Establish context = () => config
+			.WithInputQueue("some-queue")
+			.WithPoisonMessageExchange("poison-msgs")
+			.WithDeadLetterExchange("dead-letters");
 
 		Because of = () => Configure();
 
 		It should_set_the_QOS_on_the_channel = () =>
 			mockChannel.Verify(x => x.BasicQos(0, (ushort)config.ChannelBuffer, false), Times.Once());
+
+		It should_declare_the_poison_message_exchange = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare("poison-msgs", ExchangeType.Fanout, true, false, null));
+
+		It should_declare_a_poison_message_queue = () =>
+			mockChannel.Verify(x => x.QueueDeclare("poison-msgs", true, false, false, null));
+
+		It should_bind_poison_message_exchange_and_queue = () =>
+			mockChannel.Verify(x => x.QueueBind("poison-msgs", "poison-msgs", string.Empty, null));
+
+		It should_declare_the_dead_letter_exchange_if_specified = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare("dead-letters", ExchangeType.Fanout, true, false, null));
+
+		It should_declare_a_dead_letter_queue_if_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare("dead-letters", true, false, false, null));
+
+		It should_bind_dead_letter_exchange_and_queue = () =>
+			mockChannel.Verify(x => x.QueueBind("dead-letters", "dead-letters", string.Empty, null));
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
