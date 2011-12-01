@@ -4,6 +4,8 @@
 namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
@@ -540,13 +542,6 @@ namespace NanoMessageBus.RabbitChannel
 			mockChannel.Verify(x => x.QueuePurge(config.InputQueue), Times.Never());
 	}
 
-	[Ignore("TODO: creating exchanges and binding the queue to those exchanges")]
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_initializing_the_connection : using_channel_config
-	{
-		It should_invoke_the_wireup_callbacks_specified;
-	}
-
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_looking_up_a_routing_key : using_channel_config
 	{
@@ -565,6 +560,50 @@ namespace NanoMessageBus.RabbitChannel
 		static readonly object[] logicalMessages = new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 };
 		static Mock<ChannelMessage> mockMessage;
 		static string routingKey;
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_providing_a_set_of_message_types : using_channel_config
+	{
+		Establish context = () =>
+			config.WithMessageTypes(types);
+
+		Because of = () =>
+			Configure();
+
+		It should_declare_a_durable_fanout_exchange_for_each_type = () =>
+			types.ToList().ForEach(type => mockChannel.Verify(model =>
+				model.ExchangeDeclare(type.FullName, ExchangeType.Fanout, true, false, null), Times.Once()));
+
+		static readonly IEnumerable<Type> types =
+			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_providing_a_set_of_message_types_on_an_input_queue : using_channel_config
+	{
+		Establish context = () =>
+			config.WithMessageTypes(types).WithInputQueue("some-queue");
+
+		Because of = () =>
+			Configure();
+
+		It should_bind_the_queue_to_the_declared_exchanges = () =>
+			types.ToList().ForEach(type => mockChannel.Verify(model =>
+				model.QueueBind("some-queue", type.FullName, string.Empty, null), Times.Once()));
+
+		static readonly IEnumerable<Type> types =
+			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_collection_of_message_types_is_provided : using_channel_config
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => config.WithMessageTypes(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	public abstract class using_channel_config

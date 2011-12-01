@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using RabbitMQ.Client;
 	using Serialization;
@@ -9,10 +10,16 @@
 	{
 		public virtual void ConfigureChannel(IModel channel)
 		{
-			// TODO: declare exchanges
-			this.ConfigureReceiverChannel(channel);
+			this.DeclareExchanges(channel);
+			this.DeclareQueue(channel);
+			this.BindQueue(channel);
 		}
-		protected virtual void ConfigureReceiverChannel(IModel channel)
+		protected virtual void DeclareExchanges(IModel channel)
+		{
+			foreach (var type in this.MessageTypes)
+				channel.ExchangeDeclare(type.FullName, ExchangeType.Fanout, true, false, null);
+		}
+		protected virtual void DeclareQueue(IModel channel)
 		{
 			if (this.DispatchOnly)
 				return;
@@ -30,6 +37,12 @@
 				channel.QueuePurge(this.InputQueue);
 
 			channel.BasicQos(0, (ushort)this.ChannelBuffer, false);
+		}
+		protected virtual void BindQueue(IModel channel)
+		{
+			if (!this.DispatchOnly)
+				foreach (var type in this.MessageTypes)
+					channel.QueueBind(this.InputQueue, type.FullName, string.Empty, null);
 		}
 
 		public virtual string LookupRoutingKey(ChannelMessage message)
@@ -60,6 +73,7 @@
 		protected virtual bool DurableQueue { get; private set; }
 		protected virtual bool AutoDelete { get; private set; }
 		protected virtual bool ReturnAddressSpecified { get; private set; }
+		protected virtual IEnumerable<Type> MessageTypes { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
@@ -200,6 +214,14 @@
 			this.Serializer = serializer;
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithMessageTypes(IEnumerable<Type> handledTypes)
+		{
+			if (handledTypes == null)
+				throw new ArgumentNullException("handledTypes");
+
+			this.MessageTypes = handledTypes.Distinct();
+			return this;
+		}
 
 		public RabbitChannelGroupConfiguration()
 		{
@@ -215,6 +237,7 @@
 			this.Serializer = DefaultSerializer;
 			this.DispatchOnly = true;
 			this.DurableQueue = true;
+			this.MessageTypes = new Type[0];
 		}
 
 		private const int DefaultWorkerCount = 1;
