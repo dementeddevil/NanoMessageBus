@@ -236,8 +236,8 @@
 			this.MaxAttempts = DefaultMaxAttempts;
 			this.PoisonMessageExchange = new PublicationAddress(
 				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
-			this.MessageAdapter = new RabbitMessageAdapter(this);
 			this.Serializer = DefaultSerializer;
+			this.MessageAdapter = new RabbitMessageAdapter(this);
 			this.DispatchOnly = true;
 			this.DurableQueue = true;
 			this.MessageTypes = new Type[0];
