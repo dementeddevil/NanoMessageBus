@@ -124,7 +124,7 @@ namespace NanoMessageBus.RabbitChannel
 			config.WithInputQueue("my-queue");
 
 		It should_contain_the_queue_name_specified = () =>
-			config.InputQueue.ShouldEqual("my-queue"); // TODO: which characters are allowed?
+			config.InputQueue.ShouldEqual("my-queue");
 
 		It should_be_full_duplex = () =>
 			config.DispatchOnly.ShouldBeFalse();
@@ -161,7 +161,7 @@ namespace NanoMessageBus.RabbitChannel
 			var declaration = new QueueDeclareOk("random-queue", 0, 0);
 
 			mockChannel
-				.Setup(x => x.QueueDeclare(string.Empty, true, false, false, null))
+				.Setup(x => x.QueueDeclare(string.Empty, true, false, AutoDelete, null))
 				.Returns(declaration);
 
 			config.WithRandomInputQueue();
@@ -172,6 +172,11 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_append_a_random_name_to_the_configuration = () =>
 			config.InputQueue.ShouldEqual("random-queue");
+
+		It should_set_the_return_address_to_the_random_name = () =>
+			config.ReturnAddress.ToString().ShouldEqual("direct://default/random-queue");
+
+		const bool AutoDelete = true;
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -452,6 +457,33 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_a_new_receive_channel : using_channel_config
+	{
+		Establish context = () =>
+			config.WithInputQueue("some-queue");
+
+		Because of = () => Configure();
+
+		It should_set_the_QOS_on_the_channel = () =>
+			mockChannel.Verify(x => x.BasicQos(0, (ushort)config.ChannelBuffer, false), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_the_channel_with_a_return_address_different_than_the_queue : using_channel_config
+	{
+		Establish context = () =>
+		{
+			config.WithReturnAddress(new Uri("direct://default/ReturnAddress"));
+			config.WithInputQueue("some-queue");
+		};
+
+		Because of = () => Configure();
+
+		It should_maintain_the_same_return_address_specified = () =>
+			config.ReturnAddress.ToString().ShouldEqual("direct://default/ReturnAddress");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_input_queue_exclusivity : using_channel_config
 	{
 		Establish context = () =>
@@ -460,7 +492,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, true, null));
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, false, null), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -472,7 +504,19 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, false, false, false, null));
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, false, false, false, null), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_a_queue_as_auto_delete : using_channel_config
+	{
+		Establish context = () =>
+			config.WithInputQueue("some-queue").WithAutoDeleteQueue();
+
+		Because of = () => Configure();
+
+		It should_build_the_channel_with_the_autodelete_value_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, false, true, null), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -501,18 +545,6 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_initializing_the_connection : using_channel_config
 	{
 		It should_invoke_the_wireup_callbacks_specified;
-	}
-
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_configuring_a_new_receive_channel : using_channel_config
-	{
-		Establish context = () =>
-			config.WithInputQueue("some-queue");
-
-		Because of = () => Configure();
-
-		It should_set_the_QOS_on_the_channel = () =>
-			mockChannel.Verify(x => x.BasicQos(0, (ushort)config.ChannelBuffer, false), Times.Once());
 	}
 
 	public abstract class using_channel_config

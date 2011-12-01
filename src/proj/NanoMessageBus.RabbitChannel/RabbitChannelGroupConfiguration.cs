@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.Text.RegularExpressions;
 	using RabbitMQ.Client;
 	using Serialization;
 
@@ -17,9 +18,13 @@
 				return;
 
 			var declaration = channel.QueueDeclare(
-				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.ExclusiveQueue, null);
+				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, null);
 
-			this.InputQueue = declaration.QueueName;
+			if (declaration != null)
+				this.InputQueue = declaration.QueueName;
+
+			if (!this.ReturnAddressSpecified)
+				this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(this.InputQueue));
 
 			if (this.PurgeOnStartup)
 				channel.QueuePurge(this.InputQueue);
@@ -51,6 +56,8 @@
 		protected virtual bool ExclusiveQueue { get; private set; }
 		protected virtual bool PurgeOnStartup { get; private set; }
 		protected virtual bool DurableQueue { get; private set; }
+		protected virtual bool AutoDelete { get; private set; }
+		protected virtual bool ReturnAddressSpecified { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
@@ -87,8 +94,10 @@
 			if (name == null)
 				throw new ArgumentNullException("name");
 
-			this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(name));
+			if (!this.ReturnAddressSpecified)
+				this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(name));
 			this.InputQueue = name;
+			this.AutoDelete = this.InputQueue.Length == 0;
 			this.DispatchOnly = false;
 
 			return this;
@@ -99,7 +108,12 @@
 		}
 		public virtual RabbitChannelGroupConfiguration WithExclusiveReceive()
 		{
-			this.ExclusiveQueue = true; // TODO: this *doesn't* mean auto-receive
+			this.ExclusiveQueue = true;
+			return this;
+		}
+		public virtual RabbitChannelGroupConfiguration WithAutoDeleteQueue()
+		{
+			this.AutoDelete = true;
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithTransientQueue()
@@ -140,6 +154,7 @@
 			if (address == null)
 				throw new ArgumentNullException("address");
 
+			this.ReturnAddressSpecified = true;
 			this.ReturnAddress = address;
 			return this;
 		}
@@ -204,7 +219,7 @@
 		private const int DefaultMaxAttempts = 1;
 		private const int DefaultChannelBuffer = 1024;
 		private const string DefaultGroupName = "all";
-		private const string DefaultReturnAddressFormat = "direct://default/my-queue-name";
+		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultAppId = "rabbit-endpoint";
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(500);
