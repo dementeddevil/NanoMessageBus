@@ -140,11 +140,38 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
-	[Ignore("TODO: how to get queue name?")]
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_an_auto_generate_queue : using_channel_config
 	{
-		It should_contain_an_empty_queue_name;
+		Establish context = () =>
+			config.WithInputQueue("some-queue"); // this should get overwritten
+
+		Because of = () =>
+			config.WithRandomInputQueue();
+
+		It should_contain_an_empty_queue_name = () =>
+			config.InputQueue.ShouldBeEmpty();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_the_underlying_channel_with_a_random_queue_name : using_channel_config
+	{
+		Establish context = () =>
+		{
+			var declaration = new QueueDeclareOk("random-queue", 0, 0);
+
+			mockChannel
+				.Setup(x => x.QueueDeclare(string.Empty, true, false, false, null))
+				.Returns(declaration);
+
+			config.WithRandomInputQueue();
+		};
+
+		Because of = () =>
+			Configure();
+
+		It should_append_a_random_name_to_the_configuration = () =>
+			config.InputQueue.ShouldEqual("random-queue");
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

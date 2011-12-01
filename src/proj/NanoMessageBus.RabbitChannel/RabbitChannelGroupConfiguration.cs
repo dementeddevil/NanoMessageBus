@@ -8,6 +8,7 @@
 	{
 		public virtual void ConfigureChannel(IModel channel)
 		{
+			// TODO: declare exchanges
 			this.ConfigureReceiverChannel(channel);
 		}
 		protected virtual void ConfigureReceiverChannel(IModel channel)
@@ -15,8 +16,10 @@
 			if (this.DispatchOnly)
 				return;
 
-			channel.QueueDeclare(
+			var declaration = channel.QueueDeclare(
 				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.ExclusiveQueue, null);
+
+			this.InputQueue = declaration.QueueName;
 
 			if (this.PurgeOnStartup)
 				channel.QueuePurge(this.InputQueue);
@@ -81,7 +84,7 @@
 		}
 		public virtual RabbitChannelGroupConfiguration WithInputQueue(string name)
 		{
-			if (string.IsNullOrEmpty(name))
+			if (name == null)
 				throw new ArgumentNullException("name");
 
 			this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(name));
@@ -90,9 +93,13 @@
 
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithRandomInputQueue()
+		{
+			return this.WithInputQueue(string.Empty); // auto-generate
+		}
 		public virtual RabbitChannelGroupConfiguration WithExclusiveReceive()
 		{
-			this.ExclusiveQueue = true;
+			this.ExclusiveQueue = true; // TODO: this *doesn't* mean auto-receive
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithTransientQueue()
