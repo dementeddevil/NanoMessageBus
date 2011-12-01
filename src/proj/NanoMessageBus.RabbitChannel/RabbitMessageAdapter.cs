@@ -130,7 +130,7 @@
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();
 
-			var payload = this.serializer.Serialize(message.Messages);
+			var payload = this.serializer.Serialize(message.Messages.ToArray());
 
 			properties.Headers = new Hashtable((IDictionary)message.Headers);
 			properties.Type = message.Messages.First().GetType().FullName;
