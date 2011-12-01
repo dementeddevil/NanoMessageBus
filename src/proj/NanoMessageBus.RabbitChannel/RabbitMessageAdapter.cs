@@ -118,13 +118,14 @@
 			properties.MessageId = message.MessageId.ToString();
 			properties.CorrelationId = message.CorrelationId.ToString();
 			properties.AppId = this.configuration.ApplicationId;
-			properties.ContentEncoding = this.serializer.ContentEncoding;
+			properties.ContentEncoding = this.serializer.ContentEncoding ?? string.Empty;
 
 			properties.ContentType = string.IsNullOrEmpty(this.serializer.ContentFormat)
 				? ContentType : ContentType + "+" + this.serializer.ContentFormat;
 
 			properties.SetPersistent(message.Persistent);
-			properties.Expiration = message.Expiration == DateTime.MinValue ? null : message.Expiration.ToString();
+			properties.Expiration = message.Expiration == DateTime.MinValue
+				? string.Empty : message.Expiration.ToString();
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();

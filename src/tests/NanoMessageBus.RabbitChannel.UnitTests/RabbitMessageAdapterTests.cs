@@ -289,6 +289,37 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_no_expiration_or_content_encoding_is_specified_during_wire_message_creation : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("direct://MyExchange/RoutingKey"),
+				new Dictionary<string, string>(),
+				new object[] { "1" });
+
+			mockSerializer
+				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
+				.Callback<Stream, object>((stream, graph) => stream.Write(body, 0, body.Length));
+		};
+
+		Because of = () =>
+			result = adapter.Build(message, new BasicProperties());
+
+		It should_provide_an_empty_expiration = () =>
+			result.BasicProperties.Expiration.ShouldBeEmpty();
+
+		It should_provide_an_content_encoding = () =>
+			result.BasicProperties.ContentEncoding.ShouldBeEmpty();
+
+		static readonly byte[] body = new byte[0];
+		static ChannelMessage message;
+		static BasicDeliverEventArgs result;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_unable_to_serialize_a_ChannelMessage_payload : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
