@@ -26,12 +26,13 @@
 
 		public virtual string LookupRoutingKey(ChannelMessage message)
 		{
+			// http://blog.springsource.org/2011/04/01/routing-topologies-for-performance-and-scalability-with-rabbitmq/
 			return null;
 		}
 
 		public virtual string GroupName { get; private set; }
 		public virtual string InputQueue { get; private set; }
-		public virtual Uri ReturnAddress { get; private set; } // it's very possible for this to null, e.g. send-only endpoints.
+		public virtual Uri ReturnAddress { get; private set; } // null for send-only endpoints
 		public virtual bool DispatchOnly { get; private set; }
 		public virtual int MinWorkers { get; private set; }
 		public virtual int MaxWorkers { get; private set; }
@@ -39,7 +40,7 @@
 		public virtual RabbitTransactionType TransactionType { get; private set; }
 		public virtual int ChannelBuffer { get; private set; }
 		public virtual PublicationAddress PoisonMessageExchange { get; private set; }
-		public virtual PublicationAddress DeadLetterExchange { get; private set; } // null is allowed (which drops the message)
+		public virtual PublicationAddress DeadLetterExchange { get; private set; } // null = drop dead letter messages
 		public virtual int MaxAttempts { get; private set; }
 		public virtual ISerializer Serializer { get; private set; }
 		public virtual string ApplicationId { get; private set; }
