@@ -12,24 +12,13 @@ namespace NanoMessageBus.RabbitChannel
 	using RabbitMQ.Client;
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_connecting_to_a_nonexistent_instance : using_the_channel
-	{
-		Establish context = () =>
-			connectionUri = new Uri(ConfigurationManager.AppSettings["NonexistentUri"]);
-
-		Because of = () =>
-			thrown = Catch.Exception(Connect);
-
-		It should_throw_a_ChannelConnectionException = () =>
-			thrown.ShouldBeOfType<ChannelConnectionException>();
-	}
-
-	[Ignore("TODO")]
-	[Subject(typeof(RabbitChannel))]
 	public class when_connecting_with_bad_credentials : using_the_channel
 	{
 		Establish context = () =>
-			connectionUri = new Uri(ConfigurationManager.AppSettings["AuthenticationFailureUri"]);
+		{
+			factory.UserName = "bad user";
+			factory.Password = "bad password";
+		};
 
 		Because of = () =>
 			thrown = Catch.Exception(Connect);
@@ -103,6 +92,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			factory = new ConnectionFactory();
 			connector = null;
 			connectionUri = new Uri(ConfigurationManager.AppSettings["ConnectionUri"]);
 			config = new RabbitChannelGroupConfiguration();
@@ -129,7 +119,7 @@ namespace NanoMessageBus.RabbitChannel
 		};
 
 		static readonly TimeSpan ShutdownTimeout = TimeSpan.FromMilliseconds(100);
-		static readonly ConnectionFactory factory = new ConnectionFactory();
+		protected static ConnectionFactory factory;
 		protected static Uri connectionUri;
 		protected static RabbitChannelGroupConfiguration config;
 		protected static ICollection<RabbitChannelGroupConfiguration> configs;
