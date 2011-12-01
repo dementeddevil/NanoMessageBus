@@ -584,14 +584,14 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_providing_a_set_of_message_types_on_an_input_queue : using_channel_config
 	{
 		Establish context = () =>
-			config.WithMessageTypes(types).WithInputQueue("some-queue");
+			config.WithMessageTypes(types).WithInputQueue("Some-Queue");
 
 		Because of = () =>
 			Configure();
 
 		It should_bind_the_queue_to_the_declared_exchanges = () =>
 			types.ToList().ForEach(type => mockChannel.Verify(model =>
-				model.QueueBind("some-queue", type.FullName, string.Empty, null), Times.Once()));
+				model.QueueBind("some-queue", type.FullName.AsLower(), string.Empty, null), Times.Once()));
 
 		static readonly IEnumerable<Type> types =
 			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());

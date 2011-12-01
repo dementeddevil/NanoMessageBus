@@ -42,7 +42,7 @@
 		{
 			if (!this.DispatchOnly)
 				foreach (var type in this.MessageTypes)
-					channel.QueueBind(this.InputQueue, type.FullName, string.Empty, null);
+					channel.QueueBind(this.InputQueue, type.FullName.AsLower(), string.Empty, null);
 		}
 
 		public virtual string LookupRoutingKey(ChannelMessage message)
