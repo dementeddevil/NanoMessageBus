@@ -2,6 +2,7 @@
 {
 	using System;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Exceptions;
 
 	public class RabbitSubscription : IDisposable
 	{
@@ -13,11 +14,31 @@
 				throw new ArgumentNullException("callback");
 
 			this.ThrowWhenDisposed();
-
+			this.TryReceive(timeout, callback);
+		}
+		protected virtual void ThrowWhenDisposed()
+		{
+			if (this.disposed)
+				throw new ObjectDisposedException("RabbitSubscription");
+		}
+		protected virtual void TryReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
+		{
+			try
+			{
+				this.Receive(timeout, callback);
+			}
+			catch (OperationInterruptedException e)
+			{
+				throw new ChannelConnectionException(e.Message, e);
+			}
+		}
+		protected virtual void Receive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
+		{
 			while (!this.disposed)
 				if (!callback(this.adapter.BeginReceive(timeout)))
 					return;
 		}
+
 		public virtual void AcknowledgeMessage()
 		{
 			this.ThrowWhenDisposed();
@@ -30,12 +51,6 @@
 
 			this.ThrowWhenDisposed();
 			this.adapter.RetryMessage(message);
-		}
-
-		protected virtual void ThrowWhenDisposed()
-		{
-			if (this.disposed)
-				throw new ObjectDisposedException("RabbitSubscription");
 		}
 
 		public RabbitSubscription(Subscription adapter)

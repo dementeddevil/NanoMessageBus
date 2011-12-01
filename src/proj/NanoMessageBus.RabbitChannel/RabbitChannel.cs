@@ -5,6 +5,7 @@
 	using System.Runtime.Serialization;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Exceptions;
 
 	public class RabbitChannel : IMessagingChannel
 	{
@@ -185,7 +186,14 @@
 		}
 		protected virtual void Try(Action callback)
 		{
-			callback(); // TODO: catch and wrap RabbitMQ.Client-specific exceptions in a ChannelUnavailableException
+			try
+			{
+				callback();
+			}
+			catch (OperationInterruptedException e)
+			{
+				throw new ChannelConnectionException(e.Message, e);
+			}
 		}
 
 		public RabbitChannel(

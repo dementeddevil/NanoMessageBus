@@ -10,6 +10,7 @@ namespace NanoMessageBus.RabbitChannel
 	using Moq;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Exceptions;
 	using RabbitMQ.Client.Framing.v0_9_1;
 	using It = Machine.Specifications.It;
 
@@ -83,8 +84,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -98,8 +97,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -310,12 +307,12 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			channel.Receive(delivery => { throw thrown; });
+			channel.Receive(delivery => { throw raise; });
 			Receive(message);
 		};
 
 		It should_append_the_exception_to_the_message = () =>
-			mockAdapter.Verify(x => x.AppendException(message, thrown));
+			mockAdapter.Verify(x => x.AppendException(message, raise));
 
 		It should_clear_the_failure_count_on_the_message = () =>
 			message.GetAttemptCount().ShouldEqual(0);
@@ -334,7 +331,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockAdapter.Verify(x => x.PurgeFromCache(message));
 
 		const int FirstFailureIsPoisonMessage = 0;
-		static readonly Exception thrown = new Exception();
+		static readonly Exception raise = new Exception();
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 		static readonly PublicationAddress address =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
@@ -410,7 +407,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 		static readonly Exception connectionException = new ChannelConnectionException();
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -421,8 +417,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -535,8 +529,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_NOT_ack_against_the_underlying_subscription = () =>
 			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Never());
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -638,6 +630,72 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_dispatching_a_message_throws_an_OperationInterruptedException : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockEnvelope = new Mock<ChannelEnvelope>();
+			mockEnvelope.Setup(x => x.Recipients).Returns(new[] { new Uri("ampq://test/test") });
+			mockEnvelope.Setup(x => x.Message).Returns(new Mock<ChannelMessage>().Object);
+
+			mockAdapter
+				.Setup(x => x.Build(mockEnvelope.Object.Message, Moq.It.IsAny<IBasicProperties>()))
+				.Returns(EmptyMessage);
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Throws(new OperationInterruptedException(null));
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Send(mockEnvelope.Object));
+
+		It should_throw_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		static Mock<ChannelEnvelope> mockEnvelope;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_committing_a_transaction_throws_an_OperationInterruptedException : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockRealChannel.Setup(x => x.TxCommit()).Throws(new OperationInterruptedException(null));
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.CommitTransaction());
+
+		It should_throw_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_rolling_back_a_transaction_throws_an_OperationInterruptedException : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockRealChannel.Setup(x => x.TxRollback()).Throws(new OperationInterruptedException(null));
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.RollbackTransaction());
+
+		It should_throw_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_disposing_a_channel : using_a_channel
 	{
 		Establish context = () =>
@@ -693,8 +751,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -708,8 +764,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -723,8 +777,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -738,8 +790,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -753,8 +803,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -768,8 +816,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ChannelShutdownException>();
-
-		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -825,8 +871,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ChannelShutdownException>();
-
-		static Exception thrown;
 	}
 
 	public abstract class using_a_channel
@@ -883,6 +927,7 @@ namespace NanoMessageBus.RabbitChannel
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<RabbitSubscription> mockSubscription;
 		protected static RabbitChannel channel;
+		protected static Exception thrown;
 		static Func<BasicDeliverEventArgs, bool> dispatch;
 	}
 }

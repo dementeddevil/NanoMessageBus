@@ -7,6 +7,7 @@ namespace NanoMessageBus.RabbitChannel
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Exceptions;
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitSubscription))]
@@ -125,6 +126,22 @@ namespace NanoMessageBus.RabbitChannel
 			invocations.ShouldEqual(MaxInvocations);
 
 		const int MaxInvocations = 3;
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_receiving_a_message_throws_an_OperationInterruptedException : using_a_subscription
+	{
+		Establish context = () => mockRealSubscription
+			.Setup(x => x.BeginReceive(DefaultTimeout))
+			.Throws(new OperationInterruptedException(null));
+
+		Because of = () =>
+			thrown = Catch.Exception(() => subscription.BeginReceive(DefaultTimeout, message => true));
+
+		It should_throw_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		static Exception thrown;
 	}
 
 	[Subject(typeof(RabbitSubscription))]
