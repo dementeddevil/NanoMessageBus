@@ -28,29 +28,6 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_dispatching_a_message : using_the_channel
-	{
-		Establish context = () =>
-		{
-			var logicalMessages = new[] { "some message" };
-			var recipients = new[] { new Uri("fanout://system.string/") };
-			var message = new ChannelMessage(Guid.NewGuid(), Guid.NewGuid(), null, null, logicalMessages);
-			envelope = new ChannelEnvelope(message, recipients);
-
-			config.WithMessageTypes(new[] { typeof(string) });
-			Connect();
-		};
-
-		Because of = () =>
-			thrown = Catch.Exception(() => channel.Send(envelope));
-
-		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
-
-		static ChannelEnvelope envelope;
-	}
-
-	[Subject(typeof(RabbitChannel))]
 	public class when_sending_and_then_receiving_a_message : using_the_channel
 	{
 		Establish context = () =>
@@ -78,13 +55,39 @@ namespace NanoMessageBus.RabbitChannel
 			channel.Send(BuildEnvelope(message, new Uri("direct://default/my-queue")));
 
 		It should_wait_a_little_bit_to_receive_the_message = () =>
-			Thread.Sleep(150);
+		{
+			while (Guid.Empty == received)
+				Thread.Sleep(10);
+		};
 
 		It should_receive_the_message_that_was_sent = () =>
 			received.ShouldEqual(message);
 
 		static Guid received;
 		static readonly Guid message = Guid.NewGuid();
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_dispatching_a_message : using_the_channel
+	{
+		Establish context = () =>
+		{
+			var logicalMessages = new[] { "some message" };
+			var recipients = new[] { new Uri("fanout://system.string/") };
+			var message = new ChannelMessage(Guid.NewGuid(), Guid.NewGuid(), null, null, logicalMessages);
+			envelope = new ChannelEnvelope(message, recipients);
+
+			config.WithMessageTypes(new[] { typeof(string) });
+			Connect();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Send(envelope));
+
+		It should_not_throw_an_exception = () =>
+			thrown.ShouldBeNull();
+
+		static ChannelEnvelope envelope;
 	}
 
 	public abstract class using_the_channel
@@ -113,6 +116,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Cleanup after = () =>
 		{
+			channel.BeginShutdown();
 			channel.Dispose();
 			connector.Dispose();
 		};

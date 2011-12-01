@@ -8,9 +8,7 @@ namespace NanoMessageBus.Serialization
 	[Subject(typeof(BinarySerializer))]
 	public class when_the_serializer
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_ = () => { };
+		It should_;
 	}
 }
 

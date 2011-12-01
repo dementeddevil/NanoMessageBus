@@ -8,9 +8,7 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitConfiguration))]
 	public class when_the_configuration
 	{
-		Establish context = () => { };
-		Because of = () => { };
-		It should_ = () => { };
+		It should_;
 	}
 }
 
