@@ -130,9 +130,8 @@
 		public virtual void AcknowledgeMessage()
 		{
 			this.ThrowWhenDisposed();
-			this.ThrowWhenSubscriptionMissing();
 
-			if (this.transactionType != RabbitTransactionType.None)
+			if (this.subscription != null && this.transactionType != RabbitTransactionType.None)
 				this.Try(this.subscription.AcknowledgeMessage);
 		}
 		public virtual void CommitTransaction()
@@ -173,11 +172,6 @@
 		{
 			if (this.subscription != null)
 				throw new InvalidOperationException("The channel already has a receive callback.");
-		}
-		protected virtual void ThrowWhenSubscriptionMissing()
-		{
-			if (this.subscription == null)
-				throw new InvalidOperationException("The channel must first be opened for receive.");
 		}
 
 		protected virtual IChannelTransaction NewTransaction()

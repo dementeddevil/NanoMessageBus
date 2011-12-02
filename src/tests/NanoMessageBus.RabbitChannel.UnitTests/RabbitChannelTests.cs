@@ -561,11 +561,14 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_without_first_opening_for_receive : using_a_channel
 	{
-		Because of = () =>
-			thrown = Catch.Exception(() => channel.AcknowledgeMessage());
+		Establish context = () =>
+		{
+			RequireTransaction(RabbitTransactionType.Acknowledge);
+			Initialize();
+		};
 
-		It should_throw_an_invalid_operation_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+		Because of = () =>
+			channel.AcknowledgeMessage();
 
 		It should_NOT_ack_against_the_underlying_subscription = () =>
 			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Never());
