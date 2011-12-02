@@ -100,6 +100,19 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_opening_a_dispatch_only_channel_for_receive : using_a_channel
+	{
+		Establish context = () =>
+			mockConfiguration.Setup(x => x.DispatchOnly).Returns(true);
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Receive(delivery => { }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_receiving_a_message : using_a_channel
 	{
 		Establish context = () =>

@@ -18,6 +18,7 @@
 				throw new ArgumentNullException("callback");
 
 			this.ThrowWhenDisposed();
+			this.ThrowWhenDispatchOnly();
 			this.ThrowWhenSubscriptionExists();
 			this.ThrowWhenShuttingDown();
 
@@ -158,6 +159,11 @@
 			this.shutdown = true;
 		}
 
+		protected virtual void ThrowWhenDispatchOnly()
+		{
+			if (this.configuration.DispatchOnly)
+				throw new InvalidOperationException("Dispatch-only channels cannot receive messages.");
+		}
 		protected virtual void ThrowWhenShuttingDown()
 		{
 			if (this.shutdown)
