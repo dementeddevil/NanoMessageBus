@@ -138,14 +138,30 @@ namespace NanoMessageBus.RabbitChannel
 			connector = wireup.Build();
 
 		It should_set_the_address_provided_on_the_connection_factory = () =>
-			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://somehost:5672");
+			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://a-different-host:5672");
 
 		It should_provide_the_channel_groups_to_the_connector = () => wireup.ChannelGroups.ToList()
 			.ForEach(x => connector.ChannelGroups.Where(y => y.GroupName == x.GroupName).ShouldNotBeNull());
 
-		static readonly Uri address = new Uri("amqp-0-9://somehost:5672");
+		static readonly Uri address = new Uri("amqp-0-9://a-different-host:5672");
 		static RabbitConnector connector;
 		static ConnectionFactory factory;
+	}
+
+	[Subject(typeof(RabbitWireup))]
+	public class when_building_a_connector_without_having_an_endpoint_specified : using_the_wireup
+	{
+		Establish context = () => wireup
+			.AddChannelGroup(x => x.WithGroupName("1"))
+			.WithConnectionFactory(factory);
+
+		Because of = () =>
+			wireup.Build();
+
+		It should_leave_endpoint_on_the_connection_factory_as_the_default_value = () =>
+			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://localhost:5672");
+
+		static readonly ConnectionFactory factory = new ConnectionFactory();
 	}
 
 	public abstract class using_the_wireup

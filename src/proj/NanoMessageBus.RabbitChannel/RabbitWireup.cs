@@ -52,7 +52,9 @@
 		}
 		public virtual RabbitConnector Build()
 		{
-			this.ConnectionFactory.Endpoint = new AmqpTcpEndpoint(this.EndpointAddress);
+			if (this.EndpointAddress != null)
+				this.ConnectionFactory.Endpoint = new AmqpTcpEndpoint(this.EndpointAddress);
+
 			return new RabbitConnector(this.ConnectionFactory, this.ShutdownTimeout, this.configurations);
 		}
 
