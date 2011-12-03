@@ -141,7 +141,7 @@ namespace NanoMessageBus.RabbitChannel
 			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://a-different-host:5672");
 
 		It should_provide_the_channel_groups_to_the_connector = () => wireup.ChannelGroups.ToList()
-			.ForEach(x => connector.ChannelGroups.Where(y => y.GroupName == x.GroupName).ShouldNotBeNull());
+			.ForEach(x => connector.ChannelGroups.Any(cg => cg.GroupName == x.GroupName).ShouldBeTrue());
 
 		static readonly Uri address = new Uri("amqp-0-9://a-different-host:5672");
 		static RabbitConnector connector;
