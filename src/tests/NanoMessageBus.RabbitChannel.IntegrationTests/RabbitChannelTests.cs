@@ -44,25 +44,41 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			OpenReceiver(delivery =>
-				(received = (string)delivery.CurrentMessage.Messages.First()).Length > 0);
+			OpenReceiver(Receive);
 			OpenSender().Send(BuildEnvelope(message));
 		};
 
 		It should_wait_a_little_bit_to_receive_the_message = () =>
-			WaitUntil(() => received != null, DefaultSleepTimeout);
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
 
 		It should_receive_the_message_that_was_sent = () =>
-			received.ShouldEqual(message);
+			currentMessage.ShouldEqual(message);
 
-		static string received;
 		static readonly string message = Guid.NewGuid().ToString();
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_the_transaction_to_dispatch_a_message_is_not_committed
+	public class when_the_transaction_to_dispatch_a_message_is_not_committed : using_the_channel
 	{
-		It should_not_dispatch_the_message;
+		Establish context = () =>
+		{
+			senderConfig.WithTransaction(RabbitTransactionType.Full);
+			receiverConfig.WithCleanQueue();
+		};
+
+		Because of = () =>
+		{
+			OpenReceiver(Receive);
+			OpenSender().Send(BuildEnvelope(message));
+		};
+
+		It should_wait_a_little_bit_to_ensure_there_are_no_messages_to_receive = () =>
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+
+		It should_not_dispatch_the_message = () =>
+			currentMessage.ShouldBeNull();
+
+		const string message = "Not sent--transaction not committed";
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -75,6 +91,8 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			messagesReceived = 0;
+			currentMessage = null;
 			connector = null;
 			senderChannel = null;
 			receiverChannel = null;
@@ -128,6 +146,12 @@ namespace NanoMessageBus.RabbitChannel
 					receiverChannel.BeginShutdown();
 			})).Start();
 		}
+		protected static bool Receive(IDeliveryContext delivery)
+		{
+			currentMessage = delivery.CurrentMessage.Messages.First();
+			return (++messagesReceived) > 0;
+		}
+
 		protected static void WaitUntil(Func<bool> callback, TimeSpan maxWait)
 		{
 			var started = SystemTime.UtcNow;
@@ -169,6 +193,9 @@ namespace NanoMessageBus.RabbitChannel
 		protected static IMessagingChannel senderChannel;
 		protected static IMessagingChannel receiverChannel;
 		protected static Exception thrown;
+
+		protected static int messagesReceived;
+		protected static object currentMessage;
 	}
 }
 
