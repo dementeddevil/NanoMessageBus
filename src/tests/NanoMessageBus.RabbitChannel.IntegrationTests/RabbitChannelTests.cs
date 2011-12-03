@@ -69,7 +69,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 		{
 			OpenReceiver(Receive);
-			OpenSender().Send(BuildEnvelope(message));
+			OpenSender().Send(BuildEnvelope("Not sent--transaction not committed"));
 		};
 
 		It should_wait_a_little_bit_to_ensure_there_are_no_messages_to_receive = () =>
@@ -77,14 +77,42 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_not_dispatch_the_message = () =>
 			currentMessage.ShouldBeNull();
-
-		const string message = "Not sent--transaction not committed";
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_the_transaction_to_receive_a_message_is_not_committed
+	public class when_a_message_receipt_has_not_been_acknowledged : using_the_channel
 	{
+		Establish context = () =>
+			receiverConfig
+				.WithTransaction(RabbitTransactionType.Acknowledge)
+				.WithCleanQueue();
+
 		It should_not_remove_the_message_from_the_input_queue;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_a_message_delivery_fails : using_the_channel
+	{
+		Establish context = () =>
+			receiverConfig.WithCleanQueue();
+
+		Because of = () =>
+		{
+			OpenReceiver(delivery =>
+			{
+				if (messagesReceived++ == 0)
+					throw new Exception();
+
+				return true;
+			});
+			OpenSender().Send(BuildEnvelope("reattempted message"));
+		};
+
+		It should_wait_a_little_bit_to_allow_message_delivery = () =>
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+
+		It should_reattempt_the_delivery = () =>
+			messagesReceived.ShouldEqual(2);
 	}
 
 	public abstract class using_the_channel
