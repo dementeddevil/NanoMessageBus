@@ -44,8 +44,8 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			OpenReceiver(Receive);
 			OpenSender().Send(BuildEnvelope(message));
+			OpenReceiver(Receive);
 		};
 
 		It should_wait_a_little_bit_to_receive_the_message = () =>
@@ -87,7 +87,54 @@ namespace NanoMessageBus.RabbitChannel
 				.WithTransaction(RabbitTransactionType.Acknowledge)
 				.WithCleanQueue();
 
-		It should_not_remove_the_message_from_the_input_queue;
+		Because of = () =>
+		{
+			OpenSender().Send(BuildEnvelope("my message"));
+			OpenReceiver(delivery =>
+			{
+				receiverChannel.Dispose(); // shut down current channel
+				OpenReceiver(Receive); // open a new channel on a different thread
+				WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+				return ExitCurrentThread;
+			});
+		};
+
+		It should_wait_a_little_bit = () =>
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+
+		It should_not_remove_the_message_from_the_input_queue = () =>
+			messagesReceived.ShouldEqual(1);
+
+		const bool ExitCurrentThread = true;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_a_message_receipt_HAS_been_acknowledged : using_the_channel
+	{
+		Establish context = () =>
+			receiverConfig
+				.WithTransaction(RabbitTransactionType.Acknowledge)
+				.WithCleanQueue();
+
+		Because of = () =>
+		{
+			OpenSender().Send(BuildEnvelope("my message"));
+			OpenReceiver(delivery =>
+			{
+				delivery.CurrentTransaction.Commit();
+				receiverChannel.Dispose(); // shut down current channel
+				OpenReceiver(Receive); // open a new channel on a different thread
+				return ExitCurrentThread;
+			});
+		};
+
+		It should_wait_a_little_bit = () =>
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+
+		It should_not_find_a_message_to_receive = () =>
+			messagesReceived.ShouldEqual(0);
+
+		const bool ExitCurrentThread = true;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -170,7 +217,7 @@ namespace NanoMessageBus.RabbitChannel
 			OpenReceiver();
 			new Thread(() => receiverChannel.Receive(delivery =>
 			{
-				if (!callback(delivery))
+				if (callback(delivery))
 					receiverChannel.BeginShutdown();
 			})).Start();
 		}
