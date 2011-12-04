@@ -116,7 +116,7 @@ namespace NanoMessageBus.RabbitChannel
 			connector.CurrentState.ShouldEqual(ConnectionState.Open);
 
 		It should_initialize_all_channel_group_configurations_against_the_model = () =>
-			mockConfigs.ToList().ForEach(cfg => cfg.Verify(x => x.ConfigureChannel(mockDefaultChannel.Object)));
+			mockConfigs.ToList().ForEach(cfg => cfg.Verify(x => x.ConfigureChannel(mockDefaultChannel.Object), Times.Once()));
 	}
 
 	[Subject(typeof(RabbitConnector))]
@@ -130,6 +130,9 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_utilize_the_existing_connection = () =>
 			mockFactory.Verify(x => x.CreateConnection(connector.MaxRedirects), Times.Once());
+
+		It should_only_initialize_each_channel_group_config_against_the_first_model = () =>
+			mockConfigs.ToList().ForEach(cfg => cfg.Verify(x => x.ConfigureChannel(mockDefaultChannel.Object), Times.Once()));
 
 		It should_be_in_an_open_state = () =>
 			connector.CurrentState.ShouldEqual(ConnectionState.Open);

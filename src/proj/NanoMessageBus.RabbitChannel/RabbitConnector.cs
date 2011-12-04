@@ -53,7 +53,14 @@
 
 			try
 			{
-				channel = this.EstablishConnection().CreateModel();
+				if (this.connection != null)
+					return this.connection.CreateModel();
+
+				this.CurrentState = ConnectionState.Opening;
+				this.connection = this.factory.CreateConnection(this.MaxRedirects);
+				this.CurrentState = ConnectionState.Open;
+
+				channel = this.connection.CreateModel();
 				this.InitializeConfigurations(channel);
 			}
 			catch (PossibleAuthenticationFailureException e)
@@ -70,16 +77,6 @@
 			}
 
 			return channel;
-		}
-		protected virtual IConnection EstablishConnection()
-		{
-			if (this.connection != null)
-				return this.connection;
-
-			this.CurrentState = ConnectionState.Opening;
-			this.connection = this.factory.CreateConnection(this.MaxRedirects);
-			this.CurrentState = ConnectionState.Open;
-			return this.connection;
 		}
 		protected virtual void InitializeConfigurations(IModel model)
 		{
