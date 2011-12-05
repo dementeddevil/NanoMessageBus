@@ -46,10 +46,8 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			OpenSender().Send(BuildEnvelope(message));
 			OpenReceiver(Receive);
-		};
-
-		It should_wait_a_little_bit_to_receive_the_message = () =>
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
 
 		It should_receive_the_message_that_was_sent = () =>
 			currentMessage.ShouldEqual(message);
@@ -70,10 +68,8 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			OpenReceiver(Receive);
 			OpenSender().Send(BuildEnvelope("Not sent--transaction not committed"));
-		};
-
-		It should_wait_a_little_bit_to_ensure_there_are_no_messages_to_receive = () =>
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
 
 		It should_not_dispatch_the_message = () =>
 			currentMessage.ShouldBeNull();
@@ -97,10 +93,8 @@ namespace NanoMessageBus.RabbitChannel
 				WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
 				return ExitCurrentThread;
 			});
-		};
-
-		It should_wait_a_little_bit = () =>
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
 
 		It should_not_remove_the_message_from_the_input_queue = () =>
 			messagesReceived.ShouldEqual(1);
@@ -126,10 +120,8 @@ namespace NanoMessageBus.RabbitChannel
 				OpenReceiver(Receive); // open a new channel on a different thread
 				return ExitCurrentThread;
 			});
-		};
-
-		It should_wait_a_little_bit = () =>
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
 
 		It should_not_find_a_message_to_receive = () =>
 			messagesReceived.ShouldEqual(0);
@@ -153,10 +145,8 @@ namespace NanoMessageBus.RabbitChannel
 				return true;
 			});
 			OpenSender().Send(BuildEnvelope("reattempted message"));
-		};
-
-		It should_wait_a_little_bit_to_allow_message_delivery = () =>
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
 
 		It should_reattempt_the_delivery = () =>
 			messagesReceived.ShouldEqual(2);
