@@ -11,7 +11,7 @@
 	public interface ISerializer
 	{
 		/// <summary>
-		/// Gets the value which indicates the encoding mechanism used.
+		/// Gets the value which indicates the encoding mechanism used (gzip, bzip2, lzma, aes, etc.)
 		/// </summary>
 		string ContentEncoding { get; }
 
@@ -33,8 +33,8 @@
 		/// <typeparam name="T">The type of object to be deserialized.</typeparam>
 		/// <param name="source">The stream of bytes from which the object will be reconstructed.</param>
 		/// <param name="format">The optional value which indicates the format used during serialization.</param>
-		/// <param name="encoding">The optional value which indicates the encoding used during serialization.</param>
+		/// <param name="contentEncoding">The optional value which indicates the encoding used during serialization.</param>
 		/// <returns>The reconstructed object.</returns>
-		T Deserialize<T>(Stream source, string format, string encoding = "");
+		T Deserialize<T>(Stream source, string format, string contentEncoding = "");
 	}
 }

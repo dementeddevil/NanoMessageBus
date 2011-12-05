@@ -8,7 +8,7 @@
 	{
 		public virtual string ContentEncoding
 		{
-			get { return null; }
+			get { return string.Empty; }
 		}
 		public virtual string ContentFormat
 		{
