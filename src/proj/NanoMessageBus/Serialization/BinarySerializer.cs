@@ -17,6 +17,9 @@
 
 		public virtual void Serialize(Stream destination, object graph)
 		{
+			if (graph == null)
+				return;
+
 			this.formatter.Serialize(destination, graph);
 		}
 		public virtual T Deserialize<T>(Stream source, string format, string contentEncoding = "")
