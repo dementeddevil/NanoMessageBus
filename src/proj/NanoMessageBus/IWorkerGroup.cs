@@ -22,21 +22,25 @@
 		/// <summary>
 		/// Instructs the worker group to start performing the specified activity against the underlying set of channels.
 		/// </summary>
-		/// <param name="activity">
-		/// The optional activity to be executed; if none is specified, the default activity is watching for work items.
-		/// </param>
+		/// <param name="activity">The activity to be performed by the configured number of workers.</param>
+		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void Start(Action activity = null);
+		void Start(Action activity);
 
 		/// <summary>
-		/// Starts a single worker to perform the activity provided.
+		/// Instructs the worker group to start a single worker performing the activity provided.
 		/// </summary>
 		/// <param name="activity">The activity to be performed by a single worker.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
 		void StartSingleWorker(Action activity);
+
+		/// <summary>
+		/// Instructs the worker group to start watching the work item queue.
+		/// </summary>
+		void StartWorkItemQueue();
 
 		/// <summary>
 		/// Initiates the stopping of all activities currently being performed without removing any uncompleted work items.
