@@ -148,8 +148,8 @@ namespace NanoMessageBus
 		Because of_multi_threading = () =>
 			Thread.Sleep(100);
 
-		It should_open_a_channel_for_each_worker = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(MinWorkers));
+		It should_initialize_the_underlying_connection_exactly_once = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
 
 		const int MinWorkers = 3;
 	}

@@ -16,24 +16,15 @@
 				if (this.initialized)
 					return;
 
-				this.initialized = true;
-
-				if (!this.TryInitialize())
-					this.TryInitialize();
+				this.initialized = this.TryInitialize();
 			}
 		}
 		protected virtual bool TryInitialize()
 		{
 			try
 			{
-				for (var i = 0; i < this.configuration.MinWorkers; i++)
-				{
-					using (this.connector.Connect(this.configuration.GroupName))
-					{
-					}
-				}
-
-				return true;
+				using (this.connector.Connect(this.configuration.GroupName))
+					return true; // we have established a connection and are able to perform work
 			}
 			catch (ChannelConnectionException)
 			{
@@ -63,7 +54,7 @@
 
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();
-			this.ThrowWhenReceiving();
+			this.ThrowWhenAlreadyReceiving();
 			this.ThrowWhenDispatchOnly();
 
 			lock (this.locker)
@@ -109,7 +100,7 @@
 			if (this.configuration.DispatchOnly)
 				throw new InvalidOperationException("Dispatch-only channel groups cannot receive messages.");
 		}
-		protected virtual void ThrowWhenReceiving()
+		protected virtual void ThrowWhenAlreadyReceiving()
 		{
 			if (this.receiving)
 				throw new InvalidOperationException("A callback has already been provided.");

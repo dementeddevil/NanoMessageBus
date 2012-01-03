@@ -30,8 +30,8 @@
 		}
 		protected virtual void AddChannelGroup(string name, IChannelGroup group)
 		{
-			var dictionary = group.DispatchOnly ? this.outbound : this.inbound;
-			dictionary[name] = group;
+			var collection = group.DispatchOnly ? this.outbound : this.inbound;
+			collection[name] = group;
 		}
 
 		public virtual IOutboundChannel GetOutboundChannel(string channelGroup)
@@ -121,6 +121,7 @@
 
 				this.disposed = true;
 
+				// TODO: dispose outbound group also
 				foreach (var group in this.inbound.Values)
 					group.Dispose(); // TODO: make sure this doesn't wrap around and result in a deadlock
 
