@@ -19,7 +19,6 @@ namespace NanoMessageBus
 			channelGroup.DispatchOnly.ShouldBeTrue();
 	}
 
-	[Ignore("not implemented yet")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_the_group_is_initialized : with_a_channel_group
 	{
@@ -33,7 +32,6 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
 	}
 
-	[Ignore("not implemented yet")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_the_group_is_initialized_more_than_once : with_a_channel_group
 	{
@@ -50,7 +48,6 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
 	}
 
-	[Ignore("not implemented yet")]
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
 	{
@@ -273,12 +270,16 @@ namespace NanoMessageBus
 			mockConnector = new Mock<IChannelConnector>();
 			mockChannel = new Mock<IMessagingChannel>();
 			mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockWorkers = new Mock<IWorkerGroup>();
 			envelope = new Mock<ChannelEnvelope>().Object;
 
-			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
+			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
+			mockWorkers
+				.Setup(x => x.Start(Moq.It.IsAny<Action>()))
+				.Callback<Action>(x => x()); // simply invoke the callback provided
 
-			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object);
+			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object, mockWorkers.Object);
 		};
 
 		Cleanup after = () =>
@@ -288,6 +289,7 @@ namespace NanoMessageBus
 		protected static DefaultChannelGroup channelGroup;
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
+		protected static Mock<IWorkerGroup> mockWorkers;
 		protected static ChannelEnvelope envelope;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Exception thrown;

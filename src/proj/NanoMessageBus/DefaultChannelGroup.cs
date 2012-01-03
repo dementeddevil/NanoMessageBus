@@ -16,19 +16,35 @@
 				if (this.initialized)
 					return;
 
-				this.initialized = this.TryInitialize();
+				this.TryInitialize();
+				this.initialized = true;
 			}
 		}
-		protected virtual bool TryInitialize()
+		protected virtual void TryInitialize()
 		{
 			try
 			{
 				using (this.connector.Connect(this.configuration.GroupName))
-					return true; // we have established a connection and are able to perform work
+				{
+					// we have established a connection and are able to perform work				
+				}
 			}
 			catch (ChannelConnectionException)
 			{
-				return false;
+				this.ReestablishConnection();
+			}
+		}
+		protected virtual void ReestablishConnection()
+		{
+			try
+			{
+				using (this.connector.Connect(this.configuration.GroupName))
+				{
+					// we have established a connection and are able to perform work				
+				}
+			}
+			catch (ChannelConnectionException)
+			{
 			}
 		}
 
@@ -106,10 +122,12 @@
 				throw new InvalidOperationException("A callback has already been provided.");
 		}
 
-		public DefaultChannelGroup(IChannelConnector connector, IChannelGroupConfiguration configuration)
+		public DefaultChannelGroup(
+			IChannelConnector connector, IChannelGroupConfiguration configuration, IWorkerGroup workers)
 		{
 			this.connector = connector;
 			this.configuration = configuration;
+			this.workers = workers;
 		}
 		~DefaultChannelGroup()
 		{
@@ -129,9 +147,20 @@
 			this.disposed = true;
 		}
 
+		private static readonly TimeSpan[] Timeouts =
+		{
+			TimeSpan.FromSeconds(0),
+			TimeSpan.FromSeconds(1),
+			TimeSpan.FromSeconds(2),
+			TimeSpan.FromSeconds(4),
+			TimeSpan.FromSeconds(8),
+			TimeSpan.FromSeconds(16),
+			TimeSpan.FromSeconds(32)
+		};
 		private readonly object locker = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;
+		private readonly IWorkerGroup workers;
 		private bool receiving;
 		private bool initialized;
 		private bool disposed;
