@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using System.Threading;
 
 	/// <summary>
 	/// Provides the ability to override the current moment in time to facilitate testing.
@@ -22,6 +23,10 @@
 		/// <summary>
 		/// Gets the current moment in time.
 		/// </summary>
+		/// <remarks>
+		/// Method invocation is not thread safe if the resolver is being changed by multiple threads. The intended design
+		/// is for testing where it can be set, any tests run, and then the value cleared.
+		/// </remarks>
 		public static DateTime UtcNow
 		{
 			get { return Resolver == null ? DateTime.UtcNow : Resolver(); }
@@ -45,6 +50,20 @@
 		public static DateTime ToDateTime(this long epochTime)
 		{
 			return EpochTime + TimeSpan.FromSeconds(epochTime);
+		}
+
+		/// <summary>
+		/// The callback to be used to instruct the current thread to sleep.
+		/// </summary>
+		public static Action<TimeSpan> Sleeper;
+
+		/// <summary>
+		/// Instructs the current thread to sleep for the specified amount of time.
+		/// </summary>
+		/// <param name="value">The amount of time for the current thread to sleep.</param>
+		public static void Sleep(this TimeSpan value)
+		{
+			(Sleeper ?? Thread.Sleep)(value);
 		}
 	}
 }

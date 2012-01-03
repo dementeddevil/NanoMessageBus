@@ -60,6 +60,19 @@ namespace NanoMessageBus
 		static DateTime converted;
 		static readonly DateTime Instant = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 	}
+
+	[Subject(typeof(SystemTime))]
+	public class when_instructing_the_current_thread_to_sleep
+	{
+		Because of = () =>
+			Sleep.Sleep();
+
+		It should_let_the_current_thread_sleep = () =>
+			SystemTime.UtcNow.ShouldBeCloseTo(Now + Sleep, TimeSpan.FromMilliseconds(200));
+
+		static readonly TimeSpan Sleep = TimeSpan.FromMilliseconds(250);
+		static readonly DateTime Now = SystemTime.UtcNow;
+	}
 }
 
 // ReSharper enable InconsistentNaming
