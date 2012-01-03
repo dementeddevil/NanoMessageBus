@@ -52,7 +52,15 @@ namespace NanoMessageBus
 	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
 	{
 		Establish context = () =>
-			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
+		{
+			SystemTime.Sleeper = x => { sleeps++; };
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Callback(EachConnect);
+		};
+		static void EachConnect()
+		{
+			if (++attempts < TimesToThrow)
+				throw new ChannelConnectionException();
+		}
 
 		Because of = () =>
 			channelGroup.Initialize();
@@ -60,8 +68,18 @@ namespace NanoMessageBus
 		Because of_multi_threading = () =>
 			Thread.Sleep(100);
 
-		It should_immediately_reattempt_to_establish_a_messaging_channel = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+		It should_delegate_reconnection_to_the_worker_group = () =>
+			mockWorkers.Verify(x => x.Start(Moq.It.IsAny<Action>()), Times.Once());
+
+		It should_reattempt_the_connection_until_it_is_established = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(TimesToThrow));
+
+		It should_sleep_between_each_connection_attempt = () =>
+			sleeps.ShouldEqual(TimesToThrow - 1);
+
+		const int TimesToThrow = 10;
+		static int attempts;
+		static int sleeps;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -283,7 +301,11 @@ namespace NanoMessageBus
 		};
 
 		Cleanup after = () =>
+		{
 			channelGroup.Dispose();
+			SystemTime.Resolver = null;
+			SystemTime.Sleeper = null;
+		};
 
 		protected const string ChannelGroupName = "Test Channel Group";
 		protected static DefaultChannelGroup channelGroup;

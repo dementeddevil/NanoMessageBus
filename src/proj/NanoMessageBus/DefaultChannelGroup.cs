@@ -24,28 +24,36 @@
 		{
 			try
 			{
-				using (this.connector.Connect(this.configuration.GroupName))
-				{
-					// we have established a connection and are able to perform work				
-				}
+				this.TryConnect();
 			}
 			catch (ChannelConnectionException)
 			{
-				this.ReestablishConnection();
+				this.workers.Start(() => this.ReestablishConnection(0));
 			}
 		}
-		protected virtual void ReestablishConnection()
+		protected virtual void TryConnect()
 		{
+			using (this.connector.Connect(this.configuration.GroupName))
+			{
+				// we have established a connection and are able to perform work				
+			}
+		}
+		protected virtual void ReestablishConnection(int timeoutIndex)
+		{
+			this.GetTimeout(timeoutIndex).Sleep();
+
 			try
 			{
-				using (this.connector.Connect(this.configuration.GroupName))
-				{
-					// we have established a connection and are able to perform work				
-				}
+				this.TryConnect();
 			}
 			catch (ChannelConnectionException)
 			{
+				this.ReestablishConnection(timeoutIndex + 1);
 			}
+		}
+		protected virtual TimeSpan GetTimeout(int timeoutIndex)
+		{
+			return timeoutIndex < Timeouts.Length ? Timeouts[timeoutIndex] : Timeouts[Timeouts.Length - 1];
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
