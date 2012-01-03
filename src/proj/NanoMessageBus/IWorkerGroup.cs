@@ -30,6 +30,15 @@
 		void Start(Action activity = null);
 
 		/// <summary>
+		/// Starts a single worker to perform the activity provided.
+		/// </summary>
+		/// <param name="activity">The activity to be performed by a single worker.</param>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="InvalidOperationException"></exception>
+		/// <exception cref="ObjectDisposedException"></exception>
+		void StartSingleWorker(Action activity);
+
+		/// <summary>
 		/// Initiates the stopping of all activities currently being performed without removing any uncompleted work items.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>

@@ -16,8 +16,8 @@
 				if (this.initialized)
 					return;
 
-				this.TryInitialize();
 				this.initialized = true;
+				this.TryInitialize();
 			}
 		}
 		protected virtual void TryInitialize()
@@ -28,7 +28,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				this.workers.Start(() => this.ReestablishConnection(0));
+				this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
 			}
 		}
 		protected virtual void TryConnect()
@@ -102,7 +102,7 @@
 			{
 				return false;
 			}
-		}
+		} 
 
 		protected virtual void ThrowWhenDisposed()
 		{

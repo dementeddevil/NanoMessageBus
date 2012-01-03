@@ -69,7 +69,7 @@ namespace NanoMessageBus
 			Thread.Sleep(100);
 
 		It should_delegate_reconnection_to_the_worker_group = () =>
-			mockWorkers.Verify(x => x.Start(Moq.It.IsAny<Action>()), Times.Once());
+			mockWorkers.Verify(x => x.StartSingleWorker(Moq.It.IsAny<Action>()), Times.Once());
 
 		It should_reattempt_the_connection_until_it_is_established = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(TimesToThrow));
@@ -295,6 +295,9 @@ namespace NanoMessageBus
 			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
 			mockWorkers
 				.Setup(x => x.Start(Moq.It.IsAny<Action>()))
+				.Callback<Action>(x => x()); // simply invoke the callback provided
+			mockWorkers
+				.Setup(x => x.StartSingleWorker(Moq.It.IsAny<Action>()))
 				.Callback<Action>(x => x()); // simply invoke the callback provided
 
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object, mockWorkers.Object);
