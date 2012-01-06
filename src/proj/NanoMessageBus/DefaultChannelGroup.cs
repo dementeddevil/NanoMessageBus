@@ -16,6 +16,8 @@
 				if (this.initialized)
 					return;
 
+				// TODO: throw when disposed
+
 				this.initialized = true;
 				this.TryInitialize();
 			}
@@ -28,6 +30,11 @@
 			}
 			catch (ChannelConnectionException)
 			{
+				// should we even worry about trying to re-establish a connection here?
+				// if we let the re-establish occur only on BeginDispatch/Receive ordering
+				// is much easier; in the case of a dispatch-only group, we could probably try
+				// to re-establish a connection here; for full-duplex we should let the
+				// BeginReceive do the re-establish connection loop
 				this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
 			}
 		}
@@ -65,23 +72,25 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.TryDispatch(envelope, completed);
-		}
-		protected virtual void TryDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
-		{
-			this.workers.Add(x =>
+			this.workers.Add(x => this.TryChannel(() =>
 			{
-				try
-				{
-					x.Send(envelope);
-					completed(x.CurrentTransaction);
-				}
-				catch (ChannelConnectionException)
-				{
-					this.workers.Stop();
-					this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
-				}
-			});
+				x.Send(envelope);
+				completed(x.CurrentTransaction);
+			}));
+		}
+		protected virtual void TryChannel(Action callback)
+		{
+			try
+			{
+				callback();
+			}
+			catch (ChannelConnectionException)
+			{
+				this.workers.Stop();
+				this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
+				//// TODO: how to restart after connection re-established
+				//// start single worker needs some kind of "on complete" callback
+			}
 		}
 
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
@@ -89,15 +98,26 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
-			this.ThrowWhenDisposed();
-			this.ThrowWhenUninitialized();
-			this.ThrowWhenAlreadyReceiving();
-			this.ThrowWhenDispatchOnly();
-
 			lock (this.locker)
-				this.receiving = this.TryReceive(callback);
+			{
+				this.ThrowWhenDisposed();
+				this.ThrowWhenUninitialized();
+				this.ThrowWhenAlreadyReceiving();
+				this.ThrowWhenDispatchOnly();
+
+				this.receiving = callback;
+
+				// on ChannelConnectionException:
+				// 1. stop the workers
+				// 2. try to re-establish connection
+				// 3. once re-connected,
+				// 4. check to see if we're disposed (ensure proper locking)
+				// 5. start workers again using callback that started workers listening
+				//    (which should contain this set of steps as well?)
+				this.TryReceive(callback);
+			}
 		}
-		protected virtual bool TryReceive(Action<IDeliveryContext> callback)
+		protected virtual void TryReceive(Action<IDeliveryContext> callback)
 		{
 			try
 			{
@@ -108,12 +128,9 @@
 						channel.Receive(callback);
 					}
 				}
-
-				return true;
 			}
 			catch (ChannelConnectionException)
 			{
-				return false;
 			}
 		}
 
@@ -139,7 +156,7 @@
 		}
 		protected virtual void ThrowWhenAlreadyReceiving()
 		{
-			if (this.receiving)
+			if (this.receiving != null)
 				throw new InvalidOperationException("A callback has already been provided.");
 		}
 
@@ -165,7 +182,13 @@
 			if (!disposing)
 				return;
 
-			this.disposed = true;
+			lock (this.locker)
+			{
+				if (this.disposed)
+					return;
+
+				this.disposed = true; // TODO: stop workers
+			}
 		}
 
 		private static readonly TimeSpan[] RetryDelay =
@@ -182,7 +205,7 @@
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;
 		private readonly IWorkerGroup workers;
-		private bool receiving;
+		private Action<IDeliveryContext> receiving;
 		private bool initialized;
 		private bool disposed;
 	}
