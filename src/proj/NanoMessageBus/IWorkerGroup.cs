@@ -17,7 +17,7 @@
 		// already existing workers also thrown an exception and do the exact same thing
 		// we need to figure out a way to synchronize the behavior there--perhaps with a status indicator update surrounded
 		// by a simple lock *OR* perhaps the worker group keeps track of the worker that threw the exception
-		// and if it was one of the stopped workers, it consumes the exception
+		// and if it was one of workers that is shutting down, it consumes the exception
 
 		/// <summary>
 		/// Instructs the worker group to start performing the specified activity against the underlying set of channels.
@@ -26,7 +26,7 @@
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void Start(Action activity);
+		void StartMultipleWorkers(Action activity);
 
 		/// <summary>
 		/// Instructs the worker group to start a single worker performing the activity provided.
@@ -40,6 +40,8 @@
 		/// <summary>
 		/// Instructs the worker group to start watching the work item queue.
 		/// </summary>
+		/// <exception cref="InvalidOperationException"></exception>
+		/// <exception cref="ObjectDisposedException"></exception>
 		void StartWorkItemQueue();
 
 		/// <summary>

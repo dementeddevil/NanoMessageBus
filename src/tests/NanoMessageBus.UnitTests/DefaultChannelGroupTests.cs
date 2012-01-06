@@ -53,7 +53,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			SystemTime.Sleeper = x => { sleeps++; };
+			SystemTime.SleepResolver = x => { sleeps++; };
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Callback(EachConnect);
 		};
 		static void EachConnect()
@@ -294,7 +294,7 @@ namespace NanoMessageBus
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
 			mockWorkers
-				.Setup(x => x.Start(Moq.It.IsAny<Action>()))
+				.Setup(x => x.StartMultipleWorkers(Moq.It.IsAny<Action>()))
 				.Callback<Action>(x => x()); // simply invoke the callback provided
 			mockWorkers
 				.Setup(x => x.StartSingleWorker(Moq.It.IsAny<Action>()))
@@ -306,8 +306,8 @@ namespace NanoMessageBus
 		Cleanup after = () =>
 		{
 			channelGroup.Dispose();
-			SystemTime.Resolver = null;
-			SystemTime.Sleeper = null;
+			SystemTime.NowResolver = null;
+			SystemTime.SleepResolver = null;
 		};
 
 		protected const string ChannelGroupName = "Test Channel Group";

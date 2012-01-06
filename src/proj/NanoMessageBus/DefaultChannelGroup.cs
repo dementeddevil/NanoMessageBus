@@ -53,7 +53,7 @@
 		}
 		protected virtual TimeSpan GetTimeout(int timeoutIndex)
 		{
-			return timeoutIndex < Timeouts.Length ? Timeouts[timeoutIndex] : Timeouts[Timeouts.Length - 1];
+			return timeoutIndex < RetryDelay.Length ? RetryDelay[timeoutIndex] : RetryDelay[RetryDelay.Length - 1];
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
@@ -155,7 +155,7 @@
 			this.disposed = true;
 		}
 
-		private static readonly TimeSpan[] Timeouts =
+		private static readonly TimeSpan[] RetryDelay =
 		{
 			TimeSpan.FromSeconds(0),
 			TimeSpan.FromSeconds(1),

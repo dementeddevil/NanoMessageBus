@@ -18,7 +18,7 @@
 		/// <summary>
 		/// The callback to be used to resolve the current moment in time.
 		/// </summary>
-		public static Func<DateTime> Resolver;
+		public static Func<DateTime> NowResolver;
 
 		/// <summary>
 		/// Gets the current moment in time.
@@ -29,7 +29,7 @@
 		/// </remarks>
 		public static DateTime UtcNow
 		{
-			get { return Resolver == null ? DateTime.UtcNow : Resolver(); }
+			get { return NowResolver == null ? DateTime.UtcNow : NowResolver(); }
 		}
 
 		/// <summary>
@@ -55,7 +55,7 @@
 		/// <summary>
 		/// The callback to be used to instruct the current thread to sleep.
 		/// </summary>
-		public static Action<TimeSpan> Sleeper;
+		public static Action<TimeSpan> SleepResolver;
 
 		/// <summary>
 		/// Instructs the current thread to sleep for the specified amount of time.
@@ -63,7 +63,7 @@
 		/// <param name="value">The amount of time for the current thread to sleep.</param>
 		public static void Sleep(this TimeSpan value)
 		{
-			(Sleeper ?? Thread.Sleep)(value);
+			(SleepResolver ?? Thread.Sleep)(value);
 		}
 	}
 }

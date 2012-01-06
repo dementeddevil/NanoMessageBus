@@ -18,7 +18,7 @@ namespace NanoMessageBus
 	public class when_setting_the_system_time
 	{
 		Because of = () =>
-			SystemTime.Resolver = () => Instant;
+			SystemTime.NowResolver = () => Instant;
 
 		It should_be_the_time_specified = () =>
 			SystemTime.UtcNow.ShouldEqual(Instant);
@@ -30,7 +30,7 @@ namespace NanoMessageBus
 		};
 
 		Cleanup after = () =>
-			SystemTime.Resolver = null;
+			SystemTime.NowResolver = null;
 
 		static readonly DateTime Instant = DateTime.Parse("2010-01-02 03:04:05.678");
 	}
@@ -39,7 +39,7 @@ namespace NanoMessageBus
 	public class when_getting_epoch_time
 	{
 		Establish context = () =>
-			SystemTime.Resolver = () => Instant;
+			SystemTime.NowResolver = () => Instant;
 
 		Because of = () =>
 		{
@@ -54,7 +54,7 @@ namespace NanoMessageBus
 			converted.ShouldEqual(Instant);
 
 		Cleanup after = () =>
-			SystemTime.Resolver = null;
+			SystemTime.NowResolver = null;
 
 		static long seconds;
 		static DateTime converted;
