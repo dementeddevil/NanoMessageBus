@@ -89,17 +89,67 @@ namespace NanoMessageBus
 		{
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
 			mockChannel.Setup(x => x.Send(envelope));
+			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
+			mockWorkers
+				.Setup(x => x.Add(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
+
 			channelGroup.Initialize();
 		};
 
 		Because of = () =>
-			channelGroup.BeginDispatch(envelope, trx => { });
+			channelGroup.BeginDispatch(envelope, trx =>
+			{
+				current = trx;
+				callbackInvoked++;
+			});
 
 		Because of_multi_threading = () =>
 			Thread.Sleep(100);
 
 		It should_pass_the_message_to_exactly_one_of_the_underlying_channels = () =>
 			mockChannel.Verify(x => x.Send(envelope), Times.Once());
+
+		It should_invoke_the_callback_method_provided = () =>
+			callbackInvoked.ShouldEqual(1);
+
+		It should_provide_the_current_transaction_to_the_callback = () =>
+			current.ShouldEqual(mockChannel.Object.CurrentTransaction);
+
+		static IChannelTransaction current;
+		static int callbackInvoked;
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_asynchronously_dispatching_throws_a_ChannelConnectionException : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
+			mockWorkers
+				.Setup(x => x.Add(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
+
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			channelGroup.BeginDispatch(envelope, trx => { callbackInvoked++; });
+
+		Because of_multi_threading = () =>
+			Thread.Sleep(100);
+
+		It should_NOT_invoke_the_callback_provided = () =>
+			callbackInvoked.ShouldEqual(0);
+
+		It should_stop_the_worker_group = () =>
+			mockWorkers.Verify(x => x.Stop(), Times.Once());
+
+		It should_attempt_to_reestablish_the_connection = () =>
+			mockWorkers.Verify(x => x.StartSingleWorker(Moq.It.IsAny<Action>()), Times.Once());
+
+		static int callbackInvoked;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]

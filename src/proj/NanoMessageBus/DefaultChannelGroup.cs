@@ -33,10 +33,7 @@
 		}
 		protected virtual void TryConnect()
 		{
-			using (this.connector.Connect(this.configuration.GroupName))
-			{
-				// we have established a connection and are able to perform work				
-			}
+			using (this.connector.Connect(this.configuration.GroupName)) { }
 		}
 		protected virtual void ReestablishConnection(int timeoutIndex)
 		{
@@ -67,10 +64,26 @@
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
-			
-			using (var channel = this.connector.Connect(this.configuration.GroupName))
-				channel.Send(envelope); // TODO: add threading
+
+			this.TryDispatch(envelope, completed);
 		}
+		protected virtual void TryDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
+		{
+			this.workers.Add(x =>
+			{
+				try
+				{
+					x.Send(envelope);
+					completed(x.CurrentTransaction);
+				}
+				catch (ChannelConnectionException)
+				{
+					this.workers.Stop();
+					this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
+				}
+			});
+		}
+
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
@@ -102,7 +115,7 @@
 			{
 				return false;
 			}
-		} 
+		}
 
 		protected virtual void ThrowWhenDisposed()
 		{
