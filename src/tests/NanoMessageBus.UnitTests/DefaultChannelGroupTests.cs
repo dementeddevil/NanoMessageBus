@@ -4,7 +4,6 @@
 namespace NanoMessageBus
 {
 	using System;
-	using System.Threading;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -34,7 +33,10 @@ namespace NanoMessageBus
 		It should_initialize_the_worker_group = () =>
 			mockWorkers.Verify(x => x.Initialize(
 				Moq.It.IsAny<Func<IMessagingChannel>>(),
-				Moq.It.IsAny<Func<IMessagingChannel, bool>>()), Times.Once());
+				Moq.It.IsAny<Func<bool>>()), Times.Once());
+
+		It should_provide_a_callback_to_the_worker_group_to_build_a_channel = () =>
+			stateCallback().ShouldEqual(mockChannel.Object);
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -114,23 +116,19 @@ namespace NanoMessageBus
 			channelGroup.BeginDispatch(envelope, trx =>
 			{
 				current = trx;
-				callbackInvoked++;
+				IncrementInvocations();
 			});
-
-		Because of_multi_threading = () =>
-			Thread.Sleep(100);
 
 		It should_pass_the_message_to_exactly_one_of_the_underlying_channels = () =>
 			mockChannel.Verify(x => x.Send(envelope), Times.Once());
 
 		It should_invoke_the_callback_method_provided = () =>
-			callbackInvoked.ShouldEqual(1);
+			invocations.ShouldEqual(1);
 
 		It should_provide_the_current_transaction_to_the_callback = () =>
 			current.ShouldEqual(mockChannel.Object.CurrentTransaction);
 
 		static IChannelTransaction current;
-		static int callbackInvoked;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -148,18 +146,13 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			channelGroup.BeginDispatch(envelope, trx => { callbackInvoked++; });
+			channelGroup.BeginDispatch(envelope, trx => { });
 
-		Because of_multi_threading = () =>
-			Thread.Sleep(100);
-
-		It should_NOT_invoke_the_callback_provided = () =>
-			callbackInvoked.ShouldEqual(0);
+		It should_attempt_to_send_the_message = () =>
+			mockChannel.Verify(x => x.Send(envelope), Times.Once());
 
 		It should_restart_the_worker_group = () =>
 			mockWorkers.Verify(x => x.Restart(), Times.Once());
-
-		static int callbackInvoked;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -416,9 +409,20 @@ namespace NanoMessageBus
 			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockWorkers = new Mock<IWorkerGroup<IMessagingChannel>>();
 			envelope = new Mock<ChannelEnvelope>().Object;
+			stateCallback = null;
+			restartCallback = null;
+			invocations = 0;
 
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
+
+			mockWorkers
+				.Setup(x => x.Initialize(Moq.It.IsAny<Func<IMessagingChannel>>(), Moq.It.IsAny<Func<bool>>()))
+				.Callback<Func<IMessagingChannel>, Func<bool>>((state, restart) =>
+				{
+					stateCallback = state;
+					restartCallback = restart;
+				});
 
 			mockWorkers
 				.Setup(x => x.StartActivity(Moq.It.IsAny<Action<IMessagingChannel>>()))
@@ -434,6 +438,11 @@ namespace NanoMessageBus
 			SystemTime.SleepResolver = null;
 		};
 
+		protected static void IncrementInvocations()
+		{
+			invocations++;
+		}
+
 		protected const string ChannelGroupName = "Test Channel Group";
 		protected static DefaultChannelGroup channelGroup;
 		protected static Mock<IChannelConnector> mockConnector;
@@ -442,6 +451,9 @@ namespace NanoMessageBus
 		protected static ChannelEnvelope envelope;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Exception thrown;
+		protected static Func<IMessagingChannel> stateCallback;
+		protected static Func<bool> restartCallback;
+		protected static int invocations;
 	}
 }
 

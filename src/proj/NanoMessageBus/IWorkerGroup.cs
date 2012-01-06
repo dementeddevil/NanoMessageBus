@@ -18,7 +18,7 @@
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <param name="state">The callback used to get the state of the worker.</param>
 		/// <param name="restart">The callback used to restart the workers.</param>
-		void Initialize(Func<TWorkerState> state, Func<TWorkerState, bool> restart);
+		void Initialize(Func<TWorkerState> state, Func<bool> restart);
 
 		/// <summary>
 		/// Builds a worker group which starts performing the activity specified.

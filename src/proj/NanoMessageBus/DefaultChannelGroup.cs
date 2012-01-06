@@ -24,16 +24,37 @@
 		}
 		protected virtual void TryInitialize()
 		{
-			this.workers.Initialize(null, null); // TODO: provide values
+			// TODO: provide values
+			this.workers.Initialize(this.OpenChannel, () => true);
 
 			try
 			{
-				using (this.connector.Connect(this.configuration.GroupName))
+				using (this.OpenChannel())
 					if (this.DispatchOnly)
 						this.workers.StartQueue();
 			}
 			catch (ChannelConnectionException)
 			{
+			}
+		}
+		protected virtual IMessagingChannel OpenChannel()
+		{
+			return this.connector.Connect(this.configuration.GroupName);
+		}
+		private bool TryChannel() // TODO: for worker initialization
+		{
+			try
+			{
+				using (this.OpenChannel())
+					return true;
+			}
+			catch (ChannelConnectionException)
+			{
+				return false;
+			}
+			catch (ObjectDisposedException)
+			{
+				return false;
 			}
 		}
 
@@ -69,7 +90,8 @@
 
 				this.receiving = callback;
 
-				this.workers.StartActivity(x => this.TryChannel(() => x.Receive(callback)));
+				this.workers.StartActivity(x =>
+					this.TryChannel(() => x.Receive(callback)));
 			}
 		}
 		protected virtual void TryChannel(Action callback)
