@@ -70,6 +70,7 @@
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\SerializationExtensions.cs" />
     <Compile Include="SystemTime.cs" />
+    <Compile Include="TaskWorkerGroup.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\CustomDictionary.xml">

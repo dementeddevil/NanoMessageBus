@@ -41,7 +41,8 @@
 		void Restart();
 
 		/// <summary>
-		/// Adds a work item to be performed by one of the workers within the worker group.
+		/// Adds a work item to be performed by one of the workers within the worker group.  Work items
+		/// can safely be added at any time during the lifetime of the object instance.
 		/// </summary>
 		/// <param name="workItem">
 		/// The callback representing the work item to be enqueued and invoked at a later time by one of the workers.

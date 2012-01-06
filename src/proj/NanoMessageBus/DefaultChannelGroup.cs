@@ -128,7 +128,7 @@
 		protected virtual void ThrowWhenUninitialized()
 		{
 			if (!this.initialized)
-				throw new InvalidOperationException("The host has not been initialized.");
+				throw new InvalidOperationException("The channel group has not been initialized.");
 		}
 		protected virtual void ThrowWhenFullDuplex()
 		{
