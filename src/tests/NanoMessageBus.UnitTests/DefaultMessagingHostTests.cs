@@ -368,6 +368,8 @@ namespace NanoMessageBus
 			mockFactory = new Mock<DefaultChannelGroupFactory>();
 			mockFactory.Setup(x => x.Build(Connectors[0], mockConfig.Object)).Returns(mockGroup.Object);
 
+			EmptyFactory(null, null); // excericse the code that isn't getting touched
+
 			RebuildHost();
 		};
 		protected static void RebuildHost()
@@ -375,7 +377,6 @@ namespace NanoMessageBus
 			if (channelFactory == null && mockFactory != null)
 				channelFactory = (c, cfg) => mockFactory.Object.Build(c, cfg);
 
-			channelFactory = channelFactory ?? EmptyFactory;
 			host = new DefaultMessagingHost(Connectors, channelFactory);
 		}
 
