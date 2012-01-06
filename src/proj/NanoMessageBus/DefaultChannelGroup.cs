@@ -24,8 +24,7 @@
 		}
 		protected virtual void TryInitialize()
 		{
-			// TODO: provide values
-			this.workers.Initialize(this.OpenChannel, () => true);
+			this.workers.Initialize(this.OpenChannel, this.TryChannel);
 
 			try
 			{
@@ -41,7 +40,7 @@
 		{
 			return this.connector.Connect(this.configuration.GroupName);
 		}
-		private bool TryChannel() // TODO: for worker initialization
+		protected virtual bool TryChannel()
 		{
 			try
 			{

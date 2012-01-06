@@ -98,6 +98,72 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
+	public class when_reestablishing_a_connection : with_a_channel_group
+	{
+		Establish context = () =>
+			channelGroup.Initialize();
+
+		Because of = () =>
+			restarted = restartCallback();
+
+		It should_open_a_new_channel = () => // once for the ChannelGroup initialize and once for restart
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+
+		It should_indicate_success = () =>
+			restarted.ShouldBeTrue();
+
+		static bool restarted;
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_reestablishing_a_connection_throws_a_ChannelConnectionException : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			restarted = restartCallback();
+
+		It should_attempt_to_open_a_new_channel = () => // once for the ChannelGroup initialize and once for restart
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+
+		It should_indicate_failure = () =>
+			restarted.ShouldBeFalse();
+
+		static bool restarted;
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_reestablishing_a_connection_throws_an_ObjectDisposedException : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConnector
+				.Setup(x => x.Connect(ChannelGroupName))
+				.Callback(() =>
+				{
+					if (invocations++ > 0)
+						throw new ObjectDisposedException("disposed"); // throw after first call
+				});
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			restarted = restartCallback();
+
+		It should_attempt_to_open_a_new_channel = () => // once for the ChannelGroup initialize and once for restart
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+
+		It should_indicate_failure = () =>
+			restarted.ShouldBeFalse();
+
+		static bool restarted;
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_a_message_to_a_dispatch_only_group : with_a_channel_group
 	{
 		Establish context = () =>
