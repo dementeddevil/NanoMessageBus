@@ -52,34 +52,15 @@ namespace NanoMessageBus
 	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
 	{
 		Establish context = () =>
-		{
-			SystemTime.SleepResolver = x => { sleeps++; };
-			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Callback(EachConnect);
-		};
-		static void EachConnect()
-		{
-			if (++attempts < TimesToThrow)
-				throw new ChannelConnectionException();
-		}
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
 
 		Because of = () =>
 			channelGroup.Initialize();
 
-		Because of_multi_threading = () =>
-			Thread.Sleep(100);
+		It should_delegate_reconnection_attempts_to_the_worker_group = () =>
+			mockWorkers.Verify(x => x.RestartWorkers(), Times.Once());
 
-		It should_delegate_reconnection_to_the_worker_group = () =>
-			mockWorkers.Verify(x => x.StartSingleWorker(Moq.It.IsAny<Action>()), Times.Once());
-
-		It should_reattempt_the_connection_until_it_is_established = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(TimesToThrow));
-
-		It should_sleep_between_each_connection_attempt = () =>
-			sleeps.ShouldEqual(TimesToThrow - 1);
-
-		const int TimesToThrow = 10;
 		static int attempts;
-		static int sleeps;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -91,7 +72,7 @@ namespace NanoMessageBus
 			mockChannel.Setup(x => x.Send(envelope));
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWorkers
-				.Setup(x => x.Add(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Setup(x => x.EnqueueWork(Moq.It.IsAny<Action<IMessagingChannel>>()))
 				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
 
 			channelGroup.Initialize();
@@ -128,7 +109,7 @@ namespace NanoMessageBus
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
 			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
 			mockWorkers
-				.Setup(x => x.Add(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Setup(x => x.EnqueueWork(Moq.It.IsAny<Action<IMessagingChannel>>()))
 				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
 
 			channelGroup.Initialize();
@@ -143,11 +124,8 @@ namespace NanoMessageBus
 		It should_NOT_invoke_the_callback_provided = () =>
 			callbackInvoked.ShouldEqual(0);
 
-		It should_stop_the_worker_group = () =>
-			mockWorkers.Verify(x => x.Stop(), Times.Once());
-
-		It should_attempt_to_reestablish_the_connection = () =>
-			mockWorkers.Verify(x => x.StartSingleWorker(Moq.It.IsAny<Action>()), Times.Once());
+		It should_restart_the_worker_group = () =>
+			mockWorkers.Verify(x => x.RestartWorkers(), Times.Once());
 
 		static int callbackInvoked;
 	}
@@ -338,17 +316,11 @@ namespace NanoMessageBus
 			mockConnector = new Mock<IChannelConnector>();
 			mockChannel = new Mock<IMessagingChannel>();
 			mockConfig = new Mock<IChannelGroupConfiguration>();
-			mockWorkers = new Mock<IWorkerGroup>();
+			mockWorkers = new Mock<IWorkerGroup<IMessagingChannel>>();
 			envelope = new Mock<ChannelEnvelope>().Object;
 
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
-			mockWorkers
-				.Setup(x => x.StartMultipleWorkers(Moq.It.IsAny<Action>()))
-				.Callback<Action>(x => x()); // simply invoke the callback provided
-			mockWorkers
-				.Setup(x => x.StartSingleWorker(Moq.It.IsAny<Action>()))
-				.Callback<Action>(x => x()); // simply invoke the callback provided
 
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object, mockWorkers.Object);
 		};
@@ -364,7 +336,7 @@ namespace NanoMessageBus
 		protected static DefaultChannelGroup channelGroup;
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
-		protected static Mock<IWorkerGroup> mockWorkers;
+		protected static Mock<IWorkerGroup<IMessagingChannel>> mockWorkers;
 		protected static ChannelEnvelope envelope;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Exception thrown;

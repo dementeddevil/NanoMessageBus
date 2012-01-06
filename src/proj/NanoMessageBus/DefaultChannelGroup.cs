@@ -35,7 +35,7 @@
 				// is much easier; in the case of a dispatch-only group, we could probably try
 				// to re-establish a connection here; for full-duplex we should let the
 				// BeginReceive do the re-establish connection loop
-				this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
+				this.workers.RestartWorkers();
 			}
 		}
 		protected virtual void TryConnect()
@@ -72,7 +72,7 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.workers.Add(x => this.TryChannel(() =>
+			this.workers.EnqueueWork(x => this.TryChannel(() =>
 			{
 				x.Send(envelope);
 				completed(x.CurrentTransaction);
@@ -86,10 +86,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				this.workers.Stop();
-				this.workers.StartSingleWorker(() => this.ReestablishConnection(0));
-				//// TODO: how to restart after connection re-established
-				//// start single worker needs some kind of "on complete" callback
+				this.workers.RestartWorkers();
 			}
 		}
 
@@ -161,7 +158,9 @@
 		}
 
 		public DefaultChannelGroup(
-			IChannelConnector connector, IChannelGroupConfiguration configuration, IWorkerGroup workers)
+			IChannelConnector connector,
+			IChannelGroupConfiguration configuration,
+			IWorkerGroup<IMessagingChannel> workers)
 		{
 			this.connector = connector;
 			this.configuration = configuration;
@@ -204,7 +203,7 @@
 		private readonly object locker = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;
-		private readonly IWorkerGroup workers;
+		private readonly IWorkerGroup<IMessagingChannel> workers;
 		private Action<IDeliveryContext> receiving;
 		private bool initialized;
 		private bool disposed;
