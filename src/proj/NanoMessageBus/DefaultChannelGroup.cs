@@ -16,48 +16,25 @@
 				if (this.initialized)
 					return;
 
-				// TODO: throw when disposed
-
 				this.initialized = true;
+				this.ThrowWhenDisposed();
+
 				this.TryInitialize();
 			}
 		}
 		protected virtual void TryInitialize()
 		{
-			try
-			{
-				this.TryConnect();
-			}
-			catch (ChannelConnectionException)
-			{
-				// should we even worry about trying to re-establish a connection here?
-				// if we let the re-establish occur only on BeginDispatch/Receive ordering
-				// is much easier; in the case of a dispatch-only group, we could probably try
-				// to re-establish a connection here; for full-duplex we should let the
-				// BeginReceive do the re-establish connection loop
-				this.workers.RestartWorkers();
-			}
-		}
-		protected virtual void TryConnect()
-		{
-			using (this.connector.Connect(this.configuration.GroupName)) { }
-		}
-		protected virtual void ReestablishConnection(int timeoutIndex)
-		{
-			this.GetTimeout(timeoutIndex).Sleep();
+			this.workers.Initialize(null, null); // TODO: provide values
 
 			try
 			{
-				this.TryConnect();
+				using (this.connector.Connect(this.configuration.GroupName))
+					if (this.DispatchOnly)
+						this.workers.StartQueue();
 			}
 			catch (ChannelConnectionException)
 			{
-				this.ReestablishConnection(timeoutIndex + 1);
 			}
-		}
-		protected virtual TimeSpan GetTimeout(int timeoutIndex)
-		{
-			return timeoutIndex < RetryDelay.Length ? RetryDelay[timeoutIndex] : RetryDelay[RetryDelay.Length - 1];
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
@@ -72,24 +49,12 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.workers.EnqueueWork(x => this.TryChannel(() =>
+			this.workers.Enqueue(x => this.TryChannel(() =>
 			{
 				x.Send(envelope);
 				completed(x.CurrentTransaction);
 			}));
 		}
-		protected virtual void TryChannel(Action callback)
-		{
-			try
-			{
-				callback();
-			}
-			catch (ChannelConnectionException)
-			{
-				this.workers.RestartWorkers();
-			}
-		}
-
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
@@ -104,30 +69,33 @@
 
 				this.receiving = callback;
 
-				// on ChannelConnectionException:
-				// 1. stop the workers
-				// 2. try to re-establish connection
-				// 3. once re-connected,
-				// 4. check to see if we're disposed (ensure proper locking)
-				// 5. start workers again using callback that started workers listening
-				//    (which should contain this set of steps as well?)
-				this.TryReceive(callback);
+				this.workers.StartActivity(x => this.TryChannel(() => x.Receive(callback)));
 			}
 		}
-		protected virtual void TryReceive(Action<IDeliveryContext> callback)
+		protected virtual void TryChannel(Action callback)
 		{
 			try
 			{
-				for (var i = 0; i < this.configuration.MinWorkers; i++)
-				{
-					using (var channel = this.connector.Connect(this.configuration.GroupName))
-					{
-						channel.Receive(callback);
-					}
-				}
+				callback();
 			}
 			catch (ChannelConnectionException)
 			{
+				this.TryRestart();
+			}
+			catch (ObjectDisposedException)
+			{
+				// no op
+			}
+		}
+		protected virtual void TryRestart()
+		{
+			try
+			{
+				this.workers.Restart();
+			}
+			catch (ObjectDisposedException)
+			{
+				// no op
 			}
 		}
 
@@ -158,9 +126,7 @@
 		}
 
 		public DefaultChannelGroup(
-			IChannelConnector connector,
-			IChannelGroupConfiguration configuration,
-			IWorkerGroup<IMessagingChannel> workers)
+			IChannelConnector connector, IChannelGroupConfiguration configuration, IWorkerGroup<IMessagingChannel> workers)
 		{
 			this.connector = connector;
 			this.configuration = configuration;
@@ -186,20 +152,11 @@
 				if (this.disposed)
 					return;
 
-				this.disposed = true; // TODO: stop workers
+				this.disposed = true;
+				this.workers.Dispose();
 			}
 		}
 
-		private static readonly TimeSpan[] RetryDelay =
-		{
-			TimeSpan.FromSeconds(0),
-			TimeSpan.FromSeconds(1),
-			TimeSpan.FromSeconds(2),
-			TimeSpan.FromSeconds(4),
-			TimeSpan.FromSeconds(8),
-			TimeSpan.FromSeconds(16),
-			TimeSpan.FromSeconds(32)
-		};
 		private readonly object locker = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;

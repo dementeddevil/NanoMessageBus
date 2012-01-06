@@ -9,13 +9,36 @@
 	/// <remarks>
 	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
 	/// </remarks>
-	public interface IWorkerGroup<out TWorkerState> : IDisposable
+	public interface IWorkerGroup<TWorkerState> : IDisposable
+		where TWorkerState : IDisposable
 	{
+		/// <summary>
+		/// Initializes the factory and causes all future worker groups to use the callbacks provided.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"></exception>
+		/// <param name="state">The callback used to get the state of the worker.</param>
+		/// <param name="restart">The callback used to restart the workers.</param>
+		void Initialize(Func<TWorkerState> state, Func<TWorkerState, bool> restart);
+
+		/// <summary>
+		/// Builds a worker group which starts performing the activity specified.
+		/// </summary>
+		/// <param name="activity">The activity to be performed by the workers.</param>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="InvalidOperationException"></exception>
+		void StartActivity(Action<TWorkerState> activity);
+
+		/// <summary>
+		/// Builds a worker group which watches a work item queue.
+		/// </summary>
+		/// <exception cref="InvalidOperationException"></exception>
+		void StartQueue();
+
 		/// <summary>
 		/// Initiates the stopping and restarting of the activity currently being performed.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void RestartWorkers();
+		void Restart();
 
 		/// <summary>
 		/// Adds a work item to be performed by one of the workers within the worker group.
@@ -25,6 +48,6 @@
 		/// </param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void EnqueueWork(Action<TWorkerState> workItem);
+		void Enqueue(Action<TWorkerState> workItem);
 	}
 }

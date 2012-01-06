@@ -30,6 +30,11 @@ namespace NanoMessageBus
 
 		It should_establish_a_messaging_channel = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
+
+		It should_initialize_the_worker_group = () =>
+			mockWorkers.Verify(x => x.Initialize(
+				Moq.It.IsAny<Func<IMessagingChannel>>(),
+				Moq.It.IsAny<Func<IMessagingChannel, bool>>()), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -49,6 +54,19 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
+	public class when_attempting_to_initialize_a_disposed_group : with_a_channel_group
+	{
+		Establish context = () =>
+			channelGroup.Dispose();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channelGroup.Initialize());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
 	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
 	{
 		Establish context = () =>
@@ -57,10 +75,24 @@ namespace NanoMessageBus
 		Because of = () =>
 			channelGroup.Initialize();
 
-		It should_delegate_reconnection_attempts_to_the_worker_group = () =>
-			mockWorkers.Verify(x => x.RestartWorkers(), Times.Once());
+		It should_consume_the_exception = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
+	}
 
-		static int attempts;
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_initializing_a_dispatch_only_group : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+			mockWorkers.Setup(x => x.StartQueue());
+		};
+
+		Because of = () =>
+			channelGroup.Initialize();
+
+		It should_instruct_the_worker_group_to_start_watching_the_work_item_queue = () =>
+			mockWorkers.Verify(x => x.StartQueue(), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -72,7 +104,7 @@ namespace NanoMessageBus
 			mockChannel.Setup(x => x.Send(envelope));
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWorkers
-				.Setup(x => x.EnqueueWork(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IMessagingChannel>>()))
 				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
 
 			channelGroup.Initialize();
@@ -109,7 +141,7 @@ namespace NanoMessageBus
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
 			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
 			mockWorkers
-				.Setup(x => x.EnqueueWork(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IMessagingChannel>>()))
 				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
 
 			channelGroup.Initialize();
@@ -125,7 +157,7 @@ namespace NanoMessageBus
 			callbackInvoked.ShouldEqual(0);
 
 		It should_restart_the_worker_group = () =>
-			mockWorkers.Verify(x => x.RestartWorkers(), Times.Once());
+			mockWorkers.Verify(x => x.Restart(), Times.Once());
 
 		static int callbackInvoked;
 	}
@@ -180,24 +212,6 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
-	public class when_the_configuration_specifies_more_than_one_worker : with_a_channel_group
-	{
-		Establish context = () =>
-			mockConfig.Setup(x => x.MinWorkers).Returns(MinWorkers);
-
-		Because of = () =>
-			channelGroup.Initialize();
-
-		Because of_multi_threading = () =>
-			Thread.Sleep(100);
-
-		It should_initialize_the_underlying_connection_exactly_once = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
-
-		const int MinWorkers = 3;
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_against_a_disposed_group : with_a_channel_group
 	{
 		Establish context = () =>
@@ -217,24 +231,38 @@ namespace NanoMessageBus
 	public class when_attempting_to_receive_messages_on_a_full_duplex_group : with_a_channel_group
 	{
 		Establish context = () =>
+			channelGroup.Initialize();
+
+		Because of = () =>
+			channelGroup.BeginReceive(callback);
+
+		It should_startup_the_worker_group = () =>
+			mockWorkers.Verify(x => x.StartActivity(Moq.It.IsAny<Action<IMessagingChannel>>()), Times.Once());
+
+		It should_have_the_worker_attempt_to_receive_a_message_on_the_channel_using_the_callback_provided = () =>
+			mockChannel.Verify(x => x.Receive(callback), Times.Once());
+
+		static readonly Action<IDeliveryContext> callback = context => { };
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_the_attempt_to_receive_a_message_throws_a_ChannelConnectionException : with_a_channel_group
+	{
+		private Establish context = () =>
 		{
-			mockConfig.Setup(x => x.MinWorkers).Returns(MinWorkers);
-			mockChannel.Setup(x => x.Receive(callback));
+			mockWorkers.Setup(x => x.Restart());
+			mockChannel
+				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
+				.Throws(new ChannelConnectionException());
 
 			channelGroup.Initialize();
 		};
 
 		Because of = () =>
-			channelGroup.BeginReceive(callback);
+			channelGroup.BeginReceive(x => { });
 
-		Because of_multi_threading = () =>
-			Thread.Sleep(100);
-
-		It should_pass_the_callback_to_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.Receive(callback), Times.Exactly(MinWorkers));
-
-		const int MinWorkers = 3;
-		static readonly Action<IDeliveryContext> callback = context => { };
+		It should_restart_the_workers = () =>
+			mockWorkers.Verify(x => x.Restart(), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -309,6 +337,76 @@ namespace NanoMessageBus
 		static readonly Action<IDeliveryContext> callback = channel => { };
 	}
 
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_the_underlying_channel_throws_an_ObjectDisposedException : with_a_channel_group
+	{
+		private Establish context = () =>
+		{
+			mockChannel
+				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
+				.Throws(new ObjectDisposedException("disposed"));
+
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			channelGroup.BeginReceive(x => { });
+
+		It should_consume_the_exception = () =>
+			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_attempting_to_restart_a_disposed_worker_group : with_a_channel_group
+	{
+		private Establish context = () =>
+		{
+			mockWorkers
+				.Setup(x => x.Restart())
+				.Throws(new ObjectDisposedException("disposed"));
+			mockChannel
+				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
+				.Throws(new ChannelConnectionException());
+
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			channelGroup.BeginReceive(x => { });
+
+		It should_consume_the_exception = () =>
+			mockWorkers.Verify(x => x.Restart(), Times.Once());
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_disposing_the_channel_group : with_a_channel_group
+	{
+		Establish context = () =>
+			mockWorkers.Setup(x => x.Dispose());
+
+		Because of = () =>
+			channelGroup.Dispose();
+
+		It should_dispose_of_the_worker_group = () =>
+			mockWorkers.Verify(x => x.Dispose(), Times.Once());
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_disposing_the_channel_group_more_than_once : with_a_channel_group
+	{
+		private Establish context = () =>
+		{
+			mockWorkers.Setup(x => x.Dispose());
+			channelGroup.Dispose();
+		};
+
+		Because of = () =>
+			channelGroup.Dispose();
+
+		It should_only_dispose_of_the_worker_group_the_first_time = () =>
+			mockWorkers.Verify(x => x.Dispose(), Times.Once());
+	}
+
 	public abstract class with_a_channel_group
 	{
 		Establish context = () =>
@@ -321,6 +419,10 @@ namespace NanoMessageBus
 
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
+
+			mockWorkers
+				.Setup(x => x.StartActivity(Moq.It.IsAny<Action<IMessagingChannel>>()))
+				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object)); // invoke callback as soon as it's provided
 
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object, mockWorkers.Object);
 		};
