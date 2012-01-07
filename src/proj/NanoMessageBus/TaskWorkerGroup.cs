@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Concurrent;
 	using System.Threading;
-	using System.Threading.Tasks;
 
 	public class TaskWorkerGroup<TState> : IWorkerGroup<TState>
 		where TState : IDisposable
@@ -32,7 +31,7 @@
 			if (activity == null)
 				throw new ArgumentNullException("activity");
 
-			// TODO: startup minWorkers tasks performing the activity provided
+			// TODO: startup minWorkers that perform the activity provided
 			this.TryStart(() => this.activityCallback = activity);
 		}
 		public virtual void StartQueue()
@@ -58,7 +57,7 @@
 			if (workItem == null)
 				throw new ArgumentNullException("workItem");
 
-			this.workItems.Enqueue(workItem);
+			this.workItems.Add(workItem);
 		}
 		public virtual void Restart()
 		{
@@ -144,11 +143,12 @@
 		}
 
 		private readonly object locker = new object();
-		private readonly ConcurrentBag<Task> workers = new ConcurrentBag<Task>();
-		private readonly ConcurrentQueue<Action<TState>> workItems = new ConcurrentQueue<Action<TState>>();
-		private readonly CancellationTokenSource cancellationSource = new CancellationTokenSource();
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
+
+		private readonly BlockingCollection<Action<TState>> workItems = new BlockingCollection<Action<TState>>();
+
+		private CancellationTokenSource tokenSource;
 
 		private Action<TState> activityCallback;
 		private Func<TState> stateCallback;
