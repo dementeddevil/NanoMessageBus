@@ -7,7 +7,7 @@ namespace NanoMessageBus
 	using Machine.Specifications;
 
 	[Subject(typeof(TaskWorkerGroup<>))]
-	public class when_a_value_less_than_1_is_provided_during_construction : with_a_worker_group
+	public class when_a_minWorkers_value_less_than_1_is_provided_during_construction : with_a_worker_group
 	{
 		Establish context = () =>
 			minWorkers = 0;
@@ -20,7 +20,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<>))]
-	public class when_a_value_less_than_the_minWorker_value_is_provided_during_construction : with_a_worker_group
+	public class when_the_maxWorkers_value_less_than_the_minWorkers_value_is_provided_during_construction : with_a_worker_group
 	{
 		Establish context = () =>
 		{
@@ -115,7 +115,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<>))]
-	public class when_starting_an_activity_against_a_started_worker_group : with_a_worker_group
+	public class when_starting_an_activity_against_a_previously_started_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
 		{
@@ -154,7 +154,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<>))]
-	public class when_starting_a_queue_against_an_already_started_worker_group : with_a_worker_group
+	public class when_starting_a_queue_against_a_previously_started_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
 		{
@@ -190,19 +190,6 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<>))]
-	public class when_restarting_a_disposed_worker_group : with_a_worker_group
-	{
-		Establish context = () =>
-			workerGroup.Dispose();
-
-		Because of = () =>
-			Try(() => workerGroup.Restart());
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(TaskWorkerGroup<>))]
 	public class when_restarting_a_not_yet_started_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
@@ -213,6 +200,19 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(TaskWorkerGroup<>))]
+	public class when_restarting_a_disposed_worker_group : with_a_worker_group
+	{
+		Establish context = () =>
+			workerGroup.Dispose();
+
+		Because of = () =>
+			Try(() => workerGroup.Restart());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
 	}
 
 	public abstract class with_a_worker_group
