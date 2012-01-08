@@ -18,7 +18,7 @@
 		/// <summary>
 		/// The callback to be used to resolve the current moment in time.
 		/// </summary>
-		public static Func<DateTime> NowResolver;
+		public static Func<DateTime> TimeResolver;
 
 		/// <summary>
 		/// Gets the current moment in time.
@@ -29,7 +29,7 @@
 		/// </remarks>
 		public static DateTime UtcNow
 		{
-			get { return NowResolver == null ? DateTime.UtcNow : NowResolver(); }
+			get { return TimeResolver == null ? DateTime.UtcNow : TimeResolver(); }
 		}
 
 		/// <summary>

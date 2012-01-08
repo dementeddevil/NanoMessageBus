@@ -500,7 +500,7 @@ namespace NanoMessageBus
 		Cleanup after = () =>
 		{
 			channelGroup.Dispose();
-			SystemTime.NowResolver = null;
+			SystemTime.TimeResolver = null;
 			SystemTime.SleepResolver = null;
 		};
 
