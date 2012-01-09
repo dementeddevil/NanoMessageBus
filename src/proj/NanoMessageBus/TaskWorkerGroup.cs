@@ -5,10 +5,10 @@
 	using System.Threading;
 	using System.Threading.Tasks;
 
-	public class TaskWorkerGroup<TState> : IWorkerGroup<TState>
-		where TState : class, IDisposable
+	public class TaskWorkerGroup<T> : IWorkerGroup<T>
+		where T : class, IDisposable
 	{
-		public virtual void Initialize(Func<TState> state, Func<bool> restart)
+		public virtual void Initialize(Func<T> state, Func<bool> restart)
 		{
 			if (state == null)
 				throw new ArgumentNullException("state");
@@ -27,7 +27,7 @@
 			}
 		}
 
-		public virtual void StartActivity(Action<IAsyncWorker<TState>> activity)
+		public virtual void StartActivity(Action<T> activity)
 		{
 			if (activity == null)
 				throw new ArgumentNullException("activity");
@@ -39,20 +39,22 @@
 
 				for (var i = 0; i < this.minWorkers; i++)
 				{
-					TState state = null;
+					T state = null;
 
 					Task.Factory
 						.StartNew(
-							() => this.activityCallback(new TaskWorker<TState>(
-							      	state = this.stateCallback(),
-							      	token,
-							      	this.minWorkers,
-							      	this.maxWorkers)),
+							() => this.StartActivity(state = this.stateCallback(), token),
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
 			});
 		}
+		protected virtual void StartActivity(T state, CancellationToken token)
+		{
+			while (!token.IsCancellationRequested)
+				this.activityCallback(state);
+		}
+
 		public virtual void StartQueue()
 		{
 			this.TryStart(() =>
@@ -61,23 +63,17 @@
 
 				for (var i = 0; i < this.minWorkers; i++)
 				{
-					TState state = null;
+					T state = null;
 
 					Task.Factory
 						.StartNew(
-							() => this.StartQueueTask(
-								new TaskWorker<TState>(
-							      	state = this.stateCallback(),
-							      	this.tokenSource.Token,
-							      	this.minWorkers,
-							      	this.maxWorkers),
-								token),
+							() => this.StartQueueTask(state = this.stateCallback(), token),
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
 			});
 		}
-		protected void StartQueueTask(IAsyncWorker<TState> state, CancellationToken token)
+		protected void StartQueueTask(T state, CancellationToken token)
 		{
 			foreach (var item in this.workItems.GetConsumingEnumerable(token))
 				item(state);
@@ -96,7 +92,7 @@
 			}
 		}
 
-		public virtual void Enqueue(Action<IAsyncWorker<TState>> workItem)
+		public virtual void Enqueue(Action<T> workItem)
 		{
 			if (workItem == null)
 				throw new ArgumentNullException("workItem");
@@ -187,13 +183,13 @@
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
 
-		private readonly BlockingCollection<Action<IAsyncWorker<TState>>> workItems =
-			new BlockingCollection<Action<IAsyncWorker<TState>>>();
+		private readonly BlockingCollection<Action<T>> workItems =
+			new BlockingCollection<Action<T>>();
 
 		private CancellationTokenSource tokenSource;
 
-		private Action<IAsyncWorker<TState>> activityCallback;
-		private Func<TState> stateCallback;
+		private Action<T> activityCallback;
+		private Func<T> stateCallback;
 		private Func<bool> restartCallback;
 
 		private bool initialized;

@@ -123,7 +123,7 @@
 
 				// TODO: dispose outbound group also
 				foreach (var group in this.inbound.Values)
-					group.Dispose(); // TODO: make sure this doesn't wrap around and result in a deadlock
+					group.Dispose();
 
 				this.inbound.Clear();
 			}

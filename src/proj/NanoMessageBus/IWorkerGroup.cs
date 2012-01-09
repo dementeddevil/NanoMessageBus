@@ -26,7 +26,7 @@
 		/// <param name="activity">The activity to be performed by the workers.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
-		void StartActivity(Action<IAsyncWorker<T>> activity);
+		void StartActivity(Action<T> activity);
 
 		/// <summary>
 		/// Builds a worker group which watches a work item queue.
@@ -49,6 +49,6 @@
 		/// </param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void Enqueue(Action<IAsyncWorker<T>> workItem);
+		void Enqueue(Action<T> workItem);
 	}
 }

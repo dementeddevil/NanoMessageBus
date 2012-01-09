@@ -51,7 +51,6 @@
     <Compile Include="Serialization\BinarySerializerTests.cs" />
     <Compile Include="SystemTimeTests.cs" />
     <Compile Include="TaskWorkerGroupTests.cs" />
-    <Compile Include="TaskWorkerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\proj\CustomDictionary.xml">
