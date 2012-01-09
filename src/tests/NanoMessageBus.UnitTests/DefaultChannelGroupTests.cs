@@ -293,15 +293,13 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			channelGroup.BeginReceive(callback);
+			channelGroup.BeginReceive(x => { });
 
 		It should_startup_the_worker_group = () =>
 			mockWorkers.Verify(x => x.StartActivity(Moq.It.IsAny<Action<IMessagingChannel>>()), Times.Once());
 
 		It should_have_the_worker_attempt_to_receive_a_message_on_the_channel_using_the_callback_provided = () =>
-			mockChannel.Verify(x => x.Receive(callback), Times.Once());
-
-		static readonly Action<IDeliveryContext> callback = context => { };
+			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]

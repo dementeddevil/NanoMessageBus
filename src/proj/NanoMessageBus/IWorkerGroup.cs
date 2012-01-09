@@ -51,4 +51,23 @@
 		/// <exception cref="ObjectDisposedException"></exception>
 		void Enqueue(Action<TWorkerState> workItem);
 	}
+
+	/// <summary>
+	/// Provides the ability to track state for activity being performed.
+	/// </summary>
+	/// <typeparam name="T">The state held by the worker.</typeparam>
+	public interface IWorkerState<out T>
+		where T : class, IDisposable
+	{
+		/// <summary>
+		/// Gets the state associated with the activity.
+		/// </summary>
+		T State { get; }
+
+		/// <summary>
+		/// Instructs the worker to perform the operation indicated.
+		/// </summary>
+		/// <param name="callback">The operation to be performed by the worker.</param>
+		void PerformOperation(Action callback);
+	}
 }

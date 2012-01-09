@@ -88,10 +88,17 @@
 				this.ThrowWhenDispatchOnly();
 
 				this.receiving = callback;
-
-				this.workers.StartActivity(x =>
-					this.TryChannel(() => x.Receive(callback)));
+				this.workers.StartActivity(this.TryReceive);
 			}
+		}
+		protected virtual void TryReceive(IMessagingChannel channel)
+		{
+			this.TryChannel(() =>
+				channel.Receive(context => this.TryReceive(channel, context)));
+		}
+		protected virtual void TryReceive(IMessagingChannel channel, IDeliveryContext context)
+		{
+			this.receiving(context);
 		}
 		protected virtual void TryChannel(Action callback)
 		{

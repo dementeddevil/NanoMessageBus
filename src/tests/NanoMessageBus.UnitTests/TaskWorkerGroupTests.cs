@@ -330,6 +330,7 @@ namespace NanoMessageBus
 			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
 	}
 
+	// TODO: what to do if the state callback throws an exception, e.g. ChannelConnectionException?
 	public abstract class with_a_worker_group
 	{
 		Establish context = () =>
