@@ -163,17 +163,9 @@ namespace NanoMessageBus
 
 		Because of = () =>
 		{
-			workerGroup.StartActivity(x =>
-			{
-				callback = x;
-				invocations++;
-			});
+			workerGroup.StartActivity(x => callback = x.State);
 			Thread.Sleep(200);
-			workerGroup.Dispose();
 		};
-
-		It should_invoke_the_callback_until_the_token_is_cancelled = () =>
-			invocations.ShouldBeGreaterThan(10000);
 
 		It should_pass_the_current_state_to_the_callback = () =>
 			callback.ShouldEqual(mockChannel.Object);
@@ -258,7 +250,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
-			workerGroup.Enqueue(x => callback = x);
+			workerGroup.Enqueue(x => callback = x.State);
 		};
 
 		Because of = () =>
@@ -369,7 +361,7 @@ namespace NanoMessageBus
 		protected static int invocations;
 		protected static Exception thrown;
 
-		protected static readonly Action<IMessagingChannel> EmptyAction = x => { };
+		protected static readonly Action<IWorkItem<IMessagingChannel>> EmptyAction = x => { };
 		protected static readonly Func<IMessagingChannel> ChannelDelegate = () => mockChannel.Object;
 		protected static readonly Func<bool> RestartDelegate = () => true;
 	}

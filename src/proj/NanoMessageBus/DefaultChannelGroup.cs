@@ -69,10 +69,11 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.workers.Enqueue(x => this.TryChannel(() =>
+			this.workers.Enqueue(worker => this.TryChannel(() =>
 			{
-				x.Send(envelope);
-				completed(x.CurrentTransaction);
+				var channel = worker.State;
+				channel.Send(envelope);
+				completed(channel.CurrentTransaction);
 			}));
 		}
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
@@ -88,9 +89,19 @@
 				this.ThrowWhenDispatchOnly();
 
 				this.receiving = callback;
-				this.workers.StartActivity(channel => this.TryChannel(() => channel.Receive(callback)));
+				this.workers.StartActivity(worker => this.TryChannel(() => this.TryReceive(worker)));
 			}
 		}
+		private void TryReceive(IWorkItem<IMessagingChannel> worker)
+		{
+			worker.State.Receive(context => this.TryReceive(worker, context));
+		}
+		protected virtual void TryReceive(IWorkItem<IMessagingChannel> worker, IDeliveryContext context)
+		{
+			// TODO: ensure that failed calls to this.receiving(context) invoke the appropriate restart code
+			worker.PerformOperation(() => this.receiving(context));
+		}
+
 		protected virtual void TryChannel(Action callback)
 		{
 			try

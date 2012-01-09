@@ -27,7 +27,7 @@
 			}
 		}
 
-		public virtual void StartActivity(Action<T> activity)
+		public virtual void StartActivity(Action<IWorkItem<T>> activity)
 		{
 			if (activity == null)
 				throw new ArgumentNullException("activity");
@@ -43,16 +43,15 @@
 
 					Task.Factory
 						.StartNew(
-							() => this.StartActivity(state = this.stateCallback(), token),
+							() => activity(new TaskWorker<T>(
+								state = this.stateCallback(),
+								token,
+								this.minWorkers,
+								this.maxWorkers)),
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
 			});
-		}
-		protected virtual void StartActivity(T state, CancellationToken token)
-		{
-			while (!token.IsCancellationRequested)
-				this.activityCallback(state);
 		}
 
 		public virtual void StartQueue()
@@ -67,16 +66,22 @@
 
 					Task.Factory
 						.StartNew(
-							() => this.StartQueueTask(state = this.stateCallback(), token),
+							() => this.StartQueueTask(
+								new TaskWorker<T>(
+									state = this.stateCallback(),
+									token,
+									this.minWorkers,
+									this.maxWorkers),
+								token),
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
 			});
 		}
-		protected void StartQueueTask(T state, CancellationToken token)
+		protected void StartQueueTask(IWorkItem<T> worker, CancellationToken token)
 		{
 			foreach (var item in this.workItems.GetConsumingEnumerable(token))
-				item(state);
+				item(worker);
 		}
 
 		protected virtual void TryStart(Action callback)
@@ -92,7 +97,7 @@
 			}
 		}
 
-		public virtual void Enqueue(Action<T> workItem)
+		public virtual void Enqueue(Action<IWorkItem<T>> workItem)
 		{
 			if (workItem == null)
 				throw new ArgumentNullException("workItem");
@@ -183,12 +188,12 @@
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
 
-		private readonly BlockingCollection<Action<T>> workItems =
-			new BlockingCollection<Action<T>>();
+		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems =
+			new BlockingCollection<Action<IWorkItem<T>>>();
 
 		private CancellationTokenSource tokenSource;
 
-		private Action<T> activityCallback;
+		private Action<IWorkItem<T>> activityCallback;
 		private Func<T> stateCallback;
 		private Func<bool> restartCallback;
 

@@ -172,8 +172,8 @@ namespace NanoMessageBus
 			mockChannel.Setup(x => x.Send(envelope));
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWorkers
-				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IMessagingChannel>>()))
-				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
+				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
+				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
 
 			channelGroup.Initialize();
 		};
@@ -205,8 +205,8 @@ namespace NanoMessageBus
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
 			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
 			mockWorkers
-				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IMessagingChannel>>()))
-				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
+				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
+				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
 
 			channelGroup.Initialize();
 		};
@@ -296,7 +296,7 @@ namespace NanoMessageBus
 			channelGroup.BeginReceive(x => { });
 
 		It should_startup_the_worker_group = () =>
-			mockWorkers.Verify(x => x.StartActivity(Moq.It.IsAny<Action<IMessagingChannel>>()), Times.Once());
+			mockWorkers.Verify(x => x.StartActivity(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()), Times.Once());
 
 		It should_have_the_worker_attempt_to_receive_a_message_on_the_channel_using_the_callback_provided = () =>
 			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
@@ -472,6 +472,7 @@ namespace NanoMessageBus
 			mockChannel = new Mock<IMessagingChannel>();
 			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockWorkers = new Mock<IWorkerGroup<IMessagingChannel>>();
+			mockWorker = new Mock<IWorkItem<IMessagingChannel>>();
 			envelope = new Mock<ChannelEnvelope>().Object;
 			stateCallback = null;
 			restartCallback = null;
@@ -480,6 +481,7 @@ namespace NanoMessageBus
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 			mockConfig.Setup(x => x.GroupName).Returns(ChannelGroupName);
 
+			mockWorker.Setup(x => x.State).Returns(mockChannel.Object);
 			mockWorkers
 				.Setup(x => x.Initialize(Moq.It.IsAny<Func<IMessagingChannel>>(), Moq.It.IsAny<Func<bool>>()))
 				.Callback<Func<IMessagingChannel>, Func<bool>>((state, restart) =>
@@ -490,8 +492,8 @@ namespace NanoMessageBus
 
 			// invoke callback as soon as it's provided
 			mockWorkers
-				.Setup(x => x.StartActivity(Moq.It.IsAny<Action<IMessagingChannel>>()))
-				.Callback<Action<IMessagingChannel>>(x => x(mockChannel.Object));
+				.Setup(x => x.StartActivity(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
+				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
 
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object, mockWorkers.Object);
 		};
@@ -513,6 +515,7 @@ namespace NanoMessageBus
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static Mock<IWorkerGroup<IMessagingChannel>> mockWorkers;
+		protected static Mock<IWorkItem<IMessagingChannel>> mockWorker;
 		protected static ChannelEnvelope envelope;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Exception thrown;

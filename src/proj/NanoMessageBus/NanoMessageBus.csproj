@@ -55,6 +55,7 @@
     <Compile Include="DefaultChannelGroupFactory.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="IWorkItem.cs" />
     <Compile Include="IChannelGroupConfiguration.cs" />
     <Compile Include="IOutboundChannel.cs" />
     <Compile Include="IChannelGroup.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\SerializationExtensions.cs" />
     <Compile Include="SystemTime.cs" />
+    <Compile Include="TaskWorker.cs" />
     <Compile Include="TaskWorkerGroup.cs" />
   </ItemGroup>
   <ItemGroup>
