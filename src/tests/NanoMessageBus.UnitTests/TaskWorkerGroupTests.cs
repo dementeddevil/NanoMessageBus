@@ -158,7 +158,6 @@ namespace NanoMessageBus
 			invocations.ShouldEqual(minWorkers);
 	}
 
-	[Ignore("when TaskWorker is completed.")]
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_running_an_activity : with_a_worker_group
 	{
@@ -251,7 +250,6 @@ namespace NanoMessageBus
 		   thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
-	[Ignore("when TaskWorker is completed.")]
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_enqueing_a_work_item_to_a_started_worker_group : with_a_worker_group
 	{

@@ -43,12 +43,11 @@
 
 					Task.Factory
 						.StartNew(
-							() =>
-							{
-								// TODO: register cancellation callback with token
-								state = this.stateCallback();
-								this.activityCallback(null); // TODO: how is the activity aware of cancellation?
-							},
+							() => this.activityCallback(new TaskWorker<TState>(
+							      	state = this.stateCallback(),
+							      	token,
+							      	this.minWorkers,
+							      	this.maxWorkers)),
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
@@ -66,11 +65,13 @@
 
 					Task.Factory
 						.StartNew(
-							() =>
-							{
-						      	state = this.stateCallback();
-								this.StartQueueTask(null, token); // TODO
-							},
+							() => this.StartQueueTask(
+								new TaskWorker<TState>(
+							      	state = this.stateCallback(),
+							      	this.tokenSource.Token,
+							      	this.minWorkers,
+							      	this.maxWorkers),
+								token),
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
