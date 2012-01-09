@@ -27,7 +27,7 @@
 			}
 		}
 
-		public virtual void StartActivity(Action<TState> activity) // TODO: cancellation callback needed to inform activity of cancellation token
+		public virtual void StartActivity(Action<IAsyncWorker<TState>> activity)
 		{
 			if (activity == null)
 				throw new ArgumentNullException("activity");
@@ -47,7 +47,7 @@
 							{
 								// TODO: register cancellation callback with token
 								state = this.stateCallback();
-								this.activityCallback(state); // TODO: how is the activity aware of cancellation?
+								this.activityCallback(null); // TODO: how is the activity aware of cancellation?
 							},
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
@@ -69,14 +69,14 @@
 							() =>
 							{
 						      	state = this.stateCallback();
-								this.StartQueueTask(state, token);
+								this.StartQueueTask(null, token); // TODO
 							},
 							TaskCreationOptions.LongRunning)
 						.ContinueWith(task => state.Dispose());
 				}
 			});
 		}
-		protected void StartQueueTask(TState state, CancellationToken token)
+		protected void StartQueueTask(IAsyncWorker<TState> state, CancellationToken token)
 		{
 			foreach (var item in this.workItems.GetConsumingEnumerable(token))
 				item(state);
@@ -95,7 +95,7 @@
 			}
 		}
 
-		public virtual void Enqueue(Action<TState> workItem)
+		public virtual void Enqueue(Action<IAsyncWorker<TState>> workItem)
 		{
 			if (workItem == null)
 				throw new ArgumentNullException("workItem");
@@ -186,11 +186,12 @@
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
 
-		private readonly BlockingCollection<Action<TState>> workItems = new BlockingCollection<Action<TState>>();
+		private readonly BlockingCollection<Action<IAsyncWorker<TState>>> workItems =
+			new BlockingCollection<Action<IAsyncWorker<TState>>>();
 
 		private CancellationTokenSource tokenSource;
 
-		private Action<TState> activityCallback;
+		private Action<IAsyncWorker<TState>> activityCallback;
 		private Func<TState> stateCallback;
 		private Func<bool> restartCallback;
 

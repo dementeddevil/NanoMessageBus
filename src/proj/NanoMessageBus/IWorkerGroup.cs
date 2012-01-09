@@ -5,12 +5,12 @@
 	/// <summary>
 	/// Represents a set of concurrent workers that perform activities.
 	/// </summary>
-	/// <typeparam name="TWorkerState">The state held by the worker.</typeparam>
+	/// <typeparam name="T">The state held by the worker.</typeparam>
 	/// <remarks>
 	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
 	/// </remarks>
-	public interface IWorkerGroup<TWorkerState> : IDisposable
-		where TWorkerState : class, IDisposable
+	public interface IWorkerGroup<T> : IDisposable
+		where T : class, IDisposable
 	{
 		/// <summary>
 		/// Initializes the factory and causes all future worker groups to use the callbacks provided.
@@ -18,7 +18,7 @@
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <param name="state">The callback used to get the state of the worker.</param>
 		/// <param name="restart">The callback used to restart the workers.</param>
-		void Initialize(Func<TWorkerState> state, Func<bool> restart);
+		void Initialize(Func<T> state, Func<bool> restart);
 
 		/// <summary>
 		/// Builds a worker group which starts performing the activity specified.
@@ -26,7 +26,7 @@
 		/// <param name="activity">The activity to be performed by the workers.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
-		void StartActivity(Action<TWorkerState> activity);
+		void StartActivity(Action<IAsyncWorker<T>> activity);
 
 		/// <summary>
 		/// Builds a worker group which watches a work item queue.
@@ -49,25 +49,6 @@
 		/// </param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void Enqueue(Action<TWorkerState> workItem);
-	}
-
-	/// <summary>
-	/// Provides the ability to track state for activity being performed.
-	/// </summary>
-	/// <typeparam name="T">The state held by the worker.</typeparam>
-	public interface IWorkerState<out T>
-		where T : class, IDisposable
-	{
-		/// <summary>
-		/// Gets the state associated with the activity.
-		/// </summary>
-		T State { get; }
-
-		/// <summary>
-		/// Instructs the worker to perform the operation indicated.
-		/// </summary>
-		/// <param name="callback">The operation to be performed by the worker.</param>
-		void PerformOperation(Action callback);
+		void Enqueue(Action<IAsyncWorker<T>> workItem);
 	}
 }

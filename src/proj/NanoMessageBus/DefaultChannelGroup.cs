@@ -72,12 +72,12 @@
 			this.workers.Enqueue(x => this.TryDispatch(x, envelope, completed));
 		}
 		protected virtual void TryDispatch(
-			IMessagingChannel channel, ChannelEnvelope envelope, Action<IChannelTransaction> completed)
+			IAsyncWorker<IMessagingChannel> asyncWorker, ChannelEnvelope envelope, Action<IChannelTransaction> completed)
 		{
 			this.TryChannel(() =>
 			{
-				channel.Send(envelope);
-				completed(channel.CurrentTransaction);
+				asyncWorker.State.Send(envelope);
+				completed(asyncWorker.State.CurrentTransaction);
 			});
 		}
 
@@ -97,12 +97,12 @@
 				this.workers.StartActivity(this.TryReceive);
 			}
 		}
-		protected virtual void TryReceive(IMessagingChannel channel)
+		protected virtual void TryReceive(IAsyncWorker<IMessagingChannel> asyncWorker)
 		{
 			this.TryChannel(() =>
-				channel.Receive(context => this.TryReceive(channel, context)));
+				asyncWorker.State.Receive(context => this.TryReceive(asyncWorker, context)));
 		}
-		protected virtual void TryReceive(IMessagingChannel channel, IDeliveryContext context)
+		protected virtual void TryReceive(IAsyncWorker<IMessagingChannel> asyncWorker, IDeliveryContext context)
 		{
 			// TODO: 
 			this.receiving(context);

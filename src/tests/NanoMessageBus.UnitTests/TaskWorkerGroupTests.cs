@@ -16,7 +16,7 @@ namespace NanoMessageBus
 			minWorkers = 0;
 
 		Because of = () =>
-			Try(BuildGroup);
+			Try(Build);
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -32,7 +32,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			Try(BuildGroup);
+			Try(Build);
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -139,7 +139,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			minWorkers = maxWorkers = 3;
-			BuildGroup();
+			Build();
 
 			workerGroup.Initialize(() =>
 			{
@@ -158,6 +158,7 @@ namespace NanoMessageBus
 			invocations.ShouldEqual(minWorkers);
 	}
 
+	[Ignore("when TaskWorker is completed.")]
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_running_an_activity : with_a_worker_group
 	{
@@ -171,9 +172,9 @@ namespace NanoMessageBus
 		};
 
 		It should_invoke_the_callback_provided_and_pass_in_the_state = () =>
-			callback.ShouldEqual(mockChannel.Object);
+			callback.State.ShouldEqual(mockChannel.Object);
 
-		static IMessagingChannel callback;
+		static IAsyncWorker<IMessagingChannel> callback;
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -221,7 +222,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			minWorkers = maxWorkers = 3;
-			BuildGroup();
+			Build();
 
 			workerGroup.Initialize(() =>
 			{
@@ -250,6 +251,7 @@ namespace NanoMessageBus
 		   thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
+	[Ignore("when TaskWorker is completed.")]
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_enqueing_a_work_item_to_a_started_worker_group : with_a_worker_group
 	{
@@ -266,9 +268,9 @@ namespace NanoMessageBus
 		};
 
 		It should_invoke_the_work_item_callback_provided = () =>
-			callback.ShouldEqual(mockChannel.Object);
+			callback.State.ShouldEqual(mockChannel.Object);
 
-		static IMessagingChannel callback;
+		static IAsyncWorker<IMessagingChannel> callback;
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -313,7 +315,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			minWorkers = maxWorkers = 3;
-			BuildGroup();
+			Build();
 
 			workerGroup.Initialize(() => mockChannel.Object, () => false);
 			workerGroup.StartQueue();
@@ -343,10 +345,10 @@ namespace NanoMessageBus
 
 			mockChannel = new Mock<IMessagingChannel>();
 
-			BuildGroup();
+			Build();
 		};
 
-		protected static void BuildGroup()
+		protected static void Build()
 		{
 			workerGroup = new TaskWorkerGroup<IMessagingChannel>(minWorkers, maxWorkers);
 		}
