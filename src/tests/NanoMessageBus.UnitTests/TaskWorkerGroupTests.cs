@@ -51,7 +51,7 @@ namespace NanoMessageBus
 	public class when_a_null_restart_callback_is_provided_during_initialization : with_a_worker_group
 	{
 		Because of = () =>
-			Try(() => workerGroup.Initialize(() => null, null));
+			Try(() => workerGroup.Initialize(() => mockChannel.Object, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -64,7 +64,7 @@ namespace NanoMessageBus
 			workerGroup.Dispose();
 
 		Because of = () =>
-			Try(() => workerGroup.Initialize(() => null, () => true));
+			Try(() => workerGroup.Initialize(() => mockChannel.Object, () => true));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -74,10 +74,10 @@ namespace NanoMessageBus
 	public class when_initializing_an_already_initialized_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
-			workerGroup.Initialize(() => null, () => true);
+			workerGroup.Initialize(() => mockChannel.Object, () => true);
 
 		Because of = () =>
-			Try(() => workerGroup.Initialize(() => null, () => true));
+			Try(() => workerGroup.Initialize(() => mockChannel.Object, () => true));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -121,7 +121,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(() => null, () => true);
+			workerGroup.Initialize(() => mockChannel.Object, () => true);
 			workerGroup.StartActivity(x => { });
 		};
 
@@ -160,7 +160,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(() => null, () => true);
+			workerGroup.Initialize(() => mockChannel.Object, () => true);
 			workerGroup.StartQueue();
 		};
 
@@ -175,18 +175,20 @@ namespace NanoMessageBus
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_starting_a_queue_using_a_worker_group : with_a_worker_group
 	{
-		Establish context = () =>
-			workerGroup.Initialize(() =>
-			{
-				invocations++;
-				return null;
-			}, () => false);
+		Establish context = () => workerGroup.Initialize(() =>
+		{
+			invocations++;
+			return mockChannel.Object;
+		}, () => false);
 
 		Because of = () =>
+		{
+			minWorkers = 3;
 			workerGroup.StartQueue();
+		};
 
-		It should_invoke_the_state_callback_provided = () =>
-			invocations.ShouldEqual(1);
+		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
+			invocations.ShouldEqual(minWorkers);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -232,7 +234,7 @@ namespace NanoMessageBus
 	public class when_restarting_a_not_yet_started_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
-			workerGroup.Initialize(() => null, () => true);
+			workerGroup.Initialize(() => mockChannel.Object, () => true);
 
 		Because of = () =>
 			Try(() => workerGroup.Restart());
