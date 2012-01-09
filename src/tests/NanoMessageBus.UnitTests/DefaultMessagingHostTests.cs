@@ -317,6 +317,13 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			var outboundConfig = new Mock<IChannelGroupConfiguration>();
+			outboundConfig.Setup(x => x.GroupName).Returns("dispatch-only group");
+			mockConfigs.Add(outboundConfig);
+
+			outboundGroup.Setup(x => x.DispatchOnly).Returns(true);
+			mockFactory.Setup(x => x.Build(Connectors[0], outboundConfig.Object)).Returns(outboundGroup.Object);
+
 			mockGroup.Setup(x => x.Dispose());
 			host.Initialize();
 		};
@@ -324,8 +331,13 @@ namespace NanoMessageBus
 		Because of = () =>
 			host.Dispose();
 
-		It should_dispose_each_underlying_channel_group = () =>
+		It should_dispose_each_underlying_inbound_channel_group = () =>
 			mockGroup.Verify(x => x.Dispose(), Times.Once());
+
+		It should_dispose_each_underlying_outbound_channel_group = () =>
+			outboundGroup.Verify(x => x.Dispose(), Times.Once());
+
+		static readonly Mock<IChannelGroup> outboundGroup = new Mock<IChannelGroup>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]

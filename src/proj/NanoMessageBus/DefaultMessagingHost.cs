@@ -120,13 +120,16 @@
 					return;
 
 				this.disposed = true;
-
-				// TODO: dispose outbound group also
-				foreach (var group in this.inbound.Values)
-					group.Dispose();
-
-				this.inbound.Clear();
+				Dispose(this.inbound);
+				Dispose(this.outbound);
 			}
+		}
+		private static void Dispose(IDictionary<string, IChannelGroup> groups)
+		{
+			foreach (var group in groups.Values)
+				group.Dispose();
+
+			groups.Clear();
 		}
 
 		private readonly object sync = new object();

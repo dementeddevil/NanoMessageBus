@@ -4,7 +4,8 @@
 	{
 		public virtual IChannelGroup Build(IChannelConnector connector, IChannelGroupConfiguration configuration)
 		{
-			return new DefaultChannelGroup(connector, configuration, null); // TODO
+			var workers = new TaskWorkerGroup<IMessagingChannel>(configuration.MinWorkers, configuration.MaxWorkers);
+			return new DefaultChannelGroup(connector, configuration, workers);
 		}
 	}
 }
