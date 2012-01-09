@@ -15,7 +15,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive(ZeroTimeout, DisposeCallback));
+				subscription.Receive(ZeroTimeout, DisposeCallback));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -28,7 +28,7 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Because of = () =>
 			exception = Catch.Exception(() =>
-				subscription.BeginReceive(DefaultTimeout, null));
+				subscription.Receive(DefaultTimeout, null));
 
 		It should_throw_an_exception = () =>
 			exception.ShouldBeOfType<ArgumentNullException>();
@@ -44,7 +44,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 			thrown = Catch.Exception(() =>
-				subscription.BeginReceive(DefaultTimeout, DisposeCallback));
+				subscription.Receive(DefaultTimeout, DisposeCallback));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -57,7 +57,7 @@ namespace NanoMessageBus.RabbitChannel
 			mockRealSubscription.Setup(x => x.BeginReceive(DefaultTimeout)).Returns((BasicDeliverEventArgs)null);
 
 		Because of = () =>
-			subscription.BeginReceive(DefaultTimeout, delivery => ++invocations > 1);
+			subscription.Receive(DefaultTimeout, delivery => ++invocations > 1);
 
 		It should_invoke_the_callback_and_then_exit_the_receive_loop = () =>
 			invocations.ShouldEqual(1);
@@ -67,7 +67,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_a_subscription_is_disposed_during_receive : using_a_subscription
 	{
 		Because of = () =>
-			subscription.BeginReceive(DefaultTimeout, DisposeCallback);
+			subscription.Receive(DefaultTimeout, DisposeCallback);
 
 		It should_exit_the_receive_loop = () =>
 			true.ShouldBeTrue(); // the fact that we got here means the loop exited
@@ -80,7 +80,7 @@ namespace NanoMessageBus.RabbitChannel
 			.Setup(x => x.BeginReceive(DefaultTimeout))
 			.Returns(new Mock<BasicDeliverEventArgs>().Object);
 
-		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
+		Because of = () => subscription.Receive(DefaultTimeout, msg =>
 		{
 			message = msg;
 			return false; // finished receiving
@@ -99,7 +99,7 @@ namespace NanoMessageBus.RabbitChannel
 			.Setup(x => x.BeginReceive(DefaultTimeout))
 			.Returns((BasicDeliverEventArgs)null);
 
-		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
+		Because of = () => subscription.Receive(DefaultTimeout, msg =>
 		{
 			invocations++;
 			return false; // finished receiving
@@ -116,7 +116,7 @@ namespace NanoMessageBus.RabbitChannel
 			.Setup(x => x.BeginReceive(DefaultTimeout))
 			.Returns(new Mock<BasicDeliverEventArgs>().Object);
 
-		Because of = () => subscription.BeginReceive(DefaultTimeout, msg =>
+		Because of = () => subscription.Receive(DefaultTimeout, msg =>
 			MaxInvocations != ++invocations);
 
 		It should_loop_until_the_subscription_is_disposed = () =>
@@ -133,7 +133,7 @@ namespace NanoMessageBus.RabbitChannel
 			.Throws(new OperationInterruptedException(null));
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.BeginReceive(DefaultTimeout, DisposeCallback));
+			thrown = Catch.Exception(() => subscription.Receive(DefaultTimeout, DisposeCallback));
 
 		It should_throw_a_ChannelConnectionException = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();

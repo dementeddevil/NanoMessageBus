@@ -6,7 +6,7 @@
 
 	public class RabbitSubscription : IDisposable
 	{
-		public virtual void BeginReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
+		public virtual void Receive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
 			if (timeout < TimeSpan.Zero)
 				throw new ArgumentException("The timespan must be positive.", "timeout");
@@ -25,14 +25,14 @@
 		{
 			try
 			{
-				this.Receive(timeout, callback);
+				this.PerformReceive(timeout, callback);
 			}
 			catch (OperationInterruptedException e)
 			{
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}
-		protected virtual void Receive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
+		protected virtual void PerformReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
 			while (!this.disposed)
 				if (!callback(this.adapter.BeginReceive(timeout)))

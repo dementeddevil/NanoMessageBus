@@ -25,7 +25,7 @@
 			this.Try(() =>
 			{
 				this.subscription = this.subscriptionFactory();
-				this.subscription.BeginReceive(this.configuration.ReceiveTimeout, msg =>
+				this.subscription.Receive(this.configuration.ReceiveTimeout, msg =>
 					this.Receive(msg, callback));
 			});
 		}
