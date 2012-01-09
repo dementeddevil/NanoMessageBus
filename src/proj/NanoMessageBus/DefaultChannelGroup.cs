@@ -69,12 +69,18 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.workers.Enqueue(x => this.TryChannel(() =>
-			{
-				x.Send(envelope);
-				completed(x.CurrentTransaction);
-			}));
+			this.workers.Enqueue(x => this.TryDispatch(x, envelope, completed));
 		}
+		protected virtual void TryDispatch(
+			IMessagingChannel channel, ChannelEnvelope envelope, Action<IChannelTransaction> completed)
+		{
+			this.TryChannel(() =>
+			{
+				channel.Send(envelope);
+				completed(channel.CurrentTransaction);
+			});
+		}
+
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
@@ -98,8 +104,10 @@
 		}
 		protected virtual void TryReceive(IMessagingChannel channel, IDeliveryContext context)
 		{
+			// TODO: 
 			this.receiving(context);
 		}
+
 		protected virtual void TryChannel(Action callback)
 		{
 			try
