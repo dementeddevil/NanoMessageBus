@@ -172,7 +172,7 @@
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
-				throw new ObjectDisposedException("RabbitChannel");
+				throw new ObjectDisposedException(typeof(RabbitChannel).Name);
 		}
 		protected virtual void ThrowWhenSubscriptionExists()
 		{

@@ -87,7 +87,7 @@
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
-				throw new ObjectDisposedException("RabbitConnector");
+				throw new ObjectDisposedException(typeof(RabbitConnector).Name);
 		}
 
 		public RabbitConnector(

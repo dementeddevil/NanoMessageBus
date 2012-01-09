@@ -146,7 +146,7 @@ namespace NanoMessageBus
 				.Callback(() =>
 				{
 					if (invocations++ > 0)
-						throw new ObjectDisposedException("disposed"); // throw after first call
+						throw new ObjectDisposedException(string.Empty); // throw after first call
 				});
 			channelGroup.Initialize();
 		};

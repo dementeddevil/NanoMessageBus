@@ -19,7 +19,7 @@
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
-				throw new ObjectDisposedException("RabbitSubscription");
+				throw new ObjectDisposedException(typeof(RabbitSubscription).Name);
 		}
 		protected virtual void TryReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{

@@ -88,7 +88,7 @@
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
-				throw new ObjectDisposedException("RabbitTransaction");
+				throw new ObjectDisposedException(typeof(RabbitTransaction).Name);
 		}
 		protected virtual void ThrowWhenRolledBack()
 		{
