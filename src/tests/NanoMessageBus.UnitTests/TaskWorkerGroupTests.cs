@@ -4,6 +4,7 @@
 namespace NanoMessageBus
 {
 	using System;
+	using System.Threading;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -133,6 +134,49 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_starting_an_activity : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			minWorkers = maxWorkers = 3;
+			BuildGroup();
+
+			workerGroup.Initialize(() =>
+			{
+				invocations++;
+				return mockChannel.Object;
+			}, () => false);
+		};
+
+		Because of = () =>
+			workerGroup.StartActivity(x => { });
+
+		Because of_threading = () =>
+			Thread.Sleep(10);
+
+		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
+			invocations.ShouldEqual(minWorkers);
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_running_an_activity : with_a_worker_group
+	{
+		Establish context = () =>
+			workerGroup.Initialize(() => mockChannel.Object, () => false);
+
+		Because of = () =>
+		{
+			workerGroup.StartActivity(x => callback = x);
+			Thread.Sleep(200);
+		};
+
+		It should_invoke_the_callback_provided_and_pass_in_the_state = () =>
+			callback.ShouldEqual(mockChannel.Object);
+
+		static IMessagingChannel callback;
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_starting_a_queue_against_a_disposed_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
@@ -171,21 +215,26 @@ namespace NanoMessageBus
 			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
-	[Ignore("not implemented")]
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_starting_a_queue_using_a_worker_group : with_a_worker_group
 	{
-		Establish context = () => workerGroup.Initialize(() =>
+		Establish context = () =>
 		{
-			invocations++;
-			return mockChannel.Object;
-		}, () => false);
+			minWorkers = maxWorkers = 3;
+			BuildGroup();
+
+			workerGroup.Initialize(() =>
+			{
+				invocations++;
+				return mockChannel.Object;
+			}, () => false);
+		};
 
 		Because of = () =>
-		{
-			minWorkers = 3;
 			workerGroup.StartQueue();
-		};
+
+		Because of_threading = () =>
+			Thread.Sleep(10);
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
 			invocations.ShouldEqual(minWorkers);
@@ -201,7 +250,6 @@ namespace NanoMessageBus
 		   thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
-	[Ignore("not implemented")]
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_enqueing_a_work_item_to_a_started_worker_group : with_a_worker_group
 	{
@@ -212,7 +260,10 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
+		{
 			workerGroup.StartQueue();
+			Thread.Sleep(200);
+		};
 
 		It should_invoke_the_work_item_callback_provided = () =>
 			callback.ShouldEqual(mockChannel.Object);
@@ -254,6 +305,29 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_disposing_an_active_worker_group : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			minWorkers = maxWorkers = 3;
+			BuildGroup();
+
+			workerGroup.Initialize(() => mockChannel.Object, () => false);
+			workerGroup.StartQueue();
+			Thread.Sleep(50);
+		};
+
+		Because of = () =>
+		{
+			workerGroup.Dispose();
+			Thread.Sleep(50);
+		};
+
+		It should_dispose_all_state_objects_retrieved_through_the_state_callback = () =>
+			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
 	}
 
 	public abstract class with_a_worker_group

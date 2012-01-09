@@ -3,9 +3,10 @@
 	using System;
 	using System.Collections.Concurrent;
 	using System.Threading;
+	using System.Threading.Tasks;
 
 	public class TaskWorkerGroup<TState> : IWorkerGroup<TState>
-		where TState : IDisposable
+		where TState : class, IDisposable
 	{
 		public virtual void Initialize(Func<TState> state, Func<bool> restart)
 		{
@@ -26,19 +27,61 @@
 			}
 		}
 
-		public virtual void StartActivity(Action<TState> activity)
+		public virtual void StartActivity(Action<TState> activity) // TODO: cancellation callback needed to inform activity of cancellation token
 		{
 			if (activity == null)
 				throw new ArgumentNullException("activity");
 
-			// TODO: startup minWorkers that perform the activity provided
-			this.TryStart(() => this.activityCallback = activity);
+			this.TryStart(() =>
+			{
+				this.activityCallback = activity;
+				var token = this.tokenSource.Token; // copy of token within protected/locked boundary for later use
+
+				for (var i = 0; i < this.minWorkers; i++)
+				{
+					TState state = null;
+
+					Task.Factory
+						.StartNew(
+							() =>
+							{
+								// TODO: register cancellation callback with token
+								state = this.stateCallback();
+								this.activityCallback(state); // TODO: how is the activity aware of cancellation?
+							},
+							TaskCreationOptions.LongRunning)
+						.ContinueWith(task => state.Dispose());
+				}
+			});
 		}
 		public virtual void StartQueue()
 		{
-			// TODO: startup minWorkers that watch the workItem queue
-			this.TryStart(() => { });
+			this.TryStart(() =>
+			{
+				var token = this.tokenSource.Token; // copy of token within protected/locked boundary for later use
+
+				for (var i = 0; i < this.minWorkers; i++)
+				{
+					TState state = null;
+
+					Task.Factory
+						.StartNew(
+							() =>
+							{
+						      	state = this.stateCallback();
+								this.StartQueueTask(state, token);
+							},
+							TaskCreationOptions.LongRunning)
+						.ContinueWith(task => state.Dispose());
+				}
+			});
 		}
+		protected void StartQueueTask(TState state, CancellationToken token)
+		{
+			foreach (var item in this.workItems.GetConsumingEnumerable(token))
+				item(state);
+		}
+
 		protected virtual void TryStart(Action callback)
 		{
 			lock (this.locker)
@@ -47,7 +90,7 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyStarted();
 
-				this.started = true;
+				this.tokenSource = new CancellationTokenSource();
 				callback();
 			}
 		}
@@ -67,16 +110,11 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
 
-				// TODO:
-				// 1. prepare all workers and their corresponding TState to be cleanly and safely disposed
-				//    (perhaps disposal is the last part of the task?)
-				// 2. clear the workers collection
-				// 3. startup a single task and TState that invokes the restart callback
-				// 4. success brings everything back online
-				// 5. failure continues but with a longer thread on the task thread
-				//    make sure we check dispose at each loop
-				//    do we need some kind of 1-second thread sleep that wakes up to ensure dispose hasn't been called
-				//    and to allow/facilitate clean shutdown of the entire app domain?
+				// TODO: cancel the token and start the polling task on a single thread with the restartCallback
+				// be aware of sleeping for too long (longer than 1-2 seconds) between
+				// checks to the cancellation token
+				// success nullifies the current token (in a lock statement) and
+				// then invokes the previously running activity
 			}
 		}
 
@@ -97,12 +135,12 @@
 		}
 		protected virtual void ThrowWhenAlreadyStarted()
 		{
-			if (this.started)
+			if (this.tokenSource != null)
 				throw new InvalidOperationException("The worker group has already been started.");
 		}
 		protected virtual void ThrowWhenNotStarted()
 		{
-			if (!this.started)
+			if (this.tokenSource == null)
 				throw new InvalidOperationException("The worker group has not yet been started.");
 		}
 
@@ -137,8 +175,10 @@
 				if (this.disposed)
 					return;
 
-				// TODO: clean shutdown
 				this.disposed = true;
+
+				if (this.tokenSource != null)
+					this.tokenSource.Cancel();
 			}
 		}
 
@@ -155,7 +195,6 @@
 		private Func<bool> restartCallback;
 
 		private bool initialized;
-		private bool started;
 		private bool disposed;
 	}
 }
