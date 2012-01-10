@@ -50,7 +50,9 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyStarted();
 
+				this.activityCallback = activity;
 				this.tokenSource = this.tokenSource ?? new CancellationTokenSource();
+
 				for (var i = 0; i < this.minWorkers; i++)
 					this.StartWorker(activity);
 			}
@@ -85,10 +87,16 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
 
-				// TODO: cancel the token and start the polling task on a single thread with the restartCallback
-				// be aware of sleeping for too long (longer than 1-2 seconds) between checks to the cancellation token
-				// success nullifies the current token (in a lock statement) and
-				// then invokes the previously running activity
+				this.tokenSource.Cancel();
+				var source = this.tokenSource = new CancellationTokenSource();
+				this.StartWorker((worker, token) =>
+				{
+					while (!source.Token.IsCancellationRequested && !this.restartCallback())
+						Thread.Sleep(1000);
+
+					if (!this.disposed)
+						this.TryStartWorkers(this.activityCallback);
+				});
 			}
 		}
 
@@ -161,6 +169,7 @@
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
 		private CancellationTokenSource tokenSource;
+		private Action<IWorkItem<T>, CancellationToken> activityCallback;
 		private Func<T> stateCallback;
 		private Func<bool> restartCallback;
 		private bool initialized;

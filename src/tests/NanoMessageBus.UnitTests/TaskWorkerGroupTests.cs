@@ -159,7 +159,7 @@ namespace NanoMessageBus
 
 			workerGroup.Initialize(() =>
 			{
-				invocations++;
+				Interlocked.Increment(ref invocations);
 				return mockChannel.Object;
 			}, RestartDelegate);
 		};
@@ -238,7 +238,7 @@ namespace NanoMessageBus
 
 			workerGroup.Initialize(() =>
 			{
-				invocations++;
+				Interlocked.Increment(ref invocations);
 				return mockChannel.Object;
 			}, RestartDelegate);
 		};
@@ -318,6 +318,53 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_restarting_an_active_worker_group : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			workerGroup.Initialize(ChannelDelegate, () =>
+			{
+				Thread.Sleep(1);
+				return restartAttempts++ >= 5;
+			});
+			workerGroup.StartActivity(x =>
+			{
+				while (activityNotCanceled == 0)
+					x.PerformOperation(() =>
+					{
+						if (restarted > 0)
+							Interlocked.Increment(ref activityNotCanceled);
+
+						Interlocked.Increment(ref invocations);
+					});
+			});
+			Thread.Sleep(500);
+		};
+
+		Because of = () =>
+		{
+			workerGroup.Restart();
+			Thread.Sleep(100);
+			Interlocked.Increment(ref restarted);
+			invocationsBeforeRestart = invocations;
+		};
+
+		It should_schedule_cancellation_of_invocations_to_the_provided_activity_callback = () =>
+			activityNotCanceled.ShouldEqual(0);
+
+		It should_invoke_the_restart_callback_until_it_returns_true = () =>
+			restartAttempts.ShouldEqual(5);
+
+		It should_resume_invocations_to_the_provided_activity = () =>
+			invocations.ShouldBeGreaterThan(invocationsBeforeRestart);
+
+		static int restarted;
+		static int activityNotCanceled;
+		static int invocationsBeforeRestart;
+		static int restartAttempts;
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_disposing_an_active_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
@@ -340,7 +387,6 @@ namespace NanoMessageBus
 			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
 	}
 
-	// TODO: if state callback throws an exception, be sure that continuation task doesn't throw an NRE
 	public abstract class with_a_worker_group
 	{
 		Establish context = () =>
@@ -353,8 +399,7 @@ namespace NanoMessageBus
 
 			mockChannel = new Mock<IMessagingChannel>();
 
-			RestartDelegate(); // TODO: remove after restart behavior has been created
-
+			RestartDelegate(); // uncovered code now covered
 			Build();
 		};
 
