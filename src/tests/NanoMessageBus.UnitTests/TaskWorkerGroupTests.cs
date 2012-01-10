@@ -322,31 +322,37 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(ChannelDelegate, () =>
-			{
-				Thread.Sleep(1);
-				return restartAttempts++ >= 5;
-			});
-			workerGroup.StartActivity(x =>
-			{
-				while (activityNotCanceled == 0)
-					x.PerformOperation(() =>
-					{
-						if (restarted > 0)
-							Interlocked.Increment(ref activityNotCanceled);
-
-						Interlocked.Increment(ref invocations);
-					});
-			});
-			Thread.Sleep(500);
+			workerGroup.Initialize(ChannelDelegate, Restart);
+			workerGroup.StartActivity(CountInvocations);
 		};
+		static bool Restart()
+		{
+			Thread.Sleep(1);
+			if (++restartAttempts < 5)
+				return false;
+
+			restarted = 0;
+			return true;
+		}
+		static void CountInvocations(IWorkItem<IMessagingChannel> worker)
+		{
+			while (invocations >= 0)
+				worker.PerformOperation(() =>
+				{
+					if (restarted > 0)
+						Interlocked.Increment(ref activityNotCanceled);
+
+					Interlocked.Increment(ref invocations);
+				});
+		}
 
 		Because of = () =>
 		{
-			workerGroup.Restart();
 			Thread.Sleep(100);
+			workerGroup.Restart();
 			Interlocked.Increment(ref restarted);
 			invocationsBeforeRestart = invocations;
+			Thread.Sleep(100);
 		};
 
 		It should_schedule_cancellation_of_invocations_to_the_provided_activity_callback = () =>
@@ -396,13 +402,13 @@ namespace NanoMessageBus
 			minWorkers = 1;
 			maxWorkers = 2;
 			invocations = 0;
+			SystemTime.SleepResolver = x => { };
 
 			mockChannel = new Mock<IMessagingChannel>();
 
 			RestartDelegate(); // uncovered code now covered
 			Build();
 		};
-
 		protected static void Build()
 		{
 			workerGroup = new TaskWorkerGroup<IMessagingChannel>(minWorkers, maxWorkers);
@@ -413,7 +419,10 @@ namespace NanoMessageBus
 		}
 
 		Cleanup after = () =>
+		{
+			SystemTime.SleepResolver = null;
 			workerGroup.Dispose();
+		};
 
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static IWorkerGroup<IMessagingChannel> workerGroup;

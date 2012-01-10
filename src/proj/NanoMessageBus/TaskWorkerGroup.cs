@@ -87,12 +87,15 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
 
-				this.tokenSource.Cancel();
+				this.tokenSource.Cancel(); // let the GC cleanup and perform dispose
 				var source = this.tokenSource = new CancellationTokenSource();
 				this.StartWorker((worker, token) =>
 				{
 					while (!source.Token.IsCancellationRequested && !this.restartCallback())
-						Thread.Sleep(1000);
+						RetrySleepTimeout.Sleep();
+
+					this.tokenSource.Dispose();
+					this.tokenSource = null;
 
 					if (!this.disposed)
 						this.TryStartWorkers(this.activityCallback);
@@ -160,10 +163,11 @@
 				this.disposed = true;
 
 				if (this.tokenSource != null)
-					this.tokenSource.Cancel();
+					this.tokenSource.Cancel(); // GC will perform dispose
 			}
 		}
 
+		private static readonly TimeSpan RetrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
 		private readonly object locker = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
 		private readonly int minWorkers;
