@@ -19,42 +19,31 @@
 				this.initialized = true;
 				this.ThrowWhenDisposed();
 
-				this.TryInitialize();
-			}
-		}
-		protected virtual void TryInitialize()
-		{
-			this.workers.Initialize(this.OpenChannel, this.TryChannel);
+				this.workers.Initialize(this.TryConnect, this.CanConnect);
 
-			try
-			{
-				using (this.OpenChannel())
-					if (this.DispatchOnly)
-						this.workers.StartQueue();
-			}
-			catch (ChannelConnectionException)
-			{
+				if (this.CanConnect() && this.DispatchOnly)
+					this.workers.StartQueue();
 			}
 		}
-		protected virtual IMessagingChannel OpenChannel()
-		{
-			return this.connector.Connect(this.configuration.GroupName);
-		}
-		protected virtual bool TryChannel()
+		protected virtual IMessagingChannel TryConnect()
 		{
 			try
 			{
-				using (this.OpenChannel())
-					return true;
+				return this.connector.Connect(this.configuration.GroupName);
 			}
 			catch (ChannelConnectionException)
 			{
-				return false;
+				return null;
 			}
 			catch (ObjectDisposedException)
 			{
-				return false;
+				return null;
 			}
+		}
+		protected virtual bool CanConnect()
+		{
+			using (var channel = this.TryConnect())
+				return channel != null;
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
@@ -69,7 +58,7 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.workers.Enqueue(worker => this.TryChannel(() =>
+			this.workers.Enqueue(worker => this.TryChannelOperation(() =>
 			{
 				var channel = worker.State;
 				channel.Send(envelope);
@@ -94,12 +83,12 @@
 		}
 		private void TryReceive(IWorkItem<IMessagingChannel> worker)
 		{
-			this.TryChannel(() =>
+			this.TryChannelOperation(() =>
 				worker.State.Receive(context =>
 					worker.PerformOperation(() => this.receiving(context))));
 		}
 
-		protected virtual void TryChannel(Action callback)
+		protected virtual void TryChannelOperation(Action callback)
 		{
 			try
 			{
