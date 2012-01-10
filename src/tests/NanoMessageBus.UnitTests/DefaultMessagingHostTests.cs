@@ -81,6 +81,9 @@ namespace NanoMessageBus
 		It should_provide_each_config_and_its_associated_connector_to_the_factory = () =>
 			mockFactory.VerifyAll();
 
+		It should_initialize_each_channel_group = () =>
+			mockGroup.Verify(x => x.Initialize(), Times.Exactly(3)); // tests provide the same group 3 times
+
 		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
 		static readonly Mock<IChannelGroupConfiguration> config1 = new Mock<IChannelGroupConfiguration>();
 		static readonly Mock<IChannelGroupConfiguration> config2 = new Mock<IChannelGroupConfiguration>();

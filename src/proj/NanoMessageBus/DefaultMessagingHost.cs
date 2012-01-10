@@ -25,12 +25,13 @@
 				foreach (var config in connector.ChannelGroups)
 					this.AddChannelGroup(config.GroupName, this.factory(connector, config));
 
-			if (this.inbound.Count == 0)
+			if (this.inbound.Count == 0 && this.outbound.Count == 0)
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
 		}
 		protected virtual void AddChannelGroup(string name, IChannelGroup group)
 		{
 			var collection = group.DispatchOnly ? this.outbound : this.inbound;
+			group.Initialize();
 			collection[name] = group;
 		}
 
