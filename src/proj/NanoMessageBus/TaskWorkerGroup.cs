@@ -38,8 +38,12 @@
 		{
 			this.TryStartWorkers((worker, token) =>
 			{
-				foreach (var item in this.workItems.GetConsumingEnumerable(token))
-					item(worker);
+				try
+				{
+					foreach (var item in this.workItems.GetConsumingEnumerable(token))
+						item(worker);	
+				}
+				catch (OperationCanceledException) { }
 			});
 		}
 		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
