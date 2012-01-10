@@ -89,17 +89,14 @@
 				this.ThrowWhenDispatchOnly();
 
 				this.receiving = callback;
-				this.workers.StartActivity(worker => this.TryChannel(() => this.TryReceive(worker)));
+				this.workers.StartActivity(this.TryReceive);
 			}
 		}
 		private void TryReceive(IWorkItem<IMessagingChannel> worker)
 		{
-			worker.State.Receive(context => this.TryReceive(worker, context));
-		}
-		protected virtual void TryReceive(IWorkItem<IMessagingChannel> worker, IDeliveryContext context)
-		{
-			// TODO: ensure that failed calls to this.receiving(context) invoke the appropriate restart code
-			worker.PerformOperation(() => this.receiving(context));
+			this.TryChannel(() =>
+				worker.State.Receive(context =>
+					worker.PerformOperation(() => this.receiving(context))));
 		}
 
 		protected virtual void TryChannel(Action callback)

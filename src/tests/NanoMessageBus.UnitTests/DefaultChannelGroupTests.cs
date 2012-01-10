@@ -310,13 +310,16 @@ namespace NanoMessageBus
 			mockWorkers.Setup(x => x.Restart());
 			mockChannel
 				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Throws(new ChannelConnectionException());
+				.Callback<Action<IDeliveryContext>>(callback => callback(null));
+			mockWorker
+				.Setup(x => x.PerformOperation(Moq.It.IsAny<Action>()))
+				.Callback<Action>(x => x());
 
 			channelGroup.Initialize();
 		};
 
 		Because of = () =>
-			channelGroup.BeginReceive(x => { });
+			channelGroup.BeginReceive(x => { throw new ChannelConnectionException(); });
 
 		It should_restart_the_workers = () =>
 			mockWorkers.Verify(x => x.Restart(), Times.Once());
@@ -490,10 +493,9 @@ namespace NanoMessageBus
 					restartCallback = restart;
 				});
 
-			// invoke callback as soon as it's provided
 			mockWorkers
 				.Setup(x => x.StartActivity(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
-				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
+				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object)); // invoke callback as soon as it's provided
 
 			channelGroup = new DefaultChannelGroup(mockConnector.Object, mockConfig.Object, mockWorkers.Object);
 		};
