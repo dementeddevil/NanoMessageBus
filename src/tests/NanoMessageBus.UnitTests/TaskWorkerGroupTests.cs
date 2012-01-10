@@ -98,7 +98,7 @@ namespace NanoMessageBus
 	public class when_starting_an_activity_without_initializing_first : with_a_worker_group
 	{
 		Because of = () =>
-			Try(() => workerGroup.StartActivity(EmptyAction));
+			Try(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -111,7 +111,7 @@ namespace NanoMessageBus
 			workerGroup.Dispose();
 
 		Because of = () =>
-			Try(() => workerGroup.StartActivity(EmptyAction));
+			Try(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -123,14 +123,30 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
-			workerGroup.StartActivity(EmptyAction);
+			workerGroup.StartActivity(EmptyActivity);
 		};
 
 		Because of = () =>
-			Try(() => workerGroup.StartActivity(EmptyAction));
+			Try(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_acquiring_state_throws_an_exception : with_a_worker_group
+	{
+		Establish context = () =>
+			workerGroup.Initialize(() => { throw new Exception(); }, RestartDelegate);
+
+		Because of = () =>
+		{
+			Try(() => workerGroup.StartActivity(EmptyActivity));
+			Thread.Sleep(50);
+		};
+
+		It should_not_bubble_the_exception_to_the_main_thread = () =>
+			thrown.ShouldBeNull();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -149,7 +165,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			workerGroup.StartActivity(EmptyAction);
+			workerGroup.StartActivity(EmptyActivity);
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
 			invocations.ShouldEqual(minWorkers);
@@ -361,7 +377,7 @@ namespace NanoMessageBus
 		protected static int invocations;
 		protected static Exception thrown;
 
-		protected static readonly Action<IWorkItem<IMessagingChannel>> EmptyAction = x => { };
+		protected static readonly Action<IWorkItem<IMessagingChannel>> EmptyActivity = x => { };
 		protected static readonly Func<IMessagingChannel> ChannelDelegate = () => mockChannel.Object;
 		protected static readonly Func<bool> RestartDelegate = () => true;
 	}

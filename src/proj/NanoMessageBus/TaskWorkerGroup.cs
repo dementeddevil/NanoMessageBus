@@ -50,26 +50,24 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyStarted();
 
-				this.tokenSource = new CancellationTokenSource();
-				this.StartWorkers(activity);
+				this.tokenSource = this.tokenSource ?? new CancellationTokenSource();
+				for (var i = 0; i < this.minWorkers; i++)
+					this.StartWorker(activity);
 			}
 		}
-		protected virtual void StartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
+		protected virtual void StartWorker(Action<IWorkItem<T>, CancellationToken> activity)
 		{
-			var token = this.tokenSource.Token; // thread-safe by-value (struct) copy of the token
+			var token = this.tokenSource.Token; // thread-safe copy
+			T state = null; // only accessed by a single thread
 
-			for (var i = 0; i < this.minWorkers; i++)
-			{
-				T state = null;
-
-				Task.Factory
-					.StartNew(
-						() => activity(
-							new TaskWorker<T>(state = this.stateCallback(), token, this.minWorkers, this.maxWorkers),
-							token),
-						TaskCreationOptions.LongRunning)
-					.ContinueWith(task => state.Dispose());
-			}
+			Task.Factory
+				.StartNew(() => state = this.stateCallback(), TaskCreationOptions.LongRunning)
+				.ContinueWith(x => activity(this.CreateWorker(state, token), token))
+				.ContinueWith(task => state.TryDispose());
+		}
+		protected virtual IWorkItem<T> CreateWorker(T state, CancellationToken token)
+		{
+			return new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
 		}
 
 		public virtual void Enqueue(Action<IWorkItem<T>> workItem)
