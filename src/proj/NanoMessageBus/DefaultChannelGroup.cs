@@ -19,31 +19,32 @@
 				this.initialized = true;
 				this.ThrowWhenDisposed();
 
-				this.workers.Initialize(this.TryConnect, this.CanConnect);
+				this.workers.Initialize(this.Connect, this.TryConnect);
 
-				if (this.CanConnect() && this.DispatchOnly)
+				if (this.TryConnect() && this.DispatchOnly)
 					this.workers.StartQueue();
 			}
 		}
-		protected virtual IMessagingChannel TryConnect()
+		protected virtual IMessagingChannel Connect()
+		{
+			// if this ever throws, it's executed within the context of a worker within a TryOperation callback
+			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
+		}
+		protected virtual bool TryConnect()
 		{
 			try
 			{
-				return this.connector.Connect(this.configuration.GroupName);
+				using (this.Connect())
+					return true;
 			}
 			catch (ChannelConnectionException)
 			{
-				return null;
+				return false;
 			}
 			catch (ObjectDisposedException)
 			{
-				return null;
+				return false;
 			}
-		}
-		protected virtual bool CanConnect()
-		{
-			using (var channel = this.TryConnect())
-				return channel != null;
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
