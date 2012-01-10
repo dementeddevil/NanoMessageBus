@@ -58,7 +58,7 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			this.workers.Enqueue(worker => this.TryChannelOperation(() =>
+			this.workers.Enqueue(worker => this.TryOperation(() =>
 			{
 				var channel = worker.State;
 				channel.Send(envelope);
@@ -77,18 +77,12 @@
 				this.ThrowWhenAlreadyReceiving();
 				this.ThrowWhenDispatchOnly();
 
-				this.receiving = callback;
-				this.workers.StartActivity(this.TryReceive);
+				this.receiving = true;
+				this.workers.StartActivity(worker => this.TryOperation(() =>
+					worker.State.Receive(context => worker.PerformOperation(() => callback(context)))));
 			}
 		}
-		private void TryReceive(IWorkItem<IMessagingChannel> worker)
-		{
-			this.TryChannelOperation(() =>
-				worker.State.Receive(context =>
-					worker.PerformOperation(() => this.receiving(context))));
-		}
-
-		protected virtual void TryChannelOperation(Action callback)
+		protected virtual void TryOperation(Action callback)
 		{
 			try
 			{
@@ -96,18 +90,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				this.TryRestart();
-			}
-			catch (ObjectDisposedException)
-			{
-				// no op
-			}
-		}
-		protected virtual void TryRestart()
-		{
-			try
-			{
-				this.workers.Restart();
+				this.TryOperation(this.workers.Restart); // may already be disposed
 			}
 			catch (ObjectDisposedException)
 			{
@@ -137,7 +120,7 @@
 		}
 		protected virtual void ThrowWhenAlreadyReceiving()
 		{
-			if (this.receiving != null)
+			if (this.receiving)
 				throw new InvalidOperationException("A callback has already been provided.");
 		}
 
@@ -177,7 +160,7 @@
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;
 		private readonly IWorkerGroup<IMessagingChannel> workers;
-		private Action<IDeliveryContext> receiving;
+		private bool receiving;
 		private bool initialized;
 		private bool disposed;
 	}
