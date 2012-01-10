@@ -324,7 +324,7 @@ namespace NanoMessageBus
 			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
 	}
 
-	// TODO: what to do if the state callback throws an exception, e.g. ChannelConnectionException?
+	// TODO: if state callback throws an exception, be sure that continuation task doesn't throw an NRE
 	public abstract class with_a_worker_group
 	{
 		Establish context = () =>

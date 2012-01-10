@@ -32,59 +32,17 @@
 			if (activity == null)
 				throw new ArgumentNullException("activity");
 
-			this.TryStart(() =>
-			{
-				this.activityCallback = activity;
-				var token = this.tokenSource.Token; // copy of token within protected/locked boundary for later use
-
-				for (var i = 0; i < this.minWorkers; i++)
-				{
-					T state = null;
-
-					Task.Factory
-						.StartNew(
-							() => activity(new TaskWorker<T>(
-								state = this.stateCallback(),
-								token,
-								this.minWorkers,
-								this.maxWorkers)),
-							TaskCreationOptions.LongRunning)
-						.ContinueWith(task => state.Dispose());
-				}
-			});
+			this.TryStartWorkers((worker, token) => activity(worker));
 		}
-
 		public virtual void StartQueue()
 		{
-			this.TryStart(() =>
+			this.TryStartWorkers((worker, token) =>
 			{
-				var token = this.tokenSource.Token; // copy of token within protected/locked boundary for later use
-
-				for (var i = 0; i < this.minWorkers; i++)
-				{
-					T state = null;
-
-					Task.Factory
-						.StartNew(
-							() => this.StartQueueTask(
-								new TaskWorker<T>(
-									state = this.stateCallback(),
-									token,
-									this.minWorkers,
-									this.maxWorkers),
-								token),
-							TaskCreationOptions.LongRunning)
-						.ContinueWith(task => state.Dispose());
-				}
+				foreach (var item in this.workItems.GetConsumingEnumerable(token))
+					item(worker);
 			});
 		}
-		protected void StartQueueTask(IWorkItem<T> worker, CancellationToken token)
-		{
-			foreach (var item in this.workItems.GetConsumingEnumerable(token))
-				item(worker);
-		}
-
-		protected virtual void TryStart(Action callback)
+		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
 		{
 			lock (this.locker)
 			{
@@ -93,7 +51,25 @@
 				this.ThrowWhenAlreadyStarted();
 
 				this.tokenSource = new CancellationTokenSource();
-				callback();
+				this.StartWorkers(activity);
+			}
+		}
+		protected virtual void StartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
+		{
+			this.activityCallback = activity;
+			var token = this.tokenSource.Token; // thread-safe by-value (struct) copy of the token
+
+			for (var i = 0; i < this.minWorkers; i++)
+			{
+				T state = null;
+
+				Task.Factory
+					.StartNew(
+						() => activity(
+							new TaskWorker<T>(state = this.stateCallback(), token, this.minWorkers, this.maxWorkers),
+							token),
+						TaskCreationOptions.LongRunning)
+					.ContinueWith(task => state.Dispose());
 			}
 		}
 
@@ -113,8 +89,7 @@
 				this.ThrowWhenNotStarted();
 
 				// TODO: cancel the token and start the polling task on a single thread with the restartCallback
-				// be aware of sleeping for too long (longer than 1-2 seconds) between
-				// checks to the cancellation token
+				// be aware of sleeping for too long (longer than 1-2 seconds) between checks to the cancellation token
 				// success nullifies the current token (in a lock statement) and
 				// then invokes the previously running activity
 			}
@@ -193,7 +168,7 @@
 
 		private CancellationTokenSource tokenSource;
 
-		private Action<IWorkItem<T>> activityCallback;
+		private Action<IWorkItem<T>, CancellationToken> activityCallback;
 		private Func<T> stateCallback;
 		private Func<bool> restartCallback;
 
