@@ -56,7 +56,6 @@
 		}
 		protected virtual void StartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
 		{
-			this.activityCallback = activity;
 			var token = this.tokenSource.Token; // thread-safe by-value (struct) copy of the token
 
 			for (var i = 0; i < this.minWorkers; i++)
@@ -160,18 +159,12 @@
 		}
 
 		private readonly object locker = new object();
+		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
-
-		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems =
-			new BlockingCollection<Action<IWorkItem<T>>>();
-
 		private CancellationTokenSource tokenSource;
-
-		private Action<IWorkItem<T>, CancellationToken> activityCallback;
 		private Func<T> stateCallback;
 		private Func<bool> restartCallback;
-
 		private bool initialized;
 		private bool disposed;
 	}
