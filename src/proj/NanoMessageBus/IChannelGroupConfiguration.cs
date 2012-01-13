@@ -34,5 +34,10 @@
 		/// Gets the length of time to await the receipt of a message from a channel before resume other work.
 		/// </summary>
 		TimeSpan ReceiveTimeout { get; }
+
+		/// <summary>
+		/// Gets an optional reference to resolver used to manage dependencies.
+		/// </summary>
+		IDependencyResolver DependencyResolver { get; }
 	}
 }

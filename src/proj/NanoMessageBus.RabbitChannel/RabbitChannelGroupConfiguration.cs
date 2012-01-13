@@ -79,6 +79,7 @@
 		public virtual ISerializer Serializer { get; private set; }
 		public virtual string ApplicationId { get; private set; }
 		public virtual RabbitMessageAdapter MessageAdapter { get; private set; }
+		public virtual IDependencyResolver DependencyResolver { get; private set; }
 		protected virtual bool ExclusiveQueue { get; private set; }
 		protected virtual bool PurgeOnStartup { get; private set; }
 		protected virtual bool DurableQueue { get; private set; }
@@ -249,6 +250,7 @@
 				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
 			this.Serializer = DefaultSerializer;
 			this.MessageAdapter = new RabbitMessageAdapter(this);
+			this.DependencyResolver = null;
 			this.DispatchOnly = true;
 			this.DurableQueue = true;
 			this.MessageTypes = new Type[0];
