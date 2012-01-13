@@ -17,6 +17,11 @@
 		ChannelMessage CurrentMessage { get; }
 
 		/// <summary>
+		/// Gets an optional reference to the object used to resolve dependencies.
+		/// </summary>
+		IDependencyResolver CurrentResolver { get; }
+
+		/// <summary>
 		/// Gets the current transaction associated with the channel, if transactions are available.
 		/// </summary>
 		IChannelTransaction CurrentTransaction { get; }

@@ -5,11 +5,11 @@
 	public class DefaultDependencyResolver<T> : IDependencyResolver
 		where T : class, IDisposable
 	{
-		public TActual Actual<TActual>() where TActual : class, IDisposable
+		public virtual TActual Actual<TActual>() where TActual : class, IDisposable
 		{
 			return this.container as TActual;
 		}
-		public IDependencyResolver CreateNestedResolver(string name = null)
+		public virtual IDependencyResolver CreateNestedResolver(string name = null)
 		{
 			if (this.create == null)
 				return this;

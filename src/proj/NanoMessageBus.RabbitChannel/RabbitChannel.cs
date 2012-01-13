@@ -10,6 +10,7 @@
 	public class RabbitChannel : IMessagingChannel
 	{
 		public virtual ChannelMessage CurrentMessage { get; private set; }
+		public virtual IDependencyResolver CurrentResolver { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }
 
 		public virtual void Receive(Action<IDeliveryContext> callback)
@@ -206,6 +207,7 @@
 			this.adapter = configuration.MessageAdapter;
 			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;
+			this.CurrentResolver = configuration.DependencyResolver;
 
 			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 

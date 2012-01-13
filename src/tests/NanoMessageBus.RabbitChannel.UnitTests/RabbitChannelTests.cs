@@ -15,6 +15,25 @@ namespace NanoMessageBus.RabbitChannel
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_opening_a_channel : using_a_channel
+	{
+		Establish context = () =>
+			mockConfiguration.Setup(x => x.DependencyResolver).Returns(new Mock<IDependencyResolver>().Object);
+
+		Because of = () =>
+			Initialize();
+
+		It should_create_a_new_transaction = () =>
+			channel.CurrentTransaction.ShouldNotBeNull();
+
+		It should_not_yet_have_an_current_message = () =>
+			channel.CurrentMessage.ShouldBeNull();
+
+		It should_expose_a_reference_to_the_resolver_from_the_underlying_configuration = () =>
+			channel.CurrentResolver.ShouldEqual(mockConfiguration.Object.DependencyResolver);
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_opening_a_transactional_channel : using_a_channel
 	{
 		Establish context = () =>
