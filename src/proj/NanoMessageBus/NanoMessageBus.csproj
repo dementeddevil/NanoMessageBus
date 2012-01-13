@@ -55,6 +55,7 @@
     <Compile Include="DefaultChannelGroupFactory.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="IResolver.cs" />
     <Compile Include="IWorkItem.cs" />
     <Compile Include="IChannelGroupConfiguration.cs" />
     <Compile Include="IOutboundChannel.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="IMessagingHost.cs" />
     <Compile Include="IWorkerGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResolverConnector.cs" />
     <Compile Include="Serialization\BinarySerializer.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\SerializationExtensions.cs" />
