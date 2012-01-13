@@ -3,7 +3,7 @@
 	using System;
 
 	/// <summary>
-	/// Represents a transient communcation failure during a channel message exchange.
+	/// Represents a transient communication failure during a channel message exchange.
 	/// </summary>
 	[Serializable]
 	public class ChannelException : Exception

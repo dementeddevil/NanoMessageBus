@@ -6,6 +6,7 @@ namespace NanoMessageBus.RabbitChannel
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.IO;
 	using System.Linq;
 	using System.Runtime.Serialization;
@@ -42,7 +43,7 @@ namespace NanoMessageBus.RabbitChannel
 				ContentEncoding = "content encoding",
 				CorrelationId = Guid.NewGuid().ToString(),
 				DeliveryMode = 2, // persistent
-				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToString(),
+				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToString(CultureInfo.InvariantCulture),
 				Headers = new Hashtable(),
 				MessageId = Guid.NewGuid().ToString(),
 				Type = "message type",
@@ -101,7 +102,7 @@ namespace NanoMessageBus.RabbitChannel
 			result.Headers["x-rabbit-type"].ShouldEqual(message.BasicProperties.Type);
 
 		It should_populate_the_ChannelMessage_header_with_the_Priority = () =>
-			result.Headers["x-rabbit-priority"].ShouldEqual(message.BasicProperties.Priority.ToString());
+			result.Headers["x-rabbit-priority"].ShouldEqual(message.BasicProperties.Priority.ToString(CultureInfo.InvariantCulture));
 
 		It should_populate_the_ChannelMessage_headers_with_all_the_headers_from_the_wire_message = () =>
 		{
@@ -124,7 +125,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			message = EmptyMessage();
-			message.BasicProperties.Expiration = SystemTime.UtcNow.AddMinutes(-1).ToString();
+			message.BasicProperties.Expiration = SystemTime.UtcNow.AddMinutes(-1).ToString(CultureInfo.InvariantCulture);
 		};
 
 		Because of = () =>
@@ -251,7 +252,7 @@ namespace NanoMessageBus.RabbitChannel
 			result.BasicProperties.ReplyTo.ShouldEqual(message.ReturnAddress.ToString());
 
 		It should_populate_the_wire_message_with_the_correct_expiration_time = () =>
-			result.BasicProperties.Expiration.ShouldEqual(message.Expiration.ToString());
+			result.BasicProperties.Expiration.ShouldEqual(message.Expiration.ToString(CultureInfo.InvariantCulture));
 
 		It should_populate_the_wire_message_with_the_correct_message_type = () =>
 			result.BasicProperties.Type.ShouldEqual(message.Messages.First().GetType().FullName);

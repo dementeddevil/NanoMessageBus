@@ -9,7 +9,7 @@
 		public virtual void Receive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
 			if (timeout < TimeSpan.Zero)
-				throw new ArgumentException("The timespan must be positive.", "timeout");
+				throw new ArgumentException("The time span must be positive.", "timeout");
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 

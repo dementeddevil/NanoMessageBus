@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.Linq;
 	using System.Runtime.Serialization;
 	using System.Text;
@@ -85,7 +86,7 @@
 			headers[RabbitHeaderFormat.FormatWith("clusterId")] = properties.ClusterId;
 			headers[RabbitHeaderFormat.FormatWith("userId")] = properties.UserId;
 			headers[RabbitHeaderFormat.FormatWith("type")] = properties.Type;
-			headers[RabbitHeaderFormat.FormatWith("priority")] = properties.Priority.ToString();
+			headers[RabbitHeaderFormat.FormatWith("priority")] = properties.Priority.ToString(CultureInfo.InvariantCulture);
 
 			var encoding = Encoding.UTF8;
 			foreach (var key in properties.Headers.Keys.Cast<string>())
@@ -125,7 +126,7 @@
 
 			properties.SetPersistent(message.Persistent);
 			properties.Expiration = message.Expiration == DateTime.MinValue
-				? string.Empty : message.Expiration.ToString();
+				? string.Empty : message.Expiration.ToString(CultureInfo.InvariantCulture);
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();

@@ -3,7 +3,7 @@
 	using System;
 
 	/// <summary>
-	/// Represents a persistent communcation failure during a channel message exchange.
+	/// Represents a persistent communication failure during a channel message exchange.
 	/// </summary>
 	[Serializable]
 	public class ChannelConnectionException : ChannelException

@@ -3,7 +3,7 @@
 	using System;
 
 	/// <summary>
-	/// For supported channels, represents a set of messaging activies on the channel (such as receive and send)
+	/// For supported channels, represents a set of messaging activities on the channel (such as receive and send)
 	/// that happen as a unit or not all.
 	/// </summary>
 	/// <remarks>

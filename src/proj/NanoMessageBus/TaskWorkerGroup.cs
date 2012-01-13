@@ -96,7 +96,7 @@
 				this.StartWorker((worker, token) =>
 				{
 					while (!source.Token.IsCancellationRequested && !this.restartCallback())
-						RetrySleepTimeout.Sleep();
+						this.retrySleepTimeout.Sleep();
 
 					this.tokenSource.Dispose();
 					this.tokenSource = null;
@@ -171,7 +171,7 @@
 			}
 		}
 
-		private static readonly TimeSpan RetrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
+		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
 		private readonly object locker = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
 		private readonly int minWorkers;
