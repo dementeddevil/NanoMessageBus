@@ -5,15 +5,15 @@
 
 	public class DependencyResolverConnector : IChannelConnector
 	{
-		public ConnectionState CurrentState
+		public virtual ConnectionState CurrentState
 		{
 			get { return this.connector.CurrentState; }
 		}
-		public IEnumerable<IChannelGroupConfiguration> ChannelGroups
+		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
 			get { return this.connector.ChannelGroups; }
 		}
-		public IMessagingChannel Connect(string channelGroup)
+		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			var channel = this.connector.Connect(channelGroup);
 

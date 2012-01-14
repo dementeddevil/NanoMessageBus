@@ -47,6 +47,11 @@ namespace NanoMessageBus
 	[Subject(typeof(DependencyResolverConnector))]
 	public class when_resolving_a_channel : with_the_dependency_resolver_connector
 	{
+		Establish context = () =>
+			mockResolver
+				.Setup(x => x.CreateNestedResolver(Moq.It.IsAny<string>()))
+				.Returns(mockNestedResolver.Object);
+
 		Because of = () =>
 			connected = connector.Connect("some key");
 
@@ -56,10 +61,14 @@ namespace NanoMessageBus
 		It should_create_a_new_resolver = () =>
 			mockResolver.Verify(x => x.CreateNestedResolver(Moq.It.IsAny<string>()), Times.Once());
 
+		It should_expose_the_new_resolver_on_the_messaging_channel = () =>
+			connected.CurrentResolver.ShouldEqual(mockNestedResolver.Object);
+
 		It should_return_a_reference_to_a_DependencyResolverChannel = () =>
 			connected.ShouldBeOfType<DependencyResolverChannel>();
 
 		static IMessagingChannel connected;
+		static readonly Mock<IDependencyResolver> mockNestedResolver = new Mock<IDependencyResolver>();
 	}
 
 	[Subject(typeof(DependencyResolverConnector))]

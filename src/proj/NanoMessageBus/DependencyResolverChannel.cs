@@ -4,31 +4,57 @@
 
 	public class DependencyResolverChannel : IMessagingChannel
 	{
-		public ChannelMessage CurrentMessage
+		public virtual ChannelMessage CurrentMessage
 		{
-			get { return null; }
+			get { return this.channel.CurrentMessage; }
 		}
-		public IChannelTransaction CurrentTransaction
+		public virtual IChannelTransaction CurrentTransaction
 		{
-			get { return null; }
+			get { return this.channel.CurrentTransaction; }
 		}
-		public IDependencyResolver CurrentResolver
+		public virtual IDependencyResolver CurrentResolver
 		{
-			get { return null; }
+			get { return this.current ?? this.resolver; }
 		}
 
-		public void Send(ChannelEnvelope envelope)
+		public virtual void Send(ChannelEnvelope envelope)
 		{
+			this.channel.Send(envelope);
 		}
-		public void BeginShutdown()
+		public virtual void BeginShutdown()
 		{
+			this.channel.BeginShutdown();
 		}
-		public void Receive(Action<IDeliveryContext> callback)
+		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
+			// NOTE: context is being ignored, this is because, in all likelihood, it's coming from
+			// the underlying channel anyway, which is what we're already wrapping. Even so,
+			// it may be that a safer way to do this is to simply wrap the context provided here
+			// in some kind of DependencyResolverDeliveryContext object...
+			this.channel.Receive(context => this.ReceiveMessage(callback));
+		}
+		protected virtual void ReceiveMessage(Action<IDeliveryContext> callback)
+		{
+			try
+			{
+				this.current = this.resolver.CreateNestedResolver();
+				callback(this);
+			}
+			finally
+			{
+				this.current.Dispose();
+				this.current = null;
+			}
 		}
 
 		public DependencyResolverChannel(IMessagingChannel channel, IDependencyResolver resolver)
 		{
+			if (channel == null)
+				throw new ArgumentNullException("channel");
+
+			if (resolver == null)
+				throw new ArgumentNullException("resolver");
+
 			this.channel = channel;
 			this.resolver = resolver;
 		}
@@ -44,6 +70,11 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
+			if (!disposing)
+				return;
+
+			this.channel.Dispose();
+			this.resolver.Dispose();
 		}
 
 		private readonly IMessagingChannel channel;
