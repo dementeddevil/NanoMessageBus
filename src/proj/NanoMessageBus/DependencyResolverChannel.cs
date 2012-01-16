@@ -31,21 +31,22 @@
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			this.channel.Receive(context =>
+			this.channel.Receive(context => this.Receive(context, callback));
+		}
+		protected virtual void Receive(IDeliveryContext context, Action<IDeliveryContext> callback)
+		{
+			try
 			{
-				try
-				{
-					this.currentContext = context;
-					this.currentResolver = this.resolver.CreateNestedResolver();
-					callback(this);
-				}
-				finally
-				{
-					this.currentResolver.Dispose();
-					this.currentResolver = null;
-					this.currentContext = null;
-				}
-			});
+				this.currentContext = context;
+				this.currentResolver = this.resolver.CreateNestedResolver();
+				callback(this);
+			}
+			finally
+			{
+				this.currentResolver.Dispose();
+				this.currentResolver = null;
+				this.currentContext = null;
+			}
 		}
 
 		public DependencyResolverChannel(IMessagingChannel channel, IDependencyResolver resolver)
