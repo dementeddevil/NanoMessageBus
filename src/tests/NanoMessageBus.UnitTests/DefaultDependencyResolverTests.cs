@@ -25,7 +25,7 @@ namespace NanoMessageBus
 			Build(mockRootContainer.Object);
 
 		It should_expose_the_actual_container_provided = () =>
-			rootResolver.Actual<IDisposable>().ShouldEqual(mockRootContainer.Object);
+			rootResolver.As<IDisposable>().ShouldEqual(mockRootContainer.Object);
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]
@@ -74,7 +74,7 @@ namespace NanoMessageBus
 			nameProvided.ShouldEqual("Hello, World!");
 
 		It should_return_a_reference_to_the_nested_container = () =>
-			nestedResolver.Actual<IDisposable>().ShouldEqual(mockNestedContainer.Object);
+			nestedResolver.As<IDisposable>().ShouldEqual(mockNestedContainer.Object);
 
 		static IDisposable parentContainerProvided;
 		static string nameProvided;
@@ -86,11 +86,11 @@ namespace NanoMessageBus
 		Because of = () =>
 			rootResolver.Dispose();
 
-		It should_NOT_dispose_the_underlying_container = () =>
-			mockRootContainer.Verify(x => x.Dispose(), Times.Never());
+		It should_dispose_the_underlying_container = () =>
+			mockRootContainer.Verify(x => x.Dispose(), Times.Once());
 
-		It should_NOT_dispose_the_any_nested_container = () =>
-			mockRootContainer.Verify(x => x.Dispose(), Times.Never());
+		It should_NOT_dispose_the_any_nested_container_because_its_not_in_charge_of_nested_containers = () =>
+			mockNestedContainer.Verify(x => x.Dispose(), Times.Never());
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]

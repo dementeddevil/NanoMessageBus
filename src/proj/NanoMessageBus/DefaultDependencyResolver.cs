@@ -5,7 +5,7 @@
 	public class DefaultDependencyResolver<T> : IDependencyResolver
 		where T : class, IDisposable
 	{
-		public virtual TActual Actual<TActual>() where TActual : class, IDisposable
+		public virtual TActual As<TActual>() where TActual : class
 		{
 			return this.container as TActual;
 		}
@@ -18,18 +18,18 @@
 			if (inner == null)
 				return this;
 
-			return new DefaultDependencyResolver<T>(inner, this.create, true);
+			return new DefaultDependencyResolver<T>(inner, this.create, this.depth + 1);
 		}
 
 		public DefaultDependencyResolver(T container, Func<T, string, T> create = null)
-			: this(container, create, false) { }
-		private DefaultDependencyResolver(T container, Func<T, string, T> create, bool child)
+			: this(container, create, 0) { }
+		private DefaultDependencyResolver(T container, Func<T, string, T> create, int depth)
 		{
 			if (container == null)
 				throw new ArgumentNullException("container");
 
 			this.container = container;
-			this.child = child;
+			this.depth = depth;
 			this.create = create;
 		}
 		~DefaultDependencyResolver()
@@ -44,12 +44,12 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (disposing && this.child)
+			if (disposing)
 				this.container.Dispose();
 		}
 
 		private readonly T container;
 		private readonly Func<T, string, T> create;
-		private readonly bool child;
+		private readonly int depth;
 	}
 }

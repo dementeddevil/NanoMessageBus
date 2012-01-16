@@ -12,7 +12,7 @@
 		/// </summary>
 		/// <typeparam name="T">The type of IoC container.</typeparam>
 		/// <returns>A reference to the actual IoC container used to resolve dependencies.</returns>
-		T Actual<T>() where T : class, IDisposable;
+		T As<T>() where T : class;
 
 		/// <summary>
 		/// Instructs the container to create a nested or child instance.
