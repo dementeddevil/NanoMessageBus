@@ -103,9 +103,9 @@
 		private readonly Guid correlationId;
 		[DataMember(Order = 3, EmitDefaultValue = false, IsRequired = false, Name = "sender")]
 		private readonly Uri returnAddress;
-		[DataMember(Order = 4, EmitDefaultValue = false, IsRequired = false, Name = "head")]
+		[DataMember(Order = 4, EmitDefaultValue = false, IsRequired = false, Name = "headers")]
 		private readonly IDictionary<string, string> headers;
-		[DataMember(Order = 5, EmitDefaultValue = false, IsRequired = false, Name = "msgs")]
+		[DataMember(Order = 5, EmitDefaultValue = false, IsRequired = false, Name = "payload")]
 		private readonly IList<object> messages;
 
 		[NonSerialized, IgnoreDataMember, XmlIgnore, SoapIgnore]
