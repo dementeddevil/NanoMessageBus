@@ -57,7 +57,6 @@
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="DependencyResolverChannel.cs" />
     <Compile Include="DependencyResolverConnector.cs" />
-    <Compile Include="DependencyResolverDeliveryContext.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IDependencyResolver.cs" />
     <Compile Include="IWorkItem.cs" />

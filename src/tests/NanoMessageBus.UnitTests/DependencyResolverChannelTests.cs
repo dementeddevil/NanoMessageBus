@@ -90,25 +90,41 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockResolver.Setup(x => x.CreateNestedResolver()).Returns(mockNested.Object);
+
+			mockOriginal.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
+			mockOriginal.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
+
 			mockWrappedChannel
 				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Callback<Action<IDeliveryContext>>(x => x(mockWrappedChannel.Object));
+				.Callback<Action<IDeliveryContext>>(x => x(mockOriginal.Object)); // it may not always be the underlying channel
 		};
 
 		Because of = () => channel.Receive(context =>
 		{
 			delivery = context;
-			temporary = context.CurrentResolver;
+			contextMessage = context.CurrentMessage;
+			contextTransaction = context.CurrentTransaction;
+			contextResolver = context.CurrentResolver;
+			delivery.Send(sent);
 		});
 
 		It should_create_a_nested_resolver = () =>
 			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
 
-		It should_temporarily_assign_the_nested_resolver_to_the_messaging_channel = () =>
-			temporary.ShouldEqual(mockNested.Object);
+		It should_invoke_the_callback_specified_providing_itself_as_a_parameter = () =>
+			delivery.ShouldEqual(channel);
 
-		It should_invoke_the_callback_specified_passing_in_a_DependencyResolverDeliveryContext = () =>
-			delivery.ShouldBeOfType<DependencyResolverDeliveryContext>();
+		It should_temporarily_expose_the_nested_resolver_on_the_channel = () =>
+			contextResolver.ShouldEqual(mockNested.Object);
+
+		It should_expose_the_original_context_CurrentMessage = () => 
+			contextMessage.ShouldEqual(mockOriginal.Object.CurrentMessage);
+
+		It should_expose_the_original_context_CurrentTransaction = () =>
+			contextTransaction.ShouldEqual(mockOriginal.Object.CurrentTransaction);
+		
+		It should_send_through_the_original_context = () =>
+			mockOriginal.Verify(x => x.Send(sent), Times.Once());
 
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());
@@ -116,9 +132,19 @@ namespace NanoMessageBus
 		It should_revert_the_nested_resolver_back_to_the_constructed_resolver_upon_completion = () =>
 			channel.CurrentResolver.ShouldEqual(mockResolver.Object);
 
+		It should_revert_the_CurrentMessage_back_to_the_constructed_value_upon_completion = () =>
+			channel.CurrentMessage.ShouldEqual(mockWrappedChannel.Object.CurrentMessage);
+
+		It should_revert_the_CurrentTransaction_back_to_the_constructed_value_upon_completion = () =>
+			channel.CurrentTransaction.ShouldEqual(mockWrappedChannel.Object.CurrentTransaction);
+
 		static IDeliveryContext delivery;
-		static IDependencyResolver temporary;
+		static IDependencyResolver contextResolver;
+		static IChannelTransaction contextTransaction;
+		static ChannelMessage contextMessage;
+		static readonly Mock<IDeliveryContext> mockOriginal = new Mock<IDeliveryContext>();
 		static readonly Mock<IDependencyResolver> mockNested = new Mock<IDependencyResolver>();
+		static readonly ChannelEnvelope sent = new Mock<ChannelEnvelope>().Object;
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
@@ -134,20 +160,8 @@ namespace NanoMessageBus
 
 		Because of = () => Try(() => channel.Receive(context =>
 		{
-			delivery = context;
-			temporary = context.CurrentResolver;
-
 			throw new Exception();
 		}));
-
-		It should_create_a_nested_resolver = () =>
-			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
-
-		It should_temporarily_assign_the_nested_resolver_to_the_messaging_channel = () =>
-			temporary.ShouldEqual(mockNested.Object);
-
-		It should_invoke_the_callback_specified_passing_in_a_DependencyResolverDeliveryContext = () =>
-			delivery.ShouldBeOfType<DependencyResolverDeliveryContext>();
 
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());
@@ -158,8 +172,6 @@ namespace NanoMessageBus
 		It should_raise_the_exception = () =>
 			thrown.ShouldNotBeNull();
 
-		static IDeliveryContext delivery;
-		static IDependencyResolver temporary;
 		static readonly Mock<IDependencyResolver> mockNested = new Mock<IDependencyResolver>();
 	}
 

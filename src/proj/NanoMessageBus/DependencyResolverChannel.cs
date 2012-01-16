@@ -6,20 +6,24 @@
 	{
 		public virtual ChannelMessage CurrentMessage
 		{
-			get { return this.channel.CurrentMessage; }
+			get { return this.CurrentContext.CurrentMessage; }
 		}
 		public virtual IChannelTransaction CurrentTransaction
 		{
-			get { return this.channel.CurrentTransaction; }
+			get { return this.CurrentContext.CurrentTransaction; }
 		}
 		public virtual IDependencyResolver CurrentResolver
 		{
-			get { return this.resolver; }
+			get { return this.currentResolver ?? this.resolver; }
+		}
+		protected virtual IDeliveryContext CurrentContext
+		{
+			get { return this.currentContext ?? this.channel; }
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)
 		{
-			this.channel.Send(envelope);
+			this.CurrentContext.Send(envelope);
 		}
 		public virtual void BeginShutdown()
 		{
@@ -27,10 +31,20 @@
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			this.channel.Receive(x =>
+			this.channel.Receive(context =>
 			{
-				using (var delivery = new DependencyResolverDeliveryContext(x, this.resolver.CreateNestedResolver()))
-					callback(delivery);
+				try
+				{
+					this.currentContext = context;
+					this.currentResolver = this.resolver.CreateNestedResolver();
+					callback(this);
+				}
+				finally
+				{
+					this.currentResolver.Dispose();
+					this.currentResolver = null;
+					this.currentContext = null;
+				}
 			});
 		}
 
@@ -66,5 +80,7 @@
 
 		private readonly IMessagingChannel channel;
 		private readonly IDependencyResolver resolver;
+		private IDependencyResolver currentResolver;
+		private IDeliveryContext currentContext;
 	}
 }
