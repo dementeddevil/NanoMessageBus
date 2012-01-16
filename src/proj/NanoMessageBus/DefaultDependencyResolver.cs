@@ -9,21 +9,21 @@
 		{
 			return this.container as TActual;
 		}
-		public virtual IDependencyResolver CreateNestedResolver(string name = null)
+		public virtual IDependencyResolver CreateNestedResolver()
 		{
 			if (this.create == null)
 				return this;
 
-			var inner = this.create(this.container, name);
+			var inner = this.create(this.container, this.depth + 1);
 			if (inner == null)
 				return this;
 
 			return new DefaultDependencyResolver<T>(inner, this.create, this.depth + 1);
 		}
 
-		public DefaultDependencyResolver(T container, Func<T, string, T> create = null)
+		public DefaultDependencyResolver(T container, Func<T, int, T> create = null)
 			: this(container, create, 0) { }
-		private DefaultDependencyResolver(T container, Func<T, string, T> create, int depth)
+		private DefaultDependencyResolver(T container, Func<T, int, T> create, int depth)
 		{
 			if (container == null)
 				throw new ArgumentNullException("container");
@@ -49,7 +49,7 @@
 		}
 
 		private readonly T container;
-		private readonly Func<T, string, T> create;
+		private readonly Func<T, int, T> create;
 		private readonly int depth;
 	}
 }

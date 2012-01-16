@@ -89,7 +89,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			mockResolver.Setup(x => x.CreateNestedResolver(Moq.It.IsAny<string>())).Returns(mockNested.Object);
+			mockResolver.Setup(x => x.CreateNestedResolver()).Returns(mockNested.Object);
 			mockWrappedChannel
 				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
 				.Callback<Action<IDeliveryContext>>(x => x(mockWrappedChannel.Object));
@@ -102,7 +102,7 @@ namespace NanoMessageBus
 		});
 
 		It should_create_a_nested_resolver = () =>
-			mockResolver.Verify(x => x.CreateNestedResolver(Moq.It.IsAny<string>()), Times.Once());
+			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
 
 		It should_temporarily_assign_the_nested_resolver_to_the_messaging_channel = () =>
 			temporary.ShouldEqual(mockNested.Object);
@@ -126,7 +126,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			mockResolver.Setup(x => x.CreateNestedResolver(Moq.It.IsAny<string>())).Returns(mockNested.Object);
+			mockResolver.Setup(x => x.CreateNestedResolver()).Returns(mockNested.Object);
 			mockWrappedChannel
 				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
 				.Callback<Action<IDeliveryContext>>(x => x(mockWrappedChannel.Object));
@@ -141,7 +141,7 @@ namespace NanoMessageBus
 		}));
 
 		It should_create_a_nested_resolver = () =>
-			mockResolver.Verify(x => x.CreateNestedResolver(Moq.It.IsAny<string>()), Times.Once());
+			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
 
 		It should_temporarily_assign_the_nested_resolver_to_the_messaging_channel = () =>
 			temporary.ShouldEqual(mockNested.Object);

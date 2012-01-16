@@ -57,27 +57,27 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]
 	public class when_the_nested_container_callback_is_invoked : using_the_dependency_resolver
 	{
-		Establish context = () => Build(mockRootContainer.Object, (parent, name) =>
+		Establish context = () => Build(mockRootContainer.Object, (parent, depth) =>
 		{
 			parentContainerProvided = parent;
-			nameProvided = name;
+			depthProvided = depth;
 			return mockNestedContainer.Object;
 		});
 
 		Because of = () =>
-			nestedResolver = rootResolver.CreateNestedResolver("Hello, World!");
+			nestedResolver = rootResolver.CreateNestedResolver();
 
 		It should_provide_the_parent_container_to_the_callback_as_a_parameter = () =>
 			parentContainerProvided.ShouldEqual(mockRootContainer.Object);
 
 		It should_provide_the_name_provided_to_the_callback_as_a_parameter = () =>
-			nameProvided.ShouldEqual("Hello, World!");
+			depthProvided.ShouldEqual(1);
 
 		It should_return_a_reference_to_the_nested_container = () =>
 			nestedResolver.As<IDisposable>().ShouldEqual(mockNestedContainer.Object);
 
 		static IDisposable parentContainerProvided;
-		static string nameProvided;
+		static int depthProvided;
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]
@@ -124,7 +124,7 @@ namespace NanoMessageBus
 		{
 			Build(container, createdNested);
 		}
-		protected static void Build(IDisposable container, Func<IDisposable, string, IDisposable> create)
+		protected static void Build(IDisposable container, Func<IDisposable, int, IDisposable> create)
 		{
 			rootResolver = new DefaultDependencyResolver<IDisposable>(container, create);
 		}
@@ -136,7 +136,7 @@ namespace NanoMessageBus
 		protected static DefaultDependencyResolver<IDisposable> rootResolver;
 		protected static Mock<IDisposable> mockRootContainer;
 		protected static Mock<IDisposable> mockNestedContainer;
-		protected static Func<IDisposable, string, IDisposable> createdNested = (parent, name) => mockNestedContainer.Object;
+		protected static Func<IDisposable, int, IDisposable> createdNested = (parent, depth) => mockNestedContainer.Object;
 		protected static IDependencyResolver nestedResolver;
 		protected static Exception thrown;
 	}

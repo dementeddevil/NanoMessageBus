@@ -17,8 +17,7 @@
 		/// <summary>
 		/// Instructs the container to create a nested or child instance.
 		/// </summary>
-		/// <param name="name">The optional name of the nested container to be created.</param>
 		/// <returns>A reference to a child instance of IDependencyResolver.</returns>
-		IDependencyResolver CreateNestedResolver(string name = null);
+		IDependencyResolver CreateNestedResolver();
 	}
 }

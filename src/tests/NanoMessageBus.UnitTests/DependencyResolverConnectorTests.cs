@@ -49,7 +49,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 			mockResolver
-				.Setup(x => x.CreateNestedResolver(Moq.It.IsAny<string>()))
+				.Setup(x => x.CreateNestedResolver())
 				.Returns(mockNestedResolver.Object);
 
 		Because of = () =>
@@ -59,7 +59,7 @@ namespace NanoMessageBus
 			mockWrappedConnector.Verify(x => x.Connect("some key"), Times.Once());
 
 		It should_create_a_new_resolver = () =>
-			mockResolver.Verify(x => x.CreateNestedResolver(Moq.It.IsAny<string>()), Times.Once());
+			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
 
 		It should_expose_the_new_resolver_on_the_messaging_channel = () =>
 			connected.CurrentResolver.ShouldEqual(mockNestedResolver.Object);
@@ -75,7 +75,7 @@ namespace NanoMessageBus
 	public class when_resolving_the_channel_throws_an_exception : with_the_dependency_resolver_connector
 	{
 		Establish context = () =>
-			mockResolver.Setup(x => x.CreateNestedResolver(Moq.It.IsAny<string>())).Throws(toThrow);
+			mockResolver.Setup(x => x.CreateNestedResolver()).Throws(toThrow);
 
 		Because of = () =>
 			Try(() => connector.Connect("some key"));
