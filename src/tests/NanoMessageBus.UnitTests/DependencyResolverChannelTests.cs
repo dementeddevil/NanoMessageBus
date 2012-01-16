@@ -107,8 +107,8 @@ namespace NanoMessageBus
 		It should_temporarily_assign_the_nested_resolver_to_the_messaging_channel = () =>
 			temporary.ShouldEqual(mockNested.Object);
 
-		It should_invoke_the_callback_specified_providing_itself_as_the_parameter = () =>
-			delivery.ShouldEqual(channel);
+		It should_invoke_the_callback_specified_passing_in_a_DependencyResolverDeliveryContext = () =>
+			delivery.ShouldBeOfType<DependencyResolverDeliveryContext>();
 
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());
@@ -146,8 +146,8 @@ namespace NanoMessageBus
 		It should_temporarily_assign_the_nested_resolver_to_the_messaging_channel = () =>
 			temporary.ShouldEqual(mockNested.Object);
 
-		It should_invoke_the_callback_specified_providing_itself_as_the_parameter = () =>
-			delivery.ShouldEqual(channel);
+		It should_invoke_the_callback_specified_passing_in_a_DependencyResolverDeliveryContext = () =>
+			delivery.ShouldBeOfType<DependencyResolverDeliveryContext>();
 
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());

@@ -14,7 +14,7 @@
 		}
 		public virtual IDependencyResolver CurrentResolver
 		{
-			get { return this.current ?? this.resolver; }
+			get { return this.resolver; }
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)
@@ -27,24 +27,11 @@
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			// NOTE: context is being ignored, this is because, in all likelihood, it's coming from
-			// the underlying channel anyway, which is what we're already wrapping. Even so,
-			// it may be that a safer way to do this is to simply wrap the context provided here
-			// in some kind of DependencyResolverDeliveryContext object...
-			this.channel.Receive(context => this.ReceiveMessage(callback));
-		}
-		protected virtual void ReceiveMessage(Action<IDeliveryContext> callback)
-		{
-			try
+			this.channel.Receive(x =>
 			{
-				this.current = this.resolver.CreateNestedResolver();
-				callback(this);
-			}
-			finally
-			{
-				this.current.Dispose();
-				this.current = null;
-			}
+				using (var delivery = new DependencyResolverDeliveryContext(x, this.resolver.CreateNestedResolver()))
+					callback(delivery);
+			});
 		}
 
 		public DependencyResolverChannel(IMessagingChannel channel, IDependencyResolver resolver)
@@ -79,6 +66,5 @@
 
 		private readonly IMessagingChannel channel;
 		private readonly IDependencyResolver resolver;
-		private IDependencyResolver current;
 	}
 }
