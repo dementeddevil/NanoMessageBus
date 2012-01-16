@@ -27,7 +27,7 @@
 		}
 		protected virtual IMessagingChannel Connect()
 		{
-			// if this ever throws, it's executed within the context of a worker within a TryOperation callback
+			// if this ever throws, it's executed within the context of a worker under a TryOperation callback
 			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 		}
 		protected virtual bool TryConnect()
