@@ -5,6 +5,10 @@
 	/// <summary>
 	/// Provides the ability to route a given message to one or more registered.
 	/// </summary>
+	/// <remarks>
+	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
+	/// At the same time, instances of this class should only add routes during wireup rather than at runtime.
+	/// </remarks>
 	public interface IRoutingTable
 	{
 		/// <summary>
@@ -34,7 +38,7 @@
 		/// <summary>
 		/// Routes the message provided to the associated message handlers.
 		/// </summary>
-		/// <param name="context">The context surrounding the handling of the physical message.</param>
+		/// <param name="context">The context surrounding the handling of the channel message.</param>
 		/// <param name="message">The logical message to be routed to the associated handlers.</param>
 		void Route(IHandlerContext context, object message);
 	}
