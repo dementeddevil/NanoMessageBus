@@ -21,30 +21,18 @@
 		/// <param name="handler">The handler into which the message will be routed.</param>
 		/// <param name="sequence">The optional value which indicates priority over other handles for the same message.</param>
 		/// <exception cref="ArgumentNullException"></exception>
-		/// <exception cref="IndexOutOfRangeException"></exception>
-		void Add<T>(IMessageHandler<T> handler, int sequence = 0);
+		void Add<T>(IMessageHandler<T> handler, int sequence = int.MaxValue);
 
 		/// <summary>
-		/// Adds a route to the handler provided using the optional sequence specified. Adding the same handler multiple times
-		/// will result in the most recent registration being used.
+		/// Adds a route to the handler provided using the optional sequence specified. When the handler type is specified, adding
+		/// the same handler multiple times will result in the most recent registration being used.
 		/// </summary>
 		/// <typeparam name="T">The type of message to be handled.</typeparam>
-		/// <param name="handler">The callback used to resolve the handler into which the message will be routed.</param>
+		/// <param name="callback">The callback used to resolve the handler instance into which the message will be routed.</param>
 		/// <param name="sequence">The optional value which indicates priority over other handles for the same message.</param>
+		/// <param name="handlerType">The optional type which indicates the type of handler to be returned by the handler callback.</param>
 		/// <exception cref="ArgumentNullException"></exception>
-		/// <exception cref="IndexOutOfRangeException"></exception>
-		void Add<T>(Func<IMessageHandler<T>> handler, int sequence = 0);
-
-		/// <summary>
-		/// Adds a route to the handler provided using the optional sequence specified. Adding the same handler multiple times
-		/// will result in the most recent registration being used.
-		/// </summary>
-		/// <typeparam name="T">The type of message to be handled.</typeparam>
-		/// <param name="handler">The callback used to resolve the handler into which the message will be routed.</param>
-		/// <param name="sequence">The optional value which indicates priority over other handles for the same message.</param>
-		/// <exception cref="ArgumentNullException"></exception>
-		/// <exception cref="IndexOutOfRangeException"></exception>
-		void Add<T>(Func<IHandlerContext, IMessageHandler<T>> handler, int sequence = 0);
+		void Add<T>(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence = int.MaxValue, Type handlerType = null);
 
 		/// <summary>
 		/// Routes the message provided to the associated message handlers.
