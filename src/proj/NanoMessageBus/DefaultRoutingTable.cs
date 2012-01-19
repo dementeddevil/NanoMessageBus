@@ -22,20 +22,15 @@
 		}
 		private void Add<T>(ISequencedHandler handler, Type handlerType)
 		{
-			IList<ISequencedHandler> routes;
+			List<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(typeof(T), out routes))
 				routes = new List<ISequencedHandler>();
 
 			if (handlerType != null && this.registeredHandlers.Contains(handlerType))
 			{
-				for (var i = 0; i < routes.Count; i++)
-				{
-					if (handlerType != routes[i].HandlerType)
-						continue;
-
-					routes[i] = handler;
-					break;
-				}
+				var index = routes.FindIndex(x => x.HandlerType == handlerType);
+				if (index >= 0)
+					routes[index] = handler;
 			}
 			else
 			{
@@ -56,7 +51,7 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
-			IList<ISequencedHandler> routes;
+			List<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
 				return;
 
@@ -66,8 +61,8 @@
 		}
 
 		private readonly ICollection<Type> registeredHandlers = new HashSet<Type>();
-		private readonly IDictionary<Type, IList<ISequencedHandler>> registeredRoutes =
-			new Dictionary<Type, IList<ISequencedHandler>>();
+		private readonly IDictionary<Type, List<ISequencedHandler>> registeredRoutes =
+			new Dictionary<Type, List<ISequencedHandler>>();
 
 		private interface ISequencedHandler
 		{
