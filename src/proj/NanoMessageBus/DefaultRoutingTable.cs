@@ -29,9 +29,12 @@
 				}
 			}
 			else
+			{
+				this.registeredHandlers.Add(handlerType);
 				routes.Add(new SimpleHandler<T>(handler, sequence));
+			}
 
-			this.registeredHandlers.Add(handlerType);
+			// TODO: add test to ensure routes are always resorted--even when duplicates are added which might have a different sequence
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
 		public virtual void Add<T>(
@@ -56,11 +59,13 @@
 				}
 			}
 			else
+			{
 				routes.Add(new CallbackHandler<T>(callback, sequence, handlerType));
+				if (handlerType != null)
+					this.registeredHandlers.Add(handlerType);
+			}
 
-			if (handlerType != null)
-				this.registeredHandlers.Add(handlerType);
-
+			// TODO: add test to ensure routes are always resorted--even when duplicates are added which might have a different sequence
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
 		public virtual void Route(IHandlerContext context, object message)
