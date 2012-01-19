@@ -4,6 +4,7 @@
 namespace NanoMessageBus
 {
 	using System;
+	using System.Collections.Generic;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -295,20 +296,24 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			routes.Add(ctx => new GenericHandler<string>(x => matched = true));
-			routes.Add(ctx => new GenericHandler<int>()); // increment count
+			routes.Add(BuildHandler<string>);
+			routes.Add(BuildHandler<int>);
 		};
+		static IMessageHandler<T> BuildHandler<T>(IHandlerContext ctx)
+		{
+			return new GenericHandler<T>(x => values[typeof(T)] = x);
+		}
 
 		Because of = () =>
 			routes.Route(mockContext.Object, string.Empty);
 
 		It should_route_to_the_handler_that_matches_the_message_type = () =>
-			matched.ShouldBeTrue();
+			values.ContainsKey(typeof(string)).ShouldBeTrue();
 
 		It should_NOT_route_to_the_handler_that_does_not_match_the_message_type = () =>
-			count.ShouldEqual(0);
+			values.ContainsKey(typeof(int)).ShouldBeFalse();
 
-		static bool matched;
+		static readonly IDictionary<Type, object> values = new Dictionary<Type, object>();
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
@@ -318,16 +323,30 @@ namespace NanoMessageBus
 		{
 			mockContext.Setup(x => x.ContinueHandling).Returns(() => count < 2);
 
-			routes.Add(ctx => new GenericHandler<string>());
-			routes.Add(ctx => new GenericHandler<string>());
-			routes.Add(ctx => new GenericHandler<string>()); // should never get called
+			routes.Add(GetHandler);
+			routes.Add(GetHandler);
+			routes.Add(GetHandler); // never called
 		};
+		static IMessageHandler<string> GetHandler(IHandlerContext context)
+		{
+			return new GenericHandler<string>();
+		}
 
 		Because of = () =>
 			routes.Route(mockContext.Object, string.Empty);
 
 		It should_only_dispatch_to_handlers_while_the_context_can_continue_handling = () =>
 			count.ShouldEqual(2);
+	}
+
+	[Subject(typeof(DefaultRoutingTable))]
+	public class when_routing_a_message_with_no_registered_handlers : with_the_routing_table
+	{
+		Because of = () =>
+			Try(() => routes.Route(mockContext.Object, string.Empty));
+
+		It should_not_throw_an_exception = () =>
+			thrown.ShouldBeNull();
 	}
 
 	public abstract class with_the_routing_table
