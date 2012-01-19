@@ -69,15 +69,33 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			routes.Add(new StringHandler());
 			routes.Add(new GenericHandler<string>());
-			routes.Add(new GenericHandler<string>());
+			routes.Add(new GenericHandler<string>(x => last = true));
 		};
 
 		Because of = () =>
-			routes.Route(mockContext.Object, string.Empty);
+			routes.Route(mockContext.Object, "last registration only");
 
-		It should_only_route_to_one_registration = () =>
-			count.ShouldEqual(1);
+		It should_route_to_any_unique_registrations = () =>
+			unique.ShouldBeTrue();
+
+		It should_NOT_route_to_the_first_duplicate_registration = () =>
+			count.ShouldEqual(0);
+
+		It should_route_to_most_recent_duplicate_registration = () =>
+			last.ShouldBeTrue();
+
+		static bool unique;
+		static bool last;
+
+		class StringHandler : IMessageHandler<string>
+		{
+			public void Handle(string message)
+			{
+				unique = true;
+			}
+		}
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
@@ -208,19 +226,37 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			routes.Add(GetHandler, 1, typeof(GenericHandler<string>));
-			routes.Add(GetHandler, 1, typeof(GenericHandler<string>));
+			routes.Add(context => new StringHandler(), 1, typeof(StringHandler));
+			routes.Add(GetHandler<string>, 1, typeof(GenericHandler<string>));
+			routes.Add(context => new GenericHandler<string>(x => last = true), 1, typeof(GenericHandler<string>));
 		};
-		static IMessageHandler<string> GetHandler(IHandlerContext context)
+		static IMessageHandler<T> GetHandler<T>(IHandlerContext context)
 		{
-			return new GenericHandler<string>();
+			return new GenericHandler<T>();
 		}
 
 		Because of = () =>
 			routes.Route(mockContext.Object, string.Empty);
 
-		It should_only_route_to_one_registration = () =>
-			count.ShouldEqual(1);
+		It should_route_to_any_unique_registrations = () =>
+			unique.ShouldBeTrue();
+
+		It should_NOT_route_to_the_first_duplicate_registration = () =>
+			count.ShouldEqual(0);
+
+		It should_route_to_the_last_duplicate_registration = () =>
+			last.ShouldBeTrue();
+
+		static bool unique;
+		static bool last;
+
+		class StringHandler : IMessageHandler<string>
+		{
+			public void Handle(string message)
+			{
+				unique = true;
+			}
+		}
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]

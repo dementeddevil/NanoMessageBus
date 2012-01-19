@@ -11,16 +11,27 @@
 			if (handler == null)
 				throw new ArgumentNullException("handler");
 
-			if (this.registeredHandlers.Contains(handler.GetType()))
-				return; // TODO: overwrite existing registration with latest one
-
-			this.registeredHandlers.Add(handler.GetType());
+			var handlerType = handler.GetType();
 
 			IList<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(typeof(T), out routes))
 				routes = new List<ISequencedHandler>();
 
-			routes.Add(new SimpleHandler<T>(handler, sequence));
+			if (this.registeredHandlers.Contains(handlerType))
+			{
+				for (var i = 0; i < routes.Count; i++)
+				{
+					if (handlerType != routes[i].HandlerType)
+						continue;
+
+					routes[i] = new SimpleHandler<T>(handler, sequence);
+					break;
+				}
+			}
+			else
+				routes.Add(new SimpleHandler<T>(handler, sequence));
+
+			this.registeredHandlers.Add(handlerType);
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
 		public virtual void Add<T>(
@@ -29,16 +40,27 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
-			if (handlerType != null && this.registeredHandlers.Contains(handlerType))
-				return; // TODO: overwrite existing registration with the latest one
-			if (handlerType != null)
-				this.registeredHandlers.Add(handlerType);
-
 			IList<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(typeof(T), out routes))
 				routes = new List<ISequencedHandler>();
 
-			routes.Add(new CallbackHandler<T>(callback, sequence));
+			if (handlerType != null && this.registeredHandlers.Contains(handlerType))
+			{
+				for (var i = 0; i < routes.Count; i++)
+				{
+					if (handlerType != routes[i].HandlerType)
+						continue;
+
+					routes[i] = new CallbackHandler<T>(callback, sequence, handlerType);
+					break;
+				}
+			}
+			else
+				routes.Add(new CallbackHandler<T>(callback, sequence, handlerType));
+
+			if (handlerType != null)
+				this.registeredHandlers.Add(handlerType);
+
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
 		public virtual void Route(IHandlerContext context, object message)
@@ -64,11 +86,13 @@
 		private interface ISequencedHandler
 		{
 			int Sequence { get; }
+			Type HandlerType { get; }
 			void Handle(IHandlerContext context, object message);
 		}
 		private class SimpleHandler<T> : ISequencedHandler
 		{
 			public int Sequence { get; private set; }
+			public Type HandlerType { get; private set; }
 			public void Handle(IHandlerContext context, object message)
 			{
 				this.handler.Handle((T)message);
@@ -76,6 +100,7 @@
 			public SimpleHandler(IMessageHandler<T> handler, int sequence)
 			{
 				this.handler = handler;
+				this.HandlerType = handler.GetType();
 				this.Sequence = sequence;
 			}
 			private readonly IMessageHandler<T> handler;
@@ -83,15 +108,17 @@
 		private class CallbackHandler<T> : ISequencedHandler
 		{
 			public int Sequence { get; private set; }
+			public Type HandlerType { get; private set; }
 			public void Handle(IHandlerContext context, object message)
 			{
 				var handler = this.callback(context);
 				if (handler != null)
 					handler.Handle((T)message);
 			}
-			public CallbackHandler(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence)
+			public CallbackHandler(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence, Type handlerType)
 			{
 				this.callback = callback;
+				this.HandlerType = handlerType;
 				this.Sequence = sequence;
 			}
 			private readonly Func<IHandlerContext, IMessageHandler<T>> callback;
