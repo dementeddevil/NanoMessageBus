@@ -3,7 +3,9 @@
 	using System;
 
 	/// <summary>
-	/// Provides the ability to route a given message to one or more registered.
+	/// Provides the ability to route a given message to one or more registered handlers. In addition, multiple routing
+	/// tables can be used by an IoC-managed application to have different routes depending upon which table is resolved
+	/// for a given incoming message.
 	/// </summary>
 	/// <remarks>
 	/// Instances of this class must be designed to be multi-thread safe such that they can be shared between threads.
