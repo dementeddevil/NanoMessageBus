@@ -11,14 +11,14 @@
 	public interface IHandlerContext
 	{
 		/// <summary>
+		/// Gets all context associated with the attempted delivery of the channel message.
+		/// </summary>
+		IDeliveryContext Delivery { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether or not processing of the given channel message should continue.
 		/// </summary>
 		bool ContinueHandling { get; }
-
-		/// <summary>
-		/// Gets all contexted associated with the attempted delivery of the channel message.
-		/// </summary>
-		IDeliveryContext Delivery { get; }
 
 		/// <summary>
 		/// Stops handling the current channel message and consumes the message.
