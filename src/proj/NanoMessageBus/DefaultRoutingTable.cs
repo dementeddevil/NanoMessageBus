@@ -11,38 +11,17 @@
 			if (handler == null)
 				throw new ArgumentNullException("handler");
 
-			var handlerType = handler.GetType();
-
-			IList<ISequencedHandler> routes;
-			if (!this.registeredRoutes.TryGetValue(typeof(T), out routes))
-				routes = new List<ISequencedHandler>();
-
-			if (this.registeredHandlers.Contains(handlerType))
-			{
-				for (var i = 0; i < routes.Count; i++)
-				{
-					if (handlerType != routes[i].HandlerType)
-						continue;
-
-					routes[i] = new SimpleHandler<T>(handler, sequence);
-					break;
-				}
-			}
-			else
-			{
-				this.registeredHandlers.Add(handlerType);
-				routes.Add(new SimpleHandler<T>(handler, sequence));
-			}
-
-			// TODO: add test to ensure routes are always resorted--even when duplicates are added which might have a different sequence
-			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
+			this.Add<T>(new SimpleHandler<T>(handler, sequence), handler.GetType());
 		}
-		public virtual void Add<T>(
-			Func<IHandlerContext, IMessageHandler<T>> callback, int sequence = int.MaxValue, Type handlerType = null)
+		public virtual void Add<T>(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence = int.MaxValue, Type handlerType = null)
 		{
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
+			this.Add<T>(new CallbackHandler<T>(callback, sequence, handlerType), handlerType);
+		}
+		private void Add<T>(ISequencedHandler handler, Type handlerType)
+		{
 			IList<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(typeof(T), out routes))
 				routes = new List<ISequencedHandler>();
@@ -54,13 +33,13 @@
 					if (handlerType != routes[i].HandlerType)
 						continue;
 
-					routes[i] = new CallbackHandler<T>(callback, sequence, handlerType);
+					routes[i] = handler;
 					break;
 				}
 			}
 			else
 			{
-				routes.Add(new CallbackHandler<T>(callback, sequence, handlerType));
+				routes.Add(handler);
 				if (handlerType != null)
 					this.registeredHandlers.Add(handlerType);
 			}
@@ -68,6 +47,7 @@
 			// TODO: add test to ensure routes are always resorted--even when duplicates are added which might have a different sequence
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
+
 		public virtual void Route(IHandlerContext context, object message)
 		{
 			if (context == null)
@@ -80,6 +60,7 @@
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
 				return;
 
+			// TODO: extract base class and interface information and perform those routes as well--all the way back to System.Object
 			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
 				route.Handle(context, message);
 		}
