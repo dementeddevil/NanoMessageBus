@@ -172,7 +172,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			routes.Add(new GenericHandler<string>(x => matched = true));
-			routes.Add(new GenericHandler<int>()); // increment count
+			routes.Add(new GenericHandler<int>()); // default action of incrementing count should not occur
 		};
 
 		Because of = () =>

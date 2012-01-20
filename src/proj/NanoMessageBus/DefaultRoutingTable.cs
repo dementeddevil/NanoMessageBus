@@ -26,20 +26,18 @@
 			if (!this.registeredRoutes.TryGetValue(typeof(T), out routes))
 				routes = new List<ISequencedHandler>();
 
-			if (handlerType != null && this.registeredHandlers.Contains(handlerType))
+			if (this.registeredHandlers.Contains(handlerType))
 			{
 				var index = routes.FindIndex(x => x.HandlerType == handlerType);
 				if (index >= 0)
 					routes[index] = handler;
 			}
 			else
-			{
 				routes.Add(handler);
-				if (handlerType != null)
-					this.registeredHandlers.Add(handlerType);
-			}
 
-			// TODO: add test to ensure routes are always resorted--even when duplicates are added which might have a different sequence
+			if (handlerType != null)
+				this.registeredHandlers.Add(handlerType);
+
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
 
@@ -55,7 +53,7 @@
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
 				return;
 
-			// TODO: extract base class and interface information and perform those routes as well--all the way back to System.Object
+			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
 			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
 				route.Handle(context, message);
 		}
