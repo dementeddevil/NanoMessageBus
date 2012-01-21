@@ -11,6 +11,10 @@
 	/// </remarks>
 	public interface IDeliveryContext
 	{
+		// TODO: channel group name?
+		// TODO: return address to be used during send?
+		// give DeliveryAddress e.g. "direct://default/queue-name"?
+
 		/// <summary>
 		/// Gets the current inbound message being handled on the channel.
 		/// </summary>

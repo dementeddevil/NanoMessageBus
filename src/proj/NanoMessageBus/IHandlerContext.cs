@@ -48,6 +48,10 @@
 		/// <param name="messages">The message(s) to be sent back to the point of origin.</param>
 		void Reply(params object[] messages);
 
+		// TODO: outbound headers *per* message? (instead of collective outgoing headers)
+		// TODO: how to indicate correlation ID on a message?
+		// TODO: how do outbound messages determine the correct ReturnAddress?
+
 		/// <summary>
 		/// Gets a set of headers to be appended any outgoing channel message envelope.
 		/// </summary>
