@@ -12,6 +12,7 @@
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IDependencyResolver CurrentResolver { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }
+		public virtual IChannelGroupConfiguration CurrentConfiguration { get; private set; }
 
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
@@ -203,7 +204,7 @@
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
-			this.configuration = configuration;
+			this.CurrentConfiguration = this.configuration = configuration;
 			this.adapter = configuration.MessageAdapter;
 			this.transactionType = configuration.TransactionType;
 			this.subscriptionFactory = subscriptionFactory;

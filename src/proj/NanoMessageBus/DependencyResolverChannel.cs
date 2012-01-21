@@ -12,6 +12,10 @@
 		{
 			get { return this.CurrentContext.CurrentTransaction; }
 		}
+		public virtual IChannelGroupConfiguration CurrentConfiguration
+		{
+			get { return this.CurrentContext.CurrentConfiguration; }
+		}
 		public virtual IDependencyResolver CurrentResolver
 		{
 			get { return this.currentResolver ?? this.resolver; }

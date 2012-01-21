@@ -5,6 +5,7 @@ namespace NanoMessageBus.RabbitChannel
 {
 	using System;
 	using System.Collections;
+	using System.Globalization;
 	using System.Runtime.Serialization;
 	using Machine.Specifications;
 	using Moq;
@@ -31,6 +32,9 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_expose_a_reference_to_the_resolver_from_the_underlying_configuration = () =>
 			channel.CurrentResolver.ShouldEqual(mockConfiguration.Object.DependencyResolver);
+
+		It should_expose_a_reference_to_the_underlying_configuration = () =>
+			channel.CurrentConfiguration.ShouldEqual(mockConfiguration.Object);
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -193,7 +197,7 @@ namespace NanoMessageBus.RabbitChannel
 			{
 				BasicProperties = new BasicProperties
 				{
-					Expiration = SystemTime.EpochTime.ToString()
+					Expiration = SystemTime.EpochTime.ToString(CultureInfo.InvariantCulture)
 				},
 				Body = new byte[] { 1, 2, 3, 4 }
 			};
@@ -271,7 +275,7 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			message = new BasicDeliverEventArgs
 			{
-				BasicProperties = new BasicProperties { Expiration = SystemTime.EpochTime.ToString() }
+				BasicProperties = new BasicProperties { Expiration = SystemTime.EpochTime.ToString(CultureInfo.InvariantCulture) }
 			};
 
 			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns((PublicationAddress)null);

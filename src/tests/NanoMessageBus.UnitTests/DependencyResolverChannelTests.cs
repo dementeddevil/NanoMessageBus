@@ -35,6 +35,7 @@ namespace NanoMessageBus
 		{
 			mockWrappedChannel.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockWrappedChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
+			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 		};
 
 		It should_expose_the_current_message_from_the_underlying_channel = () =>
@@ -42,6 +43,9 @@ namespace NanoMessageBus
 
 		It should_expose_the_current_transaction_from_the_underlying_channel = () =>
 			channel.CurrentTransaction.ShouldEqual(mockWrappedChannel.Object.CurrentTransaction);
+
+		It should_expose_the_current_configuration_from_the_underlying_channel = () =>
+			channel.CurrentConfiguration.ShouldEqual(mockWrappedChannel.Object.CurrentConfiguration);
 
 		It should_expose_the_resolver_provided_during_construction = () =>
 			channel.CurrentResolver.ShouldEqual(mockResolver.Object);
@@ -93,6 +97,7 @@ namespace NanoMessageBus
 
 			mockOriginal.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockOriginal.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
+			mockOriginal.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 
 			mockWrappedChannel
 				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
@@ -104,6 +109,7 @@ namespace NanoMessageBus
 			delivery = context;
 			contextMessage = context.CurrentMessage;
 			contextTransaction = context.CurrentTransaction;
+			contextConfiguration = context.CurrentConfiguration;
 			contextResolver = context.CurrentResolver;
 			delivery.Send(sent);
 		});
@@ -122,6 +128,9 @@ namespace NanoMessageBus
 
 		It should_expose_the_original_context_CurrentTransaction = () =>
 			contextTransaction.ShouldEqual(mockOriginal.Object.CurrentTransaction);
+
+		It should_expose_the_original_context_CurrentConfiguration = () =>
+			contextConfiguration.ShouldEqual(mockOriginal.Object.CurrentConfiguration);
 		
 		It should_send_through_the_original_context = () =>
 			mockOriginal.Verify(x => x.Send(sent), Times.Once());
@@ -138,9 +147,13 @@ namespace NanoMessageBus
 		It should_revert_the_CurrentTransaction_back_to_the_constructed_value_upon_completion = () =>
 			channel.CurrentTransaction.ShouldEqual(mockWrappedChannel.Object.CurrentTransaction);
 
+		It should_revert_the_CurrentConfiguration_back_to_the_constructed_value_upon_completion = () =>
+			channel.CurrentConfiguration.ShouldEqual(mockWrappedChannel.Object.CurrentConfiguration);
+
 		static IDeliveryContext delivery;
 		static IDependencyResolver contextResolver;
 		static IChannelTransaction contextTransaction;
+		static IChannelGroupConfiguration contextConfiguration;
 		static ChannelMessage contextMessage;
 		static readonly Mock<IDeliveryContext> mockOriginal = new Mock<IDeliveryContext>();
 		static readonly Mock<IDependencyResolver> mockNested = new Mock<IDependencyResolver>();

@@ -11,10 +11,6 @@
 	/// </remarks>
 	public interface IDeliveryContext
 	{
-		// TODO: channel group name?
-		// TODO: return address to be used during send?
-		// give DeliveryAddress e.g. "direct://default/queue-name"?
-
 		/// <summary>
 		/// Gets the current inbound message being handled on the channel.
 		/// </summary>
@@ -29,6 +25,11 @@
 		/// Gets the current transaction associated with the channel, if transactions are available.
 		/// </summary>
 		IChannelTransaction CurrentTransaction { get; }
+
+		/// <summary>
+		/// Gets the current configuration associated with the channel.
+		/// </summary>
+		IChannelGroupConfiguration CurrentConfiguration { get; }
 
 		/// <summary>
 		/// Sends the message specified to the destinations provided.
