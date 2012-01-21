@@ -31,6 +31,11 @@
 		int MaxWorkers { get; }
 
 		/// <summary>
+		/// Gets the URI representing the address to which all reply messages will be sent.
+		/// </summary>
+		Uri ReturnAddress { get; }
+
+		/// <summary>
 		/// Gets the length of time to await the receipt of a message from a channel before resume other work.
 		/// </summary>
 		TimeSpan ReceiveTimeout { get; }
