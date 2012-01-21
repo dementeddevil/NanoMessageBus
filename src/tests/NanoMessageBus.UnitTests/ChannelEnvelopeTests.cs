@@ -20,10 +20,10 @@ namespace NanoMessageBus
 			envelope.Message.ShouldBeTheSameAs(message);
 
 		It should_contain_all_non_null_recipients_specified = () =>
-			envelope.Recipients.Count.ShouldEqual(recipients.Where(x => x != null).Count());
+			envelope.Recipients.Count.ShouldEqual(recipients.Count(x => x != null));
 
 		It should_contain_all_the_recipients_specified = () =>
-			envelope.Recipients.ToList().ForEach(uri => recipients.Contains(uri));
+			envelope.Recipients.ToList().ForEach(uri => recipients.Contains(uri).ShouldBeTrue());
 
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
 		static readonly ICollection<Uri> recipients = new HashSet<Uri>
