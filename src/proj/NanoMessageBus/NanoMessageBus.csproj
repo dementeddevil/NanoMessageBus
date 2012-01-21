@@ -60,6 +60,7 @@
     <Compile Include="DependencyResolverConnector.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IDependencyResolver.cs" />
+    <Compile Include="IDispatchContext.cs" />
     <Compile Include="IHandlerContext.cs" />
     <Compile Include="IMessageHandler.cs" />
     <Compile Include="IRoutingTable.cs" />
