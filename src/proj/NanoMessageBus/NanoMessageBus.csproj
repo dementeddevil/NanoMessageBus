@@ -64,6 +64,7 @@
     <Compile Include="IHandlerContext.cs" />
     <Compile Include="IMessageHandler.cs" />
     <Compile Include="IRoutingTable.cs" />
+    <Compile Include="ISubscriptionTable.cs" />
     <Compile Include="IWorkItem.cs" />
     <Compile Include="IChannelGroupConfiguration.cs" />
     <Compile Include="IOutboundChannel.cs" />
