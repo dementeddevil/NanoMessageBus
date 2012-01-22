@@ -11,13 +11,16 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitSubscriberTable))]
 	public class when_querying_for_subscribers_with_a_null_message_type : using_a_subscriber_table
 	{
-		Because of = () => Try(() =>
-		{
-			var value = table[null];
-		});
+		Because of = () =>
+			Try(() => subscribers = table[null]);
+
+		It should_not_return_a_value = () =>
+			subscribers.ShouldBeNull();
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		static ICollection<Uri> subscribers;
 	}
 
 	[Subject(typeof(RabbitSubscriberTable))]
