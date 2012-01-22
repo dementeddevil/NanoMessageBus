@@ -49,7 +49,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitChannelGroupConfiguration.cs" />
     <Compile Include="RabbitConnector.cs" />
-    <Compile Include="RabbitSubscriberTable.cs" />
+    <Compile Include="RabbitDispatchTable.cs" />
     <Compile Include="RabbitWireup.cs" />
     <Compile Include="RabbitMessageAdapter.cs" />
     <Compile Include="RabbitSubscription.cs" />

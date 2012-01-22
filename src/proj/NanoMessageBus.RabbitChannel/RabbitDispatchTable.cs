@@ -3,7 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 
-	public class RabbitSubscriberTable : ISubscriberTable
+	public class RabbitDispatchTable : IDispatchTable
 	{
 		public ICollection<Uri> this[Type messageType]
 		{
@@ -15,7 +15,11 @@
 				return new[] { new Uri("fanout://" + messageType.FullName.AsLower(), UriKind.Absolute) };
 			}
 		}
-		public void Add(Uri subscriber, Type messageType, DateTime expiration)
+		public void AddSubscriber(Uri subscriber, Type messageType, DateTime expiration)
+		{
+			// no op
+		}
+		public void AddRecipient(Uri recipient, Type messageType)
 		{
 			// no op
 		}

@@ -8,8 +8,8 @@ namespace NanoMessageBus.RabbitChannel
 	using System.Linq;
 	using Machine.Specifications;
 
-	[Subject(typeof(RabbitSubscriberTable))]
-	public class when_querying_for_subscribers_with_a_null_message_type : using_a_subscriber_table
+	[Subject(typeof(RabbitDispatchTable))]
+	public class when_querying_for_dispatch_recipients_with_a_null_message_type : using_a_dispatch_table
 	{
 		Because of = () =>
 			Try(() => subscribers = table[null]);
@@ -23,8 +23,8 @@ namespace NanoMessageBus.RabbitChannel
 		static ICollection<Uri> subscribers;
 	}
 
-	[Subject(typeof(RabbitSubscriberTable))]
-	public class when_querying_for_subscribers : using_a_subscriber_table
+	[Subject(typeof(RabbitDispatchTable))]
+	public class when_querying_for_dispatch_recipients : using_a_dispatch_table
 	{
 		Because of = () =>
 			subscribers = table[typeof(string)].ToArray();
@@ -44,18 +44,28 @@ namespace NanoMessageBus.RabbitChannel
 		static Uri[] subscribers;
 	}
 
-	[Subject(typeof(RabbitSubscriberTable))]
-	public class when_adding_a_subscriber : using_a_subscriber_table
+	[Subject(typeof(RabbitDispatchTable))]
+	public class when_adding_a_subscriber : using_a_dispatch_table
 	{
 		Because of = () =>
-			Try(() => table.Add(null, null, SystemTime.UtcNow));
+			Try(() => table.AddSubscriber(null, null, SystemTime.UtcNow));
 
 		It should_do_nothing = () =>
 			thrown.ShouldBeNull();
 	}
 
-	[Subject(typeof(RabbitSubscriberTable))]
-	public class when_removing_a_subscriber : using_a_subscriber_table
+	[Subject(typeof(RabbitDispatchTable))]
+	public class when_adding_a_recipient : using_a_dispatch_table
+	{
+		Because of = () =>
+			Try(() => table.AddRecipient(null, null));
+
+		It should_do_nothing = () =>
+			thrown.ShouldBeNull();
+	}
+
+	[Subject(typeof(RabbitDispatchTable))]
+	public class when_removing_a_subscriber : using_a_dispatch_table
 	{
 		Because of = () =>
 			Try(() => table.Remove(null, null));
@@ -64,11 +74,11 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeNull();
 	}
 
-	public abstract class using_a_subscriber_table
+	public abstract class using_a_dispatch_table
 	{
 		Establish context = () =>
 		{
-			table = new RabbitSubscriberTable();
+			table = new RabbitDispatchTable();
 			thrown = null;
 		};
 		protected static void Try(Action callback)
@@ -76,7 +86,7 @@ namespace NanoMessageBus.RabbitChannel
 			thrown = Catch.Exception(callback);
 		}
 
-		protected static RabbitSubscriberTable table;
+		protected static RabbitDispatchTable table;
 		protected static Exception thrown;
 	}
 }
