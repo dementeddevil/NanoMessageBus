@@ -9,16 +9,15 @@
 	/// <remarks>
 	/// Instances of this class are single threaded and should not be shared between threads.
 	/// </remarks>
-	public interface IDispatchContext : IDisposable
+	public interface IDispatchContext
 	{
 		/// <summary>
 		/// Appends a single message to the dispatch.
 		/// </summary>
-		/// <typeparam name="T">The type of message to be appended to the dispatch.</typeparam>
 		/// <param name="message">The message to be dispatched.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <returns>A instance to the same dispatch to facilitate fluent construction.</returns>
-		IDispatchContext WithMessage<T>(T message);
+		IDispatchContext WithMessage(object message);
 
 		/// <summary>
 		/// Appends a set of messages to the dispatch.
@@ -53,7 +52,7 @@
 		IDispatchContext WithHeaders(IDictionary<string, string> headers);
 
 		/// <summary>
-		/// Specifies an additional recipient for the dispatch.
+		/// Specifies an additional recipient for the dispatch beyond those obtained for the underlying dispatch table.
 		/// </summary>
 		/// <param name="recipient">The additional recipient to whom the dispatch should be transmitted.</param>
 		/// <exception cref="ArgumentNullException"></exception>
@@ -61,27 +60,24 @@
 		IDispatchContext WithRecipient(Uri recipient);
 
 		/// <summary>
-		/// Pushes the message onto the underlying channel and sends it to any interested parties and disposes the context.
+		/// Pushes the message onto the underlying channel sending it to any interested parties and completes the context.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
-		/// <exception cref="ObjectDisposedException"></exception>
 		void Send();
 
 		/// <summary>
-		/// Pushes the message onto the underlying channel and publishes it to all interested parties and disposes the context.
+		/// Pushes the message onto the underlying channel publishing it to all interested parties, and completes the context.
 		/// </summary>
 		/// <remarks>
 		/// The first message in the transmission will be used to determine message type, and thus, the recipients of the message.
 		/// </remarks>
 		/// <exception cref="InvalidOperationException"></exception>
-		/// <exception cref="ObjectDisposedException"></exception>
 		void Publish();
 
 		/// <summary>
-		/// Pushes the message onto the channel and sends it to the original sender, if any, and disposes the context.
+		/// Pushes the message onto the channel sending it to the original sender, if any, and completes the context.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
-		/// <exception cref="ObjectDisposedException"></exception>
 		void Reply();
 	}
 }
