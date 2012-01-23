@@ -207,6 +207,10 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
+			mockConfiguration
+				.Setup(x => x.DeadLetterExchange)
+				.Returns(new PublicationAddress("direct", "dead-letters-here", "some-key"));
+
 			mockAdapter
 				.Setup(x => x.Build(Moq.It.IsAny<ChannelMessage>(), Moq.It.IsAny<IBasicProperties>()))
 				.Returns(EmptyMessage);
