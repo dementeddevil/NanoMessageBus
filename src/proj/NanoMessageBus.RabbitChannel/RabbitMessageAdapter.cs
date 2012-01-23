@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections;
+	using System.Collections.Concurrent;
 	using System.Collections.Generic;
 	using System.Globalization;
 	using System.Linq;
@@ -23,17 +24,13 @@
 			if (translated != null)
 				return translated;
 
-			lock (this.cache)
-				return this.cache[message] = this.TryTranslate(message);
+			return this.cache[message] = this.TryTranslate(message);
 		}
 		protected virtual ChannelMessage TryFromCache(BasicDeliverEventArgs message)
 		{
-			lock (this.cache)
-			{
-				ChannelMessage cached;
-				this.cache.TryGetValue(message, out cached);
-				return cached;
-			}
+			ChannelMessage cached;
+			this.cache.TryGetValue(message, out cached);
+			return cached;
 		}
 		protected virtual ChannelMessage TryTranslate(BasicDeliverEventArgs message)
 		{
@@ -170,8 +167,7 @@
 
 		public virtual bool PurgeFromCache(BasicDeliverEventArgs message)
 		{
-			lock (this.cache)
-				return this.cache.Remove(message);
+			return this.cache.Remove(message);
 		}
 
 		public RabbitMessageAdapter(RabbitChannelGroupConfiguration configuration) : this()
@@ -188,7 +184,7 @@
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
 		private readonly IDictionary<BasicDeliverEventArgs, ChannelMessage> cache =
-			new Dictionary<BasicDeliverEventArgs, ChannelMessage>();
+			new ConcurrentDictionary<BasicDeliverEventArgs, ChannelMessage>();
 		private readonly RabbitChannelGroupConfiguration configuration;
 		private readonly ISerializer serializer;
 	}
