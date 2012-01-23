@@ -11,7 +11,7 @@
 
 		public virtual void Initialize()
 		{
-			lock (this.locker)
+			lock (this.sync)
 			{
 				if (this.initialized)
 					return;
@@ -71,7 +71,7 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
-			lock (this.locker)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
@@ -147,7 +147,7 @@
 			if (!disposing)
 				return;
 
-			lock (this.locker)
+			lock (this.sync)
 			{
 				if (this.disposed)
 					return;
@@ -157,7 +157,7 @@
 			}
 		}
 
-		private readonly object locker = new object();
+		private readonly object sync = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;
 		private readonly IWorkerGroup<IMessagingChannel> workers;

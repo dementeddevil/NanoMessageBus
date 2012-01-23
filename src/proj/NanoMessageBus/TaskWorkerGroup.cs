@@ -16,7 +16,7 @@
 			if (restart == null)
 				throw new ArgumentNullException("restart");
 
-			lock (this.locker)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenInitialized();
@@ -48,7 +48,7 @@
 		}
 		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
 		{
-			lock (this.locker)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
@@ -85,7 +85,7 @@
 		}
 		public virtual void Restart()
 		{
-			lock (this.locker)
+			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
@@ -159,7 +159,7 @@
 			if (!disposing)
 				return;
 
-			lock (this.locker)
+			lock (this.sync)
 			{
 				if (this.disposed)
 					return;
@@ -172,7 +172,7 @@
 		}
 
 		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
-		private readonly object locker = new object();
+		private readonly object sync = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
 		private readonly int minWorkers;
 		private readonly int maxWorkers;

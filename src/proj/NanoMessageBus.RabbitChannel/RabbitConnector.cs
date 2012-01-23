@@ -20,7 +20,7 @@
 			var config = this.GetChannelGroupConfiguration(channelGroup);
 			this.ThrowWhenDisposed();
 
-			lock (this.locker)
+			lock (this.sync)
 				return this.EstablishChannel(config);
 		}
 		protected virtual RabbitChannelGroupConfiguration GetChannelGroupConfiguration(string channelGroup)
@@ -126,7 +126,7 @@
 			if (!disposing)
 				return;
 
-			lock (this.locker)
+			lock (this.sync)
 			{
 				if (this.disposed)
 					return;
@@ -156,7 +156,7 @@
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
 		private readonly int shutdownTimeout;
-		private readonly object locker = new object();
+		private readonly object sync = new object();
 		private IConnection connection;
 		private bool disposed;
 	}
