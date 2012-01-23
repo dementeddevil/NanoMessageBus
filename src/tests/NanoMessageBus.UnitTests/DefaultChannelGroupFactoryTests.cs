@@ -12,7 +12,7 @@ namespace NanoMessageBus
 	public class when_building_a_channel_with_a_null_connector : with_a_channel_group_factory
 	{
 		Because of = () =>
-			Try(() => factory.Build(null, config));
+			Try(() => Factory.Build(null, config));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -22,7 +22,7 @@ namespace NanoMessageBus
 	public class when_building_a_channel_with_a_null_configuration : with_a_channel_group_factory
 	{
 		Because of = () =>
-			Try(() => factory.Build(connector, null));
+			Try(() => Factory.Build(Connector, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -32,7 +32,7 @@ namespace NanoMessageBus
 	public class when_building_a_channel : with_a_channel_group_factory
 	{
 		Because of = () =>
-			group = factory.Build(connector, config);
+			group = Factory.Build(Connector, config);
 
 		It should_create_a_channel_group = () =>
 			group.ShouldBeOfType<DefaultChannelGroup>();
@@ -58,8 +58,8 @@ namespace NanoMessageBus
 		}
 
 		protected static IChannelGroupConfiguration config;
-		protected static readonly IChannelConnector connector = new Mock<IChannelConnector>().Object;
-		protected static readonly DefaultChannelGroupFactory factory = new DefaultChannelGroupFactory();
+		protected static readonly IChannelConnector Connector = new Mock<IChannelConnector>().Object;
+		protected static readonly DefaultChannelGroupFactory Factory = new DefaultChannelGroupFactory();
 		protected static Exception thrown;
 	}
 }

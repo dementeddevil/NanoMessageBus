@@ -11,9 +11,14 @@
 	public class ChannelEnvelope
 	{
 		/// <summary>
-		/// Represents a loopback address used for dispatch a message to a local endpoint.
+		/// Represents a loopback address used for dispatching a message to a local endpoint.
 		/// </summary>
-		public static readonly Uri LoopbackAddress = new Uri("loopback://localhost/");
+		public static readonly Uri LoopbackAddress = new Uri("default://loopback/");
+
+		/// <summary>
+		/// Represents a dead-letter address used for dispatching a message to the dead-letter queue
+		/// </summary>
+		public static readonly Uri DeadLetterAddress = new Uri("default://dead-letter-queue/");
 
 		/// <summary>
 		/// Gets the message to be dispatched.
