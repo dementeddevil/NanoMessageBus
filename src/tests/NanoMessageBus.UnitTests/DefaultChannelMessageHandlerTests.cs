@@ -69,7 +69,6 @@ namespace NanoMessageBus
 		static bool continueProcessing = true;
 	}
 
-
 	public abstract class with_a_channel_message_handler
 	{
 		Establish context = () =>
