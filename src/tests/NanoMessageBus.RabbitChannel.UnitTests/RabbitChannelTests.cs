@@ -203,6 +203,36 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_to_dead_letter_address : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockAdapter
+				.Setup(x => x.Build(Moq.It.IsAny<ChannelMessage>(), Moq.It.IsAny<IBasicProperties>()))
+				.Returns(EmptyMessage);
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Callback<PublicationAddress, IBasicProperties, byte[]>((x, y, z) => destination = x);
+		};
+
+		Because of = () =>
+		{
+			var message = new ChannelMessage(Guid.Empty, Guid.Empty, null, null, null);
+			var recipients = new[] { ChannelEnvelope.DeadLetterAddress };
+			channel.Send(new ChannelEnvelope(message, recipients));
+		};
+
+		It should_send_the_message_to_the_configured_dead_letter_exchange = () =>
+			destination.ShouldEqual(mockConfiguration.Object.DeadLetterExchange);
+
+		static PublicationAddress destination;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_no_message_is_received_from_the_subscription : using_a_channel
 	{
 		Establish context = () =>

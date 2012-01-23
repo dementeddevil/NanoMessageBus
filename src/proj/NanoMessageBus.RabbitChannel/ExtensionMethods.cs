@@ -13,9 +13,8 @@
 			if (uri == ChannelEnvelope.LoopbackAddress)
 				return new PublicationAddress(ExchangeType.Direct, string.Empty, config.InputQueue);
 
-			//// TODO:
-			////if (uri == ChannelEnvelope.DeadLetterAddress)
-			////    return config.DeadLetterExchange;
+			if (uri == ChannelEnvelope.DeadLetterAddress)
+				return config.DeadLetterExchange;
 
 			var address = PublicationAddress.Parse(uri.ToString());
 			return address.ExchangeName.AsLower() == "default"
