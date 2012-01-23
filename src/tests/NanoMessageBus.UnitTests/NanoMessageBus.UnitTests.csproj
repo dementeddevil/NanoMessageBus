@@ -45,6 +45,7 @@
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ChannelEnvelopeTests.cs" />
+    <Compile Include="DefaultChannelMessageHandlerTests.cs" />
     <Compile Include="DefaultChannelGroupFactoryTests.cs" />
     <Compile Include="DefaultDispatchContextTests.cs" />
     <Compile Include="DefaultHandlerContextTests.cs" />
