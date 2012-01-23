@@ -80,6 +80,21 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DependencyResolverConnector))]
+	public class when_resolving_a_channel_that_doesnt_have_a_resolver : with_the_dependency_resolver_connector
+	{
+		Establish context = () =>
+			mockConfiguration.Setup(x => x.DependencyResolver).Returns((IDependencyResolver)null);
+
+		Because of = () =>
+			channel = connector.Connect("some key");
+
+		It should_not_wrap_the_channel_in_a_resolver_channel = () =>
+			channel.ShouldEqual(mockWrappedChannel.Object);
+
+		static IMessagingChannel channel;
+	}
+
+	[Subject(typeof(DependencyResolverConnector))]
 	public class when_disposing_the_connector : with_the_dependency_resolver_connector
 	{
 		Because of = () =>

@@ -17,6 +17,8 @@
 		{
 			var channel = this.connector.Connect(channelGroup);
 			var resolver = channel.CurrentConfiguration.DependencyResolver;
+			if (resolver == null)
+				return channel;
 
 			try
 			{
