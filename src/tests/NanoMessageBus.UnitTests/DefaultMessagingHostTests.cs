@@ -340,6 +340,9 @@ namespace NanoMessageBus
 		It should_dispose_each_underlying_outbound_channel_group = () =>
 			outboundGroup.Verify(x => x.Dispose(), Times.Once());
 
+		It shouold_dispose_each_of_the_underlying_connectors = () =>
+			mockConnectors.ToList().ForEach(mock => mock.Verify(x => x.Dispose(), Times.Once()));
+
 		static readonly Mock<IChannelGroup> outboundGroup = new Mock<IChannelGroup>();
 	}
 

@@ -123,6 +123,9 @@
 				this.disposed = true;
 				Dispose(this.inbound);
 				Dispose(this.outbound);
+
+				foreach (var connector in this.connectors)
+					connector.Dispose();
 			}
 		}
 		private static void Dispose(IDictionary<string, IChannelGroup> groups)
