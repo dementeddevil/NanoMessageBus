@@ -95,6 +95,18 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
+	public class when_preparing_to_dispatch_with_a_message : with_a_handler_context
+	{
+		Because of = () =>
+			dispatchContext = handlerContext.PrepareDispatch("some message");
+
+		It should_create_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
 	public class when_disposing_the_handler_context : with_a_handler_context
 	{
 		Because of = () =>

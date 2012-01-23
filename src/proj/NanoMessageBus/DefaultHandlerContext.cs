@@ -29,8 +29,8 @@
 		{
 			this.ThrowWhenDisposed();
 
-			// TODO: message
-			return new DefaultDispatchContext(this.delivery, this.dispatchTable);
+			var context = new DefaultDispatchContext(this.delivery, this.dispatchTable);
+			return message == null ? context : context.WithMessage(message);
 		}
 
 		protected virtual void ThrowWhenDisposed()
