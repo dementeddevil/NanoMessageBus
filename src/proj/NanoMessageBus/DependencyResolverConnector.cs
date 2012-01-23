@@ -16,10 +16,11 @@
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			var channel = this.connector.Connect(channelGroup);
+			var resolver = channel.CurrentConfiguration.DependencyResolver;
 
 			try
 			{
-				return new DependencyResolverChannel(channel, this.resolver.CreateNestedResolver());
+				return new DependencyResolverChannel(channel, resolver.CreateNestedResolver());
 			}
 			catch
 			{
@@ -28,16 +29,12 @@
 			}
 		}
 
-		public DependencyResolverConnector(IChannelConnector connector, IDependencyResolver resolver)
+		public DependencyResolverConnector(IChannelConnector connector)
 		{
 			if (connector == null)
 				throw new ArgumentNullException("connector");
 
-			if (resolver == null)
-				throw new ArgumentNullException("resolver");
-
 			this.connector = connector;
-			this.resolver = resolver;
 		}
 		~DependencyResolverConnector()
 		{
@@ -51,14 +48,10 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing)
-				return;
-
-			this.connector.Dispose();
-			this.resolver.Dispose();
+			if (disposing)
+				this.connector.Dispose();
 		}
 
 		private readonly IChannelConnector connector;
-		private readonly IDependencyResolver resolver;
 	}
 }

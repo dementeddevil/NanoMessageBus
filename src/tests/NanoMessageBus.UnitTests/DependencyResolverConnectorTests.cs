@@ -12,17 +12,7 @@ namespace NanoMessageBus
 	public class when_constructing_with_a_null_connector : with_the_dependency_resolver_connector
 	{
 		Because of = () =>
-			Try(() => Build(null, mockResolver.Object));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DependencyResolverConnector))]
-	public class when_constructing_with_a_null_resolver : with_the_dependency_resolver_connector
-	{
-		Because of = () =>
-			Try(() => Build(mockWrappedConnector.Object, null));
+			Try(() => Build(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -97,9 +87,6 @@ namespace NanoMessageBus
 
 		It should_dispose_the_underlying_connector = () =>
 			mockWrappedConnector.Verify(x => x.Dispose(), Times.Once());
-
-		It should_dispose_the_underlying_resolver = () =>
-			mockResolver.Verify(x => x.Dispose(), Times.Once());
 	}
 
 	public abstract class with_the_dependency_resolver_connector
@@ -108,7 +95,11 @@ namespace NanoMessageBus
 		{
 			mockResolver = new Mock<IDependencyResolver>();
 			mockWrappedChannel = new Mock<IMessagingChannel>();
+			mockConfiguration = new Mock<IChannelGroupConfiguration>();
 			mockWrappedConnector = new Mock<IChannelConnector>();
+
+			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfiguration.Object);
+			mockConfiguration.Setup(x => x.DependencyResolver).Returns(mockResolver.Object);
 			mockWrappedConnector
 				.Setup(x => x.Connect(Moq.It.IsAny<string>()))
 				.Returns(mockWrappedChannel.Object);
@@ -116,11 +107,11 @@ namespace NanoMessageBus
 		};
 		protected static void Build()
 		{
-			Build(mockWrappedConnector.Object, mockResolver.Object);
+			Build(mockWrappedConnector.Object);
 		}
-		protected static void Build(IChannelConnector wrapped, IDependencyResolver resolver)
+		protected static void Build(IChannelConnector wrapped)
 		{
-			connector = new DependencyResolverConnector(wrapped, resolver);
+			connector = new DependencyResolverConnector(wrapped);
 		}
 		protected static void Try(Action callback)
 		{
@@ -130,6 +121,7 @@ namespace NanoMessageBus
 		protected static DependencyResolverConnector connector;
 		protected static Mock<IDependencyResolver> mockResolver;
 		protected static Mock<IChannelConnector> mockWrappedConnector;
+		protected static Mock<IChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<IMessagingChannel> mockWrappedChannel;
 		protected static Exception thrown;
 	}
