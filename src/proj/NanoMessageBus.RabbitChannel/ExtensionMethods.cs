@@ -8,8 +8,11 @@
 
 	public static class ExtensionMethods
 	{
-		public static PublicationAddress ToPublicationAddress(this Uri uri)
+		public static PublicationAddress ToPublicationAddress(this Uri uri, RabbitChannelGroupConfiguration config)
 		{
+			if (uri == ChannelEnvelope.LoopbackAddress)
+				return new PublicationAddress(ExchangeType.Direct, string.Empty, config.InputQueue);
+
 			var address = PublicationAddress.Parse(uri.ToString());
 			return address.ExchangeName.AsLower() == "default"
 				? new PublicationAddress(ExchangeType.Direct, string.Empty, address.RoutingKey) : address;
@@ -78,7 +81,7 @@
 		public static string ContentFormat(this IBasicProperties properties)
 		{
 			var contentType = properties.ContentType ?? string.Empty;
-			var formatIndex = contentType.LastIndexOf("+");
+			var formatIndex = contentType.LastIndexOf("+", StringComparison.Ordinal);
 			return formatIndex == -1 ? string.Empty : contentType.Substring(formatIndex + 1);
 		}
 

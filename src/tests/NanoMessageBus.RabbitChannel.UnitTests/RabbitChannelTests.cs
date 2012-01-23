@@ -170,6 +170,39 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_sending_the_received_message_to_the_loopback_address : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockAdapter.Setup(x => x.Build(message)).Returns(new Mock<ChannelMessage>().Object);
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), message.BasicProperties, message.Body))
+				.Callback<PublicationAddress, IBasicProperties, byte[]>((x, y, z) => deliveryAddress = x.ToString());
+		};
+
+		Because of = () =>
+		{
+			channel.Receive(deliveryContext => deliveryContext.Send(BuildEnvelope(deliveryContext)));
+			Receive(message);
+		};
+		static ChannelEnvelope BuildEnvelope(IDeliveryContext delivery)
+		{
+			return new ChannelEnvelope(delivery.CurrentMessage, new[] { ChannelEnvelope.LoopbackAddress });
+		}
+
+		It should_send_the_received_message_for_retry = () =>
+			mockRealChannel.Verify(x =>
+				x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), message.BasicProperties, message.Body));
+
+		It should_deliver_the_message_to_the_configured_input_queue = () =>
+			deliveryAddress.ShouldEqual("direct:///input-queue");
+
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
+		static string deliveryAddress;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_no_message_is_received_from_the_subscription : using_a_channel
 	{
 		Establish context = () =>
@@ -330,7 +363,7 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_message_processing_has_exceeded_the_maximum_configured_attempt_count : using_a_channel
+	public class when_message_processing_has_exceeded_the_maximum_number_of_configured_attempts : using_a_channel
 	{
 		Establish context = () =>
 		{
@@ -964,6 +997,7 @@ namespace NanoMessageBus.RabbitChannel
 			var timeout = TimeSpan.FromMilliseconds(100);
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
 			mockConfiguration.Setup(x => x.MessageAdapter).Returns(mockAdapter.Object);
+			mockConfiguration.Setup(x => x.InputQueue).Returns(InputQueueName);
 			mockSubscription
 				.Setup(x => x.Receive(timeout, Moq.It.IsAny<Func<BasicDeliverEventArgs, bool>>()))
 				.Callback<TimeSpan, Func<BasicDeliverEventArgs, bool>>((first, second) => { dispatch = second; });
@@ -1007,6 +1041,7 @@ namespace NanoMessageBus.RabbitChannel
 		}
 
 		protected const string DefaultChannelGroup = "some group name";
+		protected const string InputQueueName = "input-queue";
 		protected static Mock<IModel> mockRealChannel;
 		protected static Mock<RabbitMessageAdapter> mockAdapter;
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;

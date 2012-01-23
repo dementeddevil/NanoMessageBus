@@ -34,6 +34,7 @@
 		protected virtual bool Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
 			this.CurrentMessage = null;
+			this.delivery = message;
 
 			if (this.shutdown)
 				return FinishedReceiving;
@@ -110,9 +111,11 @@
 			if (this.subscription == null)
 				this.ThrowWhenShuttingDown();
 
-			var message = this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
+			var message = this.CurrentMessage == envelope.Message
+				? this.delivery
+				: this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
 
-			foreach (var recipient in envelope.Recipients.Select(x => x.ToPublicationAddress()))
+			foreach (var recipient in envelope.Recipients.Select(x => x.ToPublicationAddress(this.configuration)))
 			{
 				this.ThrowWhenDisposed();
 				this.Send(message, recipient);
@@ -254,6 +257,7 @@
 		private readonly RabbitTransactionType transactionType;
 		private readonly Func<RabbitSubscription> subscriptionFactory;
 		private RabbitSubscription subscription;
+		private BasicDeliverEventArgs delivery;
 		private bool disposed;
 		private volatile bool shutdown;
 	}
