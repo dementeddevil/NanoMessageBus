@@ -51,13 +51,37 @@
 
 			List<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
-				return;
+				routes = new List<ISequencedHandler>();
 
-			// TODO: no handlers? route the message to a dead letter exchange
-			// if the message == CurrentMessage, just use CurrentMessage; otherwise use message
 			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
+			var routed = false;
 			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
+			{
+				routed = true;
 				route.Handle(context, message);
+			}
+
+			if (!routed)
+				this.ForwardToDeadLetters(context.Delivery, message);
+		}
+		protected virtual void ForwardToDeadLetters(IDeliveryContext context, object message)
+		{
+			var channelMessage = this.BuildMessage(context, message);
+			context.Send(new ChannelEnvelope(channelMessage, new[] { ChannelEnvelope.DeadLetterAddress }));
+		}
+		protected virtual ChannelMessage BuildMessage(IDeliveryContext context, object message)
+		{
+			var currentMessage = context.CurrentMessage;
+
+			if (message == currentMessage)
+				return message as ChannelMessage;
+
+			return new ChannelMessage(
+				currentMessage.MessageId,
+				currentMessage.CorrelationId,
+				currentMessage.ReturnAddress,
+				currentMessage.Headers,
+				new[] { message });
 		}
 
 		private readonly ICollection<Type> registeredHandlers = new HashSet<Type>();

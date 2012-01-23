@@ -5,6 +5,7 @@ namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -376,13 +377,50 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
-	public class when_routing_a_message_with_no_registered_handlers : with_the_routing_table
+	public class when_routing_the_delivery_context_current_message_with_no_registered_handlers : with_the_routing_table
 	{
-		Because of = () =>
-			Try(() => routes.Route(mockContext.Object, string.Empty));
+		Establish context = () =>
+		{
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(message);
+			mockDelivery
+				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
+				.Callback<ChannelEnvelope>(x => sent = x);
+		};
 
-		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+		Because of = () =>
+			routes.Route(mockContext.Object, mockContext.Object.Delivery.CurrentMessage);
+
+		It should_forward_the_original_message = () =>
+			sent.Message.ShouldEqual(message);
+
+		It should_forward_the_message_to_a_dead_letter_queue = () =>
+			sent.Recipients.First().ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+
+		static ChannelEnvelope sent;
+		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
+	}
+
+	[Subject(typeof(DefaultRoutingTable))]
+	public class when_routing_a_logical_message_with_no_registered_handlers : with_the_routing_table
+	{
+		Establish context = () =>
+		{
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
+			mockDelivery
+				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
+				.Callback<ChannelEnvelope>(x => sent = x);
+		};
+
+		Because of = () =>
+			routes.Route(mockContext.Object, "Hello, World!");
+
+		It should_forward_the_logical_message = () =>
+			sent.Message.Messages.First().ShouldEqual("Hello, World!");
+
+		It should_forward_the_message_to_a_dead_letter_queue = () =>
+			sent.Recipients.First().ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+
+		static ChannelEnvelope sent;
 	}
 
 	public abstract class with_the_routing_table
@@ -391,7 +429,9 @@ namespace NanoMessageBus
 		{
 			routes = new DefaultRoutingTable();
 			mockContext = new Mock<IHandlerContext>();
+			mockDelivery = new Mock<IDeliveryContext>();
 			mockContext.Setup(x => x.ContinueHandling).Returns(true);
+			mockContext.Setup(x => x.Delivery).Returns(mockDelivery.Object);
 			count = 0;
 			thrown = null;
 		};
@@ -402,6 +442,7 @@ namespace NanoMessageBus
 
 		protected static DefaultRoutingTable routes;
 		protected static Mock<IHandlerContext> mockContext;
+		protected static Mock<IDeliveryContext> mockDelivery;
 		protected static Exception thrown;
 		protected static int count;
 
