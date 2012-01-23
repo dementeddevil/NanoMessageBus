@@ -339,7 +339,11 @@ namespace NanoMessageBus
 	public class when_replying_to_a_message : with_a_dispatch_context
 	{
 		Establish context = () =>
+		{
+			mockMessage.Setup(x => x.CorrelationId).Returns(incomingCorrelationId);
+
 			dispatchContext.WithMessage(0);
+		};
 
 		Because of = () =>
 			dispatchContext.Reply();
@@ -352,6 +356,26 @@ namespace NanoMessageBus
 
 		It should_send_the_reply_message_to_incoming_message_return_address = () =>
 			recipients[0].ShouldEqual(IncomingReturnAddress);
+
+		It should_use_the_correlation_identifier_from_the_incoming_message = () =>
+			message.CorrelationId.ShouldEqual(incomingCorrelationId);
+
+		static readonly Guid incomingCorrelationId = Guid.NewGuid();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_replying_to_a_message_but_using_a_specific_correlation_identifier : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.WithMessage(0).WithCorrelationId(specifiedCorrelationId);
+
+		Because of = () =>
+			dispatchContext.Reply();
+
+		It should_use_the_correlation_identifier_specified = () =>
+			message.CorrelationId.ShouldEqual(specifiedCorrelationId);
+
+		static readonly Guid specifiedCorrelationId = Guid.NewGuid();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]

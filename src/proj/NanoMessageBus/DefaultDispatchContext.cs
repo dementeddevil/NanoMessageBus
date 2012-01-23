@@ -73,7 +73,9 @@
 		}
 		public virtual void Reply()
 		{
-			// TODO: by default, use the incoming correlationId if one hasn't been specified
+			if (this.correlationIdentifier == Guid.Empty)
+				this.correlationIdentifier = this.delivery.CurrentMessage.CorrelationId;
+
 			this.Dispatch(this.delivery.CurrentMessage.ReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
 		}
 		protected virtual void Dispatch(params Uri[] targets)
