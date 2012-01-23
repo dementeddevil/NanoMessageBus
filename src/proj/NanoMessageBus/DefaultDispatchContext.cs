@@ -27,13 +27,11 @@
 
 			return this;
 		}
-
 		public virtual IDispatchContext WithCorrelationId(Guid correlationId)
 		{
 			this.correlationIdentifier = correlationId;
 			return this;
 		}
-
 		public virtual IDispatchContext WithHeader(string key, string value = null)
 		{
 			if (key == null)
@@ -56,7 +54,6 @@
 
 			return this;
 		}
-
 		public virtual IDispatchContext WithRecipient(Uri recipient)
 		{
 			if (recipient == null)
@@ -68,30 +65,41 @@
 
 		public virtual void Send()
 		{
-			this.ThrowWhenNoMessages();
-			this.delivery.Send(this.Build());
+			this.Dispatch(this.BuildRecipients().ToArray());
 		}
 		public virtual void Publish()
 		{
-			this.ThrowWhenNoMessages();
-			this.delivery.Send(this.Build());
+			this.Dispatch(this.BuildRecipients().ToArray());
 		}
 		public virtual void Reply()
 		{
-			// TODO: no return address = send to dead letter
-			this.ThrowWhenNoMessages();
+			this.Dispatch(this.delivery.CurrentMessage.ReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
 		}
-
-		protected virtual ChannelEnvelope Build()
+		protected virtual void Dispatch(params Uri[] targets)
 		{
-			var message = new ChannelMessage(
+			this.ThrowWhenDispatched();
+			this.ThrowWhenNoMessages();
+
+			var message = this.BuildMessage();
+			var envelope = new ChannelEnvelope(message, targets);
+			this.delivery.Send(envelope);
+			this.dispatched = true;
+		}
+		protected virtual IEnumerable<Uri> BuildRecipients()
+		{
+			var type = this.logicalMessages.First().GetType();
+			var discovered = (this.dispatchTable[type] ?? new Uri[0]).Concat(this.recipients).ToArray();
+
+			return discovered.Length == 0 ? new[] { ChannelEnvelope.DeadLetterAddress } : discovered;
+		}
+		protected virtual ChannelMessage BuildMessage()
+		{
+			return new ChannelMessage(
 				Guid.NewGuid(),
 				this.correlationIdentifier,
-				null, // TODO: return address?
+				this.delivery.CurrentConfiguration.ReturnAddress,
 				this.messageHeaders,
 				this.logicalMessages);
-
-			return new ChannelEnvelope(message, GetRecipients());
 		}
 		protected virtual void ThrowWhenNoMessages()
 		{
@@ -100,20 +108,8 @@
 		}
 		protected virtual void ThrowWhenDispatched()
 		{
-			// TODO: add to send/publish/reply operations
 			if (this.dispatched)
 				throw new InvalidOperationException("The set of messages has already been dispatched.");
-		}
-		protected virtual IEnumerable<Uri> GetRecipients()
-		{
-			// TODO: only concat on publish?
-			var type = this.logicalMessages.First().GetType();
-			var discovered = (this.dispatchTable[type] ?? new Uri[0]).Concat(this.recipients).ToArray();
-
-			if (discovered.Length == 0)
-				return new[] { ChannelEnvelope.DeadLetterAddress };
-
-			return discovered;
 		}
 
 		public DefaultDispatchContext(IDeliveryContext delivery, IDispatchTable dispatchTable)

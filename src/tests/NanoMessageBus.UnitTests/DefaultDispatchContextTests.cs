@@ -274,8 +274,24 @@ namespace NanoMessageBus
 		It should_send_the_dispatched_message_to_the_recipients_on_the_dispatch_table = () =>
 			recipients[0].ShouldEqual(new Uri("http://recipient"));
 
-		It should_send_the_dispatched_message_to_any_added_recipients = () =>
+		It should_also_send_the_dispatched_message_to_any_added_recipients = () =>
 			recipients[1].ShouldEqual(new Uri("http://added"));
+
+		It should_set_the_return_address_to_the_configured_value = () =>
+			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_sending_with_the_same_context_more_than_once : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.WithMessage(0).Send();
+
+		Because of = () =>
+			Try(() => dispatchContext.Send());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -296,15 +312,63 @@ namespace NanoMessageBus
 		It should_query_the_dispatch_table_with_the_primary_message_type = () =>
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Once());
 
-		It should_send_the_dispatched_message_to_the_recipients_on_the_dispatch_table = () =>
+		It should_publish_the_dispatched_message_to_the_recipients_on_the_dispatch_table = () =>
 			recipients[0].ShouldEqual(new Uri("http://recipient"));
 
-		It should_send_the_dispatched_message_to_any_added_recipients = () =>
+		It should_also_publish_the_dispatched_message_to_any_added_recipients = () =>
 			recipients[1].ShouldEqual(new Uri("http://added"));
+
+		It should_set_the_return_address_to_the_configured_value = () =>
+			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
-	public class when_no_messages_are_provided_prior_upon_send : with_a_dispatch_context
+	public class when_publishing_with_the_same_context_more_than_once : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.WithMessage(0).Publish();
+
+		Because of = () =>
+			Try(() => dispatchContext.Publish());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_replying_to_a_message : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.WithMessage(0);
+
+		Because of = () =>
+			dispatchContext.Reply();
+
+		It should_NOT_query_the_dispatch_table_with_the_primary_message_type = () =>
+			mockDispatchTable.Verify(x => x[typeof(int)], Times.Never());
+
+		It should_set_the_return_address_to_the_configured_value = () =>
+			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+
+		It should_send_the_reply_message_to_incoming_message_return_address = () =>
+			recipients[0].ShouldEqual(IncomingReturnAddress);
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_replying_with_the_same_context_more_than_once : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.WithMessage(0).Reply();
+
+		Because of = () =>
+			Try(() => dispatchContext.Reply());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_no_messages_are_provided_upon_send : with_a_dispatch_context
 	{
 		Because of = () =>
 			Try(() => dispatchContext.Send());
@@ -314,7 +378,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
-	public class when_no_messages_are_provided_prior_upon_publish : with_a_dispatch_context
+	public class when_no_messages_are_provided_upon_publish : with_a_dispatch_context
 	{
 		Because of = () =>
 			Try(() => dispatchContext.Publish());
@@ -334,7 +398,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
-	public class when_no_recipients_are_listening : with_a_dispatch_context
+	public class when_no_recipients_are_listening_to_the_sent_message : with_a_dispatch_context
 	{
 		Establish context = () =>
 			dispatchContext.WithMessage(0);
@@ -346,11 +410,49 @@ namespace NanoMessageBus
 			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
 	}
 
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_no_recipients_are_listening_to_the_published_message : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.WithMessage(0);
+
+		Because of = () =>
+			dispatchContext.Publish();
+
+		It should_send_the_message_to_the_dead_letter_address = () =>
+			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_replying_to_a_message_with_no_return_address : with_a_dispatch_context
+	{
+		Establish context = () =>
+		{
+			mockMessage.Setup(x => x.ReturnAddress).Returns((Uri)null);
+			dispatchContext.WithMessage(0);
+		};
+
+		Because of = () =>
+			dispatchContext.Reply();
+
+		It should_send_the_message_to_the_dead_letter_address = () =>
+			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+	}
+
 	public abstract class with_a_dispatch_context
 	{
 		Establish context = () =>
 		{
+			mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.ReturnAddress).Returns(OutgoingReturnAddress);
+
+			mockMessage = new Mock<ChannelMessage>();
+			mockMessage.Setup(x => x.ReturnAddress).Returns(IncomingReturnAddress);
+
 			mockDelivery = new Mock<IDeliveryContext>();
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
+			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+
 			mockDelivery
 				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
 				.Callback<ChannelEnvelope>(x =>
@@ -381,10 +483,14 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(callback);
 		}
 
+		protected static readonly Uri IncomingReturnAddress = new Uri("http://incoming-return-address/");
+		protected static readonly Uri OutgoingReturnAddress = new Uri("http://outgoing-return-address/");
 		protected static DefaultDispatchContext dispatchContext;
 		protected static IDispatchContext returnedContext;
 		protected static Mock<IDeliveryContext> mockDelivery;
 		protected static Mock<IDispatchTable> mockDispatchTable;
+		protected static Mock<IChannelGroupConfiguration> mockConfig;
+		protected static Mock<ChannelMessage> mockMessage;
 		protected static ChannelEnvelope envelope;
 		protected static ChannelMessage message;
 		protected static object[] messages;
