@@ -54,6 +54,8 @@
     <Compile Include="DefaultChannelGroup.cs" />
     <Compile Include="DefaultChannelGroupFactory.cs" />
     <Compile Include="DefaultDependencyResolver.cs" />
+    <Compile Include="DefaultDispatchContext.cs" />
+    <Compile Include="DefaultHandlerContext.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="DefaultRoutingTable.cs" />
     <Compile Include="DependencyResolverChannel.cs" />
