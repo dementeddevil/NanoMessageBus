@@ -73,6 +73,7 @@
 		}
 		public virtual void Reply()
 		{
+			// TODO: by default, use the incoming correlationId if one hasn't been specified
 			this.Dispatch(this.delivery.CurrentMessage.ReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
 		}
 		protected virtual void Dispatch(params Uri[] targets)

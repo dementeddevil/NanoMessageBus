@@ -53,6 +53,8 @@
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
 				return;
 
+			// TODO: no handlers? route the message to a dead letter exchange
+			// if the message == CurrentMessage, just use CurrentMessage; otherwise use message
 			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
 			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
 				route.Handle(context, message);
