@@ -54,15 +54,17 @@
 				routes = new List<ISequencedHandler>();
 
 			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
-			var routed = false;
-			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
-			{
-				routed = true;
-				route.Handle(context, message);
-			}
-
-			if (!routed)
+			if (!RouteToHandlers(routes, context, message))
 				this.ForwardToDeadLetters(context.Delivery, message);
+		}
+		private static bool RouteToHandlers(IEnumerable<ISequencedHandler> routes, IHandlerContext context, object message)
+		{
+			var handled = false;
+			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
+				if (route.Handle(context, message) && !handled)
+					handled = true;
+
+			return handled;
 		}
 		protected virtual void ForwardToDeadLetters(IDeliveryContext context, object message)
 		{
@@ -71,17 +73,11 @@
 		}
 		protected virtual ChannelMessage BuildMessage(IDeliveryContext context, object message)
 		{
-			var currentMessage = context.CurrentMessage;
-
-			if (message == currentMessage)
+			var msg = context.CurrentMessage;
+			if (message == msg)
 				return message as ChannelMessage;
 
-			return new ChannelMessage(
-				currentMessage.MessageId,
-				currentMessage.CorrelationId,
-				currentMessage.ReturnAddress,
-				currentMessage.Headers,
-				new[] { message });
+			return new ChannelMessage(Guid.NewGuid(), msg.CorrelationId, msg.ReturnAddress, msg.Headers, new[] { message });
 		}
 
 		private readonly ICollection<Type> registeredHandlers = new HashSet<Type>();
@@ -92,15 +88,16 @@
 		{
 			int Sequence { get; }
 			Type HandlerType { get; }
-			void Handle(IHandlerContext context, object message);
+			bool Handle(IHandlerContext context, object message);
 		}
 		private class SimpleHandler<T> : ISequencedHandler
 		{
 			public int Sequence { get; private set; }
 			public Type HandlerType { get; private set; }
-			public void Handle(IHandlerContext context, object message)
+			public bool Handle(IHandlerContext context, object message)
 			{
 				this.handler.Handle((T)message);
+				return true;
 			}
 			public SimpleHandler(IMessageHandler<T> handler, int sequence)
 			{
@@ -114,11 +111,14 @@
 		{
 			public int Sequence { get; private set; }
 			public Type HandlerType { get; private set; }
-			public void Handle(IHandlerContext context, object message)
+			public bool Handle(IHandlerContext context, object message)
 			{
 				var handler = this.callback(context);
-				if (handler != null)
-					handler.Handle((T)message);
+				if (handler == null)
+					return false;
+
+				handler.Handle((T)message);
+				return true;
 			}
 			public CallbackHandler(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence, Type handlerType)
 			{

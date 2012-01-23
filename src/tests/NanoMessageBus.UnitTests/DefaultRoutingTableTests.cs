@@ -213,7 +213,8 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultRoutingTable))]
 	public class when_routing_a_message_to_a_callback_which_returns_no_handler : with_the_routing_table
 	{
-		Establish context = () => routes.Add(ctx => (IMessageHandler<string>)null);
+		Establish context = () =>
+			routes.Add(ctx => (IMessageHandler<string>)null);
 
 		Because of = () =>
 			Try(() => routes.Route(mockContext.Object, string.Empty));
@@ -430,8 +431,11 @@ namespace NanoMessageBus
 			routes = new DefaultRoutingTable();
 			mockContext = new Mock<IHandlerContext>();
 			mockDelivery = new Mock<IDeliveryContext>();
+
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockContext.Setup(x => x.ContinueHandling).Returns(true);
 			mockContext.Setup(x => x.Delivery).Returns(mockDelivery.Object);
+
 			count = 0;
 			thrown = null;
 		};
