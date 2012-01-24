@@ -1,14 +1,39 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 
 	public class DefaultChannelMessageHandler : IMessageHandler<ChannelMessage>
 	{
 		public virtual void Handle(ChannelMessage message)
 		{
-			foreach (var logicalMessage in message.Messages.TakeWhile(x => this.context.ContinueHandling))
-				this.routes.Route(this.context, logicalMessage);
+			ICollection<object> unhandled = new LinkedList<object>();
+
+			var handled = message.Messages
+				.TakeWhile(x => this.context.ContinueHandling)
+				.Sum(msg =>
+				{
+					var count = this.routes.Route(this.context, msg);
+					if (count == 0)
+				        unhandled.Add(msg);
+					return count;
+				});
+
+			if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
+				this.ForwardToDeadLetterAddress(message, unhandled);
+		}
+		protected virtual void ForwardToDeadLetterAddress(ChannelMessage message, ICollection<object> messages)
+		{
+			if (messages.Count > 0)
+				message = new ChannelMessage(
+					message.MessageId,
+					message.CorrelationId,
+					message.ReturnAddress,
+					message.Headers,
+					messages);
+
+			this.context.Delivery.Send(new ChannelEnvelope(message, new[] { ChannelEnvelope.DeadLetterAddress }));
 		}
 
 		public DefaultChannelMessageHandler(IHandlerContext context, IRoutingTable routes)

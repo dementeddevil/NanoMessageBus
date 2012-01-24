@@ -4,6 +4,7 @@
 namespace NanoMessageBus
 {
 	using System;
+	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -51,7 +52,6 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockMessage.Setup(x => x.Messages).Returns(new object[] { "1", 2 });
-			mockContext.Setup(x => x.ContinueHandling).Returns(() => continueProcessing);
 			mockRoutes
 				.Setup(x => x.Route(mockContext.Object, "1"))
 				.Callback<IHandlerContext, object>((ctx, msg) => continueProcessing = false);
@@ -65,8 +65,61 @@ namespace NanoMessageBus
 			mockRoutes.Verify(x => x.Route(mockContext.Object, "1"), Times.Once());
 			mockRoutes.Verify(x => x.Route(mockContext.Object, 2), Times.Never());
 		};
+	}
 
-		static bool continueProcessing = true;
+	[Subject(typeof(DefaultChannelMessageHandler))]
+	public class when_no_routes_exist_for_any_logical_message : with_a_channel_message_handler
+	{
+		Establish context = () =>
+			mockMessage.Setup(x => x.Messages).Returns(new object[] { 0 });
+
+		Because of = () =>
+			handler.Handle(mockMessage.Object);
+
+		It should_put_the_incoming_channel_message_into_a_channel_envelope = () =>
+			sentMessage.ShouldEqual(mockMessage.Object);
+
+		It should_send_the_envelope_to_the_dead_letter_address = () =>
+			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+	}
+
+	[Subject(typeof(DefaultChannelMessageHandler))]
+	public class when_instructed_not_to_continue_processing : with_a_channel_message_handler
+	{
+		Establish context = () =>
+		{
+			continueProcessing = false;
+			mockMessage.Setup(x => x.Messages).Returns(new object[] { 0 });
+		};
+
+		Because of = () =>
+			handler.Handle(mockMessage.Object);
+
+		It should_NEVER_send_the_incoming_channel_message_to_the_dead_letter_address = () =>
+			sentMessage.ShouldBeNull();
+	}
+
+	[Subject(typeof(DefaultChannelMessageHandler))]
+	public class when_specific_logical_messages_are_not_handled : with_a_channel_message_handler
+	{
+		Establish context = () =>
+		{
+			mockMessage.Setup(x => x.Messages).Returns(new object[] { 1, "2", 3.0, 4.0M });
+
+			mockRoutes.Setup(x => x.Route(mockContext.Object, 1)).Returns(1); // message is handled
+			mockRoutes.Setup(x => x.Route(mockContext.Object, 3.0)).Returns(1); // message is handled
+		};
+
+		Because of = () =>
+			handler.Handle(mockMessage.Object);
+
+		// TODO: the various attributes on the incoming message should be copied to the outgoing message
+
+		It should_put_the_ignored_messages_into_a_channel_envelope = () =>
+			sentMessage.Messages.SequenceEqual(new object[] { "2", 4.0M }).ShouldBeTrue();
+
+		It should_forward_the_channel_envelope_to_the_dead_letter_address = () =>
+			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
 	}
 
 	public abstract class with_a_channel_message_handler
@@ -75,10 +128,25 @@ namespace NanoMessageBus
 		{
 			handler = null;
 			thrown = null;
+			sentMessage = null;
+			recipients = null;
 			mockContext = new Mock<IHandlerContext>();
-			mockContext.Setup(x => x.ContinueHandling).Returns(true);
+			mockDelivery = new Mock<IDeliveryContext>();
 			mockRoutes = new Mock<IRoutingTable>();
 			mockMessage = new Mock<ChannelMessage>();
+			continueProcessing = true;
+
+			mockContext.Setup(x => x.Delivery).Returns(mockDelivery.Object);
+			mockContext.Setup(x => x.ContinueHandling).Returns(() => continueProcessing);
+
+			mockDelivery
+				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
+				.Callback<ChannelEnvelope>(x =>
+				{
+					sentMessage = x.Message;
+					recipients = x.Recipients.ToArray();
+				});
+
 			TryBuild(mockContext.Object, mockRoutes.Object);
 		};
 		protected static void TryBuild(IHandlerContext context, IRoutingTable routes)
@@ -92,9 +160,14 @@ namespace NanoMessageBus
 
 		protected static DefaultChannelMessageHandler handler;
 		protected static Mock<IHandlerContext> mockContext;
+		protected static Mock<IDeliveryContext> mockDelivery;
 		protected static Mock<IRoutingTable> mockRoutes;
 		protected static Mock<ChannelMessage> mockMessage;
 		protected static Exception thrown;
+		protected static bool continueProcessing;
+
+		protected static ChannelMessage sentMessage;
+		protected static Uri[] recipients;
 	}
 }
 
