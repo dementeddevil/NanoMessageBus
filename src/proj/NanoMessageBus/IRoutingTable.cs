@@ -40,6 +40,7 @@
 		/// <param name="context">The context surrounding the handling of the channel message.</param>
 		/// <param name="message">The logical message to be routed to the associated handlers.</param>
 		/// <exception cref="ArgumentNullException"></exception>
-		void Route(IHandlerContext context, object message);
+		/// <returns>The routes into which the message was routed.</returns>
+		int Route(IHandlerContext context, object message);
 	}
 }

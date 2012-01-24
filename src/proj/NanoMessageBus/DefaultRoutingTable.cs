@@ -41,7 +41,7 @@
 			this.registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
 		}
 
-		public virtual void Route(IHandlerContext context, object message)
+		public virtual int Route(IHandlerContext context, object message)
 		{
 			if (context == null)
 				throw new ArgumentNullException("context");
@@ -51,33 +51,12 @@
 
 			List<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
-				routes = new List<ISequencedHandler>();
+				return 0;
 
 			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
-			if (!RouteToHandlers(routes, context, message))
-				this.ForwardToDeadLetters(context.Delivery, message);
-		}
-		private static bool RouteToHandlers(IEnumerable<ISequencedHandler> routes, IHandlerContext context, object message)
-		{
-			var handled = false;
-			foreach (var route in routes.TakeWhile(x => context.ContinueHandling))
-				if (route.Handle(context, message) && !handled)
-					handled = true;
-
-			return handled;
-		}
-		protected virtual void ForwardToDeadLetters(IDeliveryContext context, object message)
-		{
-			var channelMessage = this.BuildMessage(context, message);
-			context.Send(new ChannelEnvelope(channelMessage, new[] { ChannelEnvelope.DeadLetterAddress }));
-		}
-		protected virtual ChannelMessage BuildMessage(IDeliveryContext context, object message)
-		{
-			var msg = context.CurrentMessage;
-			if (message == msg)
-				return message as ChannelMessage;
-
-			return new ChannelMessage(Guid.NewGuid(), msg.CorrelationId, msg.ReturnAddress, msg.Headers, new[] { message });
+			return routes
+				.TakeWhile(x => context.ContinueHandling)
+				.Count(route => route.Handle(context, message));
 		}
 
 		private readonly ICollection<Type> registeredHandlers = new HashSet<Type>();
