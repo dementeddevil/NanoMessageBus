@@ -53,7 +53,8 @@ namespace NanoMessageBus.RabbitChannel
 				Timestamp = new AmqpTimestamp(0)
 			};
 
-			message.BasicProperties.Headers["MyHeader"] = Encoding.UTF8.GetBytes("MyValue");
+			message.BasicProperties.Headers["StringHeader"] = Encoding.UTF8.GetBytes("MyValue");
+			message.BasicProperties.Headers["IntHeader"] = 42;
 
 			mockSerializer
 				.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
@@ -108,7 +109,13 @@ namespace NanoMessageBus.RabbitChannel
 		{
 			var headers = (Hashtable)message.BasicProperties.Headers;
 			foreach (string key in headers.Keys)
-				result.Headers[key].ShouldEqual(Encoding.UTF8.GetString((byte[])headers[key]));
+			{
+				int value;
+				if (int.TryParse(result.Headers[key], out value))
+					value.ShouldEqual(headers[key]);
+				else
+					result.Headers[key].ShouldEqual(Encoding.UTF8.GetString((byte[])headers[key]));
+			}
 		};
 
 		static ChannelMessage result;

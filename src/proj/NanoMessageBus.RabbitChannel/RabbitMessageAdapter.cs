@@ -71,7 +71,13 @@
 
 			var encoding = Encoding.UTF8;
 			foreach (var key in properties.Headers.Keys.Cast<string>())
-				headers[key] = encoding.GetString((byte[])properties.Headers[key]);
+			{
+				var value = properties.Headers[key];
+				if (value is int)
+					headers[key] = ((int)value).ToString(CultureInfo.InvariantCulture);
+				else
+					headers[key] = encoding.GetString((byte[])value);
+			}
 		}
 
 		public virtual BasicDeliverEventArgs Build(ChannelMessage message, IBasicProperties properties)
