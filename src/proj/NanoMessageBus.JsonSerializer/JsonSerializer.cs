@@ -53,7 +53,7 @@
 
 		private readonly JsonNetSerializer serializer = new JsonNetSerializer
 		{
-			TypeNameHandling = TypeNameHandling.All,
+			TypeNameHandling = TypeNameHandling.Objects,
 			DefaultValueHandling = DefaultValueHandling.Ignore,
 			NullValueHandling = NullValueHandling.Ignore
 		};
