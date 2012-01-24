@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("Jonathan Oliver")]
 [assembly: AssemblyProduct("NanoMessageBus")]
-[assembly: AssemblyCopyright("Copyright © Jonathan Oliver 2011")]
+[assembly: AssemblyCopyright("Copyright © Jonathan Oliver 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
