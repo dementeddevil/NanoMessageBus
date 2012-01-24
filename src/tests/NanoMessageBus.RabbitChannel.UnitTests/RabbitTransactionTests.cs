@@ -379,6 +379,24 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeNull();
 	}
 
+	[Subject(typeof(RabbitTransaction))]
+	public class when_dispose_raises_an_ObjectDisposedException : using_a_transaction
+	{
+		Establish context = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			mockChannel.Setup(x => x.RollbackTransaction()).Throws(new ObjectDisposedException(typeof(RabbitChannel).Name));
+
+			Initialize();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => transaction.Dispose());
+
+		It should_suppress_the_transaction = () =>
+			thrown.ShouldBeNull();
+	}
+
 	public abstract class using_a_transaction
 	{
 		Establish context = () =>

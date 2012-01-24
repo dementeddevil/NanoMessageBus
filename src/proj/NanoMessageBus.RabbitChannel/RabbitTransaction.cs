@@ -134,6 +134,9 @@
 			catch (ChannelConnectionException)
 			{
 			}
+			catch (ObjectDisposedException)
+			{
+			}
 		}
 
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
