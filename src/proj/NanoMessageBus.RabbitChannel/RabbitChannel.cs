@@ -186,10 +186,11 @@
 
 		protected virtual IChannelTransaction EnsureTransaction()
 		{
-			if (this.CurrentTransaction.Finished)
-				return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
+			if (!this.CurrentTransaction.Finished)
+				return this.CurrentTransaction;
 
-			return this.CurrentTransaction;
+			this.CurrentTransaction.Dispose();
+			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 		}
 		protected virtual void Try(Action callback)
 		{
