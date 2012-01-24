@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections;
-	using System.Collections.Concurrent;
 	using System.Collections.Generic;
 	using System.Globalization;
 	using System.Linq;
@@ -19,21 +18,6 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
-			// we lock twice because we don't want to block during deserialization
-			var translated = this.TryFromCache(message);
-			if (translated != null)
-				return translated;
-
-			return this.cache[message] = this.TryTranslate(message);
-		}
-		protected virtual ChannelMessage TryFromCache(BasicDeliverEventArgs message)
-		{
-			ChannelMessage cached;
-			this.cache.TryGetValue(message, out cached);
-			return cached;
-		}
-		protected virtual ChannelMessage TryTranslate(BasicDeliverEventArgs message)
-		{
 			try
 			{
 				var result = this.Translate(message);
@@ -167,11 +151,6 @@
 			this.AppendException(message, exception.InnerException, depth + 1);
 		}
 
-		public virtual bool PurgeFromCache(BasicDeliverEventArgs message)
-		{
-			return this.cache.Remove(message);
-		}
-
 		public RabbitMessageAdapter(RabbitChannelGroupConfiguration configuration) : this()
 		{
 			this.configuration = configuration;
@@ -184,8 +163,6 @@
 		private const string ContentType = "application/vnd.nmb.rabbit-msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
-		private readonly IDictionary<BasicDeliverEventArgs, ChannelMessage> cache =
-			new ConcurrentDictionary<BasicDeliverEventArgs, ChannelMessage>();
 		private readonly RabbitChannelGroupConfiguration configuration;
 	}
 }

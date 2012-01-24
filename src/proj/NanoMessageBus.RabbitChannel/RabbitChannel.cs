@@ -53,11 +53,9 @@
 			{
 				this.CurrentMessage = this.adapter.Build(message);
 				callback(this);
-				this.adapter.PurgeFromCache(message);
 			}
 			catch (ChannelConnectionException)
 			{
-				this.adapter.PurgeFromCache(message);
 				this.CurrentTransaction.Dispose();
 				throw;
 			}
@@ -67,12 +65,11 @@
 			}
 			catch (DeadLetterException)
 			{
-				this.ForwardToDeadLetterExchange(message);
+				this.ForwardTo(message, this.configuration.DeadLetterExchange);
 			}
 			catch (Exception e)
 			{
 				this.RetryMessage(message, e);
-				this.CurrentTransaction.Rollback();
 			}
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
@@ -83,24 +80,21 @@
 			if (nextAttempt > this.configuration.MaxAttempts)
 				this.ForwardToPoisonMessageExchange(message, exception);
 			else
-				this.subscription.RetryMessage(message);
+			{
+				this.ForwardTo(message, this.configuration.InputQueue.ToPublicationAddress());
+			}
 		}
 		protected virtual void ForwardToPoisonMessageExchange(BasicDeliverEventArgs message, Exception exception)
 		{
 			message.SetAttemptCount(0);
 			this.adapter.AppendException(message, exception);
-			this.ForwardToExchange(message, this.configuration.PoisonMessageExchange);
+			this.ForwardTo(message, this.configuration.PoisonMessageExchange);
 		}
-		protected virtual void ForwardToDeadLetterExchange(BasicDeliverEventArgs message)
-		{
-			this.ForwardToExchange(message, this.configuration.DeadLetterExchange);
-		}
-		protected virtual void ForwardToExchange(BasicDeliverEventArgs message, PublicationAddress address)
+		protected virtual void ForwardTo(BasicDeliverEventArgs message, PublicationAddress address)
 		{
 			this.EnsureTransaction();
 			this.Send(message, address);
 			this.CurrentTransaction.Commit();
-			this.adapter.PurgeFromCache(message);
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)
@@ -137,7 +131,7 @@
 			this.ThrowWhenDisposed();
 
 			if (this.subscription != null && this.transactionType != RabbitTransactionType.None)
-				this.Try(this.subscription.AcknowledgeMessage);
+				this.Try(this.subscription.AcknowledgeMessages);
 		}
 		public virtual void CommitTransaction()
 		{

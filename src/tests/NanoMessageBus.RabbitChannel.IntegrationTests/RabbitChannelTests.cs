@@ -144,8 +144,8 @@ namespace NanoMessageBus.RabbitChannel
 
 				return true;
 			});
-			OpenSender().Send(BuildEnvelope("reattempted message"));
-			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+			OpenSender().Send(BuildEnvelope("reattempt this message"));
+			WaitUntil(() => messagesReceived >= 2, DefaultSleepTimeout);
 		};
 
 		It should_reattempt_the_delivery = () =>

@@ -111,9 +111,6 @@ namespace NanoMessageBus.RabbitChannel
 				result.Headers[key].ShouldEqual(Encoding.UTF8.GetString((byte[])headers[key]));
 		};
 
-		It should_add_the_resulting_ChannelMessage_to_be_tracked = () =>
-			adapter.PurgeFromCache(message).ShouldBeTrue();
-
 		static ChannelMessage result;
 		static readonly object[] deserialized = new object[] { 1, 2, 3.0, 4.0M };
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
@@ -140,23 +137,6 @@ namespace NanoMessageBus.RabbitChannel
 				Times.Never());
 
 		static BasicDeliverEventArgs message;
-	}
-
-	[Subject(typeof(RabbitMessageAdapter))]
-	public class building_a_ChannelMessage_from_a_cached_wire_message : using_a_message_adapter
-	{
-		Establish context = () =>
-			first = adapter.Build(message);
-
-		Because of = () =>
-			second = adapter.Build(message);
-
-		It should_return_a_reference_to_the_previously_built_ChannelMessage = () =>
-			ReferenceEquals(first, second).ShouldBeTrue();
-
-		static readonly BasicDeliverEventArgs message = EmptyMessage();
-		static ChannelMessage first;
-		static ChannelMessage second;
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
@@ -438,57 +418,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_purging_a_message_which_has_not_been_tracked : using_a_message_adapter
-	{
-		Because of = () =>
-			cached = adapter.PurgeFromCache(EmptyMessage());
-
-		It should_indicate_that_the_message_was_not_found_in_the_cache = () =>
-			cached.ShouldBeFalse();
-
-		static bool cached;
-	}
-
-	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_purging_a_message_which_been_tracked : using_a_message_adapter
-	{
-		Establish context = () =>
-			adapter.Build(message);
-
-		Because of = () =>
-			cached = adapter.PurgeFromCache(message);
-
-		It should_indicate_that_the_message_was_removed_from_cached = () =>
-			cached.ShouldBeTrue();
-
-		static readonly BasicDeliverEventArgs message = EmptyMessage();
-		static bool cached;
-	}
-
-	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_purging_a_message_twice_from_the_adapter_cache : using_a_message_adapter
-	{
-		Establish context = () =>
-			adapter.Build(message);
-
-		Because of = () =>
-		{
-			first = adapter.PurgeFromCache(message);
-			second = adapter.PurgeFromCache(message);
-		};
-
-		It should_first_indicate_that_the_message_was_removed_from_the_cache = () =>
-			first.ShouldBeTrue();
-
-		It should_then_indicate_that_the_message_was_not_found_in_the_cache = () =>
-			second.ShouldBeFalse();
-
-		static readonly BasicDeliverEventArgs message = EmptyMessage();
-		static bool first;
-		static bool second;
 	}
 
 	public abstract class using_a_message_adapter

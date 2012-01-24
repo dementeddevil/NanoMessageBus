@@ -143,13 +143,13 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_acknowledging_the_receipt_of_a_message : using_a_subscription
 	{
 		Establish context = () =>
-			mockRealSubscription.Setup(x => x.AcknowledgeMessage());
+			mockRealSubscription.Setup(x => x.AcknowledgeMessages());
 
 		Because of = () =>
-			subscription.AcknowledgeMessage();
+			subscription.AcknowledgeMessages();
 
 		It should_acknowledge_the_receipt_to_the_underlying_subscription = () =>
-			mockRealSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockRealSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitSubscription))]
@@ -159,49 +159,10 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => subscription.AcknowledgeMessage());
+			thrown = Catch.Exception(() => subscription.AcknowledgeMessages());
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(RabbitSubscription))]
-	public class when_retrying_message : using_a_subscription
-	{
-		Establish context = () =>
-			mockRealSubscription.Setup(x => x.RetryMessage(Moq.It.IsAny<BasicDeliverEventArgs>()));
-
-		Because of = () =>
-			subscription.RetryMessage(new Mock<BasicDeliverEventArgs>().Object);
-
-		It should_pass_the_retry_attempt_to_the_underlying_subscription = () =>
-			mockRealSubscription.Verify(x => x.RetryMessage(Moq.It.IsAny<BasicDeliverEventArgs>()), Times.Once());
-	}
-
-	[Subject(typeof(RabbitSubscription))]
-	public class when_retrying_a_message_with_a_disposed_subscription : using_a_subscription
-	{
-		Establish context = () =>
-			subscription.Dispose();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => subscription.RetryMessage(new Mock<BasicDeliverEventArgs>().Object));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
-	}
-
-	[Subject(typeof(RabbitSubscription))]
-	public class when_retrying_a_null_message : using_a_subscription
-	{
-		Establish context = () =>
-			subscription.Dispose();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => subscription.RetryMessage(null));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(RabbitSubscription))]

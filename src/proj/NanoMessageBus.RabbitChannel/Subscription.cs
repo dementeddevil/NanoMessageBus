@@ -3,7 +3,6 @@
 	using System;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
-	using RabbitMQ.Util;
 
 	public class Subscription : IDisposable
 	{
@@ -13,22 +12,20 @@
 			this.subscription.Next((int)timeout.TotalMilliseconds, out delivery);
 			return delivery;
 		}
-		public virtual void AcknowledgeMessage()
+		public virtual void AcknowledgeMessages()
 		{
-			this.subscription.Ack();
-		}
-		public virtual void RetryMessage(BasicDeliverEventArgs message)
-		{
-			this.queue.Enqueue(message);
+			var delivery = this.subscription.LatestEvent;
+			var tag = delivery == null ? 0 : delivery.DeliveryTag;
+			this.channel.BasicAck(tag, true);
 		}
 
 		public Subscription(IModel channel, RabbitChannelGroupConfiguration config) : this()
 		{
+			this.channel = channel;
 			this.subscription = new RabbitMQ.Client.MessagePatterns.Subscription(
 				channel,
 				config.InputQueue,
 				config.TransactionType == RabbitTransactionType.None);
-			this.queue = ((QueueingBasicConsumer)this.subscription.Consumer).Queue;
 		}
 		protected Subscription()
 		{
@@ -59,6 +56,6 @@
 		}
 
 		private readonly RabbitMQ.Client.MessagePatterns.Subscription subscription;
-		private readonly SharedQueue queue;
+		private readonly IModel channel;
 	}
 }

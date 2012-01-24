@@ -8,6 +8,10 @@
 
 	public static class ExtensionMethods
 	{
+		public static PublicationAddress ToPublicationAddress(this string queueName)
+		{
+			return new PublicationAddress(ExchangeType.Direct, string.Empty, queueName);
+		}
 		public static PublicationAddress ToPublicationAddress(this Uri uri, RabbitChannelGroupConfiguration config)
 		{
 			if (uri == ChannelEnvelope.LoopbackAddress)

@@ -4,6 +4,12 @@
 	using System.Collections.Generic;
 	using System.Linq;
 
+	/// <summary>
+	/// Performs the primary wireup to create an active instance of the host.
+	/// </summary>
+	/// <remarks>
+	/// This class is designed to be used during wireup and then thrown away.
+	/// </remarks>
 	public class DefaultMessagingHostWireup
 	{
 		public virtual DefaultMessagingHostWireup AddConnector(IChannelConnector connector)

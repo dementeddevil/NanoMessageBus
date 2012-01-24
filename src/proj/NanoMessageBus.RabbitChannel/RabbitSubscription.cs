@@ -35,27 +35,19 @@
 		protected virtual void PerformReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
 			while (!this.disposed)
-				if (!callback(this.adapter.BeginReceive(timeout)))
+				if (!callback(this.inner.BeginReceive(timeout)))
 					return;
 		}
 
-		public virtual void AcknowledgeMessage()
+		public virtual void AcknowledgeMessages()
 		{
 			this.ThrowWhenDisposed();
-			this.adapter.AcknowledgeMessage();
-		}
-		public virtual void RetryMessage(BasicDeliverEventArgs message)
-		{
-			if (message == null)
-				throw new ArgumentNullException("message");
-
-			this.ThrowWhenDisposed();
-			this.adapter.RetryMessage(message);
+			this.inner.AcknowledgeMessages();
 		}
 
-		public RabbitSubscription(Subscription adapter)
+		public RabbitSubscription(Subscription inner)
 		{
-			this.adapter = adapter;
+			this.inner = inner;
 		}
 		protected RabbitSubscription()
 		{
@@ -76,10 +68,10 @@
 				return;
 
 			this.disposed = true;
-			this.adapter.Dispose();
+			this.inner.Dispose();
 		}
 
-		private readonly Subscription adapter;
+		private readonly Subscription inner;
 		private bool disposed;
 	}
 }

@@ -159,15 +159,12 @@ namespace NanoMessageBus.RabbitChannel
 		It should_NOT_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
 			delivery.CurrentTransaction.Finished.ShouldBeFalse();
 
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
-
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
 		static IDeliveryContext delivery;
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_receiving_a_message_after_the_previous_receive_was_committed : using_a_channel
+	public class when_receiving_a_message_after_the_previous_delivery_was_committed : using_a_channel
 	{
 		Establish context = () =>
 		{
@@ -218,7 +215,7 @@ namespace NanoMessageBus.RabbitChannel
 				x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), message.BasicProperties, message.Body));
 
 		It should_deliver_the_message_to_the_configured_input_queue = () =>
-			deliveryAddress.ShouldEqual("direct:///input-queue");
+			deliveryAddress.ShouldEqual("direct:///" + InputQueueName);
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static string deliveryAddress;
@@ -309,13 +306,10 @@ namespace NanoMessageBus.RabbitChannel
 				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
 
 		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 
 		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
-
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static BasicDeliverEventArgs message;
 		static readonly PublicationAddress address =
@@ -344,13 +338,10 @@ namespace NanoMessageBus.RabbitChannel
 				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
 
 		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 
 		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
-
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly PublicationAddress address =
@@ -391,10 +382,17 @@ namespace NanoMessageBus.RabbitChannel
 	{
 		Establish context = () =>
 		{
-			mockConfiguration.Setup(x => x.MaxAttempts).Returns(1); // allow one failure
+			message.Body = new byte[] { 1, 2, 3, 4 }; // body
 
-			mockRealChannel.Setup(x => x.TxRollback());
-			mockSubscription.Setup(x => x.RetryMessage(message));
+			mockConfiguration.Setup(x => x.MaxAttempts).Returns(1); // allow one failure
+			mockRealChannel
+				.Setup(x => x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), Moq.It.IsAny<IBasicProperties>(), message.Body))
+				.Callback<PublicationAddress, IBasicProperties, byte[]>((addr, prop, bytes) =>
+				{
+					recipient = addr;
+					sentProperites = prop;
+					sentBody = bytes;
+				});
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
@@ -406,16 +404,25 @@ namespace NanoMessageBus.RabbitChannel
 			Receive(message);
 		};
 
-		It should_add_the_message_to_the_retry_queue = () =>
-			mockSubscription.Verify(x => x.RetryMessage(message));
+		It should_push_the_message_back_on_the_wire_with_the_incoming_properties = () =>
+			sentProperites.ShouldEqual(message.BasicProperties);
+
+		It should_push_the_message_back_on_the_wire_with_the_incoming_body = () =>
+			sentBody.ShouldEqual(message.Body);
+
+		It should_push_the_message_back_on_the_wire_to_the_input_queue = () =>
+			recipient.ToString().ShouldEqual("direct:///" + InputQueueName);
 
 		It should_increment_the_failure_count_on_the_message = () =>
 			message.GetAttemptCount().ShouldEqual(1);
 
-		It should_rollback_the_outstanding_transaction_against_the_underlying_channel = () =>
-			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
+		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
 
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static IBasicProperties sentProperites;
+		static byte[] sentBody;
+		static PublicationAddress recipient;
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -447,13 +454,10 @@ namespace NanoMessageBus.RabbitChannel
 				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
 
 		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 
 		It should_commit_the_outstanding_transaction_against_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
-
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message));
 
 		const int FirstFailureIsPoisonMessage = 0;
 		static readonly Exception raise = new Exception();
@@ -473,7 +477,7 @@ namespace NanoMessageBus.RabbitChannel
 				Body = new byte[] { 0, 1, 2, 3, 4 }
 			};
 
-			mockSubscription.Setup(x => x.AcknowledgeMessage());
+			mockSubscription.Setup(x => x.AcknowledgeMessages());
 
 			mockRealChannel.Setup(x => x.TxCommit());
 			mockRealChannel.Setup(x => x.BasicPublish(address, message.BasicProperties, message.Body));
@@ -498,13 +502,10 @@ namespace NanoMessageBus.RabbitChannel
 				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
 
 		It should_acknowledge_the_poison_message_from_the_receiving_queue_when_the_channels_uses_ack = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 
 		It should_commit_the_transaction_on_fully_transactional_channels = () =>
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
-
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message));
 
 		static BasicDeliverEventArgs message;
 		static readonly Exception serializationException = new SerializationException();
@@ -520,9 +521,6 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 			thrown = Catch.Exception(() => Receive(message));
-
-		It should_purge_the_message_from_the_adapter_cache = () =>
-			mockAdapter.Verify(x => x.PurgeFromCache(message));
 
 		It should_throw_the_exception = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();
@@ -638,7 +636,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			RequireTransaction(RabbitTransactionType.Acknowledge);
-			mockSubscription.Setup(x => x.AcknowledgeMessage());
+			mockSubscription.Setup(x => x.AcknowledgeMessages());
 			Initialize();
 
 			channel.Receive(delivery => { });
@@ -648,7 +646,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -661,7 +659,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_NOT_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Never());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Never());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -670,7 +668,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			RequireTransaction(RabbitTransactionType.Full);
-			mockSubscription.Setup(x => x.AcknowledgeMessage());
+			mockSubscription.Setup(x => x.AcknowledgeMessages());
 			Initialize();
 
 			channel.Receive(delivery => { });
@@ -680,7 +678,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Once());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -696,7 +694,7 @@ namespace NanoMessageBus.RabbitChannel
 			channel.AcknowledgeMessage();
 
 		It should_NOT_ack_against_the_underlying_subscription = () =>
-			mockSubscription.Verify(x => x.AcknowledgeMessage(), Times.Never());
+			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Never());
 	}
 
 	[Subject(typeof(RabbitChannel))]
