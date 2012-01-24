@@ -241,7 +241,7 @@
 			if (this.disposed)
 				return;
 
-			// TODO: this.CurrentTransaction.Dispose() // must happen here because it checks for dispose
+			this.CurrentTransaction.Dispose(); // must happen here because it checks for dispose
 
 			this.disposed = true;
 

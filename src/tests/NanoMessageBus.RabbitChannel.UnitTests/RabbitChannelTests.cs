@@ -877,6 +877,27 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_disposing_a_transactional_channel : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockRealChannel.Setup(x => x.Dispose());
+
+			RequireTransaction(RabbitTransactionType.Full);
+			Initialize();
+		};
+
+		Because of = () =>
+			channel.Dispose();
+
+		It should_dispose_the_active_transaction_before_the_channel_is_disposed = () =>
+			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
+
+		It should_dispose_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.Abort(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_disposing_a_channel_with_a_subscription : using_a_channel
 	{
 		Establish context = () =>
