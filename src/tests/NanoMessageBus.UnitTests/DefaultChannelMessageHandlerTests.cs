@@ -4,6 +4,7 @@
 namespace NanoMessageBus
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
@@ -105,6 +106,10 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockMessage.Setup(x => x.Messages).Returns(new object[] { 1, "2", 3.0, 4.0M });
+			mockMessage.Setup(x => x.MessageId).Returns(messageId);
+			mockMessage.Setup(x => x.CorrelationId).Returns(correlationId);
+			mockMessage.Setup(x => x.ReturnAddress).Returns(new Uri("http://www.google.com/"));
+			mockMessage.Setup(x => x.Headers).Returns(new Dictionary<string, string>());
 
 			mockRoutes.Setup(x => x.Route(mockContext.Object, 1)).Returns(1); // message is handled
 			mockRoutes.Setup(x => x.Route(mockContext.Object, 3.0)).Returns(1); // message is handled
@@ -113,13 +118,26 @@ namespace NanoMessageBus
 		Because of = () =>
 			handler.Handle(mockMessage.Object);
 
-		// TODO: the various attributes on the incoming message should be copied to the outgoing message
-
 		It should_put_the_ignored_messages_into_a_channel_envelope = () =>
 			sentMessage.Messages.SequenceEqual(new object[] { "2", 4.0M }).ShouldBeTrue();
 
+		It should_add_a_unique_message_identifier_to_the_outgoing_channel_message = () =>
+			sentMessage.MessageId.ShouldNotEqual(mockMessage.Object.MessageId);
+
+		It should_add_the_incoming_correlation_identifier_to_the_outgoing_channel_message = () =>
+			sentMessage.CorrelationId.ShouldEqual(mockMessage.Object.CorrelationId);
+
+		It should_add_the_incoming_return_address_to_the_outgoing_channel_message = () =>
+			sentMessage.ReturnAddress.ShouldEqual(mockMessage.Object.ReturnAddress);
+
+		It should_add_the_incoming_message_headers_to_the_outgoing_channel_message = () =>
+			ReferenceEquals(sentMessage.Headers, mockMessage.Object.Headers).ShouldBeTrue();
+
 		It should_forward_the_channel_envelope_to_the_dead_letter_address = () =>
 			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+
+		static readonly Guid messageId = Guid.NewGuid();
+		static readonly Guid correlationId = Guid.NewGuid();
 	}
 
 	public abstract class with_a_channel_message_handler

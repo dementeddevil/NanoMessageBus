@@ -20,6 +20,9 @@
 					return count;
 				});
 
+			if (handled == 0)
+				unhandled.Clear();
+
 			if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
 				this.ForwardToDeadLetterAddress(message, unhandled);
 		}
@@ -27,7 +30,7 @@
 		{
 			if (messages.Count > 0)
 				message = new ChannelMessage(
-					message.MessageId,
+					Guid.NewGuid(),
 					message.CorrelationId,
 					message.ReturnAddress,
 					message.Headers,
