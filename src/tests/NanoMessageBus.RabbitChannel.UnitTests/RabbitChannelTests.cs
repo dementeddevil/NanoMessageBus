@@ -150,22 +150,44 @@ namespace NanoMessageBus.RabbitChannel
 		It should_invoke_the_callback_provided = () =>
 			delivery.ShouldNotBeNull();
 
-		It should_begin_a_transaction = () =>
-			delivery.CurrentTransaction.ShouldNotBeNull();
-
 		It should_build_the_ChannelMessage = () =>
 			mockAdapter.Verify(x => x.Build(message), Times.Once());
 
 		It should_set_the_ChannelMessage_on_the_channel = () =>
 			channel.CurrentMessage.ShouldNotBeNull();
 
-		It should_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
-			delivery.CurrentTransaction.Finished.ShouldBeTrue();
+		It should_NOT_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
+			delivery.CurrentTransaction.Finished.ShouldBeFalse();
 
 		It should_purge_the_message_from_the_adapter_cache = () =>
 			mockAdapter.Verify(x => x.PurgeFromCache(message), Times.Once());
 
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static IDeliveryContext delivery;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_receiving_a_message_after_the_previous_receive_was_committed : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockAdapter.Setup(x => x.Build(message)).Returns(new Mock<ChannelMessage>().Object);
+			channel.Receive(deliveryContext => delivery = deliveryContext);
+			Receive(message);
+			(committed = delivery.CurrentTransaction).Commit();
+		};
+
+		Because of = () =>
+			Receive(message);
+
+		It should_NOT_reuse_the_committed_transaction = () =>
+			delivery.CurrentTransaction.ShouldNotEqual(committed);
+
+		It should_NOT_mark_the_transaction_a_finished_after_message_processing_is_complete = () =>
+			delivery.CurrentTransaction.Finished.ShouldBeFalse();
+
+		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
+		static IChannelTransaction committed;
 		static IDeliveryContext delivery;
 	}
 

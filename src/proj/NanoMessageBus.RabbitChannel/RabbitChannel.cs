@@ -42,8 +42,8 @@
 			if (message == null)
 				return ContinueReceiving;
 
-			using (this.NewTransaction())
-				this.TryReceive(message, callback);
+			this.EnsureTransaction();
+			this.TryReceive(message, callback);
 
 			return !this.shutdown;
 		}
@@ -58,6 +58,7 @@
 			catch (ChannelConnectionException)
 			{
 				this.adapter.PurgeFromCache(message);
+				this.CurrentTransaction.Dispose();
 				throw;
 			}
 			catch (SerializationException e)
@@ -71,6 +72,7 @@
 			catch (Exception e)
 			{
 				this.RetryMessage(message, e);
+				this.CurrentTransaction.Rollback();
 			}
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
@@ -95,7 +97,7 @@
 		}
 		protected virtual void ForwardToExchange(BasicDeliverEventArgs message, PublicationAddress address)
 		{
-			this.NewTransaction();
+			this.EnsureTransaction();
 			this.Send(message, address);
 			this.CurrentTransaction.Commit();
 			this.adapter.PurgeFromCache(message);
@@ -123,13 +125,10 @@
 		}
 		protected virtual void Send(BasicDeliverEventArgs message, PublicationAddress recipient)
 		{
-			if (this.CurrentTransaction.Finished)
-				this.NewTransaction();
-
 			if (recipient == null)
 				return;
 
-			this.CurrentTransaction.Register(() => this.Try(() =>
+			this.EnsureTransaction().Register(() => this.Try(() =>
 				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body)));
 		}
 
@@ -147,7 +146,7 @@
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.Try(this.channel.TxCommit);
 
-			this.NewTransaction();
+			this.EnsureTransaction();
 		}
 		public virtual void RollbackTransaction()
 		{
@@ -156,7 +155,7 @@
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.Try(this.channel.TxRollback);
 
-			this.NewTransaction();
+			this.EnsureTransaction();
 		}
 
 		public virtual void BeginShutdown()
@@ -185,9 +184,12 @@
 				throw new InvalidOperationException("The channel already has a receive callback.");
 		}
 
-		protected virtual IChannelTransaction NewTransaction()
+		protected virtual IChannelTransaction EnsureTransaction()
 		{
-			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
+			if (this.CurrentTransaction.Finished)
+				return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
+
+			return this.CurrentTransaction;
 		}
 		protected virtual void Try(Action callback)
 		{
@@ -214,7 +216,6 @@
 			this.CurrentResolver = configuration.DependencyResolver;
 
 			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
-
 			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.TxSelect();
 
@@ -239,6 +240,8 @@
 
 			if (this.disposed)
 				return;
+
+			// TODO: this.CurrentTransaction.Dispose() // must happen here because it checks for dispose
 
 			this.disposed = true;
 
