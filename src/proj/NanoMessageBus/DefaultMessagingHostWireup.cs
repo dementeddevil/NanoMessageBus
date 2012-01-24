@@ -6,19 +6,15 @@
 
 	public class DefaultMessagingHostWireup
 	{
-		public virtual DefaultMessagingHostWireup AddConnector(Func<IChannelConnector> callback)
+		public virtual DefaultMessagingHostWireup AddConnector(IChannelConnector connector)
 		{
-			this.connectors.Add(new DependencyResolverConnector(callback()));
+			connector = new DependencyResolverConnector(connector);
+			this.connectors.Add(connector);
 			return this;
 		}
 		public virtual DefaultMessagingHostWireup WithHandlerContext(Action<IDeliveryContext> delivery)
 		{
 			this.receive = delivery;
-			return this;
-		}
-		public virtual DefaultMessagingHostWireup WithRoutingTable(IRoutingTable table)
-		{
-			this.routingTable = table;
 			return this;
 		}
 		public virtual DefaultMessagingHostWireup WithDispatchTable(IDispatchTable table)
@@ -34,10 +30,16 @@
 			delivery.CurrentTransaction.Commit();
 		}
 
-		public virtual IMessagingHost Build()
+		public virtual IMessagingHost Start()
 		{
 			var host = new DefaultMessagingHost(this.connectors.ToArray(), new DefaultChannelGroupFactory().Build);
 			host.Initialize();
+			return host;
+		}
+		public virtual IMessagingHost StartWithReceive(IRoutingTable table)
+		{
+			var host = this.Start();
+			this.routingTable = table;
 			host.BeginReceive(this.receive ?? this.DefaultReceive);
 			return host;
 		}
