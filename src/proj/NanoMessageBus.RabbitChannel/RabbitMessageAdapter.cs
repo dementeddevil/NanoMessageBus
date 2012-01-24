@@ -62,7 +62,7 @@
 			if (expiration <= SystemTime.UtcNow)
 				throw new DeadLetterException();
 
-			var payload = this.serializer.Deserialize<object[]>(
+			var payload = this.configuration.Serializer.Deserialize<object[]>(
 				message.Body, properties.ContentFormat(), properties.ContentEncoding);
 
 			return new ChannelMessage(
@@ -113,13 +113,15 @@
 		}
 		protected virtual BasicDeliverEventArgs Translate(ChannelMessage message, IBasicProperties properties)
 		{
+			var serializer = this.configuration.Serializer;
+
 			properties.MessageId = message.MessageId.ToString();
 			properties.CorrelationId = message.CorrelationId.ToString();
 			properties.AppId = this.configuration.ApplicationId;
-			properties.ContentEncoding = this.serializer.ContentEncoding ?? string.Empty;
+			properties.ContentEncoding = serializer.ContentEncoding ?? string.Empty;
 
-			properties.ContentType = string.IsNullOrEmpty(this.serializer.ContentFormat)
-				? ContentType : ContentType + "+" + this.serializer.ContentFormat;
+			properties.ContentType = string.IsNullOrEmpty(serializer.ContentFormat)
+				? ContentType : ContentType + "+" + serializer.ContentFormat;
 
 			properties.SetPersistent(message.Persistent);
 			properties.Expiration = message.Expiration == DateTime.MinValue
@@ -129,7 +131,7 @@
 				properties.ReplyTo = message.ReturnAddress.ToString();
 
 			var messages = (message.Messages ?? new object[0]).ToArray();
-			var payload = this.serializer.Serialize(messages);
+			var payload = serializer.Serialize(messages);
 
 			properties.Headers = new Hashtable((IDictionary)message.Headers);
 			properties.Type = messages[0].GetType().FullName;
@@ -173,7 +175,6 @@
 		public RabbitMessageAdapter(RabbitChannelGroupConfiguration configuration) : this()
 		{
 			this.configuration = configuration;
-			this.serializer = configuration.Serializer;
 		}
 		protected RabbitMessageAdapter()
 		{
@@ -186,6 +187,5 @@
 		private readonly IDictionary<BasicDeliverEventArgs, ChannelMessage> cache =
 			new ConcurrentDictionary<BasicDeliverEventArgs, ChannelMessage>();
 		private readonly RabbitChannelGroupConfiguration configuration;
-		private readonly ISerializer serializer;
 	}
 }
