@@ -91,6 +91,14 @@ namespace NanoMessageBus
 
 		It should_add_the_message_provided_to_to_the_dispatched_message = () =>
 			messages[0].ShouldEqual("Hello, World!");
+
+		It should_default_to_a_persistent_channel_message = () =>
+			message.Persistent.ShouldBeTrue();
+
+		It should_default_the_persistent_channel_message_expiration_to_3_days = () =>
+			message.Expiration.ShouldBeCloseTo(ThreeDaysFromNow, TimeSpan.FromSeconds(1));
+
+		static readonly DateTime ThreeDaysFromNow = SystemTime.UtcNow.AddDays(3);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]

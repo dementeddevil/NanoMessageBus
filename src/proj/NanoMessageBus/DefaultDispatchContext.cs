@@ -102,7 +102,11 @@
 				this.correlationIdentifier,
 				this.delivery.CurrentConfiguration.ReturnAddress,
 				this.messageHeaders,
-				this.logicalMessages);
+				this.logicalMessages)
+			{
+				Persistent = true,
+				Expiration = SystemTime.UtcNow.AddDays(3)
+			};
 		}
 		protected virtual void ThrowWhenNoMessages()
 		{
