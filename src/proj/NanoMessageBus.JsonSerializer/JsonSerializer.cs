@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.JsonSerializer
 {
 	using System.IO;
+	using System.Runtime.Serialization.Formatters;
 	using System.Text;
 	using Newtonsoft.Json;
 	using Serialization;
@@ -53,9 +54,11 @@
 
 		private readonly JsonNetSerializer serializer = new JsonNetSerializer
 		{
-			TypeNameHandling = TypeNameHandling.Objects,
+			TypeNameHandling = TypeNameHandling.All,
+			TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
 			DefaultValueHandling = DefaultValueHandling.Ignore,
-			NullValueHandling = NullValueHandling.Ignore
+			NullValueHandling = NullValueHandling.Ignore,
+			MissingMemberHandling = MissingMemberHandling.Ignore,
 		};
 	}
 }
