@@ -10,20 +10,20 @@
 	/// <remarks>
 	/// This class is designed to be used during wireup and then thrown away.
 	/// </remarks>
-	public class DefaultMessagingHostWireup
+	public class MessagingWireup
 	{
-		public virtual DefaultMessagingHostWireup AddConnector(IChannelConnector connector)
+		public virtual MessagingWireup AddConnector(IChannelConnector connector)
 		{
 			connector = new DependencyResolverConnector(connector);
 			this.connectors.Add(connector);
 			return this;
 		}
-		public virtual DefaultMessagingHostWireup WithHandlerContext(Action<IDeliveryContext> delivery)
+		public virtual MessagingWireup WithHandlerContext(Action<IDeliveryContext> delivery)
 		{
 			this.receive = delivery;
 			return this;
 		}
-		public virtual DefaultMessagingHostWireup WithDispatchTable(IDispatchTable table)
+		public virtual MessagingWireup WithDispatchTable(IDispatchTable table)
 		{
 			this.dispatchTable = table;
 			return this;
@@ -42,10 +42,11 @@
 			host.Initialize();
 			return host;
 		}
-		public virtual IMessagingHost StartWithReceive(IRoutingTable table)
+		public virtual IMessagingHost StartWithReceive(IRoutingTable table, Func<IHandlerContext, IMessageHandler<ChannelMessage>> handler = null)
 		{
 			var host = this.Start();
 			this.routingTable = table;
+			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)));
 			host.BeginReceive(this.receive ?? this.DefaultReceive);
 			return host;
 		}

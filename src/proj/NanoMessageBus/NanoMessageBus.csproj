@@ -58,7 +58,7 @@
     <Compile Include="DefaultDispatchContext.cs" />
     <Compile Include="DefaultHandlerContext.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
-    <Compile Include="DefaultMessagingHostWireup.cs" />
+    <Compile Include="MessagingWireup.cs" />
     <Compile Include="DefaultRoutingTable.cs" />
     <Compile Include="DependencyResolverChannel.cs" />
     <Compile Include="DependencyResolverConnector.cs" />
