@@ -356,8 +356,8 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_no_dead_letter_exchange_is_specified : using_channel_config
 	{
-		It should_not_point_to_anything = () =>
-			config.DeadLetterExchange.ShouldBeNull();
+		It should_point_to_the_default_exchange = () =>
+			config.DeadLetterExchange.ToString().ShouldEqual("fanout://dead-letters/");
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

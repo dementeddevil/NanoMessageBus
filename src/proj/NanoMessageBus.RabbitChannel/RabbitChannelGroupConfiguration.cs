@@ -246,8 +246,12 @@
 			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
 			this.ChannelBuffer = DefaultChannelBuffer;
 			this.MaxAttempts = DefaultMaxAttempts;
+
 			this.PoisonMessageExchange = new PublicationAddress(
 				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
+			this.DeadLetterExchange = new PublicationAddress(
+				ExchangeType.Fanout, DefaultDeadLetterExchange, string.Empty);
+
 			this.Serializer = DefaultSerializer;
 			this.MessageAdapter = new RabbitMessageAdapter(this);
 			this.DependencyResolver = null;
@@ -262,6 +266,7 @@
 		private const string DefaultGroupName = "all";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
+		private const string DefaultDeadLetterExchange = "dead-letters";
 		private const string DefaultAppId = "rabbit-endpoint";
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
