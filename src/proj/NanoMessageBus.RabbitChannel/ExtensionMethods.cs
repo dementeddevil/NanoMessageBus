@@ -12,6 +12,13 @@
 		{
 			return new PublicationAddress(ExchangeType.Direct, string.Empty, queueName);
 		}
+		public static PublicationAddress ToExchangeAddress(this string exchangeName, string exchangeType = ExchangeType.Fanout)
+		{
+			if (string.IsNullOrEmpty(exchangeName))
+				return null;
+
+			return new PublicationAddress(exchangeType, exchangeName, string.Empty);
+		}
 		public static PublicationAddress ToPublicationAddress(this Uri uri, RabbitChannelGroupConfiguration config)
 		{
 			if (uri == ChannelEnvelope.LoopbackAddress)

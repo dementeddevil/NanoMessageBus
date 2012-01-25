@@ -314,6 +314,13 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_poison_message_exchange_is_specified : using_channel_config
+	{
+		It should_point_to_the_default_poison_message_exchange = () =>
+			config.PoisonMessageExchange.ToString().ShouldEqual("fanout://poison-messages/");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_a_null_poison_message_exchange_is_specified : using_channel_config
 	{
 		Because of = () =>
@@ -324,10 +331,13 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_no_poison_message_exchange_is_specified : using_channel_config
+	public class when_an_empty_poison_message_exchange_is_specified : using_channel_config
 	{
-		It should_point_to_the_default_poison_message_exchange = () =>
-			config.PoisonMessageExchange.ToString().ShouldEqual("fanout://poison-messages/");
+		Because of = () =>
+			config.WithPoisonMessageExchange(string.Empty);
+
+		It should_no_longer_point_to_any_poison_message_exchange = () =>
+			config.PoisonMessageExchange.ShouldBeNull();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -344,6 +354,13 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_dead_letter_exchange_is_specified : using_channel_config
+	{
+		It should_point_to_the_default_exchange = () =>
+			config.DeadLetterExchange.ToString().ShouldEqual("fanout://dead-letters/");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_a_null_dead_letter_exchange_is_specified : using_channel_config
 	{
 		Because of = () =>
@@ -354,10 +371,13 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_no_dead_letter_exchange_is_specified : using_channel_config
+	public class when_an_empty_dead_letter_exchange_is_specified : using_channel_config
 	{
-		It should_point_to_the_default_exchange = () =>
-			config.DeadLetterExchange.ToString().ShouldEqual("fanout://dead-letters/");
+		Because of = () =>
+			config.WithDeadLetterExchange(string.Empty);
+
+		It should_no_longer_point_to_any_dead_letter_exchange = () =>
+			config.DeadLetterExchange.ShouldBeNull();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

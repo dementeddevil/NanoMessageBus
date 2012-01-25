@@ -194,7 +194,7 @@
 			if (exchange == null)
 				throw new ArgumentNullException("exchange");
 
-			this.PoisonMessageExchange = new PublicationAddress(ExchangeType.Fanout, exchange, string.Empty);
+			this.PoisonMessageExchange = exchange.ToExchangeAddress();
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithDeadLetterExchange(string exchange)
@@ -202,7 +202,7 @@
 			if (exchange == null)
 				throw new ArgumentNullException("exchange");
 
-			this.DeadLetterExchange = new PublicationAddress(ExchangeType.Fanout, exchange, string.Empty);
+			this.DeadLetterExchange = exchange.ToExchangeAddress();
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithMaxAttempts(int attempts)
