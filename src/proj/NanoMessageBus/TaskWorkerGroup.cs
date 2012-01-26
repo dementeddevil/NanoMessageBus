@@ -49,10 +49,11 @@
 				{
 					foreach (var item in this.workItems.GetConsumingEnumerable(token))
 						item(worker);
-
-					Log.Debug("Token has been canceled, operation complete.");
 				}
-				catch (OperationCanceledException) { }
+				catch (OperationCanceledException)
+				{
+					Log.Debug("Token has been canceled, operation canceled.");
+				}
 			});
 		}
 		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
@@ -196,6 +197,7 @@
 				if (this.tokenSource == null)
 					return;
 
+				// TODO: call dispose on this.workItems, but add test to verify that ObjectDisposedException is handled.
 				Log.Verbose("Canceling token.");
 				this.tokenSource.Cancel(); // GC will perform dispose
 			}

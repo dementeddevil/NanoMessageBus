@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Logging;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Exceptions;
 
@@ -17,6 +18,7 @@
 
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
+			Log.Debug("Attempting to establish channel for group '{0}'.", channelGroup);
 			var config = this.GetChannelGroupConfiguration(channelGroup);
 			this.ThrowWhenDisposed();
 
@@ -54,8 +56,12 @@
 			try
 			{
 				if (this.connection != null)
+				{
+					Log.Debug("Creating channel from existing connection.");
 					return this.connection.CreateModel();
+				}
 
+				Log.Debug("Establishing new connection to messaging infrastructure.");
 				this.CurrentState = ConnectionState.Opening;
 				this.connection = this.factory.CreateConnection(this.MaxRedirects);
 				this.CurrentState = ConnectionState.Open;
@@ -65,10 +71,12 @@
 			}
 			catch (PossibleAuthenticationFailureException e)
 			{
+				Log.Warn("Invalid security credentials.");
 				this.Close(channel, ConnectionState.Unauthenticated, e);
 			}
 			catch (OperationInterruptedException e)
 			{
+				Log.Info("Connection attempt interrupted.");
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
 			catch (Exception e)
@@ -81,7 +89,10 @@
 		protected virtual void InitializeConfigurations(IModel model)
 		{
 			foreach (var config in this.configuration.Values)
+			{
+				Log.Debug("Initializing the messaging infrastructure.");
 				config.ConfigureChannel(model);
+			}
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -131,8 +142,12 @@
 				if (this.disposed)
 					return;
 
+				Log.Verbose("Disposing connection.");
+
 				this.disposed = true;
 				this.Close(null, ConnectionState.Closed);
+
+				Log.Debug("Connection disposed.");
 			}
 		}
 		protected virtual void Close(IModel channel, ConnectionState state, Exception exception = null)
@@ -140,11 +155,18 @@
 			this.CurrentState = ConnectionState.Closing;
 
 			if (channel != null)
+			{
+				Log.Debug("Aborting operations on temporary channel.");
 				channel.Abort();
+			}
 
-			// dispose can throw while abort does the exact same thing without throwing
 			if (this.connection != null)
+			{
+				Log.Debug("Waiting up to {0} ms before forcing the connection to close.", this.shutdownTimeout);
+
+				// calling connection.Dispose() can thrown while connection.Abort() closes without throwing
 				this.connection.Abort(this.shutdownTimeout);
+			}
 
 			this.connection = null;
 			this.CurrentState = state;
@@ -153,6 +175,7 @@
 				throw new ChannelConnectionException(exception.Message, exception);
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitConnector));
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
 		private readonly int shutdownTimeout;

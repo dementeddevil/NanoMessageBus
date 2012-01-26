@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using Logging;
 
 	public class RabbitTransaction : IChannelTransaction
 	{
@@ -51,13 +52,19 @@
 		}
 		protected virtual void AcknowledgeReceipt()
 		{
-			if (this.transactionType != RabbitTransactionType.None)
-				this.channel.AcknowledgeMessage();
+			if (this.transactionType == RabbitTransactionType.None)
+				return;
+
+			Log.Verbose("Attempting to acknowledge receipt of all received messages against the underlying channel.");
+			this.channel.AcknowledgeMessage();
 		}
 		protected virtual void CommitChannel()
 		{
-			if (this.transactionType == RabbitTransactionType.Full)
-				this.channel.CommitTransaction();
+			if (this.transactionType != RabbitTransactionType.Full)
+				return;
+
+			Log.Verbose("Attempting to commit the transaction against the underlying channel.");
+			this.channel.CommitTransaction();
 		}
 
 		public virtual void Rollback()
@@ -139,6 +146,7 @@
 			}
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitTransaction));
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
 		private readonly RabbitChannel channel;
 		private readonly RabbitTransactionType transactionType;

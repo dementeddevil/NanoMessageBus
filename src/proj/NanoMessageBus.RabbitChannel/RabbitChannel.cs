@@ -3,6 +3,7 @@
 	using System;
 	using System.Linq;
 	using System.Runtime.Serialization;
+	using Logging;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Exceptions;
@@ -19,6 +20,8 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
+			Log.Debug("Attempting to begin receiving messages.");
+
 			this.ThrowWhenDisposed();
 			this.ThrowWhenDispatchOnly();
 			this.ThrowWhenSubscriptionExists();
@@ -33,14 +36,22 @@
 		}
 		protected virtual bool Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
+			Log.Verbose("Wire message received.");
+
 			this.CurrentMessage = null;
 			this.delivery = message;
 
 			if (this.shutdown)
+			{
+				Log.Debug("Shutdown request has been made; finished receiving.");
 				return FinishedReceiving;
+			}
 
 			if (message == null)
+			{
+				Log.Debug("Null wire message received; continue receiving.");
 				return ContinueReceiving;
+			}
 
 			this.EnsureTransaction();
 			this.TryReceive(message, callback);
@@ -49,26 +60,33 @@
 		}
 		protected virtual void TryReceive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
+			var messageId = message.MessageId();
+
 			try
 			{
+				Log.Verbose("Translating wire-specific message into channel message.");
 				this.CurrentMessage = this.adapter.Build(message);
 				callback(this);
 			}
 			catch (ChannelConnectionException)
 			{
+				Log.Debug("The channel has become unavailable.");
 				this.CurrentTransaction.Dispose();
 				throw;
 			}
 			catch (SerializationException e)
 			{
+				Log.Info("Wire message {0} could not be deserialized; forwarding to poison message exchange.", messageId);
 				this.ForwardToPoisonMessageExchange(message, e);
 			}
 			catch (DeadLetterException)
 			{
+				Log.Debug("Wire message {0} has expired on the wire; forwarding to dead-letter exchange.", messageId);
 				this.ForwardTo(message, this.configuration.DeadLetterExchange);
 			}
 			catch (Exception e)
 			{
+				Log.Info("Handling of message '{0}' has thrown an exception, attempting to retry message.", messageId);
 				this.RetryMessage(message, e);
 			}
 		}
@@ -77,21 +95,25 @@
 			var nextAttempt = message.GetAttemptCount() + 1;
 			message.SetAttemptCount(nextAttempt);
 
+			// 0-based to 1-based value
+			Log.Debug("Message '{0}' has been attempted {1} times.", message.MessageId(), nextAttempt);
+
 			if (nextAttempt > this.configuration.MaxAttempts)
 				this.ForwardToPoisonMessageExchange(message, exception);
 			else
-			{
 				this.ForwardTo(message, this.configuration.InputQueue.ToPublicationAddress());
-			}
 		}
 		protected virtual void ForwardToPoisonMessageExchange(BasicDeliverEventArgs message, Exception exception)
 		{
+			Log.Info("Message '{0}' is a poison message.", message.MessageId());
 			message.SetAttemptCount(0);
 			this.adapter.AppendException(message, exception);
 			this.ForwardTo(message, this.configuration.PoisonMessageExchange);
 		}
 		protected virtual void ForwardTo(BasicDeliverEventArgs message, PublicationAddress address)
 		{
+			Log.Debug("Forwarding message '{0}' to recipient '{1}'.", message.MessageId(), address);
+
 			this.EnsureTransaction();
 			this.Send(message, address);
 			this.CurrentTransaction.Commit();
@@ -111,6 +133,8 @@
 				? this.delivery
 				: this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
 
+			Log.Verbose("Sending wire message '{0}' to {1} recipients.", message.MessageId(), envelope.Recipients.Count);
+
 			foreach (var recipient in envelope.Recipients.Select(x => x.ToPublicationAddress(this.configuration)))
 			{
 				this.ThrowWhenDisposed();
@@ -123,22 +147,31 @@
 				return;
 
 			this.EnsureTransaction().Register(() => this.Try(() =>
-				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body)));
+			{
+				Log.Verbose("'Publishing' wire message '{0}' to broker.", message.MessageId());
+				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body);
+			}));
 		}
 
 		public virtual void AcknowledgeMessage()
 		{
 			this.ThrowWhenDisposed();
 
-			if (this.subscription != null && this.transactionType != RabbitTransactionType.None)
-				this.Try(this.subscription.AcknowledgeMessages);
+			if (this.subscription == null || this.transactionType == RabbitTransactionType.None)
+				return;
+
+			Log.Verbose("Acknowledging all previous message deliveries from the broker.");
+			this.Try(this.subscription.AcknowledgeMessages);
 		}
 		public virtual void CommitTransaction()
 		{
 			this.ThrowWhenDisposed();
 
 			if (this.transactionType == RabbitTransactionType.Full)
+			{
+				Log.Verbose("Committing transaction against the broker.");
 				this.Try(this.channel.TxCommit);
+			}
 
 			this.EnsureTransaction();
 		}
@@ -147,13 +180,17 @@
 			this.ThrowWhenDisposed();
 
 			if (this.transactionType == RabbitTransactionType.Full)
+			{
+				Log.Verbose("Rolling back transaction against the broker.");
 				this.Try(this.channel.TxRollback);
+			}
 
 			this.EnsureTransaction();
 		}
 
 		public virtual void BeginShutdown()
 		{
+			Log.Debug("Beginning shutdown sequence.");
 			this.shutdown = true;
 		}
 
@@ -183,6 +220,8 @@
 			if (!this.CurrentTransaction.Finished)
 				return this.CurrentTransaction;
 
+			Log.Verbose("The current transaction has been completed, creating a new transaction.");
+
 			this.CurrentTransaction.Dispose();
 			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 		}
@@ -194,6 +233,7 @@
 			}
 			catch (OperationInterruptedException e)
 			{
+				Log.Info("Channel operation interupted, closing channel.");
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}
@@ -212,10 +252,16 @@
 
 			this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 			if (this.transactionType == RabbitTransactionType.Full)
+			{
+				Log.Debug("Marking channel as transactional.");
 				this.channel.TxSelect();
+			}
 
-			if (this.configuration.ChannelBuffer > 0)
-				this.channel.BasicQos(0, (ushort)this.configuration.ChannelBuffer, false);
+			if (this.configuration.ChannelBuffer <= 0)
+				return;
+
+			Log.Debug("Buffering up to {0} message(s) on the channel.", this.configuration.ChannelBuffer);
+			this.channel.BasicQos(0, (ushort)this.configuration.ChannelBuffer, false);
 		}
 		protected RabbitChannel() { }
 		~RabbitChannel()
@@ -236,6 +282,7 @@
 			if (this.disposed)
 				return;
 
+			Log.Debug("Disposing channel.");
 			this.CurrentTransaction.Dispose(); // must happen here because it checks for dispose
 
 			this.disposed = true;
@@ -245,10 +292,13 @@
 
 			// dispose can throw while abort does the exact same thing without throwing
 			this.channel.Abort();
+
+			Log.Debug("Channel disposed.");
 		}
 
 		private const bool ContinueReceiving = true;
 		private const bool FinishedReceiving = false; // returning false means the receiving handler will exit.
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitChannel));
 		private readonly IModel channel;
 		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;

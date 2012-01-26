@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Logging;
 	using RabbitMQ.Client;
 	using Serialization;
 
@@ -268,6 +269,7 @@
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultDeadLetterExchange = "dead-letters";
 		private const string DefaultAppId = "rabbit-endpoint";
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitChannelGroupConfiguration));
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 	}

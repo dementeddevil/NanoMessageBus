@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Logging;
 	using RabbitMQ.Client;
 
 	public class RabbitWireup
@@ -64,6 +65,7 @@
 			this.ConnectionFactory = new ConnectionFactory();
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitWireup));
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
 		private readonly ICollection<RabbitChannelGroupConfiguration> configurations =
 			new LinkedList<RabbitChannelGroupConfiguration>();

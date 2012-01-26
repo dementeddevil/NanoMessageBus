@@ -99,6 +99,14 @@
 			return formatIndex == -1 ? string.Empty : contentType.Substring(formatIndex + 1);
 		}
 
+		public static string MessageId(this BasicDeliverEventArgs message)
+		{
+			if (message == null || message.BasicProperties == null)
+				return null;
+
+			return message.BasicProperties.MessageId;
+		}
+
 		private const string AttemptCountHeader = "x-retry-count";
 	}
 }

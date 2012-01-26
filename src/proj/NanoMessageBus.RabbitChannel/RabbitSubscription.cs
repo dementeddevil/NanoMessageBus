@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using Logging;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Exceptions;
 
@@ -71,6 +72,7 @@
 			this.inner.Dispose();
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitSubscription));
 		private readonly Subscription inner;
 		private bool disposed;
 	}

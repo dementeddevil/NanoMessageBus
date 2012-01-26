@@ -7,6 +7,7 @@
 	using System.Linq;
 	using System.Runtime.Serialization;
 	using System.Text;
+	using Logging;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 	using Serialization;
@@ -24,8 +25,9 @@
 				this.AppendHeaders(result, message.BasicProperties);
 				return result;
 			}
-			catch (SerializationException)
+			catch (SerializationException e)
 			{
+				Log.Warn("Unable to deserialize message: {0}", e.Message);
 				throw;
 			}
 			catch (DeadLetterException)
@@ -34,6 +36,7 @@
 			}
 			catch (Exception e)
 			{
+				Log.Warn("General deserialize error for message: {0}", e.Message);
 				throw new SerializationException(e.Message, e);
 			}
 		}
@@ -92,12 +95,14 @@
 			{
 				return this.Translate(message, properties);
 			}
-			catch (SerializationException)
+			catch (SerializationException e)
 			{
+				Log.Warn("Unable to serialize message {0}: {1}", message.MessageId, e.Message);
 				throw;
 			}
 			catch (Exception e)
 			{
+				Log.Warn("General serialization failure for message {0}: {1}", message.MessageId, e.Message);
 				throw new SerializationException(e.Message, e);
 			}
 		}
@@ -169,6 +174,7 @@
 		private const string ContentType = "application/vnd.nmb.rabbit-msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitMessageAdapter));
 		private readonly RabbitChannelGroupConfiguration configuration;
 	}
 }

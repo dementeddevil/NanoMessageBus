@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using Logging;
 
 	public class RabbitDispatchTable : IDispatchTable
 	{
@@ -27,5 +28,7 @@
 		{
 			// no op
 		}
+
+		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitDispatchTable));
 	}
 }
