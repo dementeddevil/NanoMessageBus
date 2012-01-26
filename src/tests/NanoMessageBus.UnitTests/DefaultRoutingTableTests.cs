@@ -68,6 +68,23 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
+	public class when_routing_a_message_to_the_registered_handler_throws_an_exception : with_the_routing_table
+	{
+		Establish context = () => routes.Add(new GenericHandler<string>(x =>
+		{
+			throw toThrow;
+		}));
+
+		Because of = () =>
+			Try(() => routes.Route(mockContext.Object, string.Empty));
+
+		It should_not_suppress_the_thrown_exception = () =>
+			thrown.ShouldEqual(toThrow);
+
+		static readonly Exception toThrow = new Exception("my exception");
+	}
+
+	[Subject(typeof(DefaultRoutingTable))]
 	public class when_routing_the_same_message_to_a_duplicate_handler_registration : with_the_routing_table
 	{
 		Establish context = () =>
@@ -238,6 +255,23 @@ namespace NanoMessageBus
 
 		It should_indicate_that_there_were_no_handlers_which_handled_the_message = () =>
 			handled.ShouldEqual(0);
+	}
+
+	[Subject(typeof(DefaultRoutingTable))]
+	public class when_routing_a_message_to_the_callback_which_throws_an_exception : with_the_routing_table
+	{
+		Establish context = () => routes.Add(ctx => new GenericHandler<string>(msg =>
+		{
+			throw toThrow;
+		}));
+
+		Because of = () =>
+			Try(() => routes.Route(mockContext.Object, string.Empty));
+
+		It should_not_suppress_the_thrown_exception = () =>
+			thrown.ShouldEqual(toThrow);
+
+		static readonly Exception toThrow = new Exception("my exception");
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
