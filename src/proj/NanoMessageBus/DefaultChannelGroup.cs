@@ -169,6 +169,7 @@
 				if (this.disposed)
 					return;
 
+				Log.Debug("Shutting down channel group.");
 				this.disposed = true;
 				this.workers.Dispose();
 			}

@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using Logging;
 
 	public class DependencyResolverChannel : IMessagingChannel
 	{
@@ -41,6 +42,7 @@
 		{
 			try
 			{
+				Log.Verbose("Delivery received, attempting to create nested resolver.");
 				this.currentContext = context;
 				this.currentResolver = this.resolver.CreateNestedResolver();
 				callback(this);
@@ -83,6 +85,7 @@
 			this.resolver.Dispose();
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(DependencyResolverChannel));
 		private readonly IMessagingChannel channel;
 		private readonly IDependencyResolver resolver;
 		private IDependencyResolver currentResolver;

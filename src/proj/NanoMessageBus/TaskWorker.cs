@@ -2,6 +2,7 @@ namespace NanoMessageBus
 {
 	using System;
 	using System.Threading;
+	using Logging;
 
 	public class TaskWorker<T> : IWorkItem<T>
 		where T : class, IDisposable
@@ -18,7 +19,10 @@ namespace NanoMessageBus
 
 			// FUTURE: watch number of operations and dynamically increase/decrease the number of workers
 			if (this.token.IsCancellationRequested)
+			{
+				Log.Debug("Token cancellation has been requested.");
 				this.State.Dispose();
+			}
 			else
 				operation();
 		}
@@ -34,6 +38,7 @@ namespace NanoMessageBus
 			this.maxWorkers = maxWorkers;
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(TaskWorker<T>));
 		private readonly CancellationToken token;
 		private readonly int minWorkers;
 		private readonly int maxWorkers; // FUTURE

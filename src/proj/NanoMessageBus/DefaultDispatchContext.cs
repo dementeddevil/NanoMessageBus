@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Logging;
 
 	public class DefaultDispatchContext : IDispatchContext
 	{
@@ -10,6 +11,8 @@
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
+
+			Log.Verbose("Adding logical message of type '{0}' for dispatch.");
 
 			this.logicalMessages.Add(message);
 			return this;
@@ -29,6 +32,7 @@
 		}
 		public virtual IDispatchContext WithCorrelationId(Guid correlationId)
 		{
+			Log.Verbose("Messages will be correlated using identifier '{0}'.", correlationId);
 			this.correlationIdentifier = correlationId;
 			return this;
 		}
@@ -38,9 +42,15 @@
 				throw new ArgumentNullException("key");
 
 			if (value == null)
+			{
+				Log.Verbose("Removing header '{0}' from dispatch.", key);
 				this.messageHeaders.Remove(key);
+			}
 			else
+			{
+				Log.Verbose("Adding header '{0}' to dispatch.", key);
 				this.messageHeaders[key] = value;
+			}
 
 			return this;
 		}
@@ -59,24 +69,39 @@
 			if (recipient == null)
 				throw new ArgumentNullException("recipient");
 
+			Log.Verbose("Adding recipient '{0}' to dispatch.", recipient);
+
 			this.recipients.Add(recipient);
 			return this;
 		}
 
 		public virtual void Send()
 		{
+			Log.Verbose("Sending message to registered recipients.");
 			this.Dispatch(this.BuildRecipients().ToArray());
 		}
 		public virtual void Publish()
 		{
+			Log.Verbose("Publishing message to registered subscribers.");
 			this.Dispatch(this.BuildRecipients().ToArray());
 		}
 		public virtual void Reply()
 		{
-			if (this.correlationIdentifier == Guid.Empty)
-				this.correlationIdentifier = this.delivery.CurrentMessage.CorrelationId;
+			var message = this.delivery.CurrentMessage;
+			var returnAddress = message.ReturnAddress;
 
-			this.Dispatch(this.delivery.CurrentMessage.ReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
+			Log.Verbose("Replying to message.");
+			if (returnAddress == null)
+				Log.Debug("Incoming message '{0}' contains no return address.", message.MessageId);
+
+			if (this.correlationIdentifier == Guid.Empty)
+			{
+				Log.Verbose("Using correlation identifier '{0}' from incoming message '{1}'.",
+					message.CorrelationId, message.MessageId);
+				this.correlationIdentifier = this.delivery.CurrentMessage.CorrelationId;
+			}
+
+			this.Dispatch(returnAddress ?? ChannelEnvelope.DeadLetterAddress);
 		}
 		protected virtual void Dispatch(params Uri[] targets)
 		{
@@ -85,6 +110,10 @@
 
 			var message = this.BuildMessage();
 			var envelope = new ChannelEnvelope(message, targets);
+
+			Log.Verbose("Dispatching message '{0}' with correlation identifier '{1}' to {2} recipients.",
+				message.MessageId, message.CorrelationId, targets.Length);
+
 			this.delivery.Send(envelope);
 			this.dispatched = true;
 		}
@@ -92,7 +121,6 @@
 		{
 			var type = this.logicalMessages.First().GetType();
 			var discovered = (this.dispatchTable[type] ?? new Uri[0]).Concat(this.recipients).ToArray();
-
 			return discovered.Length == 0 ? new[] { ChannelEnvelope.DeadLetterAddress } : discovered;
 		}
 		protected virtual ChannelMessage BuildMessage()
@@ -104,8 +132,8 @@
 				this.messageHeaders,
 				this.logicalMessages)
 			{
-				Persistent = true,
-				Expiration = SystemTime.UtcNow.AddDays(3)
+				Persistent = true, // TODO: this should vary depending upon various registered message types
+				Expiration = SystemTime.UtcNow.AddDays(3) // TODO: this should also vary depending upon the message type
 			};
 		}
 		protected virtual void ThrowWhenNoMessages()
@@ -125,6 +153,7 @@
 			this.dispatchTable = dispatchTable;
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultDispatchContext));
 		private readonly IDictionary<string, string> messageHeaders = new Dictionary<string, string>();
 		private readonly ICollection<object> logicalMessages = new LinkedList<object>();
 		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();

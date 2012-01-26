@@ -91,7 +91,7 @@
 			public Type HandlerType { get; private set; }
 			public bool Handle(IHandlerContext context, object message)
 			{
-				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), HandlerType);
+				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), this.HandlerType);
 
 				try
 				{
@@ -101,7 +101,7 @@
 				catch (Exception e)
 				{
 					Log.Warn("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3}",
-						HandlerType, e.GetType(), typeof(T), e.Message);
+						this.HandlerType, e.GetType(), typeof(T), e.Message);
 
 					throw;
 				}
@@ -123,11 +123,11 @@
 				var handler = this.callback(context);
 				if (handler == null)
 				{
-					Log.Debug("Unable to resolve a handler from the callback registered for handler of type '{0}' and message of type '{1}'.", HandlerType, typeof(T));
+					Log.Debug("Unable to resolve a handler from the callback registered for handler of type '{0}' and message of type '{1}'.", this.HandlerType, typeof(T));
 					return false;
 				}
 
-				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), HandlerType);
+				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), this.HandlerType);
 
 				try
 				{
@@ -137,7 +137,7 @@
 				catch (Exception e)
 				{
 					Log.Warn("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3}",
-						HandlerType, e.GetType(), typeof(T), e.Message);
+						this.HandlerType, e.GetType(), typeof(T), e.Message);
 
 					throw;
 				}

@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using Logging;
 
 	public class DependencyResolverConnector : IChannelConnector
 	{
@@ -18,10 +19,16 @@
 			var channel = this.connector.Connect(channelGroup);
 			var resolver = channel.CurrentConfiguration.DependencyResolver;
 			if (resolver == null)
+			{
+				Log.Verbose("No resolver configured, returning actual, non-decorated channel.");
 				return channel;
+			}
 
 			try
 			{
+				Log.Verbose("Decorating channel inside a DependencyResolverChannel.");
+
+				// TODO: if resolver returns a self reference, don't return a DependencyResolverChannel?
 				return new DependencyResolverChannel(channel, resolver.CreateNestedResolver());
 			}
 			catch
@@ -54,6 +61,7 @@
 				this.connector.Dispose();
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(DependencyResolverConnector));
 		private readonly IChannelConnector connector;
 	}
 }

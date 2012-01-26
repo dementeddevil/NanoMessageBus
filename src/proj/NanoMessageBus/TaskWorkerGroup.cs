@@ -4,6 +4,7 @@
 	using System.Collections.Concurrent;
 	using System.Threading;
 	using System.Threading.Tasks;
+	using Logging;
 
 	public class TaskWorkerGroup<T> : IWorkerGroup<T>
 		where T : class, IDisposable
@@ -15,6 +16,8 @@
 
 			if (restart == null)
 				throw new ArgumentNullException("restart");
+
+			Log.Debug("Initializing.");
 
 			lock (this.sync)
 			{
@@ -32,22 +35,30 @@
 			if (activity == null)
 				throw new ArgumentNullException("activity");
 
+			Log.Debug("Starting activity.");
+
 			this.TryStartWorkers((worker, token) => activity(worker));
 		}
 		public virtual void StartQueue()
 		{
+			Log.Debug("Starting queue.");
+
 			this.TryStartWorkers((worker, token) =>
 			{
 				try
 				{
 					foreach (var item in this.workItems.GetConsumingEnumerable(token))
-						item(worker);	
+						item(worker);
+
+					Log.Debug("Token has been canceled, operation complete.");
 				}
 				catch (OperationCanceledException) { }
 			});
 		}
 		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
 		{
+			Log.Debug("Attempting to start workers.");
+
 			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
@@ -57,6 +68,7 @@
 				this.activityCallback = activity;
 				this.tokenSource = this.tokenSource ?? new CancellationTokenSource();
 
+				Log.Debug("Creating {0} workers.", this.minWorkers);
 				for (var i = 0; i < this.minWorkers; i++)
 					this.StartWorker(activity);
 			}
@@ -73,6 +85,7 @@
 		}
 		protected virtual IWorkItem<T> CreateWorker(T state, CancellationToken token)
 		{
+			Log.Verbose("Starting worker.", this.minWorkers);
 			return new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
 		}
 
@@ -81,28 +94,41 @@
 			if (workItem == null)
 				throw new ArgumentNullException("workItem");
 
+			Log.Verbose("Adding work item.");
 			this.workItems.Add(workItem);
 		}
 		public virtual void Restart()
 		{
+			Log.Verbose("Restarting worker group.");
+
 			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
 
+				Log.Verbose("Canceling token to allow cleanup.");
+
 				this.tokenSource.Cancel(); // let the GC cleanup and perform dispose
 				var source = this.tokenSource = new CancellationTokenSource();
 				this.StartWorker((worker, token) =>
 				{
+					Log.Verbose("Starting single worker à la circuit-breaker pattern.");
 					while (!source.Token.IsCancellationRequested && !this.restartCallback())
+					{
+						Log.Debug("Restart attempt failed, sleeping...");
 						this.retrySleepTimeout.Sleep();
+					}
 
+					Log.Debug("Restart attempt succeeded, shutting down single worker.");
 					this.tokenSource.Dispose();
 					this.tokenSource = null;
 
-					if (!this.disposed)
-						this.TryStartWorkers(this.activityCallback);
+					if (this.disposed)
+						return;
+
+					Log.Debug("Restart attempt succeeded, starting main activity.");
+					this.TryStartWorkers(this.activityCallback);
 				});
 			}
 		}
@@ -166,11 +192,16 @@
 
 				this.disposed = true;
 
-				if (this.tokenSource != null)
-					this.tokenSource.Cancel(); // GC will perform dispose
+				Log.Debug("Shutting down worker group.");
+				if (this.tokenSource == null)
+					return;
+
+				Log.Verbose("Canceling token.");
+				this.tokenSource.Cancel(); // GC will perform dispose
 			}
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(TaskWorkerGroup<T>));
 		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
 		private readonly object sync = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
