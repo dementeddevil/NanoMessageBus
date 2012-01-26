@@ -148,7 +148,7 @@
 
 			this.EnsureTransaction().Register(() => this.Try(() =>
 			{
-				Log.Verbose("'Publishing' wire message '{0}' to broker.", message.MessageId());
+				Log.Verbose("'Publishing' wire message '{0}' to messaging infrastructure for recipient '{1}'.", message.MessageId(), recipient);
 				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body);
 			}));
 		}
@@ -160,7 +160,7 @@
 			if (this.subscription == null || this.transactionType == RabbitTransactionType.None)
 				return;
 
-			Log.Verbose("Acknowledging all previous message deliveries from the broker.");
+			Log.Verbose("Acknowledging all previous message deliveries from the messaging infrastructure.");
 			this.Try(this.subscription.AcknowledgeMessages);
 		}
 		public virtual void CommitTransaction()
@@ -169,7 +169,7 @@
 
 			if (this.transactionType == RabbitTransactionType.Full)
 			{
-				Log.Verbose("Committing transaction against the broker.");
+				Log.Verbose("Committing transaction against the messaging infrastructure.");
 				this.Try(this.channel.TxCommit);
 			}
 
@@ -181,7 +181,7 @@
 
 			if (this.transactionType == RabbitTransactionType.Full)
 			{
-				Log.Verbose("Rolling back transaction against the broker.");
+				Log.Verbose("Rolling back transaction against the messaging infrastructure.");
 				this.Try(this.channel.TxRollback);
 			}
 
