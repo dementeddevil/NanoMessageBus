@@ -3,7 +3,7 @@ namespace NanoMessageBus.Logging
 	using System;
 	using System.Diagnostics;
 
-	public class OutputWindowLogger : ILog
+	public class TraceLogger : ILog
 	{
 		public virtual void Verbose(string message, params object[] values)
 		{
@@ -40,7 +40,7 @@ namespace NanoMessageBus.Logging
 				Trace.WriteLine(category, message.FormatMessage(this.typeToLog, values));
 		}
 
-		public OutputWindowLogger(Type typeToLog)
+		public TraceLogger(Type typeToLog)
 		{
 			this.typeToLog = typeToLog;
 		}

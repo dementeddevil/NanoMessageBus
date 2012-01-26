@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using Logging;
 
 	public class DefaultChannelGroup : IChannelGroup
 	{
@@ -11,6 +12,8 @@
 
 		public virtual void Initialize()
 		{
+			Log.Info("Initializing channel group '{0}'.", this.configuration.GroupName);
+
 			lock (this.sync)
 			{
 				if (this.initialized)
@@ -19,14 +22,20 @@
 				this.initialized = true;
 				this.ThrowWhenDisposed();
 
+				Log.Debug("Initializing workers for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.Initialize(this.Connect, this.TryConnect);
 
-				if (this.TryConnect() && this.DispatchOnly)
-					this.workers.StartQueue();
+				if (!this.TryConnect() || !this.DispatchOnly)
+					return;
+
+				Log.Info("Connected. Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
+				this.workers.StartQueue();
 			}
 		}
 		protected virtual IMessagingChannel Connect()
 		{
+			Log.Debug("Attempting to establish a channel within channel group '{0}'.", this.configuration.GroupName);
+
 			// if this ever throws, it's executed within the context of a worker under a TryOperation callback
 			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 		}
@@ -39,10 +48,12 @@
 			}
 			catch (ChannelConnectionException)
 			{
+				Log.Debug("The messaging infrastructure for channel group '{0}' is unavailable.", this.configuration.GroupName);
 				return false;
 			}
 			catch (ObjectDisposedException)
 			{
+				Log.Debug("Unable to establish a connection for channel group '{0}'; an underlying object has already been disposed.", this.configuration.GroupName);
 				return false;
 			}
 		}
@@ -55,12 +66,15 @@
 			if (completed == null)
 				throw new ArgumentNullException("completed");
 
-			this.ThrowWhenDisposed();
+			this.ThrowWhenDisposed(); // TODO: external threads can hit this and throw because this CG is being shutdown.
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
+			Log.Verbose("Adding message to dispatch queue for channel group '{0}'.", this.configuration.GroupName);
 			this.workers.Enqueue(worker => this.TryOperation(() =>
 			{
+				Log.Verbose("Pushing message into the channel for dispatch for channel group '{0}'.", this.configuration.GroupName);
+
 				var channel = worker.State;
 				channel.Send(envelope);
 				completed(channel.CurrentTransaction);
@@ -70,6 +84,8 @@
 		{
 			if (callback == null)
 				throw new ArgumentNullException("callback");
+
+			Log.Info("Beginning receive operation for channel group '{0}'.", this.configuration.GroupName);
 
 			lock (this.sync)
 			{
@@ -91,6 +107,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
+				Log.Debug("Unable to perform operation on channel group '{0}', the connection is unavailable.", this.configuration.GroupName);
 				this.TryOperation(this.workers.Restart); // may already be disposed
 			}
 			catch (ObjectDisposedException)
@@ -102,7 +119,7 @@
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
-				throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
+				throw new ObjectDisposedException(typeof(DefaultChannelGroup).Name);
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
@@ -157,6 +174,7 @@
 			}
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultChannelGroup));
 		private readonly object sync = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;

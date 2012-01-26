@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Logging;
 
 	public class DefaultRoutingTable : IRoutingTable
 	{
@@ -11,12 +12,18 @@
 			if (handler == null)
 				throw new ArgumentNullException("handler");
 
+			Log.Debug("Registering handle of type '{0}' for messages of type '{1}' at sequence {2}.",
+				handler.GetType(), typeof(T), sequence);
+
 			this.Add<T>(new SimpleHandler<T>(handler, sequence), handler.GetType());
 		}
 		public virtual void Add<T>(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence = int.MaxValue, Type handlerType = null)
 		{
 			if (callback == null)
 				throw new ArgumentNullException("callback");
+
+			Log.Debug("Registering callback of type '{0}' for messages of type '{1}' at sequence {2}.",
+				handlerType, typeof(T), sequence);
 
 			this.Add<T>(new CallbackHandler<T>(callback, sequence, handlerType), handlerType);
 		}
@@ -30,7 +37,10 @@
 			{
 				var index = routes.FindIndex(x => x.HandlerType == handlerType);
 				if (index >= 0)
+				{
+					Log.Debug("Handler of type '{0}' already registered, replacing previously registered handler.", handlerType);
 					routes[index] = handler;
+				}
 			}
 			else
 				routes.Add(handler);
@@ -49,9 +59,14 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
+			Log.Verbose("Attempting to route message of type '{0}' to registered handlers.", message.GetType());
+
 			List<ISequencedHandler> routes;
 			if (!this.registeredRoutes.TryGetValue(message.GetType(), out routes))
+			{
+				Log.Debug("No registered handlers for message of type '{0}'.", message.GetType());
 				return 0;
+			}
 
 			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
 			return routes
@@ -59,6 +74,7 @@
 				.Count(route => route.Handle(context, message));
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultRoutingTable));
 		private readonly ICollection<Type> registeredHandlers = new HashSet<Type>();
 		private readonly IDictionary<Type, List<ISequencedHandler>> registeredRoutes =
 			new Dictionary<Type, List<ISequencedHandler>>();
@@ -75,8 +91,20 @@
 			public Type HandlerType { get; private set; }
 			public bool Handle(IHandlerContext context, object message)
 			{
-				this.handler.Handle((T)message);
-				return true;
+				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), HandlerType);
+
+				try
+				{
+					this.handler.Handle((T)message);
+					return true;
+				}
+				catch (Exception e)
+				{
+					Log.Warn("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3}",
+						HandlerType, e.GetType(), typeof(T), e.Message);
+
+					throw;
+				}
 			}
 			public SimpleHandler(IMessageHandler<T> handler, int sequence)
 			{
@@ -94,10 +122,25 @@
 			{
 				var handler = this.callback(context);
 				if (handler == null)
+				{
+					Log.Debug("Unable to resolve a handler from the callback registered for handler of type '{0}' and message of type '{1}'.", HandlerType, typeof(T));
 					return false;
+				}
 
-				handler.Handle((T)message);
-				return true;
+				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), HandlerType);
+
+				try
+				{
+					handler.Handle((T)message);
+					return true;
+				}
+				catch (Exception e)
+				{
+					Log.Warn("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3}",
+						HandlerType, e.GetType(), typeof(T), e.Message);
+
+					throw;
+				}
 			}
 			public CallbackHandler(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence, Type handlerType)
 			{

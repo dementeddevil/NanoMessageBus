@@ -4,11 +4,13 @@
 	using System.Collections.Generic;
 	using System.Configuration;
 	using System.Linq;
+	using Logging;
 
 	public class DefaultMessagingHost : IMessagingHost
 	{
 		public virtual void Initialize()
 		{
+			Log.Info("Initializing host.");
 			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
@@ -18,9 +20,11 @@
 
 				this.initialized = true;
 			}
+			Log.Info("Host initialized.");
 		}
 		protected virtual void InitializeChannelGroups()
 		{
+			Log.Info("Initializing each channel group on each connector.");
 			foreach (var connector in this.connectors)
 				foreach (var config in connector.ChannelGroups)
 					this.AddChannelGroup(config.GroupName, this.factory(connector, config));
@@ -30,6 +34,9 @@
 		}
 		protected virtual void AddChannelGroup(string name, IChannelGroup group)
 		{
+			Log.Debug(group.DispatchOnly ?
+				"Adding dispatch-only channel group '{0}'." : "Adding full-duplex channel group '{0}'", name);
+
 			var collection = group.DispatchOnly ? this.outbound : this.inbound;
 			group.Initialize();
 			collection[name] = group;
@@ -39,6 +46,8 @@
 		{
 			if (channelGroup == null)
 				throw new ArgumentNullException("channelGroup");
+
+			Log.Debug("Reference to dispatch-only channel group '{0}' requested.", channelGroup);
 
 			lock (this.sync)
 			{
@@ -58,6 +67,8 @@
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
+			Log.Info("Attempting to begin receive operations.");
+
 			lock (this.sync)
 			{
 				this.ThrowWhenDisposed();
@@ -68,6 +79,8 @@
 				foreach (var group in this.inbound.Values)
 					group.BeginReceive(callback);
 			}
+
+			Log.Info("Receive operations started against {0} channel groups.", this.inbound.Count);
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -115,6 +128,8 @@
 			if (!disposing)
 				return;
 
+			Log.Info("Shutting down host.");
+
 			lock (this.sync)
 			{
 				if (this.disposed)
@@ -127,6 +142,8 @@
 				foreach (var connector in this.connectors)
 					connector.Dispose();
 			}
+
+			Log.Info("Host shutdown complete.");
 		}
 		private static void Dispose(IDictionary<string, IChannelGroup> groups)
 		{
@@ -136,6 +153,7 @@
 			groups.Clear();
 		}
 
+		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultMessagingHost));
 		private readonly object sync = new object();
 		private readonly IDictionary<string, IChannelGroup> inbound = new Dictionary<string, IChannelGroup>();
 		private readonly IDictionary<string, IChannelGroup> outbound = new Dictionary<string, IChannelGroup>();

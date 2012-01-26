@@ -2,7 +2,7 @@ namespace NanoMessageBus.Logging
 {
 	using System;
 
-	public class ConsoleWindowLogger : ILog
+	public class ConsoleLogger : ILog
 	{
 		public virtual void Verbose(string message, params object[] values)
 		{
@@ -38,7 +38,7 @@ namespace NanoMessageBus.Logging
 			}
 		}
 
-		public ConsoleWindowLogger(Type typeToLog)
+		public ConsoleLogger(Type typeToLog)
 		{
 			this.typeToLog = typeToLog;
 		}

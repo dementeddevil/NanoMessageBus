@@ -58,11 +58,11 @@
     <Compile Include="DefaultDispatchContext.cs" />
     <Compile Include="DefaultHandlerContext.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
-    <Compile Include="Logging\ConsoleWindowLogger.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\ExtensionMethods.cs" />
     <Compile Include="Logging\ILog.cs" />
     <Compile Include="Logging\LogFactory.cs" />
-    <Compile Include="Logging\OutputWindowLogger.cs" />
+    <Compile Include="Logging\TraceLogger.cs" />
     <Compile Include="MessagingWireup.cs" />
     <Compile Include="DefaultRoutingTable.cs" />
     <Compile Include="DependencyResolverChannel.cs" />

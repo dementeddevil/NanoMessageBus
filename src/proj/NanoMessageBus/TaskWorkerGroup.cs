@@ -110,7 +110,7 @@
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (this.disposed)
-				throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
+				throw new ObjectDisposedException(typeof(TaskWorkerGroup<T>).Name);
 		}
 		protected virtual void ThrowWhenInitialized()
 		{
