@@ -9,10 +9,5 @@
 		{
 			return string.Format(CultureInfo.InvariantCulture, format ?? string.Empty, values);
 		}
-		public static void TryDispose(this IDisposable resource)
-		{
-			if (resource != null)
-				resource.Dispose();
-		}
 	}
 }

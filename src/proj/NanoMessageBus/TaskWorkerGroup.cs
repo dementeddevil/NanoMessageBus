@@ -43,19 +43,19 @@
 		public virtual void StartQueue()
 		{
 			Log.Debug("Starting queue.");
-
-			this.TryStartWorkers((worker, token) =>
+			this.TryStartWorkers(this.WatchQueue);
+		}
+		protected virtual void WatchQueue(IWorkItem<T> worker, CancellationToken token)
+		{
+			try
 			{
-				try
-				{
-					foreach (var item in this.workItems.GetConsumingEnumerable(token))
-						item(worker);
-				}
-				catch (OperationCanceledException)
-				{
-					Log.Debug("Token has been canceled, operation canceled.");
-				}
-			});
+				foreach (var item in this.workItems.GetConsumingEnumerable(token))
+					item(worker);
+			}
+			catch (OperationCanceledException)
+			{
+				Log.Debug("Token has been canceled, operation canceled.");
+			}
 		}
 		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
 		{
@@ -81,21 +81,21 @@
 		{
 			Log.Verbose("Starting worker.");
 			var token = this.tokenSource.Token; // thread-safe copy
-
-			return Task.Factory.StartNew(() =>
+			return Task.Factory.StartNew(() => this.PerformActivity(token, activity), TaskCreationOptions.LongRunning);
+		}
+		protected virtual void PerformActivity(CancellationToken token, Action<IWorkItem<T>, CancellationToken> activity)
+		{
+			using (var state = this.stateCallback())
 			{
-				using (var state = this.stateCallback())
-				{
-					if (state == null)
-						return;
+				if (state == null)
+					return;
 
-					Log.Verbose("Creating worker.");
-					var worker = new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
+				Log.Verbose("Creating worker.");
+				var worker = new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
 
-					Log.Verbose("Starting activity.");
-					activity(worker, token);
-				}
-			}, TaskCreationOptions.LongRunning);
+				Log.Verbose("Starting activity.");
+				activity(worker, token);
+			}
 		}
 
 		public virtual IEnumerable<Task> Workers
@@ -135,15 +135,12 @@
 						this.retrySleepTimeout.Sleep();
 					}
 
-					Log.Debug("Restart attempt succeeded, shutting down single worker.");
+					Log.Debug("Restart attempt succeeded, shutting down single worker and starting main activity.");
 					this.tokenSource.Dispose();
 					this.tokenSource = null;
 
-					if (this.disposed)
-						return;
-
-					Log.Debug("Restart attempt succeeded, starting main activity.");
-					this.TryStartWorkers(this.activityCallback);
+					if (!this.disposed)
+						this.TryStartWorkers(this.activityCallback);
 				});
 			}
 		}
