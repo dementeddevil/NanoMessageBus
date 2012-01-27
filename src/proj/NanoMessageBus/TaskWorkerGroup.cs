@@ -49,8 +49,11 @@
 		{
 			try
 			{
+				// TODO: there appears to be a small race condition here as well
 				foreach (var item in this.workItems.GetConsumingEnumerable(token))
 					item(worker);
+
+				// TODO: perhaps dispose is called here?
 			}
 			catch (OperationCanceledException)
 			{
@@ -148,7 +151,8 @@
 				}
 
 				Log.Debug("Restart attempt succeeded, shutting down single worker and starting main activity.");
-				this.tokenSource.Dispose();
+				if (this.tokenSource != null)
+					this.tokenSource.Dispose();
 				this.tokenSource = null;
 
 				if (!this.disposed)
