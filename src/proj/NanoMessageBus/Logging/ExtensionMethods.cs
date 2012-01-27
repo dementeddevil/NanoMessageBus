@@ -13,7 +13,7 @@ namespace NanoMessageBus.Logging
 				MessageFormat,
 				DateTime.UtcNow,
 				Thread.CurrentThread.GetName(),
-				typeToLog.FullName,
+				typeToLog.Name,
 				string.Format(CultureInfo.InvariantCulture, message, values));
 		}
 		private static string GetName(this Thread thread)

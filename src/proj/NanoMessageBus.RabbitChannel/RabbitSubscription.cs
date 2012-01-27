@@ -26,10 +26,12 @@
 		{
 			try
 			{
+				Log.Verbose("Starting channel message subscription.");
 				this.PerformReceive(timeout, callback);
 			}
 			catch (OperationInterruptedException e)
 			{
+				Log.Debug("Channel operation interrupted, aborting receive.");
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}
@@ -68,8 +70,12 @@
 			if (!disposing || this.disposed)
 				return;
 
+			Log.Verbose("Disposing channel message subscription.");
+
 			this.disposed = true;
 			this.inner.Dispose();
+
+			Log.Debug("Channel message subscription disposed.");
 		}
 
 		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitSubscription));
