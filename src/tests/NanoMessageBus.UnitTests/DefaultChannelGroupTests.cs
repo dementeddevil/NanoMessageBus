@@ -476,7 +476,11 @@ namespace NanoMessageBus
 			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockWorkers = new Mock<IWorkerGroup<IMessagingChannel>>();
 			mockWorker = new Mock<IWorkItem<IMessagingChannel>>();
-			envelope = new Mock<ChannelEnvelope>().Object;
+
+			var mockEnvelope = new Mock<ChannelEnvelope>();
+			mockEnvelope.Setup(x => x.Message).Returns(new Mock<ChannelMessage>().Object);
+			envelope = mockEnvelope.Object;
+
 			stateCallback = null;
 			restartCallback = null;
 			invocations = 0;
