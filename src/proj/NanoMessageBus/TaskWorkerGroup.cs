@@ -211,6 +211,10 @@
 				// TODO: call dispose on this.workItems, but add test to verify that ObjectDisposedException is handled.
 				Log.Verbose("Canceling token.");
 				this.tokenSource.Cancel(); // GC will perform dispose
+				this.tokenSource = null;
+
+				this.workItems.Dispose();
+				this.workers.Clear();
 			}
 		}
 

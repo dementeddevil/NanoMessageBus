@@ -397,10 +397,16 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
+		{
 			TryAndWait(() => workerGroup.Dispose());
+			Thread.Sleep(50);
+		};
 
 		It should_dispose_all_state_objects_retrieved_through_the_state_callback = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
+
+		It should_clear_the_worker_collection = () =>
+			workerGroup.Workers.Count().ShouldEqual(0);
 	}
 
 	public abstract class with_a_worker_group
@@ -436,9 +442,7 @@ namespace NanoMessageBus
 		}
 
 		Cleanup after = () =>
-		{
 			workerGroup.Dispose();
-		};
 
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static TaskWorkerGroup<IMessagingChannel> workerGroup;
