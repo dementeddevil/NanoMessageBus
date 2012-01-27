@@ -5,6 +5,7 @@ namespace NanoMessageBus.RabbitChannel
 {
 	using System;
 	using System.Collections.Generic;
+	using System.IO;
 	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
@@ -192,6 +193,24 @@ namespace NanoMessageBus.RabbitChannel
 			mockFactory
 				.Setup(x => x.CreateConnection(connector.MaxRedirects))
 				.Throws(new OperationInterruptedException(null));
+
+		Because of = () =>
+			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
+
+		It be_in_a_disconnected_state = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Disconnected);
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_establishing_the_underlying_connection_throws_because_the_socket_threw_an_exception : using_a_connector
+	{
+		Establish context = () =>
+			mockFactory
+				.Setup(x => x.CreateConnection(connector.MaxRedirects))
+				.Throws(new IOException());
 
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));

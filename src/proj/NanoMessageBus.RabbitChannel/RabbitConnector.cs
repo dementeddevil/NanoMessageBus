@@ -77,13 +77,12 @@
 			}
 			catch (OperationInterruptedException e)
 			{
-				Log.Info("Connection attempt interrupted.");
+				Log.Info("Connection attempt interrupted; socked closed.");
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
 			catch (IOException e)
 			{
-				// TODO: add unit test
-				Log.Info("Connection attempt failed.");
+				Log.Info("Connection attempt failed; socket aborted.");
 				this.Close(channel, ConnectionState.Unauthenticated, e);
 			}
 			catch (Exception e)
