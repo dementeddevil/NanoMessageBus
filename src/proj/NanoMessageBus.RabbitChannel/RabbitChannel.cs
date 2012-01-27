@@ -232,7 +232,6 @@
 			}
 			catch (IOException e)
 			{
-				// TODO: add unit test
 				Log.Info("Channel operation failed, aborting channel.");
 				throw new ChannelConnectionException(e.Message, e);
 			}

@@ -6,6 +6,7 @@ namespace NanoMessageBus.RabbitChannel
 	using System;
 	using System.Collections;
 	using System.Globalization;
+	using System.IO;
 	using System.Runtime.Serialization;
 	using Machine.Specifications;
 	using Moq;
@@ -814,6 +815,36 @@ namespace NanoMessageBus.RabbitChannel
 					Moq.It.IsAny<IBasicProperties>(),
 					Moq.It.IsAny<byte[]>()))
 				.Throws(new OperationInterruptedException(null));
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channel.Send(mockEnvelope.Object));
+
+		It should_throw_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		static Mock<ChannelEnvelope> mockEnvelope;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_dispatching_a_message_throws_an_IOException : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockEnvelope = new Mock<ChannelEnvelope>();
+			mockEnvelope.Setup(x => x.Recipients).Returns(new[] { new Uri("ampq://test/test") });
+			mockEnvelope.Setup(x => x.Message).Returns(new Mock<ChannelMessage>().Object);
+
+			mockAdapter
+				.Setup(x => x.Build(mockEnvelope.Object.Message, Moq.It.IsAny<IBasicProperties>()))
+				.Returns(EmptyMessage);
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Throws(new IOException());
 		};
 
 		Because of = () =>
