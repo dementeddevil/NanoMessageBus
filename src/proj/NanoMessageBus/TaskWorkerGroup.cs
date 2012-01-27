@@ -76,18 +76,23 @@
 		}
 		protected virtual void StartWorker(Action<IWorkItem<T>, CancellationToken> activity)
 		{
+			Log.Verbose("Starting worker.");
 			var token = this.tokenSource.Token; // thread-safe copy
-			T state = null; // only accessed by a single thread
 
-			Task.Factory
-				.StartNew(() => state = this.stateCallback(), TaskCreationOptions.LongRunning)
-				.ContinueWith(x => activity(this.CreateWorker(state, token), token))
-				.ContinueWith(task => state.TryDispose());
-		}
-		protected virtual IWorkItem<T> CreateWorker(T state, CancellationToken token)
-		{
-			Log.Verbose("Starting worker.", this.minWorkers);
-			return new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
+			Task.Factory.StartNew(() =>
+			{
+				using (var state = this.stateCallback())
+				{
+					if (state == null)
+						return;
+
+					Log.Verbose("Creating worker.");
+					var worker = new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
+
+					Log.Verbose("Starting activity.");
+					activity(worker, token);
+				}
+			}, TaskCreationOptions.LongRunning);
 		}
 
 		public virtual void Enqueue(Action<IWorkItem<T>> workItem)
@@ -100,7 +105,8 @@
 		}
 		public virtual void Restart()
 		{
-			Log.Verbose("Restarting worker group.");
+			// TODO: if a restart attempt is underway, the thread making the duplicate call should exit this method without performing any action
+			Log.Info("Attempting to restart worker group.");
 
 			lock (this.sync)
 			{

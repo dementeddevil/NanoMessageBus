@@ -23,7 +23,15 @@
 				this.ThrowWhenDisposed();
 
 				Log.Debug("Initializing workers for channel group '{0}'.", this.configuration.GroupName);
-				this.workers.Initialize(this.Connect, this.TryConnect);
+				this.workers.Initialize(() =>
+				{
+					// TODO: get this under test: connecting *may* throw an exception (thus causing the restart activity)
+					// which then returns a null channel here
+					IMessagingChannel channel = null;
+					this.TryOperation(() =>
+						channel = this.Connect());
+					return channel;
+				}, this.TryConnect);
 
 				if (!this.TryConnect() || !this.DispatchOnly)
 					return;
@@ -70,7 +78,8 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			Log.Verbose("Adding message to dispatch queue for channel group '{0}'.", this.configuration.GroupName);
+			// TODO: uncomment
+			// Log.Verbose("Adding message to dispatch queue for channel group '{0}'.", this.configuration.GroupName);
 			this.workers.Enqueue(worker => this.TryOperation(() =>
 			{
 				Log.Verbose("Pushing message into the channel for dispatch for channel group '{0}'.", this.configuration.GroupName);
