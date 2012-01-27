@@ -22,6 +22,7 @@
 				this.initialized = true;
 				this.ThrowWhenDisposed();
 
+				// TODO: it appears that if the infrastructure is down at startup, things never start working if/when it comes online
 				Log.Debug("Initializing workers for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.Initialize(() =>
 				{

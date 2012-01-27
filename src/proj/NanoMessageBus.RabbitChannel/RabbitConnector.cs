@@ -62,7 +62,7 @@
 					return this.connection.CreateModel();
 				}
 
-				Log.Debug("Establishing new connection to messaging infrastructure.");
+				Log.Debug("Attempting to establish a new connection to the messaging infrastructure.");
 				this.CurrentState = ConnectionState.Opening;
 				this.connection = this.factory.CreateConnection(this.MaxRedirects);
 				this.CurrentState = ConnectionState.Open;
