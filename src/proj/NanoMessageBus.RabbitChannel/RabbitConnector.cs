@@ -83,7 +83,7 @@
 			catch (IOException e)
 			{
 				Log.Info("Connection attempt failed; socket aborted.");
-				this.Close(channel, ConnectionState.Unauthenticated, e);
+				this.Close(channel, ConnectionState.Disconnected, e);
 			}
 			catch (Exception e)
 			{
