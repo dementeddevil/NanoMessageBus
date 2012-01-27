@@ -8,6 +8,8 @@ namespace NanoMessageBus.Logging
 	{
 		public static string FormatMessage(this string message, Type typeToLog, params object[] values)
 		{
+			message = message ?? string.Empty;
+
 			return string.Format(
 				CultureInfo.InvariantCulture,
 				MessageFormat,
