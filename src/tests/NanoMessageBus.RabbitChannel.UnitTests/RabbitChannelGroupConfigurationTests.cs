@@ -69,8 +69,8 @@ namespace NanoMessageBus.RabbitChannel
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_no_receipt_timeout_is_specified : using_channel_config
 	{
-		It should_default_to_500_milliseconds = () =>
-			config.ReceiveTimeout.ShouldEqual(TimeSpan.FromMilliseconds(500));
+		It should_default_to_1500_milliseconds = () =>
+			config.ReceiveTimeout.ShouldEqual(TimeSpan.FromMilliseconds(1500));
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
