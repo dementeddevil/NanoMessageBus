@@ -49,6 +49,7 @@
 		/// </param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void Enqueue(Action<IWorkItem<T>> workItem);
+		/// <returns>If the value was enqueued, returns true; otherwise false.</returns>
+		bool Enqueue(Action<IWorkItem<T>> workItem);
 	}
 }

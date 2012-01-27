@@ -270,6 +270,21 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_enqueing_a_worker_item_to_a_disposed_worker_group : with_a_worker_group
+	{
+		Establish context = () =>
+			workerGroup.Dispose();
+
+		Because of = () =>
+			enqueued = workerGroup.Enqueue(x => { });
+
+		It should_not_enqueue_the_work_item = () =>
+		   enqueued.ShouldBeFalse();
+
+		static bool enqueued;
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_enqueing_a_work_item_to_a_started_worker_group : with_a_worker_group
 	{
 		Establish context = () =>

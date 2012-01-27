@@ -103,13 +103,22 @@
 			get { return this.workers; } // for test purposes only
 		}
 
-		public virtual void Enqueue(Action<IWorkItem<T>> workItem)
+		public virtual bool Enqueue(Action<IWorkItem<T>> workItem)
 		{
 			if (workItem == null)
 				throw new ArgumentNullException("workItem");
 
-			Log.Verbose("Adding work item.");
-			this.workItems.Add(workItem);
+			try
+			{
+				Log.Verbose("Adding work item.");
+				this.workItems.Add(workItem);
+				return true;
+			}
+			catch (InvalidOperationException)
+			{
+				Log.Debug("Work no longer accepting additional items.");
+				return false;
+			}
 		}
 		public virtual void Restart()
 		{
@@ -205,12 +214,14 @@
 				this.disposed = true;
 
 				Log.Debug("Shutting down worker group.");
-				if (this.tokenSource == null)
-					return;
+				this.workItems.CompleteAdding();
 
-				Log.Verbose("Canceling token.");
-				this.tokenSource.Cancel(); // GC will perform dispose
-				this.tokenSource = null;
+				if (this.tokenSource != null)
+				{
+					Log.Verbose("Canceling active token.");
+					this.tokenSource.Cancel(); // GC will perform dispose
+					this.tokenSource = null;
+				}
 
 				this.workItems.Dispose();
 				this.workers.Clear();
