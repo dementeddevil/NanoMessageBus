@@ -139,7 +139,9 @@
 				Dispose(this.inbound);
 				Dispose(this.outbound);
 
-				Log.Info("Shutting down {0} active messaging infrastructure connection(s).", this.connectors.Count);
+				Log.Info("Disposing {0} messaging infrastructure connectors and their respective connections, if any.",
+					this.connectors.Count);
+
 				foreach (var connector in this.connectors)
 					connector.Dispose();
 			}

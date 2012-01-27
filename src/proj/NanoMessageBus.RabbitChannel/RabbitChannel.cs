@@ -36,6 +36,8 @@
 		}
 		protected virtual bool Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
+			Log.Verbose("Wire message received.");
+
 			this.CurrentMessage = null;
 			this.delivery = message;
 
@@ -47,7 +49,7 @@
 
 			if (message == null)
 			{
-				Log.Verbose("Null wire message received; continue receiving.");
+				Log.Debug("Null wire message received; continue receiving.");
 				return ContinueReceiving;
 			}
 
@@ -68,7 +70,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				Log.Debug("The channel has become unavailable, aborting current transaction.");
+				Log.Debug("The channel has become unavailable.");
 				this.CurrentTransaction.Dispose();
 				throw;
 			}
