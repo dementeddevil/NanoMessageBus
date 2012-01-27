@@ -122,7 +122,6 @@
 		}
 		public virtual void Restart()
 		{
-			// TODO: if a restart attempt is underway, any duplicate call should return here
 			Log.Info("Attempting to restart worker group.");
 
 			lock (this.sync)
@@ -132,25 +131,28 @@
 				this.ThrowWhenNotStarted();
 
 				Log.Verbose("Canceling token to allow cleanup.");
-
 				this.tokenSource.Cancel(); // let the GC cleanup and perform dispose
-				var source = this.tokenSource = new CancellationTokenSource();
-				this.StartWorker((worker, token) =>
+				this.tokenSource = new CancellationTokenSource();
+				this.StartWorker(this.Restart);
+			}
+		}
+		protected virtual void Restart(IWorkItem<T> worker, CancellationToken token)
+		{
+			lock (this.sync)
+			{
+				Log.Verbose("Starting single worker à la circuit-breaker pattern.");
+				while (!token.IsCancellationRequested && !this.restartCallback())
 				{
-					Log.Verbose("Starting single worker à la circuit-breaker pattern.");
-					while (!source.Token.IsCancellationRequested && !this.restartCallback())
-					{
-						Log.Debug("Restart attempt failed, sleeping...");
-						this.retrySleepTimeout.Sleep();
-					}
+					Log.Debug("Restart attempt failed, sleeping...");
+					this.retrySleepTimeout.Sleep();
+				}
 
-					Log.Debug("Restart attempt succeeded, shutting down single worker and starting main activity.");
-					this.tokenSource.Dispose();
-					this.tokenSource = null;
+				Log.Debug("Restart attempt succeeded, shutting down single worker and starting main activity.");
+				this.tokenSource.Dispose();
+				this.tokenSource = null;
 
-					if (!this.disposed)
-						this.TryStartWorkers(this.activityCallback);
-				});
+				if (!this.disposed)
+					this.TryStartWorkers(this.activityCallback);
 			}
 		}
 
