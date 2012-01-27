@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.RabbitChannel
 {
 	using System;
+	using System.IO;
 	using System.Linq;
 	using System.Runtime.Serialization;
 	using Logging;
@@ -36,8 +37,6 @@
 		}
 		protected virtual bool Receive(BasicDeliverEventArgs message, Action<IDeliveryContext> callback)
 		{
-			Log.Verbose("Wire message received.");
-
 			this.CurrentMessage = null;
 			this.delivery = message;
 
@@ -49,7 +48,7 @@
 
 			if (message == null)
 			{
-				Log.Debug("Null wire message received; continue receiving.");
+				Log.Verbose("Null wire message received; continue receiving.");
 				return ContinueReceiving;
 			}
 
@@ -70,7 +69,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				Log.Debug("The channel has become unavailable.");
+				Log.Debug("The channel has become unavailable, aborting current transaction.");
 				this.CurrentTransaction.Dispose();
 				throw;
 			}
@@ -231,9 +230,15 @@
 			{
 				callback();
 			}
+			catch (IOException e)
+			{
+				// TODO: add unit test
+				Log.Info("Channel operation failed, aborting channel.");
+				throw new ChannelConnectionException(e.Message, e);
+			}
 			catch (OperationInterruptedException e)
 			{
-				Log.Info("Channel operation interupted, closing channel.");
+				Log.Info("Channel operation interrupted, aborting channel.");
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}

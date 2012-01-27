@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.IO;
 	using System.Linq;
 	using Logging;
 	using RabbitMQ.Client;
@@ -79,6 +80,12 @@
 				Log.Info("Connection attempt interrupted.");
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
+			catch (IOException e)
+			{
+				// TODO: add unit test
+				Log.Info("Connection attempt failed.");
+				this.Close(channel, ConnectionState.Unauthenticated, e);
+			}
 			catch (Exception e)
 			{
 				this.Close(channel, ConnectionState.Closed, e);
@@ -142,7 +149,7 @@
 				if (this.disposed)
 					return;
 
-				Log.Verbose("Disposing connection.");
+				Log.Verbose("Disposing any active connection.");
 
 				this.disposed = true;
 				this.Close(null, ConnectionState.Closed);
@@ -162,7 +169,7 @@
 
 			if (this.connection != null)
 			{
-				Log.Debug("Waiting up to {0} ms before forcing the connection to close.", this.shutdownTimeout);
+				Log.Debug("Blocking up to {0} ms before forcing the existing connection to close.", this.shutdownTimeout);
 
 				// calling connection.Dispose() can thrown while connection.Abort() closes without throwing
 				this.connection.Abort(this.shutdownTimeout);
