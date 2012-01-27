@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Concurrent;
+	using System.Collections.Generic;
 	using System.Threading;
 	using System.Threading.Tasks;
 	using Logging;
@@ -69,17 +70,19 @@
 				this.activityCallback = activity;
 				this.tokenSource = this.tokenSource ?? new CancellationTokenSource();
 
+				this.workers.Clear();
+
 				Log.Debug("Creating {0} workers.", this.minWorkers);
 				for (var i = 0; i < this.minWorkers; i++)
-					this.StartWorker(activity);
+					this.workers.Add(this.StartWorker(activity));
 			}
 		}
-		protected virtual void StartWorker(Action<IWorkItem<T>, CancellationToken> activity)
+		protected virtual Task StartWorker(Action<IWorkItem<T>, CancellationToken> activity)
 		{
 			Log.Verbose("Starting worker.");
 			var token = this.tokenSource.Token; // thread-safe copy
 
-			Task.Factory.StartNew(() =>
+			return Task.Factory.StartNew(() =>
 			{
 				using (var state = this.stateCallback())
 				{
@@ -95,6 +98,11 @@
 			}, TaskCreationOptions.LongRunning);
 		}
 
+		public virtual IEnumerable<Task> Workers
+		{
+			get { return this.workers; } // for test purposes only
+		}
+
 		public virtual void Enqueue(Action<IWorkItem<T>> workItem)
 		{
 			if (workItem == null)
@@ -105,7 +113,7 @@
 		}
 		public virtual void Restart()
 		{
-			// TODO: if a restart attempt is underway, the thread making the duplicate call should exit this method without performing any action
+			// TODO: if a restart attempt is underway, any duplicate call should return here
 			Log.Info("Attempting to restart worker group.");
 
 			lock (this.sync)
@@ -213,6 +221,7 @@
 		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
 		private readonly object sync = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
+		private readonly ICollection<Task> workers = new LinkedList<Task>();
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
 		private CancellationTokenSource tokenSource;

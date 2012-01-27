@@ -4,7 +4,9 @@
 namespace NanoMessageBus
 {
 	using System;
+	using System.Linq;
 	using System.Threading;
+	using System.Threading.Tasks;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -52,7 +54,7 @@ namespace NanoMessageBus
 	public class when_a_null_restart_callback_is_provided_during_initialization : with_a_worker_group
 	{
 		Because of = () =>
-			Try(() => workerGroup.Initialize(ChannelDelegate, null));
+			Try(() => workerGroup.Initialize(BuildChannel, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -65,7 +67,7 @@ namespace NanoMessageBus
 			workerGroup.Dispose();
 
 		Because of = () =>
-			Try(() => workerGroup.Initialize(ChannelDelegate, RestartDelegate));
+			Try(() => workerGroup.Initialize(BuildChannel, RestartDelegate));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ObjectDisposedException>();
@@ -75,10 +77,10 @@ namespace NanoMessageBus
 	public class when_initializing_an_already_initialized_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
 
 		Because of = () =>
-			Try(() => workerGroup.Initialize(ChannelDelegate, RestartDelegate));
+			Try(() => workerGroup.Initialize(BuildChannel, RestartDelegate));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -122,7 +124,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
 			workerGroup.StartActivity(EmptyActivity);
 		};
 
@@ -132,7 +134,7 @@ namespace NanoMessageBus
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
-
+	
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_acquiring_state_throws_an_exception : with_a_worker_group
 	{
@@ -140,13 +142,10 @@ namespace NanoMessageBus
 			workerGroup.Initialize(() => { throw new Exception(); }, RestartDelegate);
 
 		Because of = () =>
-		{
-			Try(() => workerGroup.StartActivity(EmptyActivity));
-			Thread.Sleep(50);
-		};
+			TryAndWait(() => workerGroup.StartActivity(EmptyActivity));
 
-		It should_not_bubble_the_exception_to_the_main_thread = () =>
-			thrown.ShouldBeNull();
+		It should_bubble_the_exception_to_the_main_thread = () =>
+			thrown.ShouldNotBeNull();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -172,16 +171,26 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_the_state_callback_returns_null : with_a_worker_group
+	{
+		Establish context = () => 
+			workerGroup.Initialize(() => null, RestartDelegate);
+
+		Because of = () =>
+			TryAndWait(() => workerGroup.StartActivity(EmptyActivity));
+
+		It should_NOT_throw_an_exception = () =>
+			thrown.ShouldBeNull();
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_running_an_activity : with_a_worker_group
 	{
 		Establish context = () =>
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
 
 		Because of = () =>
-		{
-			workerGroup.StartActivity(x => callback = x.State);
-			Thread.Sleep(200);
-		};
+			TryAndWait(() => workerGroup.StartActivity(x => callback = x.State));
 
 		It should_pass_the_current_state_to_the_callback = () =>
 			callback.ShouldEqual(mockChannel.Object);
@@ -217,7 +226,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
 			workerGroup.StartQueue();
 		};
 
@@ -265,15 +274,16 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
-			workerGroup.Enqueue(x => callback = x.State);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
+			workerGroup.Enqueue(x =>
+			{
+				callback = x.State;
+				workerGroup.Dispose();
+			});
 		};
 
 		Because of = () =>
-		{
-			workerGroup.StartQueue();
-			Thread.Sleep(200);
-		};
+			TryAndWait(() => workerGroup.StartQueue());
 
 		It should_invoke_the_work_item_callback_provided = () =>
 			callback.ShouldEqual(mockChannel.Object);
@@ -295,7 +305,7 @@ namespace NanoMessageBus
 	public class when_restarting_a_not_yet_started_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
 
 		Because of = () =>
 			Try(() => workerGroup.Restart());
@@ -322,9 +332,13 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			workerGroup.Initialize(ChannelDelegate, Restart);
+			SystemTime.SleepResolver = x => { };
+			workerGroup.Initialize(BuildChannel, Restart);
 			workerGroup.StartActivity(CountInvocations);
 		};
+		Cleanup after = () =>
+			SystemTime.SleepResolver = null;
+
 		static bool Restart()
 		{
 			Thread.Sleep(1);
@@ -355,13 +369,13 @@ namespace NanoMessageBus
 			Thread.Sleep(100);
 		};
 
-		It should_schedule_cancellation_of_invocations_to_the_provided_activity_callback = () =>
+		It should_initiate_cancellation_current_activities = () =>
 			activityNotCanceled.ShouldEqual(0);
 
 		It should_invoke_the_restart_callback_until_it_returns_true = () =>
 			restartAttempts.ShouldEqual(5);
 
-		It should_resume_invocations_to_the_provided_activity = () =>
+		It should_then_resume_invocations_to_the_previously_executing_activity = () =>
 			invocations.ShouldBeGreaterThan(invocationsBeforeRestart);
 
 		static int restarted;
@@ -378,16 +392,12 @@ namespace NanoMessageBus
 			minWorkers = maxWorkers = 3;
 			Build();
 
-			workerGroup.Initialize(ChannelDelegate, RestartDelegate);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
 			workerGroup.StartQueue();
-			Thread.Sleep(50);
 		};
 
 		Because of = () =>
-		{
-			workerGroup.Dispose();
-			Thread.Sleep(50);
-		};
+			TryAndWait(() => workerGroup.Dispose());
 
 		It should_dispose_all_state_objects_retrieved_through_the_state_callback = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
@@ -402,7 +412,6 @@ namespace NanoMessageBus
 			minWorkers = 1;
 			maxWorkers = 2;
 			invocations = 0;
-			SystemTime.SleepResolver = x => { };
 
 			mockChannel = new Mock<IMessagingChannel>();
 
@@ -415,24 +424,31 @@ namespace NanoMessageBus
 		}
 		protected static void Try(Action action)
 		{
-			thrown = Catch.Exception(action);
+			thrown = thrown ?? Catch.Exception(action);
+		}
+		protected static void TryAndWait(Action callback)
+		{
+			Try(() =>
+			{
+				callback();
+				Task.WaitAll(workerGroup.Workers.ToArray());
+			});
 		}
 
 		Cleanup after = () =>
 		{
-			SystemTime.SleepResolver = null;
 			workerGroup.Dispose();
 		};
 
 		protected static Mock<IMessagingChannel> mockChannel;
-		protected static IWorkerGroup<IMessagingChannel> workerGroup;
+		protected static TaskWorkerGroup<IMessagingChannel> workerGroup;
 		protected static int minWorkers = 1;
 		protected static int maxWorkers = 1;
 		protected static int invocations;
 		protected static Exception thrown;
 
 		protected static readonly Action<IWorkItem<IMessagingChannel>> EmptyActivity = x => { };
-		protected static readonly Func<IMessagingChannel> ChannelDelegate = () => mockChannel.Object;
+		protected static readonly Func<IMessagingChannel> BuildChannel = () => mockChannel.Object;
 		protected static readonly Func<bool> RestartDelegate = () => true;
 	}
 }
