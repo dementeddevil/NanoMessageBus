@@ -139,16 +139,17 @@
 		{
 			lock (this.sync)
 			{
-				Log.Verbose("Starting single worker à la circuit-breaker pattern.");
+				Log.Verbose("Starting single restart worker à-la circuit-breaker pattern.");
 				while (!token.IsCancellationRequested && !this.restartCallback())
 				{
+					// TODO: sleep timeout should increase
 					Log.Debug("Restart attempt failed, sleeping...");
 					this.retrySleepTimeout.Sleep();
 				}
 
 				if (!this.disposed)
 				{
-					Log.Info("Restart attempt succeeded, shutting down single worker and starting main activity.");
+					Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
 					this.started = false;
 					this.TryStartWorkers(this.activityCallback);
 				}
