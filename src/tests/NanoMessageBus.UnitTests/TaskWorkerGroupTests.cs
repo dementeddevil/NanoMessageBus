@@ -222,22 +222,6 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
-	public class when_starting_a_queue_against_a_previously_started_worker_group : with_a_worker_group
-	{
-		Establish context = () =>
-		{
-			workerGroup.Initialize(BuildChannel, RestartDelegate);
-			workerGroup.StartQueue();
-		};
-
-		Because of = () =>
-			Try(() => workerGroup.StartQueue());
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
-	}
-
-	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_starting_a_queue_using_a_worker_group : with_a_worker_group
 	{
 		Establish context = () =>
@@ -257,6 +241,22 @@ namespace NanoMessageBus
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
 			invocations.ShouldEqual(minWorkers);
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_starting_a_queue_against_a_previously_started_worker_group : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
+			workerGroup.StartQueue();
+		};
+
+		Because of = () =>
+			Try(() => workerGroup.StartQueue());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -397,6 +397,22 @@ namespace NanoMessageBus
 		static int activityNotCanceled;
 		static int invocationsBeforeRestart;
 		static int restartAttempts;
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_the_state_callback_returns_null_during_restart_operations : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			workerGroup.Initialize(() => null, () => ++invocations > 0);
+			workerGroup.StartQueue();
+		};
+
+		Because of = () =>
+			TryAndWait(() => workerGroup.Restart());
+
+		It should_still_invoke_the_restart_callback = () =>
+			invocations.ShouldEqual(1);
 	}
 
 	[Ignore("TODO")]

@@ -54,16 +54,17 @@
 				this.activityCallback = activity;
 				this.workers.Clear();
 
+				var token = this.tokenSource.Token; // copy on the stack
+
 				Log.Debug("Creating {0} workers.", this.minWorkers);
 				for (var i = 0; i < this.minWorkers; i++)
-					this.workers.Add(this.StartWorker(activity));
+					this.workers.Add(this.StartWorker(() => this.RunActivity(token, activity)));
 			}
 		}
-		protected virtual Task StartWorker(Action<IWorkItem<T>, CancellationToken> activity)
+		protected virtual Task StartWorker(Action activity)
 		{
 			Log.Verbose("Starting worker.");
-			var token = this.tokenSource.Token; // copy on the stack
-			return Task.Factory.StartNew(() => this.RunActivity(token, activity), TaskCreationOptions.LongRunning);
+			return Task.Factory.StartNew(activity, TaskCreationOptions.LongRunning);
 		}
 		protected virtual void RunActivity(CancellationToken token, Action<IWorkItem<T>, CancellationToken> activity)
 		{
@@ -108,8 +109,6 @@
 			{
 				foreach (var item in this.workItems.GetConsumingEnumerable(token))
 					item(worker);
-
-				this.workItems.Dispose();
 			}
 			catch (OperationCanceledException)
 			{
@@ -130,12 +129,13 @@
 				Log.Verbose("Canceling active workers.");
 				this.tokenSource.Cancel(); // GC will perform dispose
 				this.tokenSource = new CancellationTokenSource();
+				var token = this.tokenSource.Token;
 
 				this.workers.Clear();
-				this.workers.Add(this.StartWorker(this.Restart));
+				this.workers.Add(this.StartWorker(() => this.Restart(token)));
 			}
 		}
-		protected virtual void Restart(IWorkItem<T> worker, CancellationToken token)
+		protected virtual void Restart(CancellationToken token)
 		{
 			lock (this.sync)
 			{
