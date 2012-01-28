@@ -27,9 +27,6 @@ namespace NanoMessageBus
 		Because of = () =>
 			channelGroup.Initialize();
 
-		It should_establish_a_messaging_channel = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
-
 		It should_initialize_the_worker_group = () =>
 			mockWorkers.Verify(x => x.Initialize(
 				Moq.It.IsAny<Func<IMessagingChannel>>(),
@@ -52,7 +49,9 @@ namespace NanoMessageBus
 		};
 
 		It should_only_initialize_on_the_first_call = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
+			mockWorkers.Verify(x => x.Initialize(
+				Moq.It.IsAny<Func<IMessagingChannel>>(),
+				Moq.It.IsAny<Func<bool>>()), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -69,32 +68,35 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
-	public class when_initializing_throws_a_ChannelConnectionException : with_a_channel_group
-	{
-		Establish context = () =>
-			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
-
-		Because of = () =>
-			channelGroup.Initialize();
-
-		It should_consume_the_exception = () =>
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
 	public class when_initializing_a_dispatch_only_group : with_a_channel_group
 	{
 		Establish context = () =>
-		{
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
-			mockWorkers.Setup(x => x.StartQueue());
-		};
 
 		Because of = () =>
 			channelGroup.Initialize();
 
 		It should_instruct_the_worker_group_to_start_watching_the_work_item_queue = () =>
 			mockWorkers.Verify(x => x.StartQueue(), Times.Once());
+
+		It should_connect_to_the_messaging_infrastructure = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_initializing_an_dispatch_only_group_throws_a_ChannelConnectionException : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
+		};
+
+		Because of = () =>
+			channelGroup.Initialize();
+
+		It should_consume_the_exception = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -106,8 +108,8 @@ namespace NanoMessageBus
 		Because of = () =>
 			restarted = restartCallback();
 
-		It should_open_a_new_channel = () => // once for the ChannelGroup initialize and once for restart
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+		It should_open_a_new_channel = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_indicate_success = () =>
 			restarted.ShouldBeTrue();
@@ -127,8 +129,8 @@ namespace NanoMessageBus
 		Because of = () =>
 			restarted = restartCallback();
 
-		It should_attempt_to_open_a_new_channel = () => // once for the ChannelGroup initialize and once for restart
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+		It should_attempt_to_open_a_new_channel = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_indicate_failure = () =>
 			restarted.ShouldBeFalse();
@@ -145,8 +147,7 @@ namespace NanoMessageBus
 				.Setup(x => x.Connect(ChannelGroupName))
 				.Callback(() =>
 				{
-					if (invocations++ > 0)
-						throw new ObjectDisposedException(string.Empty); // throw after first call
+					throw new ObjectDisposedException(string.Empty); // throw after first call
 				});
 			channelGroup.Initialize();
 		};
@@ -154,8 +155,8 @@ namespace NanoMessageBus
 		Because of = () =>
 			restarted = restartCallback();
 
-		It should_attempt_to_open_a_new_channel = () => // once for the ChannelGroup initialize and once for restart
-			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(2));
+		It should_attempt_to_open_a_new_channel = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_indicate_failure = () =>
 			restarted.ShouldBeFalse();

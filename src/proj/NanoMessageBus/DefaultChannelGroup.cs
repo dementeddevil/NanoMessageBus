@@ -22,15 +22,15 @@
 				this.initialized = true;
 				this.ThrowWhenDisposed();
 
-				// TODO: it appears that if the infrastructure is down at startup, things never start working if/when it comes online
 				Log.Debug("Initializing workers for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.Initialize(this.TryConnect, this.CanConnect);
 
-				if (!this.CanConnect() || !this.DispatchOnly)
+				if (!this.DispatchOnly)
 					return;
 
-				Log.Info("Connected. Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
+				Log.Info("Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.StartQueue();
+				this.TryOperation(() => { using (this.Connect()) { } });
 			}
 		}
 		protected virtual bool CanConnect()
@@ -44,7 +44,7 @@
 
 			try
 			{
-				return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
+				return this.Connect();
 			}
 			catch (ChannelConnectionException)
 			{
@@ -56,6 +56,10 @@
 			}
 
 			return null;
+		}
+		protected virtual IMessagingChannel Connect()
+		{
+			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)

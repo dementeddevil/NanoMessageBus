@@ -415,31 +415,31 @@ namespace NanoMessageBus
 			invocations.ShouldEqual(1);
 	}
 
-	[Ignore("TODO")]
-	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
-	public class when_restart_is_invoked_multiple_times_almost_simultaneously : with_a_worker_group
-	{
-		Establish context = () =>
-		{
-			minWorkers = 2;
-			maxWorkers = 2;
-			Build();
+	////[Ignore("TODO")]
+	////[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	////public class when_restart_is_invoked_multiple_times_almost_simultaneously : with_a_worker_group
+	////{
+	////    Establish context = () =>
+	////    {
+	////        minWorkers = 2;
+	////        maxWorkers = 2;
+	////        Build();
 
-			workerGroup.Initialize(BuildChannel, () =>
-			{
-				Interlocked.Increment(ref invocations);
-				return true;
-			});
+	////        workerGroup.Initialize(BuildChannel, () =>
+	////        {
+	////            Interlocked.Increment(ref invocations);
+	////            return true;
+	////        });
 
-			workerGroup.StartActivity(x => workerGroup.Restart());
-		};
+	////        workerGroup.StartActivity(x => workerGroup.Restart());
+	////    };
 
-		Because of = () =>
-			TryAndWait(() => { });
+	////    Because of = () =>
+	////        TryAndWait(() => { });
 
-		It should_only_allow_a_single_restart_process_to_occur = () =>
-			invocations.ShouldEqual(1);
-	}
+	////    It should_only_allow_a_single_restart_process_to_occur_at_the_same_time = () =>
+	////        invocations.ShouldEqual(1);
+	////}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_disposing_an_active_worker_group : with_a_worker_group
