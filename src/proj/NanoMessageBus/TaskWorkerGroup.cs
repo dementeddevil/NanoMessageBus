@@ -36,29 +36,8 @@
 			if (activity == null)
 				throw new ArgumentNullException("activity");
 
-			Log.Debug("Starting activity.");
-
+			Log.Debug("Starting worker activity.");
 			this.TryStartWorkers((worker, token) => activity(worker));
-		}
-		public virtual void StartQueue()
-		{
-			Log.Debug("Starting queue.");
-			this.TryStartWorkers(this.WatchQueue);
-		}
-		protected virtual void WatchQueue(IWorkItem<T> worker, CancellationToken token)
-		{
-			try
-			{
-				// TODO: there appears to be a small race condition here as well
-				foreach (var item in this.workItems.GetConsumingEnumerable(token))
-					item(worker);
-
-				// TODO: perhaps dispose is called here?
-			}
-			catch (OperationCanceledException)
-			{
-				Log.Debug("Token has been canceled, operation canceled.");
-			}
 		}
 		protected virtual void TryStartWorkers(Action<IWorkItem<T>, CancellationToken> activity)
 		{
@@ -70,9 +49,9 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyStarted();
 
+				this.started = true;
+				this.tokenSource = new CancellationTokenSource();
 				this.activityCallback = activity;
-				this.tokenSource = this.tokenSource ?? new CancellationTokenSource();
-
 				this.workers.Clear();
 
 				Log.Debug("Creating {0} workers.", this.minWorkers);
@@ -83,10 +62,10 @@
 		protected virtual Task StartWorker(Action<IWorkItem<T>, CancellationToken> activity)
 		{
 			Log.Verbose("Starting worker.");
-			var token = this.tokenSource.Token; // thread-safe copy
-			return Task.Factory.StartNew(() => this.PerformActivity(token, activity), TaskCreationOptions.LongRunning);
+			var token = this.tokenSource.Token; // copy on the stack
+			return Task.Factory.StartNew(() => this.RunActivity(token, activity), TaskCreationOptions.LongRunning);
 		}
-		protected virtual void PerformActivity(CancellationToken token, Action<IWorkItem<T>, CancellationToken> activity)
+		protected virtual void RunActivity(CancellationToken token, Action<IWorkItem<T>, CancellationToken> activity)
 		{
 			using (var state = this.stateCallback())
 			{
@@ -99,11 +78,6 @@
 				Log.Verbose("Starting activity.");
 				activity(worker, token);
 			}
-		}
-
-		public virtual IEnumerable<Task> Workers
-		{
-			get { return this.workers; } // for test purposes only
 		}
 
 		public virtual bool Enqueue(Action<IWorkItem<T>> workItem)
@@ -119,10 +93,30 @@
 			}
 			catch (InvalidOperationException)
 			{
-				Log.Debug("Work no longer accepting additional items.");
+				Log.Debug("Workers no longer accepting additional items.");
 				return false;
 			}
 		}
+		public virtual void StartQueue()
+		{
+			Log.Debug("Starting work item queue.");
+			this.TryStartWorkers(this.WatchQueue);
+		}
+		protected virtual void WatchQueue(IWorkItem<T> worker, CancellationToken token)
+		{
+			try
+			{
+				foreach (var item in this.workItems.GetConsumingEnumerable(token))
+					item(worker);
+
+				this.workItems.Dispose();
+			}
+			catch (OperationCanceledException)
+			{
+				Log.Debug("Token has been canceled; operation canceled.");
+			}
+		}
+
 		public virtual void Restart()
 		{
 			Log.Info("Attempting to restart worker group.");
@@ -133,10 +127,12 @@
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
 
-				Log.Verbose("Canceling token to allow cleanup.");
-				this.tokenSource.Cancel(); // let the GC cleanup and perform dispose
+				Log.Verbose("Canceling active workers.");
+				this.tokenSource.Cancel(); // GC will perform dispose
 				this.tokenSource = new CancellationTokenSource();
-				this.StartWorker(this.Restart);
+
+				this.workers.Clear();
+				this.workers.Add(this.StartWorker(this.Restart));
 			}
 		}
 		protected virtual void Restart(IWorkItem<T> worker, CancellationToken token)
@@ -150,13 +146,12 @@
 					this.retrySleepTimeout.Sleep();
 				}
 
-				Log.Debug("Restart attempt succeeded, shutting down single worker and starting main activity.");
-				if (this.tokenSource != null)
-					this.tokenSource.Dispose();
-				this.tokenSource = null;
-
 				if (!this.disposed)
+				{
+					Log.Info("Restart attempt succeeded, shutting down single worker and starting main activity.");
+					this.started = false;
 					this.TryStartWorkers(this.activityCallback);
+				}
 			}
 		}
 
@@ -177,13 +172,18 @@
 		}
 		protected virtual void ThrowWhenAlreadyStarted()
 		{
-			if (this.tokenSource != null)
+			if (this.started)
 				throw new InvalidOperationException("The worker group has already been started.");
 		}
 		protected virtual void ThrowWhenNotStarted()
 		{
-			if (this.tokenSource == null)
+			if (!this.started)
 				throw new InvalidOperationException("The worker group has not yet been started.");
+		}
+
+		public virtual IEnumerable<Task> Workers
+		{
+			get { return this.workers; } // for test purposes only
 		}
 
 		public TaskWorkerGroup(int minWorkers, int maxWorkers)
@@ -222,14 +222,11 @@
 				Log.Debug("Shutting down worker group.");
 				this.workItems.CompleteAdding();
 
-				if (this.tokenSource != null)
-				{
-					Log.Verbose("Canceling active token.");
-					this.tokenSource.Cancel(); // GC will perform dispose
-					this.tokenSource = null;
-				}
+				if (this.tokenSource == null)
+					return;
 
-				this.workItems.Dispose();
+				Log.Verbose("Canceling active token.");
+				this.tokenSource.Cancel();
 				this.workers.Clear();
 			}
 		}
@@ -246,6 +243,7 @@
 		private Func<T> stateCallback;
 		private Func<bool> restartCallback;
 		private bool initialized;
+		private bool started;
 		private bool disposed;
 	}
 }
