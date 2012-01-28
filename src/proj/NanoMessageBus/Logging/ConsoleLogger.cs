@@ -6,30 +6,33 @@ namespace NanoMessageBus.Logging
 	{
 		public virtual void Verbose(string message, params object[] values)
 		{
-			this.Log(ConsoleColor.DarkGreen, message, values);
+			this.Log(ConsoleColor.DarkGreen, Threshold.Verbose, message, values);
 		}
 		public virtual void Debug(string message, params object[] values)
 		{
-			this.Log(ConsoleColor.Green, message, values);
+			this.Log(ConsoleColor.Green, Threshold.Debug, message, values);
 		}
 		public virtual void Info(string message, params object[] values)
 		{
-			this.Log(ConsoleColor.White, message, values);
+			this.Log(ConsoleColor.White, Threshold.Info, message, values);
 		}
 		public virtual void Warn(string message, params object[] values)
 		{
-			this.Log(ConsoleColor.Yellow, message, values);
+			this.Log(ConsoleColor.Yellow, Threshold.Warn, message, values);
 		}
 		public virtual void Error(string message, params object[] values)
 		{
-			this.Log(ConsoleColor.DarkRed, message, values);
+			this.Log(ConsoleColor.DarkRed, Threshold.Error, message, values);
 		}
 		public virtual void Fatal(string message, params object[] values)
 		{
-			this.Log(ConsoleColor.Red, message, values);
+			this.Log(ConsoleColor.Red, Threshold.Fatal, message, values);
 		}
-		protected virtual void Log(ConsoleColor color, string message, params object[] values)
+		protected virtual void Log(ConsoleColor color, Threshold category, string message, params object[] values)
 		{
+			if (category < this.threshold)
+				return;
+
 			lock (Sync)
 			{
 				Console.ForegroundColor = color;
@@ -38,13 +41,15 @@ namespace NanoMessageBus.Logging
 			}
 		}
 
-		public ConsoleLogger(Type typeToLog)
+		public ConsoleLogger(Type typeToLog, Threshold threshold = Threshold.Info)
 		{
 			this.typeToLog = typeToLog;
+			this.threshold = threshold;
 		}
 
 		private static readonly object Sync = new object();
 		private readonly ConsoleColor originalColor = Console.ForegroundColor;
 		private readonly Type typeToLog;
+		private readonly Threshold threshold;
 	}
 }
