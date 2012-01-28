@@ -24,47 +24,38 @@
 
 				// TODO: it appears that if the infrastructure is down at startup, things never start working if/when it comes online
 				Log.Debug("Initializing workers for channel group '{0}'.", this.configuration.GroupName);
-				this.workers.Initialize(() =>
-				{
-					// TODO: get this under test: connecting *may* throw an exception (thus causing the restart activity)
-					// which then returns a null channel here
-					IMessagingChannel channel = null;
-					this.TryOperation(() =>
-						channel = this.Connect());
-					return channel;
-				}, this.TryConnect);
+				this.workers.Initialize(this.TryConnect, this.CanConnect);
 
-				if (!this.TryConnect() || !this.DispatchOnly)
+				if (!this.CanConnect() || !this.DispatchOnly)
 					return;
 
 				Log.Info("Connected. Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.StartQueue();
 			}
 		}
-		protected virtual IMessagingChannel Connect()
+		protected virtual bool CanConnect()
+		{
+			using (var channel = this.TryConnect())
+				return channel != null;
+		}
+		protected virtual IMessagingChannel TryConnect()
 		{
 			Log.Debug("Attempting to establish a channel within channel group '{0}'.", this.configuration.GroupName);
 
-			// if this ever throws, it's executed within the context of a worker under a TryOperation callback
-			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
-		}
-		protected virtual bool TryConnect()
-		{
 			try
 			{
-				using (this.Connect())
-					return true;
+				return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 			}
 			catch (ChannelConnectionException)
 			{
 				Log.Debug("The messaging infrastructure for channel group '{0}' is unavailable.", this.configuration.GroupName);
-				return false;
 			}
 			catch (ObjectDisposedException)
 			{
 				Log.Debug("Unable to establish a connection for channel group '{0}'; an underlying object has already been disposed.", this.configuration.GroupName);
-				return false;
 			}
+
+			return null;
 		}
 
 		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
