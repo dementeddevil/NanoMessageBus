@@ -261,7 +261,7 @@
 				this.channel.TxSelect();
 			}
 
-			if (this.configuration.ChannelBuffer <= 0)
+			if (this.configuration.ChannelBuffer <= 0 || this.configuration.DispatchOnly)
 				return;
 
 			Log.Debug("Buffering up to {0} message(s) on the channel.", this.configuration.ChannelBuffer);
