@@ -142,7 +142,7 @@
 				Log.Verbose("Starting single restart worker à-la circuit-breaker pattern.");
 				while (!token.IsCancellationRequested && !this.restartCallback())
 				{
-					// TODO: sleep timeout should increase
+					// FUTURE: sleep timeout should increase
 					Log.Debug("Restart attempt failed, sleeping...");
 					this.retrySleepTimeout.Sleep();
 				}

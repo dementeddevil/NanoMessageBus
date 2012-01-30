@@ -18,6 +18,7 @@
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
 		/// <param name="completed">The callback to be invoked when the dispatch has completed.</param>
-		void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed);
+		/// <returns>A value indicating whether or not the envelope was queued for dispatch.</returns>
+		bool BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed);
 	}
 }

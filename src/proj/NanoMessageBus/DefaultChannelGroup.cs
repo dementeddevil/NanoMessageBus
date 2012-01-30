@@ -62,7 +62,7 @@
 			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 		}
 
-		public virtual void BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
+		public virtual bool BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
 		{
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
@@ -70,14 +70,13 @@
 			if (completed == null)
 				throw new ArgumentNullException("completed");
 
-			this.ThrowWhenDisposed(); // TODO: external threads can hit this and throw because this CG is being shutdown.
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			Log.Verbose("Adding message '{0}' to dispatch queue for channel group '{0}'.", envelope.Message.MessageId, this.configuration.GroupName);
-			this.workers.Enqueue(worker => this.TryOperation(() =>
+			Log.Verbose("Adding message '{0}' onto dispatch queue for channel group '{0}'.", envelope.Message.MessageId, this.configuration.GroupName);
+			return this.workers.Enqueue(worker => this.TryOperation(() =>
 			{
-				Log.Verbose("Pushing message '{0}' into the channel for dispatch for channel group '{0}'.", envelope.Message.MessageId, this.configuration.GroupName);
+				Log.Verbose("Pushing message '{0}' into messaging channel for dispatch for channel group '{0}'.", envelope.Message.MessageId, this.configuration.GroupName);
 
 				var channel = worker.State;
 				channel.Send(envelope);

@@ -174,17 +174,21 @@ namespace NanoMessageBus
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWorkers
 				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
+				.Returns(true)
 				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
 
 			channelGroup.Initialize();
 		};
 
 		Because of = () =>
-			channelGroup.BeginDispatch(envelope, trx =>
+			enqueued = channelGroup.BeginDispatch(envelope, trx =>
 			{
 				current = trx;
 				IncrementInvocations();
 			});
+
+		It should_indicate_the_message_was_enqueued = () =>
+			enqueued.ShouldBeTrue();
 
 		It should_pass_the_message_to_exactly_one_of_the_underlying_channels = () =>
 			mockChannel.Verify(x => x.Send(envelope), Times.Once());
@@ -196,6 +200,30 @@ namespace NanoMessageBus
 			current.ShouldEqual(mockChannel.Object.CurrentTransaction);
 
 		static IChannelTransaction current;
+		static bool enqueued;
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_the_underlying_workers_are_no_longer_enqueuing_envelope_for_dispatch : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+
+			mockWorkers
+				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
+				.Returns(false);
+
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			enqueued = channelGroup.BeginDispatch(envelope, trx => { });
+
+		It should_indicate_the_message_was_not_enqueued = () =>
+			enqueued.ShouldBeFalse();
+
+		static bool enqueued;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -276,6 +304,8 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+
 			channelGroup.Initialize();
 			channelGroup.Dispose();
 		};
@@ -283,8 +313,8 @@ namespace NanoMessageBus
 		Because of = () =>
 			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
 
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+		It should_NOT_throw_an_exception = () =>
+			thrown.ShouldBeNull();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
