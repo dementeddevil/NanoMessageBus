@@ -195,23 +195,35 @@
 
 		protected virtual void ThrowWhenDispatchOnly()
 		{
-			if (this.configuration.DispatchOnly)
-				throw new InvalidOperationException("Dispatch-only channels cannot receive messages.");
+			if (!this.configuration.DispatchOnly)
+				return;
+		
+			Log.Warn("Dispatch-only channels cannot receive messages.");
+			throw new InvalidOperationException("Dispatch-only channels cannot receive messages.");
 		}
 		protected virtual void ThrowWhenShuttingDown()
 		{
-			if (this.shutdown)
-				throw new ChannelShutdownException();
+			if (!this.shutdown)
+				return;
+
+			Log.Warn("The channel is shutting down.");
+			throw new ChannelShutdownException();
 		}
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(RabbitChannel).Name);
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The channel has been disposed.");
+			throw new ObjectDisposedException(typeof(RabbitChannel).Name);
 		}
 		protected virtual void ThrowWhenSubscriptionExists()
 		{
-			if (this.subscription != null)
-				throw new InvalidOperationException("The channel already has a receive callback.");
+			if (this.subscription == null)
+				return;
+
+			Log.Warn("A receive callback has already been specified.");
+			throw new InvalidOperationException("The channel already has a receive callback.");
 		}
 
 		protected virtual IChannelTransaction EnsureTransaction()

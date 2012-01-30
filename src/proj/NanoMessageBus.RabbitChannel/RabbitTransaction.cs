@@ -94,18 +94,27 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(RabbitTransaction).Name);
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The transaction has already been disposed.");
+			throw new ObjectDisposedException(typeof(RabbitTransaction).Name);
 		}
 		protected virtual void ThrowWhenRolledBack()
 		{
-			if (this.rolledBack)
-				throw new InvalidOperationException("Cannot perform this operation on a rolled-back transaction.");
+			if (!this.rolledBack)
+				return;
+
+			Log.Warn("Cannot perform this operation on a rolled-back transaction.");
+			throw new InvalidOperationException("Cannot perform this operation on a rolled-back transaction.");
 		}
 		protected virtual void ThrowWhenCommitted()
 		{
-			if (this.committed)
-				throw new InvalidOperationException("The transaction has already committed.");
+			if (!this.committed)
+				return;
+
+			Log.Warn("The transaction has already committed.");
+			throw new InvalidOperationException("The transaction has already committed.");
 		}
 
 		public RabbitTransaction(RabbitChannel channel, RabbitTransactionType transactionType)

@@ -104,8 +104,11 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(RabbitConnector).Name);
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The channel connector has been disposed.");
+			throw new ObjectDisposedException(typeof(RabbitConnector).Name);
 		}
 
 		public RabbitConnector(
