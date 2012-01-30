@@ -27,7 +27,7 @@
 			}
 			catch (SerializationException e)
 			{
-				Log.Warn("Unable to deserialize message: {0}", e.Message);
+				Log.Error("Unable to deserialize message: {0}", e.Message);
 				throw;
 			}
 			catch (DeadLetterException)
@@ -36,7 +36,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Warn("General deserialize error for message: {0}", e.Message);
+				Log.Error("General deserialize error for message: {0}", e.Message);
 				throw new SerializationException(e.Message, e);
 			}
 		}
@@ -97,12 +97,12 @@
 			}
 			catch (SerializationException e)
 			{
-				Log.Warn("Unable to serialize message {0}: {1}", message.MessageId, e.Message);
+				Log.Error("Unable to serialize message {0}: {1}", message.MessageId, e.Message);
 				throw;
 			}
 			catch (Exception e)
 			{
-				Log.Warn("General serialization failure for message {0}: {1}", message.MessageId, e.Message);
+				Log.Error("General serialization failure for message {0}: {1}", message.MessageId, e.Message);
 				throw new SerializationException(e.Message, e);
 			}
 		}
