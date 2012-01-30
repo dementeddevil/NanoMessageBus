@@ -16,10 +16,10 @@
 
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (Initialize).");
 				if (this.initialized)
 				{
-					Log.Verbose("Exiting critical section (already initialized).");
+					Log.Verbose("Exiting critical section (Initialize)--already initialized.");
 					return;
 				}
 
@@ -31,14 +31,14 @@
 
 				if (!this.DispatchOnly)
 				{
-					Log.Verbose("Exiting critical section (full-duplex configuration).");
+					Log.Verbose("Exiting critical section (Initialize)--full-duplex configuration.");
 					return;
 				}
 
 				Log.Info("Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.StartQueue();
 				this.TryOperation(() => { using (this.Connect()) { } });
-				Log.Verbose("Exiting critical section.");
+				Log.Verbose("Exiting critical section (Initialize).");
 			}
 		}
 		protected virtual bool CanConnect()
@@ -100,7 +100,7 @@
 
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (BeginReceive).");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyReceiving();
@@ -109,7 +109,7 @@
 				this.receiving = true;
 				this.workers.StartActivity(worker => this.TryOperation(() =>
 					worker.State.Receive(context => worker.PerformOperation(() => callback(context)))));
-				Log.Verbose("Exiting critical section.");
+				Log.Verbose("Exiting critical section (BeginReceive).");
 			}
 		}
 		protected virtual void TryOperation(Action callback)
@@ -195,10 +195,10 @@
 			Log.Verbose("Disposing channel group.");
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (Dispose).");
 				if (this.disposed)
 				{
-					Log.Verbose("Exiting critical section (already disposed).");
+					Log.Verbose("Exiting critical section (Dispose)--already disposed.");
 					return;
 				}
 
@@ -206,7 +206,7 @@
 				this.workers.Dispose();
 
 				Log.Debug("Channel group disposed.");
-				Log.Verbose("Exiting critical section.");
+				Log.Verbose("Exiting critical section (Dispose).");
 			}
 		}
 

@@ -13,14 +13,14 @@
 			Log.Info("Initializing host.");
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (Initialize).");
 				this.ThrowWhenDisposed();
 
 				if (!this.initialized)
 					this.InitializeChannelGroups();
 
 				this.initialized = true;
-				Log.Verbose("Exiting critical section.");
+				Log.Verbose("Exiting critical section (Initialize).");
 			}
 			Log.Info("Host initialized.");
 		}
@@ -53,7 +53,7 @@
 
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (GetOutboundChannel).");
 
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
@@ -61,11 +61,11 @@
 				IChannelGroup group;
 				if (this.outbound.TryGetValue(channelGroup, out group) && group.DispatchOnly)
 				{
-					Log.Verbose("Exiting critical section (group found).");
+					Log.Verbose("Exiting critical section (GetOutboundChannel)--group found.");
 					return group;
 				}
 
-				Log.Verbose("Exiting critical section (key not found).");
+				Log.Verbose("Exiting critical section (GetOutboundChannel)--key not found.");
 				throw new KeyNotFoundException("Could not find a dispatch-only channel group from the key provided.");
 			}
 		}
@@ -79,7 +79,7 @@
 
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (Dispose).");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenReceiving();
@@ -88,7 +88,7 @@
 				foreach (var group in this.inbound.Values)
 					group.BeginReceive(callback);
 
-				Log.Verbose("Exiting critical section.");
+				Log.Verbose("Exiting critical section (Dispose).");
 			}
 
 			Log.Info("Receive operations started against {0} channel groups.", this.inbound.Count);
@@ -152,7 +152,7 @@
 
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section.");
+				Log.Verbose("Entering critical section (Dispose).");
 				if (this.disposed)
 					return;
 
@@ -166,7 +166,7 @@
 				foreach (var connector in this.connectors)
 					connector.Dispose();
 
-				Log.Verbose("Exiting critical section.");
+				Log.Verbose("Exiting critical section (Dispose).");
 			}
 
 			Log.Info("Host disposed.");
