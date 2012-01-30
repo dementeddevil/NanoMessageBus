@@ -35,10 +35,10 @@ namespace NanoMessageBus
 			Build(mockRootContainer.Object, null);
 
 		Because of = () =>
-			nestedResolver = rootResolver.CreateNestedResolver();
+			rootResolver.CreateNestedResolver().Dispose();
 
-		It should_return_a_self_reference_when_attempting_to_create_a_nested_resolver = () =>
-			rootResolver.ShouldEqual(nestedResolver);
+		It should_return_a_create_a_nested_resolver_that_never_can_dispose_the_underlying_container = () =>
+			mockRootContainer.Verify(x => x.Dispose(), Times.Never());
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]
@@ -48,10 +48,10 @@ namespace NanoMessageBus
 			Build(mockRootContainer.Object, (parent, name) => null);
 
 		Because of = () =>
-			nestedResolver = rootResolver.CreateNestedResolver();
+			rootResolver.CreateNestedResolver().Dispose();
 
-		It should_return_a_self_reference_when_attempting_to_create_a_nested_resolver = () =>
-			rootResolver.ShouldEqual(nestedResolver);
+		It should_return_a_create_a_nested_resolver_that_never_can_dispose_the_underlying_container = () =>
+			mockRootContainer.Verify(x => x.Dispose(), Times.Never());
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]

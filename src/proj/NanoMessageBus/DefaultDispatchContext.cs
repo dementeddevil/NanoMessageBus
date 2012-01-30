@@ -132,8 +132,9 @@
 				this.messageHeaders,
 				this.logicalMessages)
 			{
-				Persistent = true, // TODO: this should vary depending upon various registered message types
-				Expiration = SystemTime.UtcNow.AddDays(3) // TODO: this should also vary depending upon the message type
+				// TODO: these values should be configurable/vary depending upon the type of the primary logical message
+				Persistent = true,
+				Expiration = SystemTime.UtcNow.AddDays(3)
 			};
 		}
 		protected virtual void ThrowWhenNoMessages()

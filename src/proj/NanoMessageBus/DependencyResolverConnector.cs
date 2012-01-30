@@ -27,8 +27,6 @@
 			try
 			{
 				Log.Verbose("Decorating channel inside a DependencyResolverChannel.");
-
-				// TODO: if resolver returns a self reference, don't return a DependencyResolverChannel?
 				return new DependencyResolverChannel(channel, resolver.CreateNestedResolver());
 			}
 			catch
