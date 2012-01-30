@@ -121,28 +121,43 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(DefaultChannelGroup).Name);
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The channel group has been disposed.");
+			throw new ObjectDisposedException(typeof(DefaultChannelGroup).Name);
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (!this.initialized)
-				throw new InvalidOperationException("The channel group has not been initialized.");
+			if (this.initialized)
+				return;
+
+			Log.Warn("The channel group has not been initialized.");
+			throw new InvalidOperationException("The channel group has not been initialized.");
 		}
 		protected virtual void ThrowWhenFullDuplex()
 		{
-			if (!this.configuration.DispatchOnly)
-				throw new InvalidOperationException("Dispatch can only be performed using a dispatch-only channel group.");
+			if (this.configuration.DispatchOnly)
+				return;
+
+			Log.Warn("Dispatch can only be performed using a dispatch-only channel group.");
+			throw new InvalidOperationException("Dispatch can only be performed using a dispatch-only channel group.");
 		}
 		protected virtual void ThrowWhenDispatchOnly()
 		{
-			if (this.configuration.DispatchOnly)
-				throw new InvalidOperationException("Dispatch-only channel groups cannot receive messages.");
+			if (!this.configuration.DispatchOnly)
+				return;
+
+			Log.Warn("Dispatch-only channel groups cannot receive messages.");
+			throw new InvalidOperationException("Dispatch-only channel groups cannot receive messages.");
 		}
 		protected virtual void ThrowWhenAlreadyReceiving()
 		{
-			if (this.receiving)
-				throw new InvalidOperationException("A callback has already been provided.");
+			if (!this.receiving)
+				return;
+
+			Log.Warn("A callback has already been provided.");
+			throw new InvalidOperationException("A callback has already been provided.");
 		}
 
 		public DefaultChannelGroup(
