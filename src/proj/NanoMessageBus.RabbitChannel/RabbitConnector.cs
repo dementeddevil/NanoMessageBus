@@ -148,7 +148,7 @@
 				if (this.disposed)
 					return;
 
-				Log.Verbose("Disposing any active connection.");
+				Log.Verbose("Disposing any active connection(s).");
 
 				this.disposed = true;
 				this.Close(null, ConnectionState.Closed);
