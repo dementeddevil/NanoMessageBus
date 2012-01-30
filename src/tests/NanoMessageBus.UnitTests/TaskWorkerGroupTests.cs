@@ -421,7 +421,7 @@ namespace NanoMessageBus
 		Establish context = () => workerGroup.Initialize(BuildChannel, () =>
 		{
 			workerGroup.Dispose();
-			return false;
+			return true;
 		});
 
 		Because of = () => TryAndWait(() => workerGroup.StartActivity(x =>
@@ -431,6 +431,28 @@ namespace NanoMessageBus
 		}));
 
 		It should_not_resume_the_activity = () =>
+			invocations.ShouldEqual(1);
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_multiple_workers_attempt_to_restart_simultaneously : with_a_worker_group
+	{
+		Establish context = () => workerGroup.Initialize(BuildChannel, () =>
+		{
+			invocations++;
+			workerGroup.Restart(); // while this restart is running, start another
+			return true;
+		});
+
+		Because of = () => TryAndWait(() => workerGroup.StartActivity(x =>
+		{
+			if (invocations == 0)
+				workerGroup.Restart(); // kick off the restart
+			else
+				workerGroup.Dispose();
+		}));
+
+		It should_only_allow_a_single_restart_instance_at_a_time = () =>
 			invocations.ShouldEqual(1);
 	}
 

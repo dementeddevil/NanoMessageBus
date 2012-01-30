@@ -122,6 +122,11 @@
 
 			lock (this.sync)
 			{
+				if (this.restarting)
+					return;
+
+				this.restarting = true;
+
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
@@ -154,35 +159,50 @@
 				}
 
 				Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
-				this.started = false;
+				this.started = this.restarting = false;
 				this.TryStartWorkers(this.activityCallback);
 			}
 		}
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(TaskWorkerGroup<T>).Name);
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The work group has been disposed.");
+			throw new ObjectDisposedException(typeof(TaskWorkerGroup<T>).Name);
 		}
 		protected virtual void ThrowWhenInitialized()
 		{
-			if (this.initialized)
-				throw new InvalidOperationException("The host has already been initialized.");
+			if (!this.initialized)
+				return;
+
+			Log.Warn("The worker group has already been initialized.");
+			throw new InvalidOperationException("The work group has already been initialized.");
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (!this.initialized)
-				throw new InvalidOperationException("The host has not been initialized.");
+			if (this.initialized)
+				return;
+
+			Log.Warn("The worker group has not been initialized.");
+			throw new InvalidOperationException("The work group has not been initialized.");
 		}
 		protected virtual void ThrowWhenAlreadyStarted()
 		{
-			if (this.started)
-				throw new InvalidOperationException("The worker group has already been started.");
+			if (!this.started)
+				return;
+
+			Log.Warn("The worker group has already been started.");
+			throw new InvalidOperationException("The worker group has already been started.");
 		}
 		protected virtual void ThrowWhenNotStarted()
 		{
-			if (!this.started)
-				throw new InvalidOperationException("The worker group has not yet been started.");
+			if (this.started)
+				return;
+
+			Log.Warn("The worker group has not yet been started.");
+			throw new InvalidOperationException("The worker group has not yet been started.");
 		}
 
 		public virtual IEnumerable<Task> Workers
@@ -254,5 +274,6 @@
 		private bool initialized;
 		private bool started;
 		private bool disposed;
+		private bool restarting;
 	}
 }
