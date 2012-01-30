@@ -16,8 +16,12 @@
 
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				if (this.initialized)
+				{
+					Log.Verbose("Exiting critical section (already initialized).");
 					return;
+				}
 
 				this.initialized = true;
 				this.ThrowWhenDisposed();
@@ -26,11 +30,15 @@
 				this.workers.Initialize(this.TryConnect, this.CanConnect);
 
 				if (!this.DispatchOnly)
+				{
+					Log.Verbose("Exiting critical section (full-duplex configuration).");
 					return;
+				}
 
 				Log.Info("Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
 				this.workers.StartQueue();
 				this.TryOperation(() => { using (this.Connect()) { } });
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 		protected virtual bool CanConnect()
@@ -92,6 +100,7 @@
 
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyReceiving();
@@ -100,6 +109,7 @@
 				this.receiving = true;
 				this.workers.StartActivity(worker => this.TryOperation(() =>
 					worker.State.Receive(context => worker.PerformOperation(() => callback(context)))));
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 		protected virtual void TryOperation(Action callback)
@@ -185,13 +195,18 @@
 			Log.Verbose("Disposing channel group.");
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				if (this.disposed)
+				{
+					Log.Verbose("Exiting critical section (already disposed).");
 					return;
+				}
 
 				this.disposed = true;
 				this.workers.Dispose();
 
 				Log.Debug("Channel group disposed.");
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 

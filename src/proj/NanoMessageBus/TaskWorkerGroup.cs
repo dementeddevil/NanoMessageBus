@@ -22,12 +22,14 @@
 
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenInitialized();
 
 				this.initialized = true;
 				this.stateCallback = state;
 				this.restartCallback = restart;
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 
@@ -45,6 +47,7 @@
 
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyStarted();
@@ -59,6 +62,8 @@
 				Log.Debug("Creating {0} workers.", this.minWorkers);
 				for (var i = 0; i < this.minWorkers; i++)
 					this.workers.Add(this.StartWorker(() => this.RunActivity(token, activity)));
+
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 		protected virtual Task StartWorker(Action activity)
@@ -122,8 +127,13 @@
 
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
+
 				if (this.restarting)
+				{
+					Log.Verbose("Exiting critical section (already restarting).");
 					return;
+				}
 
 				this.restarting = true;
 
@@ -138,6 +148,8 @@
 
 				this.workers.Clear();
 				this.workers.Add(this.StartWorker(() => this.Restart(token)));
+
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 		protected virtual void Restart(CancellationToken token)
@@ -152,15 +164,19 @@
 
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				if (this.disposed)
 				{
 					Log.Debug("Unable to resume activity, worker group has been disposed.");
+					Log.Verbose("Exiting critical section (already disposed).");
 					return;
 				}
 
 				Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
 				this.started = this.restarting = false;
 				this.TryStartWorkers(this.activityCallback);
+
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 
@@ -239,8 +255,12 @@
 			Log.Verbose("Disposing worker group.");
 			lock (this.sync)
 			{
+				Log.Verbose("Entering critical section.");
 				if (this.disposed)
+				{
+					Log.Verbose("Exiting critical section (already disposed).");
 					return;
+				}
 
 				this.disposed = true;
 
@@ -249,6 +269,7 @@
 				if (this.tokenSource == null)
 				{
 					Log.Verbose("No active token to be canceled.");
+					Log.Verbose("Exiting critical section (no token to dispose).");
 					return;
 				}
 
@@ -257,6 +278,7 @@
 				this.workers.Clear();
 
 				Log.Debug("Worker group disposed.");
+				Log.Verbose("Exiting critical section.");
 			}
 		}
 
