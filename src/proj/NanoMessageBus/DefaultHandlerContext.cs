@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using Logging;
 
 	public class DefaultHandlerContext : IHandlerContext
 	{
@@ -35,8 +36,11 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(DefaultHandlerContext).Name);
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The handler context has already been disposed.");
+			throw new ObjectDisposedException(typeof(DefaultHandlerContext).Name);
 		}
 
 		public DefaultHandlerContext(IDeliveryContext delivery, IDispatchTable dispatchTable)
@@ -67,6 +71,7 @@
 			this.continueHandling = false;
 		}
 
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultHandlerContext));
 		private readonly IDeliveryContext delivery;
 		private readonly IDispatchTable dispatchTable;
 		private bool continueHandling;

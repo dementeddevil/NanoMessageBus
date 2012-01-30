@@ -61,6 +61,6 @@
 		private readonly T container;
 		private readonly Func<T, int, T> create;
 		private readonly int depth;
-		private bool disposable;
+		private readonly bool disposable;
 	}
 }

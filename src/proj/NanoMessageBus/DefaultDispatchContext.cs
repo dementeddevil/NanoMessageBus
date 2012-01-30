@@ -139,13 +139,19 @@
 		}
 		protected virtual void ThrowWhenNoMessages()
 		{
-			if (this.logicalMessages.Count == 0)
-				throw new InvalidOperationException("No messages have been provided to dispatch.");
+			if (this.logicalMessages.Count > 0)
+				return;
+
+			Log.Warn("No messages have been provided to dispatch.");
+			throw new InvalidOperationException("No messages have been provided to dispatch.");
 		}
 		protected virtual void ThrowWhenDispatched()
 		{
-			if (this.dispatched)
-				throw new InvalidOperationException("The set of messages has already been dispatched.");
+			if (!this.dispatched)
+				return;
+		
+			Log.Warn("The set of messages has already been dispatched.");
+			throw new InvalidOperationException("The set of messages has already been dispatched.");
 		}
 
 		public DefaultDispatchContext(IDeliveryContext delivery, IDispatchTable dispatchTable)

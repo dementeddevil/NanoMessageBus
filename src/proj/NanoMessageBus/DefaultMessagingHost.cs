@@ -85,18 +85,27 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (this.disposed)
-				throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
+			if (!this.disposed)
+				return;
+		
+			Log.Warn("The messaging host has been disposed.");
+			throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (!this.initialized)
-				throw new InvalidOperationException("The host has not been initialized.");
+			if (this.initialized)
+				return;
+
+			Log.Warn("The messaging host has not been initialized.");
+			throw new InvalidOperationException("The host has not been initialized.");
 		}
 		protected virtual void ThrowWhenReceiving()
 		{
-			if (this.receiving)
-				throw new InvalidOperationException("A callback has already been provided.");
+			if (!this.receiving)
+				return;
+
+			Log.Warn("Already receiving--a callback has been provided.");
+			throw new InvalidOperationException("A callback has already been provided.");
 		}
 
 		public DefaultMessagingHost(IEnumerable<IChannelConnector> connectors, ChannelGroupFactory factory)
