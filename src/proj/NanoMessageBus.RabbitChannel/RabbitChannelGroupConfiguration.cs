@@ -269,7 +269,7 @@
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultDeadLetterExchange = "dead-letters";
 		private const string DefaultAppId = "rabbit-endpoint";
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitChannelGroupConfiguration));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannelGroupConfiguration));
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 	}

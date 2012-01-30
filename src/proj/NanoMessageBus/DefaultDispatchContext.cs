@@ -153,7 +153,7 @@
 			this.dispatchTable = dispatchTable;
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultDispatchContext));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDispatchContext));
 		private readonly IDictionary<string, string> messageHeaders = new Dictionary<string, string>();
 		private readonly ICollection<object> logicalMessages = new LinkedList<object>();
 		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();

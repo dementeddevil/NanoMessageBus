@@ -146,7 +146,7 @@
 			}
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitTransaction));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitTransaction));
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
 		private readonly RabbitChannel channel;
 		private readonly RabbitTransactionType transactionType;

@@ -174,8 +174,21 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			subscription.Dispose();
 
-		private It should_dispose_the_subscription = () => 
+		It should_dispose_the_subscription = () => 
 			mockRealSubscription.Verify(x => x.Dispose(), Times.Once());
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_disposing_a_subscription_which_throws_an_exception : using_a_subscription
+	{
+		Establish context = () =>
+			mockRealSubscription.Setup(x => x.Dispose()).Throws(new Exception());
+
+		Because of = () =>
+			subscription.Dispose();
+
+		It should_suppress_the_exception = () =>
+			thrown.ShouldEqual(null);
 	}
 
 	public abstract class using_a_subscription
@@ -183,6 +196,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			invocations = 0;
+			thrown = null;
 			mockRealSubscription = new Mock<Subscription>();
 			subscription = new RabbitSubscription(mockRealSubscription.Object);
 		};
@@ -196,6 +210,7 @@ namespace NanoMessageBus.RabbitChannel
 			subscription.Dispose();
 			return true;
 		};
+
 		protected static Exception thrown;
 	}
 }

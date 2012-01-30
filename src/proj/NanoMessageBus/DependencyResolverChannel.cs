@@ -85,7 +85,7 @@
 			this.resolver.Dispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DependencyResolverChannel));
+		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverChannel));
 		private readonly IMessagingChannel channel;
 		private readonly IDependencyResolver resolver;
 		private IDependencyResolver currentResolver;

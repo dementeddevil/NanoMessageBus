@@ -29,6 +29,6 @@
 			// no op
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitDispatchTable));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitDispatchTable));
 	}
 }

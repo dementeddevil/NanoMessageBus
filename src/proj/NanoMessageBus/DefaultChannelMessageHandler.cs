@@ -60,7 +60,7 @@
 			this.routes = routes;
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultChannelMessageHandler));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelMessageHandler));
 		private readonly IHandlerContext context;
 		private readonly IRoutingTable routes;
 	}

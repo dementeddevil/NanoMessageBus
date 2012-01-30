@@ -74,7 +74,7 @@
 				.Count(route => route.Handle(context, message));
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultRoutingTable));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultRoutingTable));
 		private readonly ICollection<Type> registeredHandlers = new HashSet<Type>();
 		private readonly IDictionary<Type, List<ISequencedHandler>> registeredRoutes =
 			new Dictionary<Type, List<ISequencedHandler>>();

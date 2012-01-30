@@ -30,10 +30,6 @@
 		protected Subscription()
 		{
 		}
-		~Subscription()
-		{
-			this.Dispose(false);
-		}
 
 		public virtual void Dispose()
 		{
@@ -42,17 +38,8 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing)
-				return;
-
-			try
-			{
+			if (disposing)
 				this.subscription.Close();
-			}
-			catch
-			{
-				return;
-			}
 		}
 
 		private readonly RabbitMQ.Client.MessagePatterns.Subscription subscription;

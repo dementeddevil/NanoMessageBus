@@ -181,7 +181,7 @@
 				throw new ChannelConnectionException(exception.Message, exception);
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitConnector));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitConnector));
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;
 		private readonly int shutdownTimeout;

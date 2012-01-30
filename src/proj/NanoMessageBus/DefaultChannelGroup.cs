@@ -179,7 +179,7 @@
 			}
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultChannelGroup));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelGroup));
 		private readonly object sync = new object();
 		private readonly IChannelConnector connector;
 		private readonly IChannelGroupConfiguration configuration;

@@ -19,6 +19,6 @@
 			return new DefaultChannelGroup(connector, configuration, workers);
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultChannelGroupFactory));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelGroupFactory));
 	}
 }

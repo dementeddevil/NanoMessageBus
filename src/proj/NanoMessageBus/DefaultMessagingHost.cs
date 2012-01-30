@@ -156,7 +156,7 @@
 			groups.Clear();
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DefaultMessagingHost));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultMessagingHost));
 		private readonly object sync = new object();
 		private readonly IDictionary<string, IChannelGroup> inbound = new Dictionary<string, IChannelGroup>();
 		private readonly IDictionary<string, IChannelGroup> outbound = new Dictionary<string, IChannelGroup>();

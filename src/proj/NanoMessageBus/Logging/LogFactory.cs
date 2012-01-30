@@ -12,14 +12,40 @@
 		/// </summary>
 		static LogFactory()
 		{
-			var logger = new NullLogger();
-			Builder = type => logger;
+			LogWith(new NullLogger());
 		}
 
 		/// <summary>
-		/// Gets or sets the log builder of the configured logger.  This should be invoked to return a new logging instance.
+		/// Directs all logging output to the logger specified.
 		/// </summary>
-		public static Func<Type, ILog> Builder { get; set; }
+		/// <param name="logger">The logger to which all logging information should be directed.</param>
+		public static void LogWith(ILog logger)
+		{
+			logger = logger ?? new NullLogger();
+			LogWith(type => logger);
+		}
+
+		/// <summary>
+		/// Directs all logging output to the logger callback specified.
+		/// </summary>
+		/// <param name="logger">The logger to which all logging information should be directed.</param>
+		public static void LogWith(Func<Type, ILog> logger)
+		{
+			var nullLogger = new NullLogger();
+			configured = logger ?? (type => nullLogger);
+		}
+
+		/// <summary>
+		/// Obtains a reference to the configured logger instance.
+		/// </summary>
+		/// <param name="typeToLog">The type to be logged.</param>
+		/// <returns>A reference to the configured logger instance</returns>
+		public static ILog Build(Type typeToLog)
+		{
+			return configured(typeToLog);
+		}
+
+		private static Func<Type, ILog> configured;
 
 		private class NullLogger : ILog
 		{

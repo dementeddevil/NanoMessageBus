@@ -61,7 +61,7 @@
 				this.connector.Dispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(DependencyResolverConnector));
+		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverConnector));
 		private readonly IChannelConnector connector;
 	}
 }

@@ -174,7 +174,7 @@
 		private const string ContentType = "application/vnd.nmb.rabbit-msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitMessageAdapter));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitMessageAdapter));
 		private readonly RabbitChannelGroupConfiguration configuration;
 	}
 }

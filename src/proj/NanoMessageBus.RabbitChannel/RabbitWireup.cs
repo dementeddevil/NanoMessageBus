@@ -65,7 +65,7 @@
 			this.ConnectionFactory = new ConnectionFactory();
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitWireup));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitWireup));
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
 		private readonly ICollection<RabbitChannelGroupConfiguration> configurations =
 			new LinkedList<RabbitChannelGroupConfiguration>();

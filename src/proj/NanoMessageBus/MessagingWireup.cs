@@ -67,7 +67,7 @@
 			return host;
 		}
 
-		private static readonly ILog Log = LogFactory.Builder(typeof(MessagingWireup));
+		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
 		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
 		private Action<IDeliveryContext> receive;
 		private IRoutingTable routingTable;

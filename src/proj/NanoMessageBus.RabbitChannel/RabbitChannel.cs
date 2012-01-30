@@ -302,7 +302,7 @@
 
 		private const bool ContinueReceiving = true;
 		private const bool FinishedReceiving = false; // returning false means the receiving handler will exit.
-		private static readonly ILog Log = LogFactory.Builder(typeof(RabbitChannel));
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannel));
 		private readonly IModel channel;
 		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;
