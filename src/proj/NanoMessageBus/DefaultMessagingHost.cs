@@ -128,7 +128,7 @@
 			if (!disposing)
 				return;
 
-			Log.Info("Shutting down host.");
+			Log.Info("Disposing host.");
 
 			lock (this.sync)
 			{
@@ -146,7 +146,7 @@
 					connector.Dispose();
 			}
 
-			Log.Info("Host shutdown complete.");
+			Log.Info("Host disposed.");
 		}
 		private static void Dispose(IDictionary<string, IChannelGroup> groups)
 		{

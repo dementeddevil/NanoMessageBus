@@ -167,14 +167,16 @@
 			if (!disposing)
 				return;
 
+			Log.Verbose("Disposing channel group.");
 			lock (this.sync)
 			{
 				if (this.disposed)
 					return;
 
-				Log.Debug("Shutting down channel group.");
 				this.disposed = true;
 				this.workers.Dispose();
+
+				Log.Debug("Channel group disposed.");
 			}
 		}
 

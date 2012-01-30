@@ -137,22 +137,22 @@
 		}
 		protected virtual void Restart(CancellationToken token)
 		{
+			Log.Verbose("Starting single restart worker à-la circuit-breaker pattern.");
+			while (!token.IsCancellationRequested && !this.restartCallback())
+			{
+				// FUTURE: sleep timeout should increase
+				Log.Debug("Restart attempt failed, sleeping...");
+				this.retrySleepTimeout.Sleep();
+			}
+
 			lock (this.sync)
 			{
-				Log.Verbose("Starting single restart worker à-la circuit-breaker pattern.");
-				while (!token.IsCancellationRequested && !this.restartCallback())
-				{
-					// FUTURE: sleep timeout should increase
-					Log.Debug("Restart attempt failed, sleeping...");
-					this.retrySleepTimeout.Sleep();
-				}
+				if (this.disposed)
+					return;
 
-				if (!this.disposed)
-				{
-					Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
-					this.started = false;
-					this.TryStartWorkers(this.activityCallback);
-				}
+				Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
+				this.started = false;
+				this.TryStartWorkers(this.activityCallback);
 			}
 		}
 
@@ -213,6 +213,7 @@
 			if (!disposing)
 				return;
 
+			Log.Verbose("Disposing worker group.");
 			lock (this.sync)
 			{
 				if (this.disposed)
@@ -220,15 +221,19 @@
 
 				this.disposed = true;
 
-				Log.Debug("Shutting down worker group.");
 				this.workItems.CompleteAdding();
 
 				if (this.tokenSource == null)
+				{
+					Log.Verbose("No active token to be canceled.");
 					return;
+				}
 
 				Log.Verbose("Canceling active token.");
 				this.tokenSource.Cancel();
 				this.workers.Clear();
+
+				Log.Debug("Worker group disposed.");
 			}
 		}
 
