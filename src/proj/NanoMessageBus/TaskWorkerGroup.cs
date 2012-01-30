@@ -148,7 +148,10 @@
 			lock (this.sync)
 			{
 				if (this.disposed)
+				{
+					Log.Debug("Unable to resume activity, worker group has been disposed.");
 					return;
+				}
 
 				Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
 				this.started = false;

@@ -415,31 +415,24 @@ namespace NanoMessageBus
 			invocations.ShouldEqual(1);
 	}
 
-	////[Ignore("TODO")]
-	////[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
-	////public class when_restart_is_invoked_multiple_times_almost_simultaneously : with_a_worker_group
-	////{
-	////    Establish context = () =>
-	////    {
-	////        minWorkers = 2;
-	////        maxWorkers = 2;
-	////        Build();
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_the_worker_group_is_disposed_while_restarting : with_a_worker_group
+	{
+		Establish context = () => workerGroup.Initialize(BuildChannel, () =>
+		{
+			workerGroup.Dispose();
+			return false;
+		});
 
-	////        workerGroup.Initialize(BuildChannel, () =>
-	////        {
-	////            Interlocked.Increment(ref invocations);
-	////            return true;
-	////        });
+		Because of = () => TryAndWait(() => workerGroup.StartActivity(x =>
+		{
+			invocations++;
+			workerGroup.Restart();
+		}));
 
-	////        workerGroup.StartActivity(x => workerGroup.Restart());
-	////    };
-
-	////    Because of = () =>
-	////        TryAndWait(() => { });
-
-	////    It should_only_allow_a_single_restart_process_to_occur_at_the_same_time = () =>
-	////        invocations.ShouldEqual(1);
-	////}
+		It should_not_resume_the_activity = () =>
+			invocations.ShouldEqual(1);
+	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_disposing_an_active_worker_group : with_a_worker_group
@@ -470,6 +463,8 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			SystemTime.SleepResolver = x => { };
+
 			workerGroup = null;
 			thrown = null;
 			minWorkers = 1;
@@ -499,7 +494,10 @@ namespace NanoMessageBus
 		}
 
 		Cleanup after = () =>
+		{
 			workerGroup.Dispose();
+			SystemTime.SleepResolver = null;
+		};
 
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static TaskWorkerGroup<IMessagingChannel> workerGroup;
