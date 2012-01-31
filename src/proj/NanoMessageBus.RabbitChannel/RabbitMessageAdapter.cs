@@ -119,8 +119,10 @@
 				? ContentType : ContentType + "+" + serializer.ContentFormat;
 
 			properties.SetPersistent(message.Persistent);
-			properties.Expiration = message.Expiration == DateTime.MinValue
-				? string.Empty : message.Expiration.ToString(CultureInfo.InvariantCulture);
+
+			var expiration = message.Expiration;
+			properties.Expiration = (expiration == DateTime.MinValue || expiration == DateTime.MaxValue)
+				? string.Empty : expiration.ToString(CultureInfo.InvariantCulture);
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();
