@@ -36,6 +36,11 @@
 		Uri ReturnAddress { get; }
 
 		/// <summary>
+		/// Gets a reference to the object instance used to build new, outbound channel messages.
+		/// </summary>
+		IChannelMessageBuilder MessageBuilder { get; }
+
+		/// <summary>
 		/// Gets the length of time to await the receipt of a message from a channel before resume other work.
 		/// </summary>
 		TimeSpan ReceiveTimeout { get; }

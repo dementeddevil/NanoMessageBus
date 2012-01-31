@@ -262,6 +262,35 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_channel_message_builder_is_specified : using_channel_config
+	{
+		It should_return_the_default_channel_message_builder = () =>
+			config.MessageBuilder.ShouldBeOfType<DefaultChannelMessageBuilder>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_channel_message_builder_instance_is_specified : using_channel_config
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => config.WithChannelMessageBuilder(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_channel_message_builder_instance_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithChannelMessageBuilder(builder);
+
+		It should_return_the_instance_specified = () =>
+			config.MessageBuilder.ShouldEqual(builder);
+
+		static readonly IChannelMessageBuilder builder = new Mock<IChannelMessageBuilder>().Object;
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_no_return_address_is_specified_on_dispatch_only_endpoints : using_channel_config
 	{
 		It should_not_have_a_return_address = () =>

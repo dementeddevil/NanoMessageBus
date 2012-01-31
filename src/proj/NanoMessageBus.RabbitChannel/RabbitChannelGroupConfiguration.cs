@@ -68,6 +68,7 @@
 		public virtual string GroupName { get; private set; }
 		public virtual string InputQueue { get; private set; }
 		public virtual Uri ReturnAddress { get; private set; } // null for send-only endpoints
+		public virtual IChannelMessageBuilder MessageBuilder { get; private set; }
 		public virtual bool DispatchOnly { get; private set; }
 		public virtual int MinWorkers { get; private set; }
 		public virtual int MaxWorkers { get; private set; }
@@ -181,6 +182,14 @@
 			this.ChannelBuffer = maxMessageBufer;
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithChannelMessageBuilder(IChannelMessageBuilder builder)
+		{
+			if (builder == null)
+				throw new ArgumentNullException("builder");
+
+			this.MessageBuilder = builder;
+			return this;
+		}
 		public virtual RabbitChannelGroupConfiguration WithReturnAddress(Uri address)
 		{
 			if (address == null)
@@ -259,6 +268,8 @@
 			this.DispatchOnly = true;
 			this.DurableQueue = true;
 			this.MessageTypes = new Type[0];
+
+			this.MessageBuilder = new DefaultChannelMessageBuilder();
 		}
 
 		private const int DefaultWorkerCount = 1;
