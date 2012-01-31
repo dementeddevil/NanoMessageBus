@@ -28,7 +28,7 @@
 			Guid correlationId,
 			Uri returnAddress,
 			IDictionary<string, string> headers,
-			object[] messages)
+			ICollection<object> messages)
 		{
 			var message = new ChannelMessage(Guid.NewGuid(), correlationId, returnAddress, headers, messages)
 			{

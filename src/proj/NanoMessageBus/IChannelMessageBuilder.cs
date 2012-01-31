@@ -23,6 +23,6 @@
 			Guid correlationId,
 			Uri returnAddress,
 			IDictionary<string, string> headers,
-			object[] messages);
+			ICollection<object> messages);
 	}
 }
