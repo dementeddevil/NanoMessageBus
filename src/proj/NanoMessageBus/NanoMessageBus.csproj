@@ -53,11 +53,13 @@
     <Compile Include="DeadLetterException.cs" />
     <Compile Include="DefaultChannelGroup.cs" />
     <Compile Include="DefaultChannelGroupFactory.cs" />
+    <Compile Include="DefaultChannelMessageBuilder.cs" />
     <Compile Include="DefaultChannelMessageHandler.cs" />
     <Compile Include="DefaultDependencyResolver.cs" />
     <Compile Include="DefaultDispatchContext.cs" />
     <Compile Include="DefaultHandlerContext.cs" />
     <Compile Include="DefaultMessagingHost.cs" />
+    <Compile Include="IChannelMessageBuilder.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\ExtensionMethods.cs" />
     <Compile Include="Logging\ILog.cs" />
