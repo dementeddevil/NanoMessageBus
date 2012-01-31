@@ -94,11 +94,6 @@ namespace NanoMessageBus
 
 		It should_default_to_a_persistent_channel_message = () =>
 			message.Persistent.ShouldBeTrue();
-
-		It should_default_the_persistent_channel_message_expiration_to_3_days = () =>
-			message.Expiration.ShouldBeCloseTo(ThreeDaysFromNow, TimeSpan.FromSeconds(1));
-
-		static readonly DateTime ThreeDaysFromNow = SystemTime.UtcNow.AddDays(3);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -477,6 +472,7 @@ namespace NanoMessageBus
 		{
 			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockConfig.Setup(x => x.ReturnAddress).Returns(OutgoingReturnAddress);
+			mockConfig.Setup(x => x.MessageBuilder).Returns(new DefaultChannelMessageBuilder());
 
 			mockMessage = new Mock<ChannelMessage>();
 			mockMessage.Setup(x => x.ReturnAddress).Returns(IncomingReturnAddress);

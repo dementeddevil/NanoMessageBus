@@ -161,6 +161,8 @@ namespace NanoMessageBus
 		{
 			mockDelivery = new Mock<IDeliveryContext>();
 			mockDelivery.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
+			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
+
 			mockDispatchTable = new Mock<IDispatchTable>();
 			thrown = null;
 

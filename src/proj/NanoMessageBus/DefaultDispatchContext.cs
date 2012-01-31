@@ -88,10 +88,10 @@
 		public virtual void Reply()
 		{
 			var message = this.delivery.CurrentMessage;
-			var returnAddress = message.ReturnAddress;
+			var incomingReturnAddress = message.ReturnAddress;
 
 			Log.Verbose("Replying to message.");
-			if (returnAddress == null)
+			if (incomingReturnAddress == null)
 				Log.Debug("Incoming message '{0}' contains no return address.", message.MessageId);
 
 			if (this.correlationIdentifier == Guid.Empty)
@@ -101,14 +101,15 @@
 				this.correlationIdentifier = this.delivery.CurrentMessage.CorrelationId;
 			}
 
-			this.Dispatch(returnAddress ?? ChannelEnvelope.DeadLetterAddress);
+			this.Dispatch(incomingReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
 		}
 		protected virtual void Dispatch(params Uri[] targets)
 		{
 			this.ThrowWhenDispatched();
 			this.ThrowWhenNoMessages();
 
-			var message = this.BuildMessage();
+			var message = this.builder.Build(
+				this.correlationIdentifier, this.returnAddress, this.messageHeaders, this.logicalMessages);
 			var envelope = new ChannelEnvelope(message, targets);
 
 			Log.Verbose("Dispatching message '{0}' with correlation identifier '{1}' to {2} recipients.",
@@ -122,20 +123,6 @@
 			var type = this.logicalMessages.First().GetType();
 			var discovered = (this.dispatchTable[type] ?? new Uri[0]).Concat(this.recipients).ToArray();
 			return discovered.Length == 0 ? new[] { ChannelEnvelope.DeadLetterAddress } : discovered;
-		}
-		protected virtual ChannelMessage BuildMessage()
-		{
-			return new ChannelMessage(
-				Guid.NewGuid(),
-				this.correlationIdentifier,
-				this.delivery.CurrentConfiguration.ReturnAddress,
-				this.messageHeaders,
-				this.logicalMessages)
-			{
-				// TODO: these values should be configurable/vary depending upon the type of the primary logical message
-				Persistent = true,
-				Expiration = SystemTime.UtcNow.AddDays(3)
-			};
 		}
 		protected virtual void ThrowWhenNoMessages()
 		{
@@ -158,6 +145,10 @@
 		{
 			this.delivery = delivery;
 			this.dispatchTable = dispatchTable;
+
+			var config = delivery.CurrentConfiguration;
+			this.builder = config.MessageBuilder;
+			this.returnAddress = config.ReturnAddress;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDispatchContext));
@@ -166,6 +157,8 @@
 		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();
 		private readonly IDeliveryContext delivery;
 		private readonly IDispatchTable dispatchTable;
+		private readonly IChannelMessageBuilder builder;
+		private readonly Uri returnAddress;
 		private Guid correlationIdentifier;
 		private bool dispatched;
 	}
