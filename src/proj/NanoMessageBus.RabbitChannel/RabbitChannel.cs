@@ -65,22 +65,24 @@
 			{
 				Log.Verbose("Translating wire-specific message into channel message.");
 				this.CurrentMessage = this.adapter.Build(message);
+
+				Log.Info("Routing message '{0}' to configured receiver callback.", messageId);
 				callback(this);
 			}
 			catch (ChannelConnectionException)
 			{
-				Log.Debug("The channel has become unavailable, aborting current transaction.");
+				Log.Warn("The channel has become unavailable, aborting current transaction.");
 				this.CurrentTransaction.Dispose();
 				throw;
 			}
 			catch (SerializationException e)
 			{
-				Log.Info("Wire message {0} could not be deserialized; forwarding to poison message exchange.", messageId);
+				Log.Warn("Wire message {0} could not be deserialized; forwarding to poison message exchange.", messageId);
 				this.ForwardToPoisonMessageExchange(message, e);
 			}
 			catch (DeadLetterException)
 			{
-				Log.Debug("Wire message {0} has expired on the wire; forwarding to dead-letter exchange.", messageId);
+				Log.Info("Wire message {0} has expired on the wire; forwarding to dead-letter exchange.", messageId);
 				this.ForwardTo(message, this.configuration.DeadLetterExchange);
 			}
 			catch (Exception e)
@@ -133,7 +135,6 @@
 				: this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
 
 			Log.Verbose("Sending wire message '{0}' to {1} recipients.", message.MessageId(), envelope.Recipients.Count);
-
 			foreach (var recipient in envelope.Recipients.Select(x => x.ToPublicationAddress(this.configuration)))
 			{
 				this.ThrowWhenDisposed();
@@ -147,7 +148,7 @@
 
 			this.EnsureTransaction().Register(() => this.Try(() =>
 			{
-				Log.Verbose("'Publishing' wire message '{0}' to messaging infrastructure for recipient '{1}'.", message.MessageId(), recipient);
+				Log.Info("Dispatching wire message '{0}' to messaging infrastructure for recipient '{1}'.", message.MessageId(), recipient);
 				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body);
 			}));
 		}

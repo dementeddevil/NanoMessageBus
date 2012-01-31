@@ -28,9 +28,9 @@ namespace NanoMessageBus.Logging
 		{
 			this.Log(ConsoleColor.Red, Threshold.Fatal, message, values);
 		}
-		protected virtual void Log(ConsoleColor color, Threshold category, string message, params object[] values)
+		protected virtual void Log(ConsoleColor color, Threshold severity, string message, params object[] values)
 		{
-			if (category < this.threshold)
+			if (severity < this.threshold)
 				return;
 
 			lock (Sync)
