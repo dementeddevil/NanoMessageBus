@@ -81,10 +81,12 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			Log.Verbose("Adding message '{0}' onto dispatch queue for channel group '{0}'.", envelope.Message.MessageId, this.configuration.GroupName);
+			Log.Verbose("Adding envelope with message '{0}' onto dispatch queue for channel group '{0}'.",
+				envelope.Message.MessageId, this.configuration.GroupName);
 			return this.workers.Enqueue(worker => this.TryOperation(() =>
 			{
-				Log.Verbose("Pushing message '{0}' into messaging channel for dispatch for channel group '{0}'.", envelope.Message.MessageId, this.configuration.GroupName);
+				Log.Verbose("Pushing envelope with message '{0}' into messaging channel for dispatch for channel group '{0}'.",
+					envelope.Message.MessageId, this.configuration.GroupName);
 
 				var channel = worker.State;
 				channel.Send(envelope);

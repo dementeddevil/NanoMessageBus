@@ -11,7 +11,7 @@
 	public interface IOutboundChannel
 	{
 		/// <summary>
-		/// For dispatch-only channel groups, it adds the message provided to an in-memory queue for
+		/// For dispatch-only channel groups, it adds the envelope provided to an in-memory queue for
 		/// asynchronous dispatch; for full-duplex channel groups (send/receive), it throws an exception.
 		/// </summary>
 		/// <exception cref="ArgumentNullException"></exception>
