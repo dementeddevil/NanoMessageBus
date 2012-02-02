@@ -32,7 +32,7 @@
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{
-			this.CurrentContext.Send(envelope);
+			this.channel.Send(envelope);
 		}
 
 		public virtual void BeginShutdown()

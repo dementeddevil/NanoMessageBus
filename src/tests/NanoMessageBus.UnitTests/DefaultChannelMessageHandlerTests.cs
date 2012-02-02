@@ -24,7 +24,7 @@ namespace NanoMessageBus
 	public class when_constructing_with_a_null_routing_table : with_a_channel_message_handler
 	{
 		Because of = () =>
-			TryBuild(mockContext.Object, null);
+			TryBuild(mockHandlerContext.Object, null);
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -41,9 +41,9 @@ namespace NanoMessageBus
 
 		It should_route_each_logical_message_back_to_the_underlying_routing_table = () =>
 		{
-			mockRoutes.Verify(x => x.Route(mockContext.Object, "1"), Times.Once());
-			mockRoutes.Verify(x => x.Route(mockContext.Object, 2), Times.Once());
-			mockRoutes.Verify(x => x.Route(mockContext.Object, 3.0), Times.Once());
+			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, "1"), Times.Once());
+			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, 2), Times.Once());
+			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, 3.0), Times.Once());
 		};
 	}
 
@@ -54,7 +54,7 @@ namespace NanoMessageBus
 		{
 			mockMessage.Setup(x => x.Messages).Returns(new object[] { "1", 2 });
 			mockRoutes
-				.Setup(x => x.Route(mockContext.Object, "1"))
+				.Setup(x => x.Route(mockHandlerContext.Object, "1"))
 				.Callback<IHandlerContext, object>((ctx, msg) => continueProcessing = false);
 		};
 
@@ -63,8 +63,8 @@ namespace NanoMessageBus
 
 		It should_route_each_logical_message_back_to_the_underlying_routing_table = () =>
 		{
-			mockRoutes.Verify(x => x.Route(mockContext.Object, "1"), Times.Once());
-			mockRoutes.Verify(x => x.Route(mockContext.Object, 2), Times.Never());
+			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, "1"), Times.Once());
+			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, 2), Times.Never());
 		};
 	}
 
@@ -111,14 +111,14 @@ namespace NanoMessageBus
 			mockMessage.Setup(x => x.ReturnAddress).Returns(new Uri("http://www.google.com/"));
 			mockMessage.Setup(x => x.Headers).Returns(new Dictionary<string, string>());
 
-			mockRoutes.Setup(x => x.Route(mockContext.Object, 1)).Returns(1); // message is handled
-			mockRoutes.Setup(x => x.Route(mockContext.Object, 3.0)).Returns(1); // message is handled
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 1)).Returns(1); // message is handled
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 3.0)).Returns(1); // message is handled
 		};
 
 		Because of = () =>
 			handler.Handle(mockMessage.Object);
 
-		It should_put_the_ignored_messages_into_a_channel_envelope = () =>
+		It should_put_the_ignored_messages_into_a_channel_message = () =>
 			sentMessage.Messages.SequenceEqual(new object[] { "2", 4.0M }).ShouldBeTrue();
 
 		It should_add_a_unique_message_identifier_to_the_outgoing_channel_message = () =>
@@ -148,26 +148,43 @@ namespace NanoMessageBus
 			thrown = null;
 			sentMessage = null;
 			recipients = null;
-			mockContext = new Mock<IHandlerContext>();
+			queuedMessage = null;
+			queuedRecipients = new List<Uri>();
+
+			mockHandlerContext = new Mock<IHandlerContext>();
 			mockDelivery = new Mock<IDeliveryContext>();
+			mockDispatchContext = new Mock<IDispatchContext>();
 			mockRoutes = new Mock<IRoutingTable>();
 			mockMessage = new Mock<ChannelMessage>();
 			continueProcessing = true;
 
-			mockContext.Setup(x => x.ContinueHandling).Returns(() => continueProcessing);
-			mockContext
-				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
-				.Callback<ChannelEnvelope>(x => mockDelivery.Object.Send(x));
+			mockHandlerContext
+				.Setup(x => x.ContinueHandling)
+				.Returns(() => continueProcessing);
 
-			mockDelivery
-				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
-				.Callback<ChannelEnvelope>(x =>
+			mockHandlerContext
+				.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>()))
+				.Returns(mockDispatchContext.Object);
+
+			mockDispatchContext
+				.Setup(x => x.WithMessage(Moq.It.IsAny<ChannelMessage>()))
+				.Returns(mockDispatchContext.Object)
+				.Callback<ChannelMessage>(x => queuedMessage = x);
+
+			mockDispatchContext
+				.Setup(x => x.WithRecipient(Moq.It.IsAny<Uri>()))
+				.Returns(mockDispatchContext.Object)
+				.Callback<Uri>(x => queuedRecipients.Add(x));
+
+			mockDispatchContext
+				.Setup(x => x.Send())
+				.Callback(() =>
 				{
-					sentMessage = x.Message;
-					recipients = x.Recipients.ToArray();
+					sentMessage = queuedMessage;
+					recipients = queuedRecipients.ToArray();
 				});
 
-			TryBuild(mockContext.Object, mockRoutes.Object);
+			TryBuild(mockHandlerContext.Object, mockRoutes.Object);
 		};
 		protected static void TryBuild(IHandlerContext context, IRoutingTable routes)
 		{
@@ -179,7 +196,8 @@ namespace NanoMessageBus
 		}
 
 		protected static DefaultChannelMessageHandler handler;
-		protected static Mock<IHandlerContext> mockContext;
+		protected static Mock<IHandlerContext> mockHandlerContext;
+		protected static Mock<IDispatchContext> mockDispatchContext;
 		protected static Mock<IDeliveryContext> mockDelivery;
 		protected static Mock<IRoutingTable> mockRoutes;
 		protected static Mock<ChannelMessage> mockMessage;
@@ -188,6 +206,9 @@ namespace NanoMessageBus
 
 		protected static ChannelMessage sentMessage;
 		protected static Uri[] recipients;
+
+		private static List<Uri> queuedRecipients;
+		private static ChannelMessage queuedMessage;
 	}
 }
 

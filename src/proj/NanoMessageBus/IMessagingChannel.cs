@@ -29,5 +29,14 @@
 		/// The timeout, if any, has been specified as part of the channel configuration.
 		/// </remarks>
 		void Receive(Action<IDeliveryContext> callback);
+
+		/// <summary>
+		/// Sends the message specified to the destinations provided.
+		/// </summary>
+		/// <exception cref="ArgumentNullException"></exception>
+		/// <exception cref="ChannelConnectionException"></exception>
+		/// <exception cref="ChannelShutdownException"></exception>
+		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
+		void Send(ChannelEnvelope envelope);
 	}
 }

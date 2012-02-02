@@ -26,11 +26,6 @@
 			this.ThrowWhenDisposed();
 			return this.delivery.PrepareDispatch(message);
 		}
-		public virtual void Send(ChannelEnvelope message)
-		{
-			// TODO: refactor IDeliveryContext to remove Send()
-			this.delivery.Send(message);
-		}
 
 		public virtual bool ContinueHandling
 		{
@@ -45,8 +40,10 @@
 		{
 			this.DropMessage();
 
-			this.delivery.Send(new ChannelEnvelope(
-				this.delivery.CurrentMessage, new[] { ChannelEnvelope.LoopbackAddress }));
+			this.delivery.PrepareDispatch()
+				.WithMessage(this.delivery.CurrentMessage)
+				.WithRecipient(ChannelEnvelope.LoopbackAddress)
+				.Send();
 		}
 
 		protected virtual void ThrowWhenDisposed()

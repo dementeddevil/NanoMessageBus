@@ -45,7 +45,10 @@
 					message.Headers,
 					messages);
 
-			this.context.Send(new ChannelEnvelope(message, new[] { ChannelEnvelope.DeadLetterAddress }));
+			this.context.PrepareDispatch()
+				.WithMessage(message)
+				.WithRecipient(ChannelEnvelope.DeadLetterAddress)
+				.Send();
 		}
 
 		public DefaultChannelMessageHandler(IHandlerContext context, IRoutingTable routes)

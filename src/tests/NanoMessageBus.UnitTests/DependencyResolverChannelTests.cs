@@ -113,7 +113,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
-	public class when_the_receive_callback_specified_is_invoked : with_the_dependency_resolver_channel
+	public class when_the_specified_receive_callback_is_invoked : with_the_dependency_resolver_channel
 	{
 		Establish context = () =>
 		{
@@ -135,7 +135,6 @@ namespace NanoMessageBus
 			contextTransaction = context.CurrentTransaction;
 			contextConfiguration = context.CurrentConfiguration;
 			contextResolver = context.CurrentResolver;
-			delivery.Send(sent);
 		});
 
 		It should_create_a_nested_resolver = () =>
@@ -156,9 +155,6 @@ namespace NanoMessageBus
 		It should_expose_the_original_context_CurrentConfiguration = () =>
 			contextConfiguration.ShouldEqual(mockOriginal.Object.CurrentConfiguration);
 		
-		It should_send_through_the_original_context = () =>
-			mockOriginal.Verify(x => x.Send(sent), Times.Once());
-
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());
 

@@ -222,7 +222,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		Because of = () =>
 		{
-			channel.Receive(deliveryContext => deliveryContext.Send(BuildEnvelope(deliveryContext)));
+			channel.Receive(deliveryContext => channel.Send(BuildEnvelope(deliveryContext)));
 			Receive(message);
 		};
 		static ChannelEnvelope BuildEnvelope(IDeliveryContext delivery)

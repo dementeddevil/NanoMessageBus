@@ -4,7 +4,7 @@
 namespace NanoMessageBus
 {
 	using System;
-	using System.Linq;
+	using System.Collections.Generic;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -47,21 +47,13 @@ namespace NanoMessageBus
 		It should_indicate_that_handling_should_be_discontinued = () =>
 			handlerContext.ContinueHandling.ShouldBeFalse();
 
-		It should_NOT_instruct_the_delivery_to_reattempt_the_message = () =>
-			mockDelivery.Verify(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()), Times.Never());
+		It should_NOT_dispatch_the_message_for_redelivery = () =>
+			mockDelivery.Verify(x => x.PrepareDispatch(Moq.It.IsAny<object>()), Times.Never());
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
 	public class when_deferring_a_message : with_a_handler_context
 	{
-		Establish context = () => mockDelivery
-			.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
-			.Callback<ChannelEnvelope>(x =>
-			{
-				sent = x.Message;
-				recipients = x.Recipients.ToArray();
-			});
-
 		Because of = () =>
 			handlerContext.DeferMessage();
 
@@ -76,9 +68,6 @@ namespace NanoMessageBus
 
 		It should_not_send_the_message_to_any_other_recipients = () =>
 			recipients.Length.ShouldEqual(1);
-
-		static ChannelMessage sent;
-		static Uri[] recipients;
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -97,20 +86,7 @@ namespace NanoMessageBus
 		It should_return_the_reference_from_the_underlying_channel = () =>
 			dispatchContext.ShouldEqual(mockDispatch.Object);
 
-		static readonly Mock<IDispatchContext> mockDispatch = new Mock<IDispatchContext>();
 		static IDispatchContext dispatchContext;
-	}
-
-	[Subject(typeof(DefaultHandlerContext))]
-	public class when_sending_an_envelope : with_a_handler_context
-	{
-		Because of = () =>
-			handlerContext.Send(envelope);
-
-		It should_invoke_the_underlying_channel = () =>
-			mockDelivery.Verify(x => x.Send(envelope), Times.Once());
-
-		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -170,14 +146,38 @@ namespace NanoMessageBus
 			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockTransaction = new Mock<IChannelTransaction>();
 			mockResolver = new Mock<IDependencyResolver>();
+			mockDispatch = new Mock<IDispatchContext>();
 
 			mockDelivery = new Mock<IDeliveryContext>();
 			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
 			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 			mockDelivery.Setup(x => x.CurrentResolver).Returns(mockResolver.Object);
+			mockDelivery.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>())).Returns(mockDispatch.Object);
 
+			mockDispatch
+				.Setup(x => x.WithMessage(Moq.It.IsAny<ChannelMessage>()))
+				.Returns(mockDispatch.Object)
+				.Callback<ChannelMessage>(x => queuedMessage = x);
+
+			mockDispatch
+				.Setup(x => x.WithRecipient(Moq.It.IsAny<Uri>()))
+				.Returns(mockDispatch.Object)
+				.Callback<Uri>(x => queuedRecipients.Add(x));
+
+			mockDispatch
+				.Setup(x => x.Send())
+				.Callback(() =>
+				{
+					sent = queuedMessage;
+					recipients = queuedRecipients.ToArray();
+				});
+
+			sent = null;
+			recipients = null;
 			thrown = null;
+			queuedMessage = null;
+			queuedRecipients = new List<Uri>();
 
 			TryBuild(mockDelivery.Object);
 		};
@@ -194,9 +194,16 @@ namespace NanoMessageBus
 		protected static Mock<IDeliveryContext> mockDelivery;
 		protected static Mock<ChannelMessage> mockMessage;
 		protected static Mock<IChannelTransaction> mockTransaction;
+		protected static Mock<IDispatchContext> mockDispatch;
 		protected static Mock<IDependencyResolver> mockResolver;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static Exception thrown;
+
+		protected static ChannelMessage sent;
+		protected static Uri[] recipients;
+
+		private static List<Uri> queuedRecipients;
+		private static ChannelMessage queuedMessage;
 	}
 }
 
