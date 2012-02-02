@@ -659,6 +659,9 @@ namespace NanoMessageBus.RabbitChannel
 		It should_create_a_dispatch_context = () =>
 			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
 
+		It should_NOT_have_any_messages_in_the_dispatch_context = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
+
 		static IDispatchContext dispatchContext;
 	}
 
@@ -670,6 +673,9 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_create_a_dispatch_context = () =>
 			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		It should_indicate_the_message_was_added_to_the_dispatch_context = () =>
+			dispatchContext.MessageCount.ShouldEqual(1);
 
 		static IDispatchContext dispatchContext;
 	}
