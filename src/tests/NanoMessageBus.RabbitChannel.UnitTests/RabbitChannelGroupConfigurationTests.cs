@@ -676,6 +676,35 @@ namespace NanoMessageBus.RabbitChannel
 			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_dependency_resolver_has_been_specified : using_channel_config
+	{
+		It should_not_have_a_resolver = () =>
+			config.DependencyResolver.ShouldBeNull();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_dependency_resolver_is_provided : using_channel_config
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => config.WithDependencyResolver(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_dependency_resolver_is_provided : using_channel_config
+	{
+		Because of = () =>
+			config.WithDependencyResolver(resolver);
+
+		It should_set_the_resolver_reference_on_theconfiguration = () =>
+			config.DependencyResolver.ShouldEqual(resolver);
+
+		static readonly IDependencyResolver resolver = new Mock<IDependencyResolver>().Object;
+	}
+
 	public abstract class using_channel_config
 	{
 		Establish context = () =>

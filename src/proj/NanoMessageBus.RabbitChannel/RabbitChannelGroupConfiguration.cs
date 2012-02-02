@@ -247,6 +247,14 @@
 			this.MessageTypes = handledTypes.Distinct();
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithDependencyResolver(IDependencyResolver resolver)
+		{
+			if (resolver == null)
+				throw new ArgumentNullException("resolver");
+
+			this.DependencyResolver = resolver;
+			return this;
+		}
 
 		public RabbitChannelGroupConfiguration()
 		{
