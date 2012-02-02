@@ -168,13 +168,16 @@ namespace NanoMessageBus.RabbitChannel
 				.WithShutdownTimout(ShutdownTimeout)
 				.AddChannelGroup(x =>
 				{
-					senderConfig = x.WithGroupName(DefaultSenderChannelGroup);
+					senderConfig = x
+						.WithGroupName(DefaultSenderChannelGroup)
+						.WithTransaction(RabbitTransactionType.None);
 				})
 				.AddChannelGroup(x =>
 				{
 					receiverConfig = x
 						.WithGroupName(DefaultReceiverChannelGroup)
 						.WithInputQueue(DefaultReceiverInputQueue)
+						.WithTransaction(RabbitTransactionType.None)
 						.WithMessageTypes(new[] { typeof(string) });
 				});
 		};

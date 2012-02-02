@@ -471,7 +471,7 @@ namespace NanoMessageBus
 		Because of = () =>
 		{
 			TryAndWait(() => workerGroup.Dispose());
-			Thread.Sleep(50);
+			Thread.Sleep(100);
 		};
 
 		It should_dispose_all_state_objects_retrieved_through_the_state_callback = () =>
