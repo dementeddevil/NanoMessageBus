@@ -31,7 +31,7 @@
 				foreach (var config in connector.ChannelGroups)
 					this.AddChannelGroup(config.GroupName, this.factory(connector, config));
 
-			if (this.inbound.Count == 0 && this.outbound.Count == 0)
+			if (this.groups.Count == 0)
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
 		}
 		protected virtual void AddChannelGroup(string name, IChannelGroup group)
@@ -39,34 +39,36 @@
 			Log.Debug(group.DispatchOnly ?
 				"Adding dispatch-only channel group '{0}'." : "Adding full-duplex channel group '{0}'", name);
 
-			var collection = group.DispatchOnly ? this.outbound : this.inbound;
 			group.Initialize();
-			collection[name] = group;
+			this.groups[name] = group;
 		}
 
-		public virtual IOutboundChannel GetOutboundChannel(string channelGroup)
+		public virtual IChannelGroup this[string channelGroup]
 		{
-			if (channelGroup == null)
-				throw new ArgumentNullException("channelGroup");
-
-			Log.Debug("Reference to dispatch-only channel group '{0}' requested.", channelGroup);
-
-			lock (this.sync)
+			get
 			{
-				Log.Verbose("Entering critical section (GetOutboundChannel).");
+				if (channelGroup == null)
+					throw new ArgumentNullException("channelGroup");
 
-				this.ThrowWhenDisposed();
-				this.ThrowWhenUninitialized();
+				Log.Debug("Reference to dispatch-only channel group '{0}' requested.", channelGroup);
 
-				IChannelGroup group;
-				if (this.outbound.TryGetValue(channelGroup, out group) && group.DispatchOnly)
+				lock (this.sync)
 				{
-					Log.Verbose("Exiting critical section (GetOutboundChannel)--group found.");
-					return group;
-				}
+					Log.Verbose("Entering critical section (GetOutboundChannel).");
 
-				Log.Verbose("Exiting critical section (GetOutboundChannel)--key not found.");
-				throw new KeyNotFoundException("Could not find a dispatch-only channel group from the key provided.");
+					this.ThrowWhenDisposed();
+					this.ThrowWhenUninitialized();
+
+					IChannelGroup group;
+					if (this.groups.TryGetValue(channelGroup, out group))
+					{
+						Log.Verbose("Exiting critical section (GetOutboundChannel)--group found.");
+						return group;
+					}
+
+					Log.Verbose("Exiting critical section (GetOutboundChannel)--key not found.");
+					throw new KeyNotFoundException("Could not find a dispatch-only channel group from the key provided.");
+				}
 			}
 		}
 
@@ -85,13 +87,15 @@
 				this.ThrowWhenReceiving();
 				this.receiving = true;
 
-				foreach (var group in this.inbound.Values)
-					group.BeginReceive(callback);
+				var activated = this.groups.Values.Where(x => !x.DispatchOnly).Count(x =>
+				{
+					x.BeginReceive(callback);
+					return true;
+				});
 
+				Log.Info("Receive operations started against {0} channel groups.", activated);
 				Log.Verbose("Exiting critical section (Dispose).");
 			}
-
-			Log.Info("Receive operations started against {0} channel groups.", this.inbound.Count);
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -157,8 +161,9 @@
 					return;
 
 				this.disposed = true;
-				Dispose(this.inbound);
-				Dispose(this.outbound);
+
+				foreach (var group in this.groups.Values)
+					group.Dispose();
 
 				Log.Info("Disposing {0} messaging infrastructure connectors and their respective connections, if any.",
 					this.connectors.Count);
@@ -171,18 +176,10 @@
 
 			Log.Info("Host disposed.");
 		}
-		private static void Dispose(IDictionary<string, IChannelGroup> groups)
-		{
-			foreach (var group in groups.Values)
-				group.Dispose();
-
-			groups.Clear();
-		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultMessagingHost));
 		private readonly object sync = new object();
-		private readonly IDictionary<string, IChannelGroup> inbound = new Dictionary<string, IChannelGroup>();
-		private readonly IDictionary<string, IChannelGroup> outbound = new Dictionary<string, IChannelGroup>();
+		private readonly IDictionary<string, IChannelGroup> groups = new Dictionary<string, IChannelGroup>();
 		private readonly ICollection<IChannelConnector> connectors;
 		private readonly ChannelGroupFactory factory;
 		private bool receiving;

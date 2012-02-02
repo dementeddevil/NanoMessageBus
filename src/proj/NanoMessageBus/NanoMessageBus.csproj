@@ -79,7 +79,6 @@
     <Compile Include="ISubscriptionTable.cs" />
     <Compile Include="IWorkItem.cs" />
     <Compile Include="IChannelGroupConfiguration.cs" />
-    <Compile Include="IOutboundChannel.cs" />
     <Compile Include="IChannelGroup.cs" />
     <Compile Include="IChannelTransaction.cs" />
     <Compile Include="IChannelConnector.cs" />

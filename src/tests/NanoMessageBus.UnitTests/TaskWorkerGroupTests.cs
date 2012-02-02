@@ -444,13 +444,17 @@ namespace NanoMessageBus
 			return true;
 		});
 
-		Because of = () => TryAndWait(() => workerGroup.StartActivity(x =>
+		Because of = () =>
 		{
-			if (invocations == 0)
-				workerGroup.Restart(); // kick off the restart
-			else
-				workerGroup.Dispose();
-		}));
+			TryAndWait(() => workerGroup.StartActivity(x =>
+			{
+				if (invocations == 0)
+					workerGroup.Restart(); // kick off the restart
+				else
+					workerGroup.Dispose();
+			}));
+			Thread.Sleep(100);
+		};
 
 		It should_only_allow_a_single_restart_instance_at_a_time = () =>
 			invocations.ShouldEqual(1);
