@@ -651,6 +651,30 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_preparing_to_dispatch : using_a_channel
+	{
+		Because of = () =>
+			dispatchContext = channel.PrepareDispatch();
+
+		It should_create_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_preparing_to_dispatch_with_a_message : using_a_channel
+	{
+		Because of = () =>
+			dispatchContext = channel.PrepareDispatch("some message");
+
+		It should_create_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>

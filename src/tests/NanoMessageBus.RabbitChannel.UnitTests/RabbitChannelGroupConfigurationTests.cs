@@ -715,10 +715,40 @@ namespace NanoMessageBus.RabbitChannel
 		static readonly IDependencyResolver resolver = new Mock<IDependencyResolver>().Object;
 	}
 
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_dispatch_table_has_been_provied : using_channel_config
+	{
+		It should_use_the_default_rabbit_dispatch_table = () =>
+			config.DispatchTable.ShouldBeOfType<RabbitDispatchTable>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_dispatch_table_is_provied : using_channel_config
+	{
+		Because of = () =>
+			Try(() => config.WithDispatchTable(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_dispatch_table_is_provied : using_channel_config
+	{
+		Because of = () =>
+			config.WithDispatchTable(mockTable.Object);
+
+		It should_use_the_dispatch_table_provided = () =>
+			config.DispatchTable.ShouldEqual(mockTable.Object);
+
+		static readonly Mock<IDispatchTable> mockTable = new Mock<IDispatchTable>();
+	}
+
 	public abstract class using_channel_config
 	{
 		Establish context = () =>
 		{
+			thrown = null;
 			mockChannel = new Mock<IModel>();
 			config = new RabbitChannelGroupConfiguration();
 		};
@@ -726,6 +756,10 @@ namespace NanoMessageBus.RabbitChannel
 		protected static void Configure()
 		{
 			config.ConfigureChannel(mockChannel.Object);
+		}
+		protected static void Try(Action callback)
+		{
+			thrown = Catch.Exception(callback);
 		}
 
 		protected static Mock<IModel> mockChannel;

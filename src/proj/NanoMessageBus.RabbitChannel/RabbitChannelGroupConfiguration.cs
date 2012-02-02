@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Logging;
 	using RabbitMQ.Client;
 	using Serialization;
 
@@ -88,6 +87,7 @@
 		protected virtual bool AutoDelete { get; private set; }
 		protected virtual bool ReturnAddressSpecified { get; private set; }
 		protected virtual IEnumerable<Type> MessageTypes { get; private set; }
+		public virtual IDispatchTable DispatchTable { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
@@ -255,6 +255,14 @@
 			this.DependencyResolver = resolver;
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithDispatchTable(IDispatchTable table)
+		{
+			if (table == null)
+				throw new ArgumentNullException("table");
+
+			this.DispatchTable = table;
+			return this;
+		}
 
 		public RabbitChannelGroupConfiguration()
 		{
@@ -279,6 +287,7 @@
 			this.MessageTypes = new Type[0];
 
 			this.MessageBuilder = new DefaultChannelMessageBuilder();
+			this.DispatchTable = DefaultDispatchTable;
 		}
 
 		private const int DefaultWorkerCount = 1;
@@ -289,8 +298,8 @@
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultDeadLetterExchange = "dead-letters";
 		private const string DefaultAppId = "rabbit-endpoint";
-		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannelGroupConfiguration));
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
+		private static readonly IDispatchTable DefaultDispatchTable = new RabbitDispatchTable();
 	}
 }
