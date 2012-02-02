@@ -15,6 +15,10 @@
 			if (message == null)
 				throw new ArgumentNullException("message");
 
+			var channelMessage = message as ChannelMessage;
+			if (channelMessage != null)
+				return new DefaultChannelMessageDispatchContext(this.channel, channelMessage);
+
 			Log.Verbose("Adding logical message of type '{0}' for dispatch.");
 
 			this.logicalMessages.Add(message);
@@ -161,7 +165,7 @@
 			throw new InvalidOperationException("The set of messages has already been dispatched.");
 		}
 
-		public DefaultDispatchContext(IDeliveryContext channel, IDispatchTable dispatchTable)
+		public DefaultDispatchContext(IMessagingChannel channel, IDispatchTable dispatchTable)
 		{
 			this.channel = channel;
 			this.dispatchTable = dispatchTable;
@@ -175,7 +179,7 @@
 		private readonly IDictionary<string, string> messageHeaders = new Dictionary<string, string>();
 		private readonly ICollection<object> logicalMessages = new LinkedList<object>();
 		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();
-		private readonly IDeliveryContext channel;
+		private readonly IMessagingChannel channel;
 		private readonly IDispatchTable dispatchTable;
 		private readonly IChannelMessageBuilder builder;
 		private readonly Uri returnAddress;

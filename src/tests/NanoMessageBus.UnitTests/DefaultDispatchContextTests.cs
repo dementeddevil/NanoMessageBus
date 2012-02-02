@@ -131,6 +131,16 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
+	public class when_adding_a_channel_message : with_a_dispatch_context
+	{
+		Because of = () =>
+			returnedContext = dispatchContext.WithMessage(new Mock<ChannelMessage>().Object);
+
+		It should_return_an_instance_of_the_channel_message_dispatch_context = () =>
+			returnedContext.ShouldBeOfType<DefaultChannelMessageDispatchContext>();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
 	public class when_dispatching_a_set_of_added_messages : with_a_dispatch_context
 	{
 		Establish context = () =>
@@ -547,7 +557,7 @@ namespace NanoMessageBus
 
 			mockTransaction = new Mock<IChannelTransaction>();
 
-			mockDelivery = new Mock<IDeliveryContext>();
+			mockDelivery = new Mock<IMessagingChannel>();
 			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
 			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
@@ -574,9 +584,9 @@ namespace NanoMessageBus
 
 			Build(mockDelivery.Object, mockDispatchTable.Object);
 		};
-		protected static void Build(IDeliveryContext delivery, IDispatchTable dispatchTable)
+		protected static void Build(IMessagingChannel channel, IDispatchTable dispatchTable)
 		{
-			dispatchContext = new DefaultDispatchContext(delivery, dispatchTable);
+			dispatchContext = new DefaultDispatchContext(channel, dispatchTable);
 		}
 		protected static void Try(Action callback)
 		{
@@ -587,7 +597,7 @@ namespace NanoMessageBus
 		protected static readonly Uri OutgoingReturnAddress = new Uri("http://outgoing-return-address/");
 		protected static DefaultDispatchContext dispatchContext;
 		protected static IDispatchContext returnedContext;
-		protected static Mock<IDeliveryContext> mockDelivery;
+		protected static Mock<IMessagingChannel> mockDelivery;
 		protected static Mock<IChannelTransaction> mockTransaction;
 		protected static Mock<IDispatchTable> mockDispatchTable;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;

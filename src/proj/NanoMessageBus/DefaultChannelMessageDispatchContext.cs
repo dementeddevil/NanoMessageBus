@@ -6,35 +6,35 @@
 
 	public class DefaultChannelMessageDispatchContext : IDispatchContext
 	{
-		public int MessageCount
+		public virtual int MessageCount
 		{
-			get { return 1; }
+			get { return this.dispatched ? 0 : 1; }
 		}
-		public int HeaderCount
+		public virtual int HeaderCount
 		{
 			get { return 0; }
 		}
-		public IDispatchContext WithMessage(object message)
+		public virtual IDispatchContext WithMessage(object message)
 		{
 			throw new InvalidOperationException("The message collection cannot be modified.");
 		}
-		public IDispatchContext WithMessages(params object[] messages)
+		public virtual IDispatchContext WithMessages(params object[] messages)
 		{
 			throw new InvalidOperationException("The message collection cannot be modified.");
 		}
-		public IDispatchContext WithCorrelationId(Guid correlationId)
+		public virtual IDispatchContext WithCorrelationId(Guid correlationId)
 		{
 			throw new InvalidOperationException("A correlation identifier is already set.");
 		}
-		public IDispatchContext WithHeader(string key, string value = null)
+		public virtual IDispatchContext WithHeader(string key, string value = null)
 		{
 			throw new InvalidOperationException("The headers cannot be modified.");
 		}
-		public IDispatchContext WithHeaders(IDictionary<string, string> headers)
+		public virtual IDispatchContext WithHeaders(IDictionary<string, string> headers)
 		{
 			throw new InvalidOperationException("The headers cannot be modified.");
 		}
-		public IDispatchContext WithRecipient(Uri recipient)
+		public virtual IDispatchContext WithRecipient(Uri recipient)
 		{
 			if (recipient == null)
 				throw new ArgumentNullException("recipient");
@@ -42,7 +42,7 @@
 			this.recipients.Add(recipient);
 			return this;
 		}
-		public IChannelTransaction Send()
+		public virtual IChannelTransaction Send()
 		{
 			this.ThrowWhenDispatched();
 			this.dispatched = true;
@@ -50,11 +50,11 @@
 			this.channel.Send(new ChannelEnvelope(this.channelMessage, this.recipients));
 			return this.channel.CurrentTransaction;
 		}
-		public IChannelTransaction Publish()
+		public virtual IChannelTransaction Publish()
 		{
 			throw new InvalidOperationException("Only send can be invoked.");
 		}
-		public IChannelTransaction Reply()
+		public virtual IChannelTransaction Reply()
 		{
 			throw new InvalidOperationException("Only send can be invoked.");
 		}

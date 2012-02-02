@@ -153,6 +153,9 @@ namespace NanoMessageBus
 		It should_a_reference_to_the_underlying_transaction = () =>
 			transaction.ShouldEqual(mockTransaction.Object);
 
+		It should_report_the_number_of_messages_as_zero = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
+
 		static IChannelTransaction transaction;
 		static readonly Uri[] recipients = new[] { new Uri("http://first"), new Uri("http://second") };
 	}
