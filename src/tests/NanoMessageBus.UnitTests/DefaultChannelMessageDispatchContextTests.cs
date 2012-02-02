@@ -5,6 +5,7 @@ namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -13,7 +14,7 @@ namespace NanoMessageBus
 	public class when_a_null_channel_is_provided_during_construction : using_a_channel_message_dispatch_context
 	{
 		Because of = () =>
-			Try(() => Build(null, envelope));
+			Try(() => Build(null, message));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -90,13 +91,28 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
-	public class when_attempting_to_add_a_recipient : using_a_channel_message_dispatch_context
+	public class when_adding_a_null_recipient : using_a_channel_message_dispatch_context
 	{
 		Because of = () =>
 			Try(() => dispatchContext.WithRecipient(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(DefaultChannelMessageDispatchContext))]
+	public class when_attempting_to_add_a_recipient : using_a_channel_message_dispatch_context
+	{
+		Because of = () =>
+			returnedContext = dispatchContext.WithRecipient(ChannelEnvelope.LoopbackAddress);
+
+		It should_NOT_throw_an_exception = () =>
+			thrown.ShouldBeNull();
+
+		It should_return_reference_to_itself = () =>
+			returnedContext.ShouldEqual(dispatchContext);
+
+		static IDispatchContext returnedContext;
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -122,23 +138,30 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
 	public class when_sending_the_dispatch : using_a_channel_message_dispatch_context
 	{
+		Establish context = () =>
+			recipients.ToList().ForEach(x => dispatchContext.WithRecipient(x));
+
 		Because of = () =>
 			transaction = dispatchContext.Send();
 
 		It should_send_the_message_through_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.Send(envelope), Times.Once());
+			envelope.Message.ShouldEqual(message);
+
+		It should_send_append_the_recipients_to_the_envelope = () =>
+			envelope.Recipients.SequenceEqual(recipients).ShouldBeTrue();
 
 		It should_a_reference_to_the_underlying_transaction = () =>
 			transaction.ShouldEqual(mockTransaction.Object);
 
 		static IChannelTransaction transaction;
+		static readonly Uri[] recipients = new[] { new Uri("http://first"), new Uri("http://second") };
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
 	public class when_sending_the_dispatch_multiple_times : using_a_channel_message_dispatch_context
 	{
 		Establish context = () =>
-			dispatchContext.Send();
+			dispatchContext.WithRecipient(new Uri("http://first")).Send();
 
 		Because of = () =>
 			Try(() => dispatchContext.Send());
@@ -152,15 +175,21 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			thrown = null;
+			envelope = null;
+
 			mockChannel = new Mock<IMessagingChannel>();
 			mockTransaction = new Mock<IChannelTransaction>();
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 
-			Build(mockChannel.Object, envelope);
+			mockChannel
+				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
+				.Callback<ChannelEnvelope>(x => envelope = x);
+
+			Build(mockChannel.Object, message);
 		};
-		protected static void Build(IMessagingChannel channel, ChannelEnvelope channelEnvelope)
+		protected static void Build(IMessagingChannel channel, ChannelMessage channelMessage)
 		{
-			dispatchContext = new DefaultChannelMessageDispatchContext(channel, channelEnvelope);
+			dispatchContext = new DefaultChannelMessageDispatchContext(channel, channelMessage);
 		}
 		protected static void Try(Action callback)
 		{
@@ -170,7 +199,8 @@ namespace NanoMessageBus
 		protected static DefaultChannelMessageDispatchContext dispatchContext;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Mock<IChannelTransaction> mockTransaction;
-		protected static ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
+		protected static ChannelMessage message = new Mock<ChannelMessage>().Object;
+		protected static ChannelEnvelope envelope;
 		protected static Exception thrown;
 	}
 }

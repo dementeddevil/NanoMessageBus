@@ -36,14 +36,18 @@
 		}
 		public IDispatchContext WithRecipient(Uri recipient)
 		{
-			throw new InvalidOperationException("The recipients cannot be modified.");
+			if (recipient == null)
+				throw new ArgumentNullException("recipient");
+
+			this.recipients.Add(recipient);
+			return this;
 		}
 		public IChannelTransaction Send()
 		{
 			this.ThrowWhenDispatched();
 			this.dispatched = true;
 
-			this.channel.Send(this.envelope);
+			this.channel.Send(new ChannelEnvelope(this.channelMessage, this.recipients));
 			return this.channel.CurrentTransaction;
 		}
 		public IChannelTransaction Publish()
@@ -64,21 +68,22 @@
 			throw new InvalidOperationException("The set of messages has already been dispatched.");
 		}
 
-		public DefaultChannelMessageDispatchContext(IMessagingChannel channel, ChannelEnvelope envelope)
+		public DefaultChannelMessageDispatchContext(IMessagingChannel channel, ChannelMessage channelMessage)
 		{
 			if (channel == null)
 				throw new ArgumentNullException("channel");
 
-			if (envelope == null)
-				throw new ArgumentNullException("envelope");
+			if (channelMessage == null)
+				throw new ArgumentNullException("channelMessage");
 
 			this.channel = channel;
-			this.envelope = envelope;
+			this.channelMessage = channelMessage;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelMessageDispatchContext));
+		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();
 		private readonly IMessagingChannel channel;
-		private readonly ChannelEnvelope envelope;
+		private readonly ChannelMessage channelMessage;
 		private bool dispatched;
 	}
 }
