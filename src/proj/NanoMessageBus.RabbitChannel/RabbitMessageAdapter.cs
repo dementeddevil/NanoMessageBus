@@ -110,8 +110,8 @@
 		{
 			var serializer = this.configuration.Serializer;
 
-			properties.MessageId = message.MessageId.ToString();
-			properties.CorrelationId = message.CorrelationId.ToString();
+			properties.MessageId = message.MessageId.ToNull() ?? string.Empty;
+			properties.CorrelationId = message.CorrelationId.ToNull() ?? string.Empty;
 			properties.AppId = this.configuration.ApplicationId;
 			properties.ContentEncoding = serializer.ContentEncoding ?? string.Empty;
 
