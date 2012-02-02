@@ -5,15 +5,26 @@
 
 	public class DefaultHandlerContext : IHandlerContext
 	{
-		public virtual IDeliveryContext Delivery
+		public virtual ChannelMessage CurrentMessage
 		{
-			get { return this.delivery; }
+			get { return this.delivery.CurrentMessage; }
+		}
+		public virtual IChannelTransaction CurrentTransaction
+		{
+			get { return this.delivery.CurrentTransaction; }
+		}
+		public virtual IChannelGroupConfiguration CurrentConfiguration
+		{
+			get { return this.delivery.CurrentConfiguration; }
+		}
+		public virtual IDependencyResolver CurrentResolver
+		{
+			get { return this.delivery.CurrentResolver; }
 		}
 		public virtual bool ContinueHandling
 		{
 			get { return this.continueHandling; }
 		}
-
 		public virtual void DropMessage()
 		{
 			this.ThrowWhenDisposed();
@@ -32,6 +43,12 @@
 
 			var context = new DefaultDispatchContext(this.delivery, this.dispatchTable);
 			return message == null ? context : context.WithMessage(message);
+		}
+
+		public virtual void Send(ChannelEnvelope message)
+		{
+			// TODO: IDeliveryContext will be refactored to remove this method
+			this.delivery.Send(message);
 		}
 
 		protected virtual void ThrowWhenDisposed()

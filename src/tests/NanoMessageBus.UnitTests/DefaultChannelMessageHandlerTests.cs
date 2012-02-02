@@ -154,8 +154,10 @@ namespace NanoMessageBus
 			mockMessage = new Mock<ChannelMessage>();
 			continueProcessing = true;
 
-			mockContext.Setup(x => x.Delivery).Returns(mockDelivery.Object);
 			mockContext.Setup(x => x.ContinueHandling).Returns(() => continueProcessing);
+			mockContext
+				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
+				.Callback<ChannelEnvelope>(x => mockDelivery.Object.Send(x));
 
 			mockDelivery
 				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))

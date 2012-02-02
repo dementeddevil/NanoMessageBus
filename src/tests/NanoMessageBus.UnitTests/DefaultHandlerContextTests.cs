@@ -32,8 +32,17 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultHandlerContext))]
 	public class when_constructing_a_new_handler_context : with_a_handler_context
 	{
-		It should_expose_the_underlying_delivery_context = () =>
-			handlerContext.Delivery.ShouldEqual(mockDelivery.Object);
+		It should_expose_the_underlying_delivery_message = () =>
+			handlerContext.CurrentMessage.ShouldEqual(mockMessage.Object);
+
+		It should_expose_the_underlying_delivery_transaction = () =>
+			handlerContext.CurrentTransaction.ShouldEqual(mockTransaction.Object);
+
+		It should_expose_the_underlying_delivery_configuration = () =>
+			handlerContext.CurrentConfiguration.ShouldEqual(mockConfig.Object);
+
+		It should_expose_the_underlying_delivery_dependency_resolver = () =>
+			handlerContext.CurrentResolver.ShouldEqual(mockResolver.Object);
 
 		It should_indicate_the_ability_to_continue_handling = () =>
 			handlerContext.ContinueHandling.ShouldBeTrue();
@@ -159,9 +168,16 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			mockMessage = new Mock<ChannelMessage>();
+			mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockTransaction = new Mock<IChannelTransaction>();
+			mockResolver = new Mock<IDependencyResolver>();
+
 			mockDelivery = new Mock<IDeliveryContext>();
-			mockDelivery.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
-			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
+			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
+			mockDelivery.Setup(x => x.CurrentResolver).Returns(mockResolver.Object);
 
 			mockDispatchTable = new Mock<IDispatchTable>();
 			thrown = null;
@@ -179,6 +195,10 @@ namespace NanoMessageBus
 
 		protected static DefaultHandlerContext handlerContext;
 		protected static Mock<IDeliveryContext> mockDelivery;
+		protected static Mock<ChannelMessage> mockMessage;
+		protected static Mock<IChannelTransaction> mockTransaction;
+		protected static Mock<IDependencyResolver> mockResolver;
+		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static Mock<IDispatchTable> mockDispatchTable;
 		protected static Exception thrown;
 	}

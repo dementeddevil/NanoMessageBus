@@ -8,13 +8,8 @@
 	/// <remarks>
 	/// Instances of this class are single threaded and should not be shared between threads.
 	/// </remarks>
-	public interface IHandlerContext : IDisposable
+	public interface IHandlerContext : IDeliveryContext, IDisposable
 	{
-		/// <summary>
-		/// Gets all context associated with the attempted delivery of the channel message.
-		/// </summary>
-		IDeliveryContext Delivery { get; }
-
 		/// <summary>
 		/// Gets a value indicating whether or not processing of the given channel message should continue.
 		/// </summary>
