@@ -198,9 +198,19 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_no_transaction_type_is_specified : using_channel_config
+	public class when_no_transaction_type_has_been_configured : using_channel_config
 	{
-		It should_not_enlist_in_any_transactions = () =>
+		It should_default_to_full_transactions = () =>
+			config.TransactionType.ShouldEqual(RabbitTransactionType.Full);
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_transactions_are_not_desired : using_channel_config
+	{
+		Because of = () =>
+			config.WithTransaction(RabbitTransactionType.None);
+
+		It should_not_use_transactions = () =>
 			config.TransactionType.ShouldEqual(RabbitTransactionType.None);
 	}
 

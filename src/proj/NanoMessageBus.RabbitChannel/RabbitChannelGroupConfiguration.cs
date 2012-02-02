@@ -264,6 +264,7 @@
 			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
 			this.ChannelBuffer = DefaultChannelBuffer;
 			this.MaxAttempts = DefaultMaxAttempts;
+			this.TransactionType = RabbitTransactionType.Full;
 
 			this.PoisonMessageExchange = new PublicationAddress(
 				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
