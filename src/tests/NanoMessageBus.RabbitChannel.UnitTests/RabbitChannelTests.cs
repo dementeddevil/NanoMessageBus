@@ -821,7 +821,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockEnvelope = new Mock<ChannelEnvelope>();
-			mockEnvelope.Setup(x => x.Recipients).Returns(new[] { new Uri("ampq://test/test") });
+			mockEnvelope.Setup(x => x.Recipients).Returns(new[] { new Uri("amqp://test/test") });
 			mockEnvelope.Setup(x => x.Message).Returns(new Mock<ChannelMessage>().Object);
 
 			mockAdapter
@@ -851,7 +851,7 @@ namespace NanoMessageBus.RabbitChannel
 		Establish context = () =>
 		{
 			mockEnvelope = new Mock<ChannelEnvelope>();
-			mockEnvelope.Setup(x => x.Recipients).Returns(new[] { new Uri("ampq://test/test") });
+			mockEnvelope.Setup(x => x.Recipients).Returns(new[] { new Uri("amqp://test/test") });
 			mockEnvelope.Setup(x => x.Message).Returns(new Mock<ChannelMessage>().Object);
 
 			mockAdapter
