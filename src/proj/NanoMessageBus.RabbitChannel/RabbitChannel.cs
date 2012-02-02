@@ -122,6 +122,8 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
+			// note: remember to call this.EnsureTransaction() to be sure we have a good transaction
+
 			// TODO: 
 			throw new NotImplementedException();
 		}

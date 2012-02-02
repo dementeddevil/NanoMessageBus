@@ -64,6 +64,30 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
+	public class when_preparing_to_dispatch_on_the_channel : with_the_dependency_resolver_channel
+	{
+		Establish context = () =>
+		{
+			mockDispatch = new Mock<IDispatchContext>();
+			mockWrappedChannel
+				.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>()))
+				.Returns(mockDispatch.Object);
+		};
+
+		Because of = () =>
+			dispatch = channel.PrepareDispatch("Hello, World!");
+
+		It should_return_a_reference_to_a_dispatch_context_instance = () =>
+			dispatch.ShouldEqual(mockDispatch.Object);
+
+		It should_directly_invoke_the_underlying_channel_using_the_message_provided = () =>
+			mockWrappedChannel.Verify(x => x.PrepareDispatch("Hello, World!"), Times.Once());
+
+		static Mock<IDispatchContext> mockDispatch;
+		static IDispatchContext dispatch;
+	}
+
+	[Subject(typeof(DependencyResolverChannel))]
 	public class when_initiating_shutdown_on_the_channel : with_the_dependency_resolver_channel
 	{
 		Because of = () =>

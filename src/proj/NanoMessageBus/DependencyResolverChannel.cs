@@ -28,14 +28,13 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
-			// TODO: 
-			throw new NotImplementedException();
+			return this.CurrentContext.PrepareDispatch(message);
 		}
-
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			this.CurrentContext.Send(envelope);
 		}
+
 		public virtual void BeginShutdown()
 		{
 			this.channel.BeginShutdown();
