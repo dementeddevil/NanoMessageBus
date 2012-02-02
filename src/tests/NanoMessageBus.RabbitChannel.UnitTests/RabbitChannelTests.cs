@@ -681,6 +681,19 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_preparing_to_dispatch_against_a_completed_transaction : using_a_channel
+	{
+		Establish context = () =>
+			channel.CurrentTransaction.Commit();
+
+		Because of = () =>
+			channel.PrepareDispatch();
+
+		It should_create_a_new_transaction = () =>
+			channel.CurrentTransaction.Finished.ShouldBeFalse();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>

@@ -122,10 +122,10 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
-			// note: remember to call this.EnsureTransaction() to be sure we have a good transaction
+			this.EnsureTransaction();
 
-			// TODO: 
-			throw new NotImplementedException();
+			var context = new DefaultDispatchContext(this, this.configuration.DispatchTable);
+			return message == null ? context : context.WithMessage(message);
 		}
 
 		public virtual void Send(ChannelEnvelope envelope)
