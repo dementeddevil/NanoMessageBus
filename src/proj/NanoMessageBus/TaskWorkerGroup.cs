@@ -157,7 +157,9 @@
 			Log.Verbose("Starting single restart worker à-la circuit-breaker pattern.");
 			while (!token.IsCancellationRequested && !this.restartCallback())
 			{
-				// FUTURE: sleep timeout should increase
+				// FUTURE: sleep for 500ms at a time to check if token has been cancelled
+				// as part of that polling, we also check (but at increasing intervals) to
+				// determine the activity can be restarted
 				Log.Debug("Restart attempt failed, sleeping...");
 				this.retrySleepTimeout.Sleep();
 			}
