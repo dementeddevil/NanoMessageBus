@@ -37,7 +37,7 @@ namespace NanoMessageBus
 			dispatchContext.MessageCount.ShouldEqual(1);
 
 		It should_indicate_zero_headers = () =>
-			dispatchContext.MessageCount.ShouldEqual(1);
+			dispatchContext.HeaderCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
