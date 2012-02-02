@@ -8,7 +8,7 @@
 
 	public class DefaultMessagingHost : IMessagingHost
 	{
-		public virtual void Initialize()
+		public virtual IChannelGroup Initialize()
 		{
 			Log.Info("Initializing host.");
 			lock (this.sync)
@@ -22,7 +22,10 @@
 				this.initialized = true;
 				Log.Verbose("Exiting critical section (Initialize).");
 			}
+
 			Log.Info("Host initialized.");
+
+			return this.groups.Values.First();
 		}
 		protected virtual void InitializeChannelGroups()
 		{
@@ -32,7 +35,10 @@
 					this.AddChannelGroup(config.GroupName, this.factory(connector, config));
 
 			if (this.groups.Count == 0)
+			{
+				Log.Warn("No channel groups have been configured.");
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
+			}
 		}
 		protected virtual void AddChannelGroup(string name, IChannelGroup group)
 		{

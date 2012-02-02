@@ -73,7 +73,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			host.Initialize();
+			primaryGroup = host.Initialize();
 
 		It should_obtain_a_list_of_channel_groups_from_each_underlying_connector = () =>
 			mockConnectors.ToList().ForEach(x => x.VerifyGet(mock => mock.ChannelGroups));
@@ -84,9 +84,14 @@ namespace NanoMessageBus
 		It should_initialize_each_channel_group = () =>
 			mockGroup.Verify(x => x.Initialize(), Times.Exactly(3)); // tests provide the same group 3 times
 
+		It should_return_the_primary_channel_group = () =>
+			primaryGroup.ShouldEqual(mockGroup.Object); // improve test because same group is returned
+
 		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
 		static readonly Mock<IChannelGroupConfiguration> config1 = new Mock<IChannelGroupConfiguration>();
 		static readonly Mock<IChannelGroupConfiguration> config2 = new Mock<IChannelGroupConfiguration>();
+
+		static IChannelGroup primaryGroup;
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -106,15 +111,19 @@ namespace NanoMessageBus
 
 		private Because of = () =>
 		{
-			host.Initialize();
-			host.Initialize();
-			host.Initialize();
+			groups.Add(host.Initialize());
+			groups.Add(host.Initialize());
+			groups.Add(host.Initialize());
 		};
 
 		It should_do_nothing = () =>
 			mockFactory.Verify(x => x.Build(Connectors[0], config0.Object), Times.Once());
 
+		It should_return_the_primary_group_each_time = () =>
+			groups.ForEach(x => x.ShouldEqual(groups.First()));
+
 		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
+		static readonly List<IChannelGroup> groups = new List<IChannelGroup>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -261,7 +270,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
-	public class when_the_requested_channel_group_doesnt_exist : with_the_messaging_host
+	public class when_the_requested_channel_group_does_not_exist : with_the_messaging_host
 	{
 		Establish context = () =>
 			host.Initialize();

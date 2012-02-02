@@ -13,11 +13,12 @@
 	public interface IMessagingHost : IDisposable
 	{
 		/// <summary>
-		/// Creates all channel groups and the initializes each of them.
+		/// Creates all channel groups and the initializes each of them and returns the first one.
 		/// </summary>
 		/// <exception cref="ConfigurationErrorsException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
-		void Initialize();
+		/// <returns>The first or primary channel group initialized.</returns>
+		IChannelGroup Initialize();
 
 		/// <summary>
 		/// Begins streaming any available inbound messages to the callback provided.
