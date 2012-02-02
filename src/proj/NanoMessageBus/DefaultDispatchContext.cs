@@ -7,6 +7,9 @@
 
 	public class DefaultDispatchContext : IDispatchContext
 	{
+		public virtual int MessageCount { get; private set; }
+		public virtual int HeaderCount { get; private set; }
+
 		public virtual IDispatchContext WithMessage(object message)
 		{
 			if (message == null)
@@ -15,6 +18,7 @@
 			Log.Verbose("Adding logical message of type '{0}' for dispatch.");
 
 			this.logicalMessages.Add(message);
+			this.MessageCount++;
 			return this;
 		}
 		public virtual IDispatchContext WithMessages(params object[] messages)
@@ -26,7 +30,7 @@
 				throw new ArgumentException("The set of messages provided cannot be empty.", "messages");
 
 			foreach (var message in messages.Where(x => x != null))
-				this.logicalMessages.Add(message);
+				this.WithMessage(message);
 
 			return this;
 		}
@@ -45,10 +49,15 @@
 			{
 				Log.Verbose("Removing header '{0}' from dispatch.", key);
 				this.messageHeaders.Remove(key);
+				this.HeaderCount--;
 			}
 			else
 			{
 				Log.Verbose("Adding header '{0}' to dispatch.", key);
+
+				if (!this.messageHeaders.ContainsKey(key))
+					this.HeaderCount++;
+
 				this.messageHeaders[key] = value;
 			}
 
@@ -122,7 +131,11 @@
 				message.MessageId, message.CorrelationId, targets.Length);
 
 			this.channel.Send(envelope);
+
 			this.dispatched = true;
+			this.MessageCount = 0;
+			this.HeaderCount = 0;
+
 			return this.channel.CurrentTransaction;
 		}
 		protected virtual IEnumerable<Uri> BuildRecipients()

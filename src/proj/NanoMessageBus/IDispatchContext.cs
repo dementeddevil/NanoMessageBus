@@ -12,6 +12,16 @@
 	public interface IDispatchContext
 	{
 		/// <summary>
+		/// Gets the number of logical, business-specific messages pending dispatch.
+		/// </summary>
+		int MessageCount { get; }
+
+		/// <summary>
+		/// Gets the number of headers that have been added to the pending dispatch.
+		/// </summary>
+		int HeaderCount { get; }
+
+		/// <summary>
 		/// Appends a single message to the dispatch.
 		/// </summary>
 		/// <param name="message">The message to be dispatched.</param>

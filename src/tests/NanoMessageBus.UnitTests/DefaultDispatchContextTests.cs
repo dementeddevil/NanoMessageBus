@@ -18,6 +18,9 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		It should_NOT_increment_the_message_count = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -28,6 +31,9 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		It should_NOT_increment_the_message_count = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -38,6 +44,9 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
+
+		It should_NOT_increment_the_message_count = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -48,6 +57,9 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		It should_NOT_increment_the_header_count = () =>
+			dispatchContext.HeaderCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -58,6 +70,9 @@ namespace NanoMessageBus
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
+
+		It should_NOT_increment_the_header_count = () =>
+			dispatchContext.HeaderCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -78,6 +93,9 @@ namespace NanoMessageBus
 
 		It should_return_an_instance_of_itself = () =>
 			returnedContext.ShouldEqual(dispatchContext);
+
+		It should_increment_the_message_count = () =>
+			returnedContext.MessageCount.ShouldEqual(1);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -94,16 +112,22 @@ namespace NanoMessageBus
 
 		It should_default_to_a_persistent_channel_message = () =>
 			message.Persistent.ShouldBeTrue();
+
+		It should_reset_the_message_count_to_zero = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
 	public class when_adding_a_set_of_messages : with_a_dispatch_context
 	{
 		Because of = () =>
-			returnedContext = dispatchContext.WithMessages(0);
+			returnedContext = dispatchContext.WithMessages(1, 2, 3, 4);
 
 		It should_return_an_instance_of_itself = () =>
 			returnedContext.ShouldEqual(dispatchContext);
+
+		It should_increment_message_count_by_the_number_of_added_messages = () =>
+			returnedContext.MessageCount.ShouldEqual(4);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -123,6 +147,9 @@ namespace NanoMessageBus
 
 		It should_not_add_any_null_messages_to_the_dispatched_message = () =>
 			messages.Length.ShouldEqual(2);
+
+		It should_reset_the_message_count_to_zero = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -154,10 +181,13 @@ namespace NanoMessageBus
 	public class when_adding_a_message_header : with_a_dispatch_context
 	{
 		Because of = () =>
-			returnedContext = dispatchContext.WithHeader(string.Empty);
+			returnedContext = dispatchContext.WithHeader(string.Empty, "value");
 
 		It should_return_an_instance_of_itself = () =>
 			returnedContext.ShouldEqual(dispatchContext);
+
+		It should_increment_the_header_count = () =>
+			dispatchContext.HeaderCount.ShouldEqual(1);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -168,6 +198,9 @@ namespace NanoMessageBus
 
 		It should_append_the_header_to_the_set_of_headers_on_the_dispatched_message = () =>
 			headers["my-key"].ShouldEqual("Hello, World!");
+
+		It should_reset_the_header_count = () =>
+			dispatchContext.HeaderCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -187,10 +220,20 @@ namespace NanoMessageBus
 	public class when_adding_a_set_of_message_headers : with_a_dispatch_context
 	{
 		Because of = () =>
-			returnedContext = dispatchContext.WithHeaders(new Dictionary<string, string>());
+			returnedContext = dispatchContext.WithHeaders(added);
 
 		It should_return_an_instance_of_itself = () =>
+			returnedContext.HeaderCount.ShouldEqual(3);
+
+		It should_increment_the_header_count_by_the_number_of_headers_added = () =>
 			returnedContext.ShouldEqual(dispatchContext);
+
+		static readonly IDictionary<string, string> added = new Dictionary<string, string>
+		{
+			{ "1", "1" },
+			{ "2", "2" },
+			{ "3", "3" }
+		};
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -213,6 +256,9 @@ namespace NanoMessageBus
 			headers["a"].ShouldEqual("1");
 			headers["b"].ShouldEqual("2");
 		};
+
+		It should_reset_the_header_count_to_zero = () =>
+			dispatchContext.HeaderCount.ShouldEqual(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
