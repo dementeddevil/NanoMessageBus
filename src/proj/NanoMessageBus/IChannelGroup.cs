@@ -35,20 +35,10 @@
 		/// For dispatch-only channel groups, it adds the callback provided to an in-memory queue for
 		/// asynchronous invocation; for full-duplex channel groups (send/receive), it throws an exception.
 		/// </summary>
-		/// <param name="dispatch">The callback which creates and prepares a message for dispatch.</param>
-		/// <exception cref="InvalidOperationException"></exception>
-		/// <returns>A value indicating whether or not the channel could add the item to the in-memory queue.</returns>
-		bool PrepareDispatch(Action<IDispatchContext> dispatch);
-
-		/// <summary>
-		/// For dispatch-only channel groups, it adds the envelope provided to an in-memory queue for
-		/// asynchronous dispatch; for full-duplex channel groups (send/receive), it throws an exception.
-		/// </summary>
+		/// <param name="callback">The callback which creates and prepares a message for dispatch.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="InvalidOperationException"></exception>
-		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
-		/// <param name="completed">The callback to be invoked when the dispatch has completed.</param>
-		/// <returns>A value indicating whether or not the envelope was queued for dispatch.</returns>
-		bool BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed);
+		/// <returns>A value indicating whether or not the channel could add the item to the in-memory queue.</returns>
+		bool BeginDispatch(Action<IDispatchContext> callback);
 	}
 }

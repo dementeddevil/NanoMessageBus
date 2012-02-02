@@ -129,7 +129,7 @@ namespace NanoMessageBus
 	public class when_replying_the_dispatch : using_a_channel_message_dispatch_context
 	{
 		Because of = () =>
-			Try(() => dispatchContext.Publish());
+			Try(() => dispatchContext.Reply());
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();

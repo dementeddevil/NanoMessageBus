@@ -165,13 +165,11 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
-	public class when_asynchronously_dispatching_a_message_to_a_dispatch_only_group : with_a_channel_group
+	public class when_asynchronously_dispatching_a_message_with_a_dispatch_only_group : with_a_channel_group
 	{
 		Establish context = () =>
 		{
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
-			mockChannel.Setup(x => x.Send(envelope));
-			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWorkers
 				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
 				.Returns(true)
@@ -181,23 +179,16 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			enqueued = channelGroup.BeginDispatch(envelope, trx =>
-			{
-				current = trx;
-				IncrementInvocations();
-			});
+			enqueued = channelGroup.BeginDispatch(x => IncrementInvocations());
 
-		It should_indicate_the_message_was_enqueued = () =>
+		It should_indicate_the_work_item_was_enqueued = () =>
 			enqueued.ShouldBeTrue();
 
-		It should_pass_the_message_to_exactly_one_of_the_underlying_channels = () =>
-			mockChannel.Verify(x => x.Send(envelope), Times.Once());
+		It should_prepare_a_dispatch_context_on_the_underlying_channel = () =>
+			mockChannel.Verify(x => x.PrepareDispatch(null), Times.Once());
 
 		It should_invoke_the_callback_method_provided = () =>
 			invocations.ShouldEqual(1);
-
-		It should_provide_the_current_transaction_to_the_callback = () =>
-			current.ShouldEqual(mockChannel.Object.CurrentTransaction);
 
 		static IChannelTransaction current;
 		static bool enqueued;
@@ -218,7 +209,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			enqueued = channelGroup.BeginDispatch(envelope, trx => { });
+			enqueued = channelGroup.BeginDispatch(x => { });
 
 		It should_indicate_the_message_was_not_enqueued = () =>
 			enqueued.ShouldBeFalse();
@@ -232,7 +223,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
-			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
+			mockChannel.Setup(x => x.PrepareDispatch(null)).Throws(new ChannelConnectionException());
 			mockWorkers
 				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
 				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
@@ -241,10 +232,10 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			channelGroup.BeginDispatch(envelope, trx => { });
+			channelGroup.BeginDispatch(x => { });
 
-		It should_attempt_to_send_the_message = () =>
-			mockChannel.Verify(x => x.Send(envelope), Times.Once());
+		It should_attempt_to_prepare_a_dispatch_context = () =>
+			mockChannel.Verify(x => x.PrepareDispatch(null), Times.Once());
 
 		It should_restart_the_worker_group = () =>
 			mockWorkers.Verify(x => x.Restart(), Times.Once());
@@ -257,33 +248,20 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(x => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
-	public class when_no_message_is_provided_to_asynchronously_dispatch : with_a_channel_group
+	public class when_no_callback_is_provided_for_asynchronous_dispatch : with_a_channel_group
 	{
 		Establish context = () =>
 			channelGroup.Initialize();
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null, trx => { }));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultChannelGroup))]
-	public class when_no_completion_callback_is_provided_for_asynchronous_dispatch : with_a_channel_group
-	{
-		Establish context = () =>
-			channelGroup.Initialize();
-
-		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, null));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -293,7 +271,7 @@ namespace NanoMessageBus
 	public class when_attempting_to_asynchronously_dispatching_a_message_without_first_initializing_the_group : with_a_channel_group
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(x => { }));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<InvalidOperationException>();
@@ -311,7 +289,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginDispatch(envelope, trx => { }));
+			thrown = Catch.Exception(() => channelGroup.BeginDispatch(x => { }));
 
 		It should_NOT_throw_an_exception = () =>
 			thrown.ShouldBeNull();

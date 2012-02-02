@@ -70,33 +70,15 @@
 			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 		}
 
-		public virtual bool PrepareDispatch(Action<IDispatchContext> dispatch)
+		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
 		{
-			// TODO:
-			throw new NotImplementedException();
-		}
-		public virtual bool BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
-		{
-			if (envelope == null)
-				throw new ArgumentNullException("envelope");
-
-			if (completed == null)
-				throw new ArgumentNullException("completed");
+			if (callback == null)
+				throw new ArgumentNullException("callback");
 
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			Log.Verbose("Adding envelope with message '{0}' onto dispatch queue for channel group '{0}'.",
-				envelope.Message.MessageId, this.configuration.GroupName);
-			return this.workers.Enqueue(worker => this.TryOperation(() =>
-			{
-				Log.Verbose("Pushing envelope with message '{0}' into messaging channel for dispatch for channel group '{0}'.",
-					envelope.Message.MessageId, this.configuration.GroupName);
-
-				var channel = worker.State;
-				channel.Send(envelope);
-				completed(channel.CurrentTransaction);
-			}));
+			return this.workers.Enqueue(worker => this.TryOperation(() => callback(worker.State.PrepareDispatch())));
 		}
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
