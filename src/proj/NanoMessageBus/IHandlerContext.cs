@@ -26,13 +26,5 @@
 		/// </summary>
 		/// <exception cref="ObjectDisposedException"></exception>
 		void DeferMessage();
-
-		/// <summary>
-		/// Prepares a dispatch for transmission.
-		/// </summary>
-		/// <param name="message">The optional message to be dispatched; a set of messages can be provided later if necessary.</param>
-		/// <exception cref="ObjectDisposedException"></exception>
-		/// <returns>A new instance of a dispatch to be prepared for transmission.</returns>
-		IDispatchContext PrepareDispatch(object message = null);
 	}
 }

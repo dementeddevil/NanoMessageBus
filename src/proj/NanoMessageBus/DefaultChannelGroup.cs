@@ -70,6 +70,11 @@
 			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
 		}
 
+		public virtual bool PrepareDispatch(Action<IDispatchContext> dispatch)
+		{
+			// TODO:
+			throw new NotImplementedException();
+		}
 		public virtual bool BeginDispatch(ChannelEnvelope envelope, Action<IChannelTransaction> completed)
 		{
 			if (envelope == null)

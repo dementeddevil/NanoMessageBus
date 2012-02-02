@@ -120,6 +120,12 @@
 			this.CurrentTransaction.Commit();
 		}
 
+		public virtual IDispatchContext PrepareDispatch(object message = null)
+		{
+			// TODO: 
+			throw new NotImplementedException();
+		}
+
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			if (envelope == null)

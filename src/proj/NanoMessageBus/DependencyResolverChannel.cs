@@ -26,6 +26,12 @@
 			get { return this.currentContext ?? this.channel; }
 		}
 
+		public virtual IDispatchContext PrepareDispatch(object message = null)
+		{
+			// TODO: 
+			throw new NotImplementedException();
+		}
+
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			this.CurrentContext.Send(envelope);
