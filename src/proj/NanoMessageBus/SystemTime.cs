@@ -33,23 +33,23 @@
 		}
 
 		/// <summary>
-		/// Gets the number of seconds that have elapsed between the instant and Unix Epoch Time (12:00 AM January 1, 1970).
+		/// Gets the number of milliseconds that have elapsed between the instant and Unix Epoch Time (12:00 AM January 1, 1970).
 		/// </summary>
 		/// <param name="instant">The instant from which epoch time will be computed.</param>
-		/// <returns>The number of seconds that have elapsed since the instant provided.</returns>
+		/// <returns>The number of milliseconds that have elapsed since the instant provided.</returns>
 		public static long ToEpochTime(this DateTime instant)
 		{
-			return (long)(instant - EpochTime).TotalSeconds;
+			return (long)(instant - EpochTime).TotalMilliseconds;
 		}
 
 		/// <summary>
-		/// Gets the point in time represented by the instant specified.
+		/// Gets the point in time represented by the instant specified in milliseconds since the epoch.
 		/// </summary>
-		/// <param name="epochTime">The point in time, according to Unix Epoch Time to be converted.</param>
+		/// <param name="epochTime">The point in time, according to Unix Epoch Time to be converted, expressed in milliseconds.</param>
 		/// <returns>The point in time expressed as a DateTime.</returns>
 		public static DateTime ToDateTime(this long epochTime)
 		{
-			return EpochTime + TimeSpan.FromSeconds(epochTime);
+			return EpochTime + TimeSpan.FromMilliseconds(epochTime);
 		}
 
 		/// <summary>

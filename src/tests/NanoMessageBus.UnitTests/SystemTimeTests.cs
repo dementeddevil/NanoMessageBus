@@ -43,12 +43,12 @@ namespace NanoMessageBus
 
 		Because of = () =>
 		{
-			seconds = SystemTime.UtcNow.ToEpochTime();
-			converted = seconds.ToDateTime();
+			milliseconds = SystemTime.UtcNow.ToEpochTime();
+			converted = milliseconds.ToDateTime();
 		};
 
 		It should_yield_the_number_of_seconds_since_Unix_epoch_time_1970 = () =>
-			seconds.ShouldEqual(946684800);
+			milliseconds.ShouldEqual(946684800000);
 
 		It should_be_able_to_convert_epoch_time_back_to_a_regular_DateTime = () =>
 			converted.ShouldEqual(Instant);
@@ -56,7 +56,7 @@ namespace NanoMessageBus
 		Cleanup after = () =>
 			SystemTime.TimeResolver = null;
 
-		static long seconds;
+		static long milliseconds;
 		static DateTime converted;
 		static readonly DateTime Instant = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 	}
