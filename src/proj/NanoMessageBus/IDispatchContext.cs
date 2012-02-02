@@ -63,7 +63,7 @@
 		/// Pushes the message onto the underlying channel sending it to any interested parties and completes the context.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
-		void Send();
+		IChannelTransaction Send();
 
 		/// <summary>
 		/// Pushes the message onto the underlying channel publishing it to all interested parties, and completes the context.
@@ -72,12 +72,12 @@
 		/// The first message in the transmission will be used to determine message type, and thus, the recipients of the message.
 		/// </remarks>
 		/// <exception cref="InvalidOperationException"></exception>
-		void Publish();
+		IChannelTransaction Publish();
 
 		/// <summary>
 		/// Pushes the message onto the channel sending it to the original sender, if any, and completes the context.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>
-		void Reply();
+		IChannelTransaction Reply();
 	}
 }

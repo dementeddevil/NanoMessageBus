@@ -269,7 +269,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			dispatchContext.WithRecipient(new Uri("http://added")).Send();
+			transaction = dispatchContext.WithRecipient(new Uri("http://added")).Send();
 
 		It should_query_the_dispatch_table_with_the_primary_message_type = () =>
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Once());
@@ -282,6 +282,9 @@ namespace NanoMessageBus
 
 		It should_set_the_return_address_to_the_configured_value = () =>
 			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+
+		It should_return_the_current_transaction = () =>
+			transaction.ShouldEqual(mockTransaction.Object);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -310,7 +313,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			dispatchContext.WithRecipient(new Uri("http://added")).Publish();
+			transaction = dispatchContext.WithRecipient(new Uri("http://added")).Publish();
 
 		It should_query_the_dispatch_table_with_the_primary_message_type = () =>
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Once());
@@ -323,6 +326,9 @@ namespace NanoMessageBus
 
 		It should_set_the_return_address_to_the_configured_value = () =>
 			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+
+		It should_return_the_current_transaction = () =>
+			transaction.ShouldEqual(mockTransaction.Object);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -349,7 +355,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			dispatchContext.Reply();
+			transaction = dispatchContext.Reply();
 
 		It should_NOT_query_the_dispatch_table_with_the_primary_message_type = () =>
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Never());
@@ -363,7 +369,23 @@ namespace NanoMessageBus
 		It should_use_the_correlation_identifier_from_the_incoming_message = () =>
 			message.CorrelationId.ShouldEqual(incomingCorrelationId);
 
+		It should_return_the_current_transaction = () =>
+			transaction.ShouldEqual(mockTransaction.Object);
+
 		static readonly Guid incomingCorrelationId = Guid.NewGuid();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_replying_to_a_null_incoming_message : with_a_dispatch_context
+	{
+		Establish context = () =>
+			mockDelivery.Setup(x => x.CurrentMessage).Returns((ChannelMessage)null);
+
+		Because of = () =>
+			Try(() => dispatchContext.Reply());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -477,9 +499,12 @@ namespace NanoMessageBus
 			mockMessage = new Mock<ChannelMessage>();
 			mockMessage.Setup(x => x.ReturnAddress).Returns(IncomingReturnAddress);
 
+			mockTransaction = new Mock<IChannelTransaction>();
+
 			mockDelivery = new Mock<IDeliveryContext>();
 			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
 			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 
 			mockDelivery
 				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
@@ -499,6 +524,7 @@ namespace NanoMessageBus
 			headers = null;
 			recipients = null;
 			thrown = null;
+			transaction = null;
 
 			Build(mockDelivery.Object, mockDispatchTable.Object);
 		};
@@ -516,6 +542,7 @@ namespace NanoMessageBus
 		protected static DefaultDispatchContext dispatchContext;
 		protected static IDispatchContext returnedContext;
 		protected static Mock<IDeliveryContext> mockDelivery;
+		protected static Mock<IChannelTransaction> mockTransaction;
 		protected static Mock<IDispatchTable> mockDispatchTable;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static Mock<ChannelMessage> mockMessage;
@@ -524,6 +551,7 @@ namespace NanoMessageBus
 		protected static object[] messages;
 		protected static IDictionary<string, string> headers;
 		protected static Uri[] recipients;
+		protected static IChannelTransaction transaction;
 		protected static Exception thrown;
 	}
 }

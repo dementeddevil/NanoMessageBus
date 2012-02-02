@@ -75,35 +75,41 @@
 			return this;
 		}
 
-		public virtual void Send()
+		public virtual IChannelTransaction Send()
 		{
 			Log.Verbose("Sending message to registered recipients.");
-			this.Dispatch(this.BuildRecipients().ToArray());
+			return this.Dispatch(this.BuildRecipients().ToArray());
 		}
-		public virtual void Publish()
+		public virtual IChannelTransaction Publish()
 		{
 			Log.Verbose("Publishing message to registered subscribers.");
-			this.Dispatch(this.BuildRecipients().ToArray());
+			return this.Dispatch(this.BuildRecipients().ToArray());
 		}
-		public virtual void Reply()
+		public virtual IChannelTransaction Reply()
 		{
-			var message = this.delivery.CurrentMessage;
+			if (this.channel.CurrentMessage == null)
+			{
+				Log.Warn("A reply can only be sent because of an incoming message.");
+				throw new InvalidOperationException("A reply can only be sent because of an incoming message.");
+			}
+
+			var message = this.channel.CurrentMessage;
 			var incomingReturnAddress = message.ReturnAddress;
 
 			Log.Verbose("Replying to message.");
 			if (incomingReturnAddress == null)
-				Log.Debug("Incoming message '{0}' contains no return address.", message.MessageId);
+				Log.Warn("Incoming message '{0}' contains no return address; dead-letter address will be used for reply.", message.MessageId);
 
 			if (this.correlationIdentifier == Guid.Empty)
 			{
 				Log.Verbose("Using correlation identifier '{0}' from incoming message '{1}'.",
 					message.CorrelationId, message.MessageId);
-				this.correlationIdentifier = this.delivery.CurrentMessage.CorrelationId;
+				this.correlationIdentifier = this.channel.CurrentMessage.CorrelationId;
 			}
 
-			this.Dispatch(incomingReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
+			return this.Dispatch(incomingReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
 		}
-		protected virtual void Dispatch(params Uri[] targets)
+		protected virtual IChannelTransaction Dispatch(params Uri[] targets)
 		{
 			this.ThrowWhenDispatched();
 			this.ThrowWhenNoMessages();
@@ -112,11 +118,12 @@
 				this.correlationIdentifier, this.returnAddress, this.messageHeaders, this.logicalMessages);
 			var envelope = new ChannelEnvelope(message, targets);
 
-			Log.Verbose("Dispatching message '{0}' with correlation identifier '{1}' to {2} recipients.",
+			Log.Verbose("Dispatching message '{0}' with correlation identifier '{1}' to {2} recipient(s).",
 				message.MessageId, message.CorrelationId, targets.Length);
 
-			this.delivery.Send(envelope);
+			this.channel.Send(envelope);
 			this.dispatched = true;
+			return this.channel.CurrentTransaction;
 		}
 		protected virtual IEnumerable<Uri> BuildRecipients()
 		{
@@ -141,12 +148,12 @@
 			throw new InvalidOperationException("The set of messages has already been dispatched.");
 		}
 
-		public DefaultDispatchContext(IDeliveryContext delivery, IDispatchTable dispatchTable)
+		public DefaultDispatchContext(IDeliveryContext channel, IDispatchTable dispatchTable)
 		{
-			this.delivery = delivery;
+			this.channel = channel;
 			this.dispatchTable = dispatchTable;
 
-			var config = delivery.CurrentConfiguration;
+			var config = channel.CurrentConfiguration;
 			this.builder = config.MessageBuilder;
 			this.returnAddress = config.ReturnAddress;
 		}
@@ -155,7 +162,7 @@
 		private readonly IDictionary<string, string> messageHeaders = new Dictionary<string, string>();
 		private readonly ICollection<object> logicalMessages = new LinkedList<object>();
 		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();
-		private readonly IDeliveryContext delivery;
+		private readonly IDeliveryContext channel;
 		private readonly IDispatchTable dispatchTable;
 		private readonly IChannelMessageBuilder builder;
 		private readonly Uri returnAddress;
