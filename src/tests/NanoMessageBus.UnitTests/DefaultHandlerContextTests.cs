@@ -13,17 +13,7 @@ namespace NanoMessageBus
 	public class when_providing_a_null_delivery_context : with_a_handler_context
 	{
 		Because of = () =>
-			TryBuild(null, mockDispatchTable.Object);
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(DefaultHandlerContext))]
-	public class when_providing_a_null_dispatch_table : with_a_handler_context
-	{
-		Because of = () =>
-			TryBuild(mockDelivery.Object, null);
+			TryBuild(null);
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -94,31 +84,33 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultHandlerContext))]
 	public class when_preparing_to_dispatch : with_a_handler_context
 	{
+		Establish context = () => mockDelivery
+			.Setup(x => x.PrepareDispatch("Hello, World!"))
+			.Returns(mockDispatch.Object);
+
 		Because of = () =>
-			dispatchContext = handlerContext.PrepareDispatch();
+			dispatchContext = handlerContext.PrepareDispatch("Hello, World!");
 
-		It should_create_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+		It should_invoke_the_underlying_channel = () =>
+			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!"));
 
-		It should_not_have_any_messages_in_the_dispatch_context = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+		It should_return_the_reference_from_the_underlying_channel = () =>
+			dispatchContext.ShouldEqual(mockDispatch.Object);
 
+		static readonly Mock<IDispatchContext> mockDispatch = new Mock<IDispatchContext>();
 		static IDispatchContext dispatchContext;
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
-	public class when_preparing_to_dispatch_with_a_message : with_a_handler_context
+	public class when_sending_an_envelope : with_a_handler_context
 	{
 		Because of = () =>
-			dispatchContext = handlerContext.PrepareDispatch("some message");
+			handlerContext.Send(envelope);
 
-		It should_create_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+		It should_invoke_the_underlying_channel = () =>
+			mockDelivery.Verify(x => x.Send(envelope), Times.Once());
 
-		It should_indicate_the_message_was_added_to_the_dispatch_context = () =>
-			dispatchContext.MessageCount.ShouldEqual(1);
-
-		static IDispatchContext dispatchContext;
+		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -185,14 +177,13 @@ namespace NanoMessageBus
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 			mockDelivery.Setup(x => x.CurrentResolver).Returns(mockResolver.Object);
 
-			mockDispatchTable = new Mock<IDispatchTable>();
 			thrown = null;
 
-			TryBuild(mockDelivery.Object, mockDispatchTable.Object);
+			TryBuild(mockDelivery.Object);
 		};
-		protected static void TryBuild(IDeliveryContext delivery, IDispatchTable dispatchTable)
+		protected static void TryBuild(IDeliveryContext delivery)
 		{
-			Try(() => handlerContext = new DefaultHandlerContext(delivery, dispatchTable));
+			Try(() => handlerContext = new DefaultHandlerContext(delivery));
 		}
 		protected static void Try(Action callback)
 		{
@@ -205,7 +196,6 @@ namespace NanoMessageBus
 		protected static Mock<IChannelTransaction> mockTransaction;
 		protected static Mock<IDependencyResolver> mockResolver;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
-		protected static Mock<IDispatchTable> mockDispatchTable;
 		protected static Exception thrown;
 	}
 }

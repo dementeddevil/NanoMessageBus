@@ -21,6 +21,17 @@
 		{
 			get { return this.delivery.CurrentResolver; }
 		}
+		public virtual IDispatchContext PrepareDispatch(object message = null)
+		{
+			this.ThrowWhenDisposed();
+			return this.delivery.PrepareDispatch(message);
+		}
+		public virtual void Send(ChannelEnvelope message)
+		{
+			// TODO: refactor IDeliveryContext to remove Send()
+			this.delivery.Send(message);
+		}
+
 		public virtual bool ContinueHandling
 		{
 			get { return this.continueHandling; }
@@ -37,19 +48,6 @@
 			this.delivery.Send(new ChannelEnvelope(
 				this.delivery.CurrentMessage, new[] { ChannelEnvelope.LoopbackAddress }));
 		}
-		public virtual IDispatchContext PrepareDispatch(object message = null)
-		{
-			this.ThrowWhenDisposed();
-
-			var context = new DefaultDispatchContext(this.delivery, this.dispatchTable);
-			return message == null ? context : context.WithMessage(message);
-		}
-
-		public virtual void Send(ChannelEnvelope message)
-		{
-			// TODO: IDeliveryContext will be refactored to remove this method
-			this.delivery.Send(message);
-		}
 
 		protected virtual void ThrowWhenDisposed()
 		{
@@ -60,16 +58,12 @@
 			throw new ObjectDisposedException(typeof(DefaultHandlerContext).Name);
 		}
 
-		public DefaultHandlerContext(IDeliveryContext delivery, IDispatchTable dispatchTable)
+		public DefaultHandlerContext(IDeliveryContext delivery)
 		{
 			if (delivery == null)
 				throw new ArgumentNullException("delivery");
 
-			if (dispatchTable == null)
-				throw new ArgumentNullException("dispatchTable");
-
 			this.delivery = delivery;
-			this.dispatchTable = dispatchTable;
 			this.continueHandling = true;
 		}
 		~DefaultHandlerContext()
@@ -90,7 +84,6 @@
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultHandlerContext));
 		private readonly IDeliveryContext delivery;
-		private readonly IDispatchTable dispatchTable;
 		private bool continueHandling;
 		private bool disposed;
 	}

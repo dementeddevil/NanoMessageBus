@@ -28,17 +28,10 @@
 			this.receive = delivery;
 			return this;
 		}
-		public virtual MessagingWireup WithDispatchTable(IDispatchTable table)
-		{
-			Log.Debug("Using dispatch table of type '{0}'.", table.GetType());
-
-			this.dispatchTable = table;
-			return this;
-		}
 		protected virtual void DefaultReceive(IDeliveryContext delivery)
 		{
 			Log.Verbose("Channel message received, routing message to configured handlers.");
-			using (var context = new DefaultHandlerContext(delivery, this.dispatchTable))
+			using (var context = new DefaultHandlerContext(delivery))
 				this.routingTable.Route(context, delivery.CurrentMessage);
 
 			delivery.CurrentTransaction.Commit();
@@ -71,6 +64,5 @@
 		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
 		private Action<IDeliveryContext> receive;
 		private IRoutingTable routingTable;
-		private IDispatchTable dispatchTable;
 	}
 }
