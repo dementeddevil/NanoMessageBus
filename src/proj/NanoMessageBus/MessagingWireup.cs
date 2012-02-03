@@ -13,12 +13,19 @@
 	/// </remarks>
 	public class MessagingWireup
 	{
-		public virtual MessagingWireup AddConnector(IChannelConnector connector)
+		public virtual MessagingWireup AddConnector(IChannelConnector channelConnector)
 		{
-			Log.Debug("Adding channel connector of type '{0}'.", connector.GetType());
+			Log.Debug("Adding channel connector of type '{0}'.", channelConnector.GetType());
 
-			connector = new DependencyResolverConnector(connector);
-			this.connectors.Add(connector);
+			channelConnector = new DependencyResolverConnector(channelConnector);
+			this.connectors.Add(channelConnector);
+			return this;
+		}
+		public virtual MessagingWireup AddConnectors(IEnumerable<IChannelConnector> channelConnectors)
+		{
+			foreach (var connector in channelConnectors)
+				this.AddConnector(connector);
+
 			return this;
 		}
 		public virtual MessagingWireup WithHandlerContext(Action<IDeliveryContext> delivery)
