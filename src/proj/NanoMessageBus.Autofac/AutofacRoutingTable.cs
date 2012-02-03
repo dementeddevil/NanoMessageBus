@@ -13,11 +13,13 @@
 		{
 			// TODO
 		}
+
 		public virtual int Route(IHandlerContext context, object message)
 		{
 			var container = context.CurrentResolver.As<ILifetimeScope>();
 			var componentContext = container.Resolve<IComponentContext>();
 
+			// TODO
 			return 0;
 		}
 	}

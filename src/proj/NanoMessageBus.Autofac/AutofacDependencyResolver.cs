@@ -21,6 +21,10 @@
 			return this.container.BeginLifetimeScope(builder => this.register(this.depth, builder));
 		}
 
+		public AutofacDependencyResolver(IComponentContext context, Action<int, ContainerBuilder> register = null)
+			: this(context.Resolve<ILifetimeScope>(), register)
+		{
+		}
 		public AutofacDependencyResolver(ILifetimeScope container, Action<int, ContainerBuilder> register = null)
 			: this(container, 0, register)
 		{
