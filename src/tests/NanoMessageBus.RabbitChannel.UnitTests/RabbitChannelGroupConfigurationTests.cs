@@ -677,6 +677,26 @@ namespace NanoMessageBus.RabbitChannel
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_multiple_sets_of_messages_types_have_been_specified : using_channel_config
+	{
+		Establish context = () =>
+			config.WithMessageTypes(types.Take(3)).WithInputQueue("queue");
+
+		Because of = () =>
+		{
+			config.WithMessageTypes(types.Reverse().Take(3));
+			Configure();
+		};
+
+		It should_append_all_specified_message_types_to_the_list = () =>
+			types.ToList().ForEach(type => mockChannel.Verify(model =>
+				model.QueueBind("queue", type.FullName.AsLower(), string.Empty, null), Times.Once()));
+
+		static readonly IEnumerable<Type> types =
+			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_a_null_collection_of_message_types_is_provided : using_channel_config
 	{
 		Because of = () =>
@@ -709,7 +729,7 @@ namespace NanoMessageBus.RabbitChannel
 		Because of = () =>
 			config.WithDependencyResolver(resolver);
 
-		It should_set_the_resolver_reference_on_theconfiguration = () =>
+		It should_set_the_resolver_reference_on_the_configuration = () =>
 			config.DependencyResolver.ShouldEqual(resolver);
 
 		static readonly IDependencyResolver resolver = new Mock<IDependencyResolver>().Object;

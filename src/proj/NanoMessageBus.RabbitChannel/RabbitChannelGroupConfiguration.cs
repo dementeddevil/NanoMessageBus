@@ -86,7 +86,10 @@
 		protected virtual bool DurableQueue { get; private set; }
 		protected virtual bool AutoDelete { get; private set; }
 		protected virtual bool ReturnAddressSpecified { get; private set; }
-		protected virtual IEnumerable<Type> MessageTypes { get; private set; }
+		protected virtual IEnumerable<Type> MessageTypes
+		{
+			get { return this.messageTypes; }
+		}
 		public virtual IDispatchTable DispatchTable { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
@@ -244,9 +247,12 @@
 			if (handledTypes == null)
 				throw new ArgumentNullException("handledTypes");
 
-			this.MessageTypes = handledTypes.Distinct();
+			foreach (var type in handledTypes)
+				this.messageTypes.Add(type);
+
 			return this;
 		}
+
 		public virtual RabbitChannelGroupConfiguration WithDependencyResolver(IDependencyResolver resolver)
 		{
 			if (resolver == null)
@@ -284,7 +290,6 @@
 			this.DependencyResolver = null;
 			this.DispatchOnly = true;
 			this.DurableQueue = true;
-			this.MessageTypes = new Type[0];
 
 			this.MessageBuilder = new DefaultChannelMessageBuilder();
 			this.DispatchTable = DefaultDispatchTable;
@@ -301,5 +306,6 @@
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 		private static readonly IDispatchTable DefaultDispatchTable = new RabbitDispatchTable();
+		private readonly ICollection<Type> messageTypes = new HashSet<Type>();
 	}
 }
