@@ -19,7 +19,7 @@
 			if (channelMessage != null)
 				return new DefaultChannelMessageDispatchContext(this.channel, channelMessage);
 
-			Log.Verbose("Adding logical message of type '{0}' for dispatch.");
+			Log.Verbose("Adding logical message of type '{0}' for dispatch.", message.GetType());
 
 			this.logicalMessages.Add(message);
 			this.MessageCount++;
