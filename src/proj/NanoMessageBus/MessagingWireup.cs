@@ -47,7 +47,7 @@
 
 		public virtual IMessagingHost Start()
 		{
-			Log.Info("Starting host in dispatch-only mode.");
+			Log.Info("Starting host in dispatch-only mode; duplex mode can be started later, if configured.");
 			return this.StartHost();
 		}
 		public virtual IMessagingHost StartWithReceive(IRoutingTable table, Func<IHandlerContext, IMessageHandler<ChannelMessage>> handler = null)
