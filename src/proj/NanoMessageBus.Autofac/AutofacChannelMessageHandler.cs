@@ -14,7 +14,7 @@
 			var container = context.CurrentResolver.As<ILifetimeScope>();
 
 			var builder = new ContainerBuilder();
-			builder.RegisterInstance(context).ExternallyOwned(); // single instance for this and decendent scopes
+			builder.RegisterInstance(context).ExternallyOwned(); // single instance for this and descendent scopes
 			builder.Update(container.ComponentRegistry);
 
 			this.handler = inner ?? new DefaultChannelMessageHandler(context, container.Resolve<IRoutingTable>());

@@ -7,7 +7,7 @@
 	{
 		public virtual T As<T>() where T : class
 		{
-			return (T)this.container;
+			return this.container as T;
 		}
 		public virtual IDependencyResolver CreateNestedResolver()
 		{
