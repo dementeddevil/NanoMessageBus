@@ -28,28 +28,12 @@
 
 			return this;
 		}
-		public virtual MessagingWireup WithDeliveryCallback(Action<IDeliveryContext> callback)
+		public virtual MessagingWireup WithDeliveryHandler(IDeliveryHandler handler)
 		{
-			Log.Info("Alternate delivery callback provided.");
+			Log.Info("Alternate delivery handler provided.");
 
-			this.deliveryCallback = callback;
+			this.deliveryHandler = handler;
 			return this;
-		}
-		public virtual MessagingWireup WrapDeliveryCallback(Action<IDeliveryContext, Action<IDeliveryContext>> callback)
-		{
-			Log.Info("Wrapping delivery callback provided.");
-
-			this.wrappedCallback = callback;
-			return this;
-		}
-		protected virtual void DefaultReceive(IDeliveryContext delivery)
-		{
-			Log.Verbose("Channel message received, routing message to configured handlers.");
-			using (var context = new DefaultHandlerContext(delivery))
-				this.routingTable.Route(context, delivery.CurrentMessage);
-
-			Log.Verbose("Channel message receipt completed, committing current transaction.");
-			delivery.CurrentTransaction.Commit();
 		}
 
 		public virtual IMessagingHost Start()
@@ -61,20 +45,11 @@
 		{
 			Log.Info("Starting host in full-duplex mode.");
 
-			var host = this.StartHost();
-			this.routingTable = table;
 			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)));
-			host.BeginReceive(this.StartReceive);
-			return host;
-		}
-		private void StartReceive(IDeliveryContext context)
-		{
-			var callback = this.deliveryCallback ?? this.DefaultReceive;
 
-			if (this.wrappedCallback == null)
-				callback(context);
-			else
-				this.wrappedCallback(context, callback);
+			var host = this.StartHost();
+			host.BeginReceive((this.deliveryHandler ?? new DefaultDeliveryHandler(table)).Handle);
+			return host;
 		}
 
 		protected virtual IMessagingHost StartHost()
@@ -86,8 +61,6 @@
 
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
 		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
-		private Action<IDeliveryContext> deliveryCallback;
-		private Action<IDeliveryContext, Action<IDeliveryContext>> wrappedCallback;
-		private IRoutingTable routingTable;
+		private IDeliveryHandler deliveryHandler;
 	}
 }
