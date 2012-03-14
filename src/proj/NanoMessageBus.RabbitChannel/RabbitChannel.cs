@@ -87,7 +87,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Info("Handling of message '{0}' has thrown an exception, attempting to retry message.", messageId);
+				Log.Warn("Handling of message '{0}' has thrown an exception, attempting to retry message.", messageId);
 				this.RetryMessage(message, e);
 			}
 		}
