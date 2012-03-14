@@ -28,13 +28,13 @@
 				return config.DeadLetterExchange;
 
 			var address = PublicationAddress.Parse(uri.ToString());
-			return address.ExchangeName.AsLower() == "default"
+			return address.ExchangeName.NormalizeName() == "default"
 				? new PublicationAddress(ExchangeType.Direct, string.Empty, address.RoutingKey) : address;
 		}
 
-		public static string AsLower(this string value)
+		public static string NormalizeName(this string value)
 		{
-			return (value ?? string.Empty).ToLowerInvariant();
+			return (value ?? string.Empty).ToLowerInvariant().Replace(".", "-");
 		}
 
 		public static int GetAttemptCount(this BasicDeliverEventArgs message)

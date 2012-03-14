@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using Logging;
 
 	public class RabbitDispatchTable : IDispatchTable
 	{
@@ -13,7 +12,7 @@
 				if (messageType == null)
 					throw new ArgumentNullException("messageType");
 
-				return new[] { new Uri("fanout://" + messageType.FullName.AsLower(), UriKind.Absolute) };
+				return new[] { new Uri("fanout://" + messageType.FullName.NormalizeName(), UriKind.Absolute) };
 			}
 		}
 		public void AddSubscriber(Uri subscriber, Type messageType, DateTime expiration)
@@ -28,7 +27,5 @@
 		{
 			// no op
 		}
-
-		private static readonly ILog Log = LogFactory.Build(typeof(RabbitDispatchTable));
 	}
 }

@@ -123,9 +123,9 @@ namespace NanoMessageBus.RabbitChannel
 			config.WithDispatchOnly();
 
 		Because of = () =>
-			config.WithInputQueue("My-Queue");
+			config.WithInputQueue("My.Queue");
 
-		It should_contain_the_lower_case_variant_of_thequeue_name_specified = () =>
+		It should_contain_the_lower_case_variant_of_the_queue_name_specified_with_periods_replaced = () =>
 			config.InputQueue.ShouldEqual("my-queue");
 
 		It should_be_full_duplex = () =>
@@ -634,7 +634,7 @@ namespace NanoMessageBus.RabbitChannel
 			routingKey = config.LookupRoutingKey(mockMessage.Object);
 
 		It should_use_the_lowercase_type_name_of_the_first_logical_message_in_the_ChannelMessage = () =>
-			routingKey.ShouldEqual("system.string");
+			routingKey.ShouldEqual("system-string");
 
 		static readonly object[] logicalMessages = new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 };
 		static Mock<ChannelMessage> mockMessage;
@@ -653,7 +653,7 @@ namespace NanoMessageBus.RabbitChannel
 		It should_declare_a_durable_fanout_exchange_for_each_type = () =>
 			types.ToList().ForEach(type => mockChannel.Verify(model =>
 				model.ExchangeDeclare(
-					type.FullName.AsLower(), ExchangeType.Fanout, true, false, null), Times.Once()));
+					type.FullName.NormalizeName(), ExchangeType.Fanout, true, false, null), Times.Once()));
 
 		static readonly IEnumerable<Type> types =
 			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());
@@ -670,7 +670,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_bind_the_queue_to_the_declared_exchanges = () =>
 			types.ToList().ForEach(type => mockChannel.Verify(model =>
-				model.QueueBind("some-queue", type.FullName.AsLower(), string.Empty, null), Times.Once()));
+				model.QueueBind("some-queue", type.FullName.NormalizeName(), string.Empty, null), Times.Once()));
 
 		static readonly IEnumerable<Type> types =
 			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());
@@ -690,7 +690,7 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_append_all_specified_message_types_to_the_list = () =>
 			types.ToList().ForEach(type => mockChannel.Verify(model =>
-				model.QueueBind("queue", type.FullName.AsLower(), string.Empty, null), Times.Once()));
+				model.QueueBind("queue", type.FullName.NormalizeName(), string.Empty, null), Times.Once()));
 
 		static readonly IEnumerable<Type> types =
 			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());

@@ -36,7 +36,7 @@ namespace NanoMessageBus.RabbitChannel
 			subscribers[0].Scheme.ShouldEqual("fanout");
 
 		It should_contain_the_lowercase_value_of_the_type_name = () => 
-			subscribers[0].Authority.ShouldEqual("system.string");
+			subscribers[0].Authority.ShouldEqual("system-string");
 
 		It should_not_contain_a_routing_key = () => 
 			subscribers[0].PathAndQuery.ShouldEqual("/");
