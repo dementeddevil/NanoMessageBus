@@ -443,7 +443,7 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_maximum_number_of_receive_attempts_is_not_specified : using_channel_config
 	{
 		It should_contain_the_default_number_of_attempts = () =>
-			config.MaxAttempts.ShouldEqual(1);
+			config.MaxAttempts.ShouldEqual(3);
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

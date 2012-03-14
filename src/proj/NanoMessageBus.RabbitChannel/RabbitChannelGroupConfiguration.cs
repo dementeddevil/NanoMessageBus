@@ -296,7 +296,7 @@
 		}
 
 		private const int DefaultWorkerCount = 1;
-		private const int DefaultMaxAttempts = 1;
+		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
 		private const string DefaultGroupName = "all";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
