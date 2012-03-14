@@ -20,7 +20,10 @@ namespace NanoMessageBus.RabbitChannel
 	public class when_opening_a_channel : using_a_channel
 	{
 		Establish context = () =>
+		{
+			mockConfiguration.Setup(x => x.GroupName).Returns("Group 42");
 			mockConfiguration.Setup(x => x.DependencyResolver).Returns(new Mock<IDependencyResolver>().Object);
+		};
 
 		Because of = () =>
 			Initialize();
@@ -30,6 +33,9 @@ namespace NanoMessageBus.RabbitChannel
 
 		It should_not_yet_have_an_current_message = () =>
 			channel.CurrentMessage.ShouldBeNull();
+
+		It should_expose_the_name_of_the_channel_group = () =>
+			channel.GroupName.ShouldEqual(mockConfiguration.Object.GroupName);
 
 		It should_expose_a_reference_to_the_resolver_from_the_underlying_configuration = () =>
 			channel.CurrentResolver.ShouldEqual(mockConfiguration.Object.DependencyResolver);

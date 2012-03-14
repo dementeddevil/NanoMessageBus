@@ -33,10 +33,14 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			mockWrappedChannel.Setup(x => x.GroupName).Returns(GroupName);
 			mockWrappedChannel.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockWrappedChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 		};
+
+		It should_expose_the_channel_group_name_from_the_underlying_channel = () =>
+			channel.GroupName.ShouldEqual(mockWrappedChannel.Object.GroupName);
 
 		It should_expose_the_current_message_from_the_underlying_channel = () =>
 			channel.CurrentMessage.ShouldEqual(mockWrappedChannel.Object.CurrentMessage);
@@ -49,6 +53,8 @@ namespace NanoMessageBus
 
 		It should_expose_the_resolver_provided_during_construction = () =>
 			channel.CurrentResolver.ShouldEqual(mockResolver.Object);
+
+		private const string GroupName = "My Group Name";
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]

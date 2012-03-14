@@ -12,6 +12,11 @@
 	public interface IDeliveryContext
 	{
 		/// <summary>
+		/// Gets the name of the channel group through which the delivery occurred.
+		/// </summary>
+		string GroupName { get; }
+
+		/// <summary>
 		/// Gets the current inbound message being handled on the channel.
 		/// </summary>
 		ChannelMessage CurrentMessage { get; }

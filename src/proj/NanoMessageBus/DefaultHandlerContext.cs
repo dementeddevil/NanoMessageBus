@@ -5,6 +5,10 @@
 
 	public class DefaultHandlerContext : IHandlerContext
 	{
+		public virtual string GroupName
+		{
+			get { return this.delivery.GroupName; }
+		}
 		public virtual ChannelMessage CurrentMessage
 		{
 			get { return this.delivery.CurrentMessage; }
