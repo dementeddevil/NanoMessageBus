@@ -28,7 +28,7 @@
 
 			return this;
 		}
-		public virtual MessagingWireup WithHandlerContext(Action<IDeliveryContext> delivery)
+		public virtual MessagingWireup WithDeliveryContext(Action<IDeliveryContext> delivery)
 		{
 			Log.Info("Alternate delivery callback provided.");
 
@@ -41,6 +41,7 @@
 			using (var context = new DefaultHandlerContext(delivery))
 				this.routingTable.Route(context, delivery.CurrentMessage);
 
+			Log.Verbose("Channel message receipt completed, committing current transaction.");
 			delivery.CurrentTransaction.Commit();
 		}
 
