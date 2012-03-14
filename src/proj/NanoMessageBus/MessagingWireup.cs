@@ -28,11 +28,18 @@
 
 			return this;
 		}
-		public virtual MessagingWireup WithDeliveryContext(Action<IDeliveryContext> delivery)
+		public virtual MessagingWireup WithDeliveryCallback(Action<IDeliveryContext> callback)
 		{
 			Log.Info("Alternate delivery callback provided.");
 
-			this.receive = delivery;
+			this.deliveryCallback = callback;
+			return this;
+		}
+		public virtual MessagingWireup WrapDeliveryCallback(Action<IDeliveryContext, Action<IDeliveryContext>> callback)
+		{
+			Log.Info("Wrapping delivery callback provided.");
+
+			this.wrappedCallback = callback;
 			return this;
 		}
 		protected virtual void DefaultReceive(IDeliveryContext delivery)
@@ -57,8 +64,17 @@
 			var host = this.StartHost();
 			this.routingTable = table;
 			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)));
-			host.BeginReceive(this.receive ?? this.DefaultReceive);
+			host.BeginReceive(this.StartReceive);
 			return host;
+		}
+		private void StartReceive(IDeliveryContext context)
+		{
+			var callback = this.deliveryCallback ?? this.DefaultReceive;
+
+			if (this.wrappedCallback == null)
+				callback(context);
+			else
+				this.wrappedCallback(context, callback);
 		}
 
 		protected virtual IMessagingHost StartHost()
@@ -70,7 +86,8 @@
 
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
 		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
-		private Action<IDeliveryContext> receive;
+		private Action<IDeliveryContext> deliveryCallback;
+		private Action<IDeliveryContext, Action<IDeliveryContext>> wrappedCallback;
 		private IRoutingTable routingTable;
 	}
 }
