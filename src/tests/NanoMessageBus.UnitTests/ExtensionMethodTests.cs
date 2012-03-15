@@ -6,6 +6,7 @@ namespace NanoMessageBus
 	using System.Collections.Generic;
 	using Machine.Specifications;
 
+	[Subject(typeof(ExtensionMethods))]
 	public class when_trying_to_retreive_a_value_from_a_null_dictionary
 	{
 		Because of = () =>

@@ -7,6 +7,9 @@
 	{
 		public void Handle(IDeliveryContext delivery)
 		{
+			if (delivery == null)
+				throw new ArgumentNullException("delivery");
+
 			Log.Verbose("Channel message received, routing message to configured handlers.");
 			using (var context = new DefaultHandlerContext(delivery))
 				this.routingTable.Route(context, delivery.CurrentMessage);

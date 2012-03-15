@@ -49,6 +49,7 @@
     <Compile Include="DefaultChannelMessageBuilderTests.cs" />
     <Compile Include="DefaultChannelMessageHandlerTests.cs" />
     <Compile Include="DefaultChannelGroupFactoryTests.cs" />
+    <Compile Include="DefaultDeliveryHandlerTests.cs" />
     <Compile Include="DefaultDispatchContextTests.cs" />
     <Compile Include="DefaultHandlerContextTests.cs" />
     <Compile Include="DefaultRoutingTableTests.cs" />
