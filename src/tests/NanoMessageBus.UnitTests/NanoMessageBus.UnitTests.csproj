@@ -57,6 +57,7 @@
     <Compile Include="DefaultChannelGroupTests.cs" />
     <Compile Include="DefaultDependencyResolverTests.cs" />
     <Compile Include="DefaultMessagingHostTests.cs" />
+    <Compile Include="ExtensionMethodTests.cs" />
     <Compile Include="Logging\LoggingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\BinarySerializerTests.cs" />
