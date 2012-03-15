@@ -23,6 +23,9 @@
 
 		public virtual int Route(IHandlerContext context, object message)
 		{
+			// TODO: perhaps we make a Route<T> method call which then facilitates generics all the way down
+			// and eliminates a lot of the games here.
+
 			var messageType = message.GetType();
 			if (messageType == ChannelMessageType && this.channelMessageCallback != null)
 			{
