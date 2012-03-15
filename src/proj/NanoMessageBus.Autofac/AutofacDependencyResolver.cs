@@ -3,7 +3,7 @@
 	using System;
 	using Autofac;
 
-	public partial class AutofacDependencyResolver : IDependencyResolver
+	public class AutofacDependencyResolver : IDependencyResolver
 	{
 		public virtual T As<T>() where T : class
 		{

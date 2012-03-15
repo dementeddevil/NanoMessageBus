@@ -27,6 +27,6 @@
 		}
 
 		private readonly IRoutingTable routingTable;
-		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDeliveryHandler));
 	}
 }
