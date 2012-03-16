@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NanoMessageBus.NLog</id>
+    <version>2.0.0</version>
+    <title>NanoMessageBus NLog Logging Plugin</title>
+    <authors>Jonathan Oliver</authors>
+    <owners>Jonathan Oliver</owners>
+    <projectUrl>https://github.com/joliver/NanoMessageBus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Additional logging provider for NanoMessageBus using NLog.</description>
+    <summary>Newtonsoft JSON.NET Serializer for NanoMessageBus.</summary>
+    <language>es-US</language>
+    <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, logging, nlog</tags>
+    <dependencies>
+      <dependency id="NanoMessageBus" version="2.0.0" />
+      <dependency id="NLog" version="2.0.0.2000" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\proj\NanoMessageBus.NLog\bin\Release\NanoMessageBus.NLog.*" target="lib\net40" />
+    <file src="..\proj\NanoMessageBus.NLog\**\*.cs" target="src" />
+  </files>
+</package>

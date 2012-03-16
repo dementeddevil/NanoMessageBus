@@ -18,5 +18,7 @@ bin\ilmerge\ILMerge.exe /keyfile:src\NanoMessageBus.snk /internalize /wildcards 
 echo Creating NuGet packages...
 src\.nuget\nuget.exe pack src\packages\NanoMessageBus.nuspec -symbols
 src\.nuget\nuget.exe pack src\packages\NanoMessageBus.JsonSerializer.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.Log4Net.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.NLog.nuspec -symbols
 
 echo Done.

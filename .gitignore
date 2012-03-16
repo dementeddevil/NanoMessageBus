@@ -10,4 +10,4 @@ _ReSharper.*
 *.Cache
 *.cache
 ~$*
-packages
+#packages
