@@ -1,7 +1,7 @@
 ﻿#pragma warning disable 169
 // ReSharper disable InconsistentNaming
 
-namespace NanoMessageBus.RabbitChannel
+namespace NanoMessageBus.Channels
 {
 	using System;
 	using System.Collections.Generic;

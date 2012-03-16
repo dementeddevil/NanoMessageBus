@@ -1,4 +1,4 @@
-﻿namespace NanoMessageBus.RabbitChannel
+﻿namespace NanoMessageBus.Channels
 {
 	public enum RabbitTransactionType
 	{
