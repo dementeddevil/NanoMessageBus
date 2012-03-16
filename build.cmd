@@ -15,11 +15,11 @@ bin\ilmerge\ILMerge.exe /keyfile:src\NanoMessageBus.snk /internalize /wildcards 
  "src/proj/NanoMessageBus.JsonSerializer/bin/Release/Newtonsoft.Json.dll"
  
 echo Creating NuGet packages...
-::src\.nuget\nuget.exe pack src\packages\NanoMessageBus.nuspec -symbols
-::src\.nuget\nuget.exe pack src\packages\NanoMessageBus.RabbitMQ.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.RabbitMQ.nuspec -symbols
 src\.nuget\nuget.exe pack src\packages\NanoMessageBus.Json.NET.nuspec -symbols
-::src\.nuget\nuget.exe pack src\packages\NanoMessageBus.Log4Net.nuspec -symbols
-::src\.nuget\nuget.exe pack src\packages\NanoMessageBus.NLog.nuspec -symbols
-::src\.nuget\nuget.exe pack src\packages\NanoMessageBus.Autofac.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.Log4Net.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.NLog.nuspec -symbols
+src\.nuget\nuget.exe pack src\packages\NanoMessageBus.Autofac.nuspec -symbols
 
 echo Done.
