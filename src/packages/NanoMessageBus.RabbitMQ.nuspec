@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NanoMessageBus.RabbitMQ</id>
+    <version>2.0.0</version>
+    <title>NanoMessageBus RabbitMQ Messaging Plugin</title>
+    <authors>Jonathan Oliver</authors>
+    <owners>Jonathan Oliver</owners>
+    <projectUrl>https://github.com/joliver/NanoMessageBus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Additional messaging provider for NanoMessageBus using RabbitMQ messaging infrastructure.</description>
+    <summary>RabbitMQ messaging adapter for NanoMessageBus.</summary>
+    <language>es-US</language>
+    <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, amqp, rabbit, rabbitmq</tags>
+    <dependencies>
+      <dependency id="NanoMessageBus" version="2.0.0" />
+      <dependency id="RabbitMQ.Client" version="2.7.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\proj\NanoMessageBus.RabbitChannel\bin\Release\NanoMessageBus.RabbitChannel.*" target="lib\net40" />
+    <file src="..\proj\NanoMessageBus.RabbitChannel\**\*.cs" target="src" />
+  </files>
+</package>
