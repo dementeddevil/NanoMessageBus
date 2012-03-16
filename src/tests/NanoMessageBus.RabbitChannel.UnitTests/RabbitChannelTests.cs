@@ -456,7 +456,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(address);
+			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(destination);
 			mockConfiguration.Setup(x => x.MaxAttempts).Returns(FirstFailureIsPoisonMessage);
 
 			RequireTransaction(RabbitTransactionType.Full);
@@ -475,9 +475,12 @@ namespace NanoMessageBus.Channels
 		It should_clear_the_failure_count_on_the_message = () =>
 			message.GetAttemptCount().ShouldEqual(0);
 
+		It should_append_the_source_address_to_the_message = () =>
+			mockAdapter.Setup(x => x.AppendSourceAddress(message));
+
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
 			mockRealChannel.Verify(x =>
-				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
+				x.BasicPublish(destination, message.BasicProperties, message.Body), Times.Once());
 
 		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
 			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
@@ -488,7 +491,7 @@ namespace NanoMessageBus.Channels
 		const int FirstFailureIsPoisonMessage = 0;
 		static readonly Exception raise = new Exception();
 		static readonly BasicDeliverEventArgs message = new BasicDeliverEventArgs();
-		static readonly PublicationAddress address =
+		static readonly PublicationAddress destination =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}
 

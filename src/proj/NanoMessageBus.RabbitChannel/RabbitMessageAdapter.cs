@@ -142,6 +142,17 @@
 			};
 		}
 
+		public virtual void AppendSourceAddress(BasicDeliverEventArgs message)
+		{
+			if (message == null)
+				throw new ArgumentNullException("message");
+
+			var address = SourceAddressValueFormat.FormatWith(this.configuration.InputQueue);
+			message.BasicProperties.Headers[RabbitHeaderFormat.FormatWith(SourceAddressHeaderKey)] = address;
+
+			Log.Verbose("Poison message source address is '{0}'", address);
+		}
+
 		public virtual void AppendException(BasicDeliverEventArgs message, Exception exception)
 		{
 			if (message == null)
@@ -176,6 +187,8 @@
 		private const string ContentType = "application/vnd.nmb.rabbit-msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
+		private const string SourceAddressHeaderKey = "source-address";
+		private const string SourceAddressValueFormat = "direct://default/{0}";
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitMessageAdapter));
 		private readonly RabbitChannelGroupConfiguration configuration;
 	}

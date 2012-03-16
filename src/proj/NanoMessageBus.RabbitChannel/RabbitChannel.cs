@@ -111,8 +111,11 @@
 		protected virtual void ForwardToPoisonMessageExchange(BasicDeliverEventArgs message, Exception exception)
 		{
 			Log.Info("Message '{0}' is a poison message.", message.MessageId());
+
 			message.SetAttemptCount(0);
+			this.adapter.AppendSourceAddress(message);
 			this.adapter.AppendException(message, exception);
+
 			this.ForwardTo(message, this.configuration.PoisonMessageExchange);
 		}
 		protected virtual void ForwardTo(BasicDeliverEventArgs message, PublicationAddress address)
