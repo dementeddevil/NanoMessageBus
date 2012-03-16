@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NanoMessageBus</id>
+    <version>2.0.0</version>
+    <title>NanoMessageBus</title>
+    <authors>Jonathan Oliver</authors>
+    <owners>Jonathan Oliver</owners>
+    <projectUrl>https://github.com/joliver/NanoMessageBus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A fast and ultra-lightweight (sub-100K) general messaging library and service bus for .NET</description>
+    <language>es-US</language>
+    <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus</tags>
+  </metadata>
+  <files>
+    <file src="..\proj\NanoMessageBus\bin\Release\NanoMessageBus.*" target="lib\net40" />
+    <file src="..\proj\NanoMessageBus\**\*.cs" target="src" />
+  </files>
+</package>

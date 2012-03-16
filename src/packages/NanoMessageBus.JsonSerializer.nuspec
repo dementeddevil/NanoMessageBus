@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NanoMessageBus.JsonSerializer</id>
+    <version>2.0.0</version>
+    <title>NanoMessageBus Newtonsoft JSON.NET Serialization Plugin</title>
+    <authors>Jonathan Oliver</authors>
+    <owners>Jonathan Oliver</owners>
+    <projectUrl>https://github.com/joliver/NanoMessageBus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Additional serialization provider for NanoMessageBus based on the Newtonsoft JSON.NET library.</description>
+    <summary>Newtonsoft JSON.NET Serializer for NanoMessageBus.</summary>
+    <language>es-US</language>
+    <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, newtonsoft, json, serialization, serializer</tags>
+    <dependencies>
+      <dependency id="NanoMessageBus" version="2.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\proj\NanoMessageBus.JsonSerializer\bin\Release\merged\*" target="lib\net40" />
+    <file src="..\proj\NanoMessageBus.JsonSerializer\**\*.cs" target="src" />
+  </files>
+</package>
