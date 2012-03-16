@@ -24,10 +24,16 @@
 			if (MessageHandlers.TryGetValue(assembly, out handlers))
 				return handlers;
 
+			MessageHandlers[assembly] = handlers = new HashSet<Type>();
 			foreach (var type in assembly.GetTypes().Where(x => x.GetMessageHandlerTypes().Count > 0))
 				handlers.Add(type);
 
 			return handlers;
+		}
+
+		public static IEnumerable<Type> GetMessageHandlerTypes(this Assembly assembly)
+		{
+			return assembly.GetMessageHandlers().SelectMany(x => x.GetMessageHandlerTypes());
 		}
 		public static ICollection<Type> GetMessageHandlerTypes(this Type messageHandler)
 		{

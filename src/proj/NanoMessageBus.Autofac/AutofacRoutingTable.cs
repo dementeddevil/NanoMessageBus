@@ -39,7 +39,11 @@
 				.Count(x => { x.Handle(message); return true; });
 		}
 
-		public AutofacRoutingTable(ContainerBuilder builder = null, params Assembly[] messageHandlerAssemblies)
+		public AutofacRoutingTable(params Assembly[] messageHandlerAssemblies)
+			: this(null, messageHandlerAssemblies)
+		{
+		}
+		public AutofacRoutingTable(ContainerBuilder builder, params Assembly[] messageHandlerAssemblies)
 		{
 			var messageHandlers = messageHandlerAssemblies.GetMessageHandlers();
 			foreach (var handledType in messageHandlers.SelectMany(x => x.GetMessageHandlerTypes()))

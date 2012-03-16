@@ -19,6 +19,6 @@
 		}
 
 		private static readonly MethodInfo WrapCallbackMethod =
-			typeof(AutofacWireupExtensionMethods).GetMethod("WrapCallback", BindingFlags.NonPublic | BindingFlags.Static);
+			typeof(AutofacRoutingTableExtensionMethods).GetMethod("WrapCallback", BindingFlags.NonPublic | BindingFlags.Static);
 	}
 }
