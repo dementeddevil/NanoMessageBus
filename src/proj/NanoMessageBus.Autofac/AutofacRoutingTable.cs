@@ -39,10 +39,23 @@
 				.Count(x => { x.Handle(message); return true; });
 		}
 
-		public AutofacRoutingTable(params Assembly[] messageHandlerAssemblies)
+		public AutofacRoutingTable(ContainerBuilder builder = null, params Assembly[] messageHandlerAssemblies)
 		{
 			foreach (var handledType in messageHandlerAssemblies.GetHandledTypes())
 				this.callbacks[handledType] = DynamicRouteMethod.AsCallback(handledType);
+
+			if (builder == null)
+				return;
+
+			builder
+				.RegisterInstance(this)
+				.As<IRoutingTable>()
+				.SingleInstance();
+
+			builder
+				.RegisterAssemblyTypes(messageHandlerAssemblies)
+				.AsImplementedInterfaces()
+				.InstancePerLifetimeScope();
 		}
 
 		private readonly IDictionary<Type, RoutingDelegate> callbacks = new Dictionary<Type, RoutingDelegate>();
