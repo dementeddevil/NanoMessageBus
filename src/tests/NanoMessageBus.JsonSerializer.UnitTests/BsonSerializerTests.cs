@@ -1,12 +1,11 @@
 ﻿#pragma warning disable 169
 // ReSharper disable InconsistentNaming
 
-namespace NanoMessageBus.JsonSerializer
+namespace NanoMessageBus.Serialization
 {
 	using System;
 	using System.IO;
 	using Machine.Specifications;
-	using Serialization;
 
 	[Subject(typeof(BsonSerializer))]
 	public class when_a_new_instance_is_created_for_bson_serialization : using_the_bson_serializer

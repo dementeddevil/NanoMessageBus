@@ -1,4 +1,4 @@
-﻿namespace NanoMessageBus.JsonSerializer
+﻿namespace NanoMessageBus.Serialization
 {
 	using System;
 	using System.Collections;

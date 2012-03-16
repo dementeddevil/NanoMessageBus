@@ -8,7 +8,7 @@
     <ProjectGuid>{88C03081-9148-462E-BE02-B514C8C1F760}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NanoMessageBus.JsonSerializer</RootNamespace>
+    <RootNamespace>NanoMessageBus.Serialization</RootNamespace>
     <AssemblyName>NanoMessageBus.JsonSerializer</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

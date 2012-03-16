@@ -1,10 +1,9 @@
-﻿namespace NanoMessageBus.JsonSerializer
+﻿namespace NanoMessageBus.Serialization
 {
 	using System.IO;
 	using System.Runtime.Serialization.Formatters;
 	using System.Text;
 	using Newtonsoft.Json;
-	using Serialization;
 	using JsonNetSerializer = Newtonsoft.Json.JsonSerializer;
 
 	public class JsonSerializer : ISerializer
