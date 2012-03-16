@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/joliver/NanoMessageBus</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Additional logging provider for NanoMessageBus using Log4Net.</description>
-    <summary>Newtonsoft JSON.NET Serializer for NanoMessageBus.</summary>
+    <summary>Log4Net logging plugin for NanoMessageBus.</summary>
     <language>es-US</language>
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, logging, log4net</tags>
     <dependencies>
