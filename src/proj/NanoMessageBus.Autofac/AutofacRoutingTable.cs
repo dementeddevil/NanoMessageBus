@@ -41,7 +41,8 @@
 
 		public AutofacRoutingTable(ContainerBuilder builder = null, params Assembly[] messageHandlerAssemblies)
 		{
-			foreach (var handledType in messageHandlerAssemblies.GetHandledTypes())
+			var messageHandlers = messageHandlerAssemblies.GetMessageHandlers();
+			foreach (var handledType in messageHandlers.SelectMany(x => x.GetMessageHandlerTypes()))
 				this.callbacks[handledType] = DynamicRouteMethod.AsCallback(handledType);
 
 			if (builder == null)
@@ -54,6 +55,7 @@
 
 			builder
 				.RegisterAssemblyTypes(messageHandlerAssemblies)
+				.Where(messageHandlers.Contains)
 				.AsImplementedInterfaces()
 				.InstancePerLifetimeScope();
 		}

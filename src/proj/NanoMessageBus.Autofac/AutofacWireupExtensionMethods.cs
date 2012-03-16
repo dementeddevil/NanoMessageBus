@@ -7,41 +7,59 @@
 
 	public static class AutofacWireupExtensionMethods
 	{
-		public static IEnumerable<Type> GetHandledTypes(this IEnumerable<Assembly> assemblies)
+		public static ICollection<Type> GetMessageHandlers(this IEnumerable<Assembly> assemblies)
 		{
-			return (assemblies ?? new Assembly[0])
-				.SelectMany(assembly => assembly.GetHandledTypes())
-				.Distinct()
-				.ToArray();
+			var messageHandlers = new HashSet<Type>();
+			foreach (var assembly in assemblies ?? new Assembly[0])
+				messageHandlers.UnionWith(assembly.GetMessageHandlers());
+
+			return messageHandlers;
 		}
-		public static IEnumerable<Type> GetHandledTypes(this Assembly assembly)
+		public static ICollection<Type> GetMessageHandlers(this Assembly assembly)
 		{
-			return assembly.GetTypes()
-				.SelectMany(GetHandledTypes)
-				.Distinct()
-				.ToArray();
+			if (assembly == null)
+				throw new ArgumentNullException("assembly");
+
+			ICollection<Type> handlers;
+			if (MessageHandlers.TryGetValue(assembly, out handlers))
+				return handlers;
+
+			foreach (var type in assembly.GetTypes().Where(x => x.GetMessageHandlerTypes().Count > 0))
+				handlers.Add(type);
+
+			return handlers;
 		}
-		public static IEnumerable<Type> GetHandledTypes(this Type type)
+		public static ICollection<Type> GetMessageHandlerTypes(this Type messageHandler)
 		{
-			return type.GetInterfaces()
+			if (messageHandler == null)
+				throw new ArgumentNullException("messageHandler");
+
+			ICollection<Type> types;
+			if (MessageHandlerTypes.TryGetValue(messageHandler, out types))
+				return types;
+
+			MessageHandlerTypes[messageHandler] = types = new HashSet<Type>();
+
+			messageHandler.GetInterfaces()
 				.Where(x => x.IsGenericType)
 				.Where(x => x.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
-				.Select(x => x.GetGenericArguments().First());
+				.Select(x => x.GetGenericArguments().First())
+				.ToList()
+				.ForEach(types.Add);
+
+			return types;
+		}
+		public static bool IsMessageHandler(this Type candidate)
+		{
+			if (candidate == null)
+				throw new ArgumentNullException("candidate");
+
+			return candidate.GetMessageHandlerTypes().Count > 0;
 		}
 
-		internal static RoutingDelegate AsCallback(this MethodInfo routeMethod, Type parameter)
-		{
-			var genericRouteMethod = routeMethod.MakeGenericMethod(parameter);
-			var genericRouteDelegateType = typeof(RoutingDelegate<>).MakeGenericType(parameter);
-			var callback = Delegate.CreateDelegate(genericRouteDelegateType, genericRouteMethod);
-			var genericWrapMethod = WrapCallbackMethod.MakeGenericMethod(parameter);
-			return (RoutingDelegate)genericWrapMethod.Invoke(null, new object[] { callback });
-		}
-		private static RoutingDelegate WrapCallback<T>(RoutingDelegate<T> callback)
-		{
-			return (context, message) => callback(context, (T)message);
-		}
-		private static readonly MethodInfo WrapCallbackMethod =
-			typeof(AutofacWireupExtensionMethods).GetMethod("WrapCallback", BindingFlags.NonPublic | BindingFlags.Static);
+		private static readonly IDictionary<Assembly, ICollection<Type>> MessageHandlers =
+			new Dictionary<Assembly, ICollection<Type>>();
+		private static readonly IDictionary<Type, ICollection<Type>> MessageHandlerTypes =
+			new Dictionary<Type, ICollection<Type>>();
 	}
 }
