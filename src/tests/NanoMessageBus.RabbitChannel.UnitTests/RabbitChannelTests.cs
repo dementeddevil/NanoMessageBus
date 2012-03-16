@@ -475,8 +475,8 @@ namespace NanoMessageBus.Channels
 		It should_clear_the_failure_count_on_the_message = () =>
 			message.GetAttemptCount().ShouldEqual(0);
 
-		It should_append_the_source_address_to_the_message = () =>
-			mockAdapter.Setup(x => x.AppendSourceAddress(message));
+		It should_append_the_retry_address_to_the_message = () =>
+			mockAdapter.Setup(x => x.AppendRetryAddress(message));
 
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
 			mockRealChannel.Verify(x =>

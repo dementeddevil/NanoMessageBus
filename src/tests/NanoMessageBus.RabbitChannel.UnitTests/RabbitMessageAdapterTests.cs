@@ -332,26 +332,26 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_no_message_is_supplied_to_which_the_source_address_should_be_appended : using_a_message_adapter
+	public class when_no_message_is_supplied_to_which_the_retry_address_should_be_appended : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendSourceAddress(null));
+			thrown = Catch.Exception(() => adapter.AppendRetryAddress(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
-	public class when_a_message_is_supplied_to_which_the_source_address_should_be_appended : using_a_message_adapter
+	public class when_a_message_is_supplied_to_which_the_retry_address_should_be_appended : using_a_message_adapter
 	{
 		Establish context = () =>
 			mockConfiguration.Setup(x => x.InputQueue).Returns("my-queue-name");
 
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendSourceAddress(message));
+			thrown = Catch.Exception(() => adapter.AppendRetryAddress(message));
 
 		It should_append_the_configured_input_queue_to_the_message_header = () =>
-			message.BasicProperties.Headers["x-rabbit-source-address"].ShouldEqual("direct://default/my-queue-name");
+			message.BasicProperties.Headers["x-rabbit-retry-address"].ShouldEqual("direct://default/my-queue-name");
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 	}
