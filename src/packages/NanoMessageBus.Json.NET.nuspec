@@ -13,7 +13,7 @@
     <language>es-US</language>
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, newtonsoft, json, serialization, serializer</tags>
     <dependencies>
-      <dependency id="NanoMessageBus" version="2.0.0" />
+      <dependency id="NanoMessageBus" version="2.0.1" />
     </dependencies>
   </metadata>
   <files>
