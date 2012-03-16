@@ -97,6 +97,7 @@
     <Compile Include="SystemTime.cs" />
     <Compile Include="TaskWorker.cs" />
     <Compile Include="TaskWorkerGroup.cs" />
+    <Compile Include="TransactionalDeliveryHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\CustomDictionary.xml">

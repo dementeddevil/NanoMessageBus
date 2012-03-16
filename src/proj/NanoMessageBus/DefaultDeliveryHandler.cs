@@ -7,15 +7,12 @@
 	{
 		public void Handle(IDeliveryContext delivery)
 		{
-			if (delivery == null)
-				throw new ArgumentNullException("delivery");
+			Log.Debug("Channel message received, routing message to configured handlers.");
 
-			Log.Verbose("Channel message received, routing message to configured handlers.");
 			using (var context = new DefaultHandlerContext(delivery))
 				this.routingTable.Route(context, delivery.CurrentMessage);
 
-			Log.Verbose("Channel message receipt completed, committing current transaction.");
-			delivery.CurrentTransaction.Commit();
+			Log.Verbose("Channel message payload successfully delivered to all configured recipients.");
 		}
 
 		public DefaultDeliveryHandler(IRoutingTable routingTable)

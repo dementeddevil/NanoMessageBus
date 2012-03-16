@@ -28,11 +28,11 @@
 
 			return this;
 		}
-		public virtual MessagingWireup WithDeliveryHandler(IDeliveryHandler handler)
+		public virtual MessagingWireup WithDeliveryHandler(Func<IDeliveryHandler, IDeliveryHandler> callback)
 		{
 			Log.Info("Alternate delivery handler provided.");
 
-			this.deliveryHandler = handler;
+			this.handlerCallback = callback;
 			return this;
 		}
 
@@ -48,8 +48,16 @@
 			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)));
 
 			var host = this.StartHost();
-			host.BeginReceive((this.deliveryHandler ?? new DefaultDeliveryHandler(table)).Handle);
+			host.BeginReceive(this.BuildDeliveryChain(table).Handle);
 			return host;
+		}
+		protected virtual IDeliveryHandler BuildDeliveryChain(IRoutingTable table)
+		{
+			IDeliveryHandler handler = new DefaultDeliveryHandler(table);
+			if (this.handlerCallback != null)
+				handler = this.handlerCallback(handler);
+
+			return new TransactionalDeliveryHandler(handler);
 		}
 
 		protected virtual IMessagingHost StartHost()
@@ -61,6 +69,6 @@
 
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
 		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
-		private IDeliveryHandler deliveryHandler;
+		private Func<IDeliveryHandler, IDeliveryHandler> handlerCallback;
 	}
 }
