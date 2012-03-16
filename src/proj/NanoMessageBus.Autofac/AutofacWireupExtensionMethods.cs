@@ -5,7 +5,7 @@
 	using System.Linq;
 	using System.Reflection;
 
-	public static class ExtensionMethods
+	public static class AutofacWireupExtensionMethods
 	{
 		public static IEnumerable<Type> GetHandledTypes(this IEnumerable<Assembly> assemblies)
 		{
@@ -42,6 +42,6 @@
 			return (context, message) => callback(context, (T)message);
 		}
 		private static readonly MethodInfo WrapCallbackMethod =
-			typeof(ExtensionMethods).GetMethod("WrapCallback", BindingFlags.NonPublic | BindingFlags.Static);
+			typeof(AutofacWireupExtensionMethods).GetMethod("WrapCallback", BindingFlags.NonPublic | BindingFlags.Static);
 	}
 }
