@@ -42,13 +42,13 @@ namespace NanoMessageBus
 	public class when_begin_dispatch_is_invoked : with_an_indisposable_channel_group
 	{
 		Establish context = () =>
-			mockInner.Setup(x => x.BeginDispatch(dispatchAction)).Returns(true);
+			mockInner.Setup(x => x.BeginDispatch(DispatchAction)).Returns(true);
 
 		Because of = () =>
-			queued = group.BeginDispatch(dispatchAction);
+			queued = group.BeginDispatch(DispatchAction);
 
 		It should_invoke_begin_dispatch_on_the_underlying_group = () =>
-			mockInner.Verify(x => x.BeginDispatch(dispatchAction), Times.Once());
+			mockInner.Verify(x => x.BeginDispatch(DispatchAction), Times.Once());
 
 		It should_return_the_value_from_the_underlying_group_when_begin_dispatch_is_called = () =>
 			queued.ShouldBeTrue();
@@ -60,10 +60,10 @@ namespace NanoMessageBus
 	public class when_begin_receive_is_invoked : with_an_indisposable_channel_group
 	{
 		Because of = () =>
-			group.BeginReceive(deliveryAction);
+			group.BeginReceive(DeliveryAction);
 
 		It should_invoke_begin_receive_on_the_underlying_group = () =>
-			mockInner.Verify(x => x.BeginReceive(deliveryAction), Times.Once());
+			mockInner.Verify(x => x.BeginReceive(DeliveryAction), Times.Once());
 	}
 
 	[Subject(typeof(IndisposableChannelGroup))]
@@ -83,8 +83,8 @@ namespace NanoMessageBus
 			group = new IndisposableChannelGroup(mockInner.Object);
 
 			// code coverage
-			deliveryAction(null);
-			dispatchAction(null);
+			DeliveryAction(null);
+			DispatchAction(null);
 		};
 		protected static void Try(Action callback)
 		{
@@ -95,8 +95,8 @@ namespace NanoMessageBus
 		protected static Mock<IChannelGroup> mockInner;
 		protected static Exception thrown;
 
-		protected static readonly Action<IDeliveryContext> deliveryAction = x => { };
-		protected static readonly Action<IDispatchContext> dispatchAction = x => { };
+		protected static readonly Action<IDeliveryContext> DeliveryAction = x => { };
+		protected static readonly Action<IDispatchContext> DispatchAction = x => { };
 	}
 }
 
