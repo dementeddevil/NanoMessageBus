@@ -5,7 +5,7 @@
 
 	public class DefaultDeliveryHandler : IDeliveryHandler
 	{
-		public void Handle(IDeliveryContext delivery)
+		public virtual void Handle(IDeliveryContext delivery)
 		{
 			Log.Debug("Channel message received, routing message to configured handlers.");
 

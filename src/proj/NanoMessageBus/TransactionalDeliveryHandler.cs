@@ -5,7 +5,7 @@
 
 	public class TransactionalDeliveryHandler : IDeliveryHandler
 	{
-		public void Handle(IDeliveryContext delivery)
+		public virtual void Handle(IDeliveryContext delivery)
 		{
 			if (delivery == null)
 				throw new ArgumentNullException("delivery");

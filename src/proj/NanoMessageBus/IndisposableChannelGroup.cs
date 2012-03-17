@@ -4,24 +4,24 @@
 
 	public class IndisposableChannelGroup : IChannelGroup
 	{
-		public IChannelGroup Inner
+		public virtual IChannelGroup Inner
 		{
 			get { return this.inner; }
 		}
-		public bool DispatchOnly
+		public virtual bool DispatchOnly
 		{
 			get { return this.inner.DispatchOnly; }
 		}
 
-		public void Initialize()
+		public virtual void Initialize()
 		{
 			this.inner.Initialize();
 		}
-		public void BeginReceive(Action<IDeliveryContext> callback)
+		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			this.inner.BeginReceive(callback);
 		}
-		public bool BeginDispatch(Action<IDispatchContext> callback)
+		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
 		{
 			return this.inner.BeginDispatch(callback);
 		}
