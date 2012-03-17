@@ -61,7 +61,7 @@
 			IDeliveryHandler handler = new DefaultDeliveryHandler(table);
 
 			if (this.handlerCallback != null)
-				handler = this.handlerCallback(handler);
+				handler = this.handlerCallback(handler) ?? handler;
 
 			if (this.transactionScope)
 				handler = new TransactionScopeDeliveryHandler(handler);
