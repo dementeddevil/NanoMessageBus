@@ -26,11 +26,7 @@
 			if (messageType == typeof(ChannelMessage))
 				return this.RouteToChannelMessageHandler(context, message);
 
-			var routes = this.callbacks[messageType](context, message);
-			if (routes == 0)
-				return DynamicRoute(context, message);
-
-			return routes;
+			return this.callbacks[messageType](context, message) + DynamicRoute(context, message);
 		}
 		private int RouteToChannelMessageHandler(IHandlerContext context, object message)
 		{
