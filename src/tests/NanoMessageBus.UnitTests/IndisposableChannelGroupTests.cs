@@ -72,6 +72,9 @@ namespace NanoMessageBus
 	[Subject(typeof(IndisposableChannelGroup))]
 	public class when_disposee_is_invoked : with_an_indisposable_channel_group
 	{
+		Because of = () =>
+			group.Dispose();
+
 		It should_NOT_invoke_dispose_on_the_underlying_group = () =>
 			mockInner.Verify(x => x.Dispose(), Times.Never());
 	}

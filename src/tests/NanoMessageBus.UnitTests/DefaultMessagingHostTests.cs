@@ -85,7 +85,10 @@ namespace NanoMessageBus
 			mockGroup.Verify(x => x.Initialize(), Times.Exactly(3)); // tests provide the same group 3 times
 
 		It should_return_the_primary_channel_group = () =>
-			primaryGroup.ShouldEqual(mockGroup.Object); // improve test because same group is returned
+			((IndisposableChannelGroup)primaryGroup).Inner.ShouldEqual(mockGroup.Object);  // need improve test because same group is returned
+
+		It should_wrap_the_primary_channel_group_so_it_cannot_be_accidentally_disposed = () =>
+			primaryGroup.ShouldBeOfType<IndisposableChannelGroup>();
 
 		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
 		static readonly Mock<IChannelGroupConfiguration> config1 = new Mock<IChannelGroupConfiguration>();
@@ -111,9 +114,9 @@ namespace NanoMessageBus
 
 		private Because of = () =>
 		{
-			groups.Add(host.Initialize());
-			groups.Add(host.Initialize());
-			groups.Add(host.Initialize());
+			groups.Add(((IndisposableChannelGroup)host.Initialize()).Inner);
+			groups.Add(((IndisposableChannelGroup)host.Initialize()).Inner);
+			groups.Add(((IndisposableChannelGroup)host.Initialize()).Inner);
 		};
 
 		It should_do_nothing = () =>
@@ -323,8 +326,11 @@ namespace NanoMessageBus
 		Because of = () =>
 			group = host[defaultGroupName];
 
+		It should_wrap_the_returned_instance_so_it_cannot_be_accidentally_disposed = () =>
+			group.ShouldBeOfType<IndisposableChannelGroup>();
+
 		It should_return_the_correct_instance = () =>
-			ReferenceEquals(group, mockGroup.Object).ShouldBeTrue();
+			((IndisposableChannelGroup)group).Inner.ShouldEqual(mockGroup.Object);
 
 		static IChannelGroup group;
 	}

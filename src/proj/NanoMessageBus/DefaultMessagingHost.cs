@@ -25,7 +25,7 @@
 
 			Log.Info("Host initialized.");
 
-			return this.groups.Values.First();
+			return new IndisposableChannelGroup(this.groups.Values.First());
 		}
 		protected virtual void InitializeChannelGroups()
 		{
@@ -69,7 +69,7 @@
 					if (this.groups.TryGetValue(channelGroup, out group))
 					{
 						Log.Verbose("Exiting critical section (GetOutboundChannel)--group found.");
-						return group;
+						return new IndisposableChannelGroup(group);
 					}
 
 					Log.Verbose("Exiting critical section (GetOutboundChannel)--key not found.");
