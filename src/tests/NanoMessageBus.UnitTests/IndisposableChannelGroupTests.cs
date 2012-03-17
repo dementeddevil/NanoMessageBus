@@ -26,6 +26,9 @@ namespace NanoMessageBus
 
 		It should_expose_the_underlying_channel_group_properties = () =>
 			group.DispatchOnly.ShouldBeTrue();
+
+		It should_expose_the_underlying_channel_group_as_a_property = () =>
+			group.Inner.ShouldEqual(mockInner.Object);
 	}
 
 	[Subject(typeof(IndisposableChannelGroup))]

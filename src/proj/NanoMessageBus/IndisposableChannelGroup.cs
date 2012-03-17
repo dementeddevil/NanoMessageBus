@@ -4,6 +4,10 @@
 
 	public class IndisposableChannelGroup : IChannelGroup
 	{
+		public IChannelGroup Inner
+		{
+			get { return this.inner; }
+		}
 		public bool DispatchOnly
 		{
 			get { return this.inner.DispatchOnly; }
