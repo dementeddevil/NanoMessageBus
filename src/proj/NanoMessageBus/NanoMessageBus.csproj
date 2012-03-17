@@ -64,6 +64,7 @@
     <Compile Include="DefaultMessagingHost.cs" />
     <Compile Include="IChannelMessageBuilder.cs" />
     <Compile Include="IDeliveryHandler.cs" />
+    <Compile Include="IndisposableChannelGroup.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\ExtensionMethods.cs" />
     <Compile Include="Logging\ILog.cs" />

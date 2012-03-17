@@ -1,5 +1,6 @@
 ﻿#pragma warning disable 169
 // ReSharper disable InconsistentNaming
+
 namespace NanoMessageBus
 {
 	using System;
