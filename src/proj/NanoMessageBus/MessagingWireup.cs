@@ -35,6 +35,11 @@
 			this.handlerCallback = callback;
 			return this;
 		}
+		public virtual MessagingWireup WithTransactionScope()
+		{
+			this.transactionScope = true;
+			return this;
+		}
 
 		public virtual IMessagingHost Start()
 		{
@@ -54,8 +59,12 @@
 		protected virtual IDeliveryHandler BuildDeliveryChain(IRoutingTable table)
 		{
 			IDeliveryHandler handler = new DefaultDeliveryHandler(table);
+
 			if (this.handlerCallback != null)
 				handler = this.handlerCallback(handler);
+
+			if (this.transactionScope)
+				handler = new TransactionScopeDeliveryHandler(handler);
 
 			return new TransactionalDeliveryHandler(handler);
 		}
@@ -70,5 +79,6 @@
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
 		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
 		private Func<IDeliveryHandler, IDeliveryHandler> handlerCallback;
+		private bool transactionScope;
 	}
 }

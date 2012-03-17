@@ -67,6 +67,7 @@
     <Compile Include="SystemTimeTests.cs" />
     <Compile Include="TaskWorkerGroupTests.cs" />
     <Compile Include="TaskWorkerTests.cs" />
+    <Compile Include="TransactionScopeDeliveryHandlerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\proj\CustomDictionary.xml">
