@@ -48,7 +48,7 @@
 
 			messageHandler.GetInterfaces()
 				.Where(x => x.IsGenericType)
-				.Where(x => x.GetGenericTypeDefinition() == typeof(IMessageHandler<>))
+				.Where(x => AutofacRoutingTable.MessageHandlerInterfaces.Contains(x))
 				.Select(x => x.GetGenericArguments().First())
 				.ToList()
 				.ForEach(types.Add);

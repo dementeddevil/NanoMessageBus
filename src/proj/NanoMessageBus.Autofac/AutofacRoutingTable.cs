@@ -39,6 +39,24 @@
 				.Count(x => { x.Handle(message); return true; });
 		}
 
+		public static void AddHandlerInterfaceType(Type handlerType)
+		{
+			if (handlerType == null)
+				throw new ArgumentNullException("handlerType");
+
+			if (!handlerType.IsInterface)
+				throw new ArgumentException("Type must be an interface");
+
+			if (!handlerType.IsGenericType)
+				throw new ArgumentException("Type must be generic");
+
+			MessageHandlerInterfaces.Add(handlerType);
+		}
+
+		static AutofacRoutingTable()
+		{
+			MessageHandlerInterfaces.Add(typeof(IMessageHandler<>));
+		}
 		public AutofacRoutingTable(params Assembly[] messageHandlerAssemblies)
 			: this(null, messageHandlerAssemblies)
 		{
@@ -64,6 +82,7 @@
 				.InstancePerLifetimeScope();
 		}
 
+		internal static readonly ICollection<Type> MessageHandlerInterfaces = new HashSet<Type>();
 		private readonly IDictionary<Type, RoutingDelegate> callbacks = new Dictionary<Type, RoutingDelegate>();
 		private Func<IHandlerContext, IMessageHandler<ChannelMessage>> channelMessageCallback;
 		private static readonly MethodInfo DynamicRouteMethod =
