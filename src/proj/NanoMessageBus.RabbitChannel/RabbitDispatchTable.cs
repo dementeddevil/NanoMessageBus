@@ -5,7 +5,7 @@
 
 	public class RabbitDispatchTable : IDispatchTable
 	{
-		public ICollection<Uri> this[Type messageType]
+		public virtual ICollection<Uri> this[Type messageType]
 		{
 			get
 			{
@@ -15,15 +15,15 @@
 				return new[] { new Uri("fanout://" + messageType.FullName.NormalizeName(), UriKind.Absolute) };
 			}
 		}
-		public void AddSubscriber(Uri subscriber, Type messageType, DateTime expiration)
+		public virtual void AddSubscriber(Uri subscriber, Type messageType, DateTime expiration)
 		{
 			// no op
 		}
-		public void AddRecipient(Uri recipient, Type messageType)
+		public virtual void AddRecipient(Uri recipient, Type messageType)
 		{
 			// no op
 		}
-		public void Remove(Uri subscriber, Type messageType)
+		public virtual void Remove(Uri subscriber, Type messageType)
 		{
 			// no op
 		}

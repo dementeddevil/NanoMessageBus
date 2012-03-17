@@ -5,15 +5,13 @@
 
 	public class AutofacChannelMessageHandler : IMessageHandler<ChannelMessage>
 	{
-		public void Handle(ChannelMessage message)
+		public virtual void Handle(ChannelMessage message)
 		{
 			this.handler.Handle(message);
 		}
 
 		public AutofacChannelMessageHandler(
-			IHandlerContext context,
-			IRoutingTable table,
-			IMessageHandler<ChannelMessage> inner = null)
+			IHandlerContext context, IRoutingTable table, IMessageHandler<ChannelMessage> inner = null)
 		{
 			if (context == null)
 				throw new ArgumentNullException("context");
