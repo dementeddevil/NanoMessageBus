@@ -23,9 +23,17 @@
 		public virtual int Route(IHandlerContext context, object message)
 		{
 			var messageType = message.GetType();
-			if (messageType != typeof(ChannelMessage))
-				return this.callbacks[messageType](context, message);
+			if (messageType == typeof(ChannelMessage))
+				return this.RouteToChannelMessageHandler(context, message);
 
+			var routes = this.callbacks[messageType](context, message);
+			if (routes == 0)
+				return DynamicRoute(context, message);
+
+			return routes;
+		}
+		private int RouteToChannelMessageHandler(IHandlerContext context, object message)
+		{
 			this.channelMessageCallback(context).Handle(message as ChannelMessage);
 			return 1;
 		}
