@@ -15,9 +15,14 @@
 	{
 		public virtual MessagingWireup AddConnector(IChannelConnector channelConnector)
 		{
+			if (channelConnector == null)
+				throw new ArgumentNullException("channelConnector");
+
 			Log.Debug("Adding channel connector of type '{0}'.", channelConnector.GetType());
 
-			channelConnector = new DependencyResolverConnector(channelConnector);
+			if (channelConnector.GetType() != typeof(DependencyResolverConnector))
+				channelConnector = new DependencyResolverConnector(channelConnector);
+
 			this.connectors.Add(channelConnector);
 			return this;
 		}
