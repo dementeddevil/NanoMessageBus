@@ -73,8 +73,8 @@
     <Compile Include="Logging\TraceLogger.cs" />
     <Compile Include="MessagingWireup.cs" />
     <Compile Include="DefaultRoutingTable.cs" />
-    <Compile Include="DependencyResolverChannel.cs" />
-    <Compile Include="DependencyResolverConnector.cs" />
+    <Compile Include="Channels\DependencyResolverChannel.cs" />
+    <Compile Include="Channels\DependencyResolverConnector.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IDependencyResolver.cs" />
     <Compile Include="IDispatchContext.cs" />
