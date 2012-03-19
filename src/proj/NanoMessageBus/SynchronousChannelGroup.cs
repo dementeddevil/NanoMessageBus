@@ -5,19 +5,19 @@
 
 	public class SynchronousChannelGroup : IChannelGroup
 	{
-		public bool DispatchOnly
+		public virtual bool DispatchOnly
 		{
 			get { return this.configuration.DispatchOnly; }
 		}
 
-		public void Initialize()
+		public virtual void Initialize()
 		{
 			this.ThrowWhenDisposed();
 
 			Log.Info("Initializing channel group '{0}'.", this.configuration.GroupName);
 			this.initialized = true;
 		}
-		public IMessagingChannel OpenChannel()
+		public virtual IMessagingChannel OpenChannel()
 		{
 			this.ThrowWhenDisposed();
 			this.ThrowWhenUninitialized();
@@ -26,11 +26,11 @@
 			return this.connector.Connect(this.configuration.GroupName);
 		}
 
-		public void BeginReceive(Action<IDeliveryContext> callback)
+		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			throw new NotSupportedException();
 		}
-		public bool BeginDispatch(Action<IDispatchContext> callback)
+		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
 		{
 			throw new NotSupportedException();
 		}
