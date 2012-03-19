@@ -31,9 +31,9 @@
 			throw new System.NotImplementedException();
 		}
 
-		public PooledDispatchConnector(IChannelConnector inner)
+		public PooledDispatchConnector(IChannelConnector connector)
 		{
-			this.inner = inner;
+			this.connector = connector;
 		}
 		~PooledDispatchConnector()
 		{
@@ -51,7 +51,7 @@
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector));
-		private readonly ConcurrentBag<IMessagingChannel> connected;
-		private readonly IChannelConnector inner;
+		private readonly ConcurrentBag<IMessagingChannel> channels;
+		private readonly IChannelConnector connector;
 	}
 }

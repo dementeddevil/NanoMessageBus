@@ -28,12 +28,12 @@
 		}
 		protected virtual IDeliveryContext CurrentContext
 		{
-			get { return this.currentContext ?? this.inner; }
+			get { return this.currentContext ?? this.channel; }
 		}
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
-			return this.inner.PrepareDispatch(message);
+			return this.channel.PrepareDispatch(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{
@@ -45,16 +45,16 @@
 			foreach (var listener in this.listeners)
 				listener.Audit(envelope);
 
-			this.inner.Send(envelope);
+			this.channel.Send(envelope);
 		}
 
 		public virtual void BeginShutdown()
 		{
-			this.inner.BeginShutdown();
+			this.channel.BeginShutdown();
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			this.inner.Receive(context => this.Receive(context, callback));
+			this.channel.Receive(context => this.Receive(context, callback));
 		}
 		protected virtual void Receive(IDeliveryContext context, Action<IDeliveryContext> callback)
 		{
@@ -78,10 +78,10 @@
 			throw new ObjectDisposedException(typeof(AuditChannel).Name);
 		}
 
-		public AuditChannel(IMessagingChannel inner, ICollection<IAuditListener> listeners)
+		public AuditChannel(IMessagingChannel channel, ICollection<IAuditListener> listeners)
 		{
-			if (inner == null)
-				throw new ArgumentNullException("inner");
+			if (channel == null)
+				throw new ArgumentNullException("channel");
 
 			if (listeners == null)
 				throw new ArgumentNullException("listeners");
@@ -89,7 +89,7 @@
 			if (listeners.Count == 0)
 				throw new ArgumentException("At least one audit listener must be provided.", "listeners");
 
-			this.inner = inner;
+			this.channel = channel;
 			this.listeners = listeners;
 		}
 		~AuditChannel()
@@ -112,11 +112,11 @@
 			foreach (var listener in this.listeners)
 				listener.Dispose();
 
-			this.inner.Dispose();
+			this.channel.Dispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel)); // TODO
-		private readonly IMessagingChannel inner;
+		private readonly IMessagingChannel channel;
 		private readonly ICollection<IAuditListener> listeners;
 		private IDeliveryContext currentContext;
 		private bool disposed;

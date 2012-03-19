@@ -9,15 +9,15 @@
 	{
 		public virtual ConnectionState CurrentState
 		{
-			get { return this.inner.CurrentState; }
+			get { return this.connector.CurrentState; }
 		}
 		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
-			get { return this.inner.ChannelGroups; }
+			get { return this.connector.ChannelGroups; }
 		}
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
-			var channel = this.inner.Connect(channelGroup);
+			var channel = this.connector.Connect(channelGroup);
 			var listeners = this.ResolveListeners(channel);
 
 			if (listeners.Count > 0)
@@ -31,19 +31,19 @@
 			if (this.emptyFactory)
 				return new IAuditListener[0];
 
-			return this.factory(channel).Where(x => x != null).ToArray();
+			return this.listenerFactory(channel).Where(x => x != null).ToArray();
 		}
 
-		public AuditConnector(IChannelConnector inner, Func<IMessagingChannel, IEnumerable<IAuditListener>> factory)
+		public AuditConnector(IChannelConnector connector, Func<IMessagingChannel, IEnumerable<IAuditListener>> listenerFactory)
 		{
-			if (inner == null)
-				throw new ArgumentNullException("inner");
+			if (connector == null)
+				throw new ArgumentNullException("connector");
 
-			if (factory == null)
-				throw new ArgumentNullException("factory");
+			if (listenerFactory == null)
+				throw new ArgumentNullException("listenerFactory");
 
-			this.inner = inner;
-			this.factory = factory;
+			this.connector = connector;
+			this.listenerFactory = listenerFactory;
 		}
 		~AuditConnector()
 		{
@@ -58,12 +58,12 @@
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				this.inner.Dispose();
+				this.connector.Dispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector)); // TODO
-		private readonly IChannelConnector inner;
-		private readonly Func<IMessagingChannel, IEnumerable<IAuditListener>> factory;
+		private readonly IChannelConnector connector;
+		private readonly Func<IMessagingChannel, IEnumerable<IAuditListener>> listenerFactory;
 		private bool emptyFactory;
 	}
 }

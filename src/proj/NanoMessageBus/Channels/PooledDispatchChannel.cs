@@ -50,9 +50,9 @@
 			throw new NotImplementedException();
 		}
 
-		public PooledDispatchChannel(IMessagingChannel inner, int state)
+		public PooledDispatchChannel(IMessagingChannel channel, int state)
 		{
-			this.inner = inner;
+			this.channel = channel;
 			this.state = state;
 		}
 		~PooledDispatchChannel()
@@ -72,7 +72,7 @@
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchChannel));
-		private readonly IMessagingChannel inner;
+		private readonly IMessagingChannel channel;
 		private readonly int state;
 	}
 }
