@@ -42,6 +42,16 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(IndisposableChannelGroup))]
+	public class when_a_channel_is_requested : with_an_indisposable_channel_group
+	{
+		Because of = () =>
+			group.OpenChannel();
+
+		It should_attempt_to_open_a_channel_on_the_underlying_group = () =>
+			mockInner.Verify(x => x.OpenChannel(), Times.Once());
+	}
+
+	[Subject(typeof(IndisposableChannelGroup))]
 	public class when_begin_dispatch_is_invoked : with_an_indisposable_channel_group
 	{
 		Establish context = () =>

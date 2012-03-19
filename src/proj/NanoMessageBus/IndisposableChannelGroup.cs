@@ -17,6 +17,10 @@
 		{
 			this.inner.Initialize();
 		}
+		public virtual IMessagingChannel OpenChannel()
+		{
+			return this.inner.OpenChannel();
+		}
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			this.inner.BeginReceive(callback);

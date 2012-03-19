@@ -17,11 +17,20 @@
 		bool DispatchOnly { get; }
 
 		/// <summary>
-		/// Starts up all of the underlying connectors, initializes all channels associated with the group,
+		/// Starts up the underlying connector, initializes all channels associated with the group,
 		/// and otherwise prepares the channel group to process and dispatch messages.
 		/// </summary>
 		/// <exception cref="ObjectDisposedException"></exception>
 		void Initialize();
+
+		/// <summary>
+		/// Creates a messaging channel that is not under the control of the channel group and which is owned
+		/// and controlled by the caller.
+		/// </summary>
+		/// <exception cref="ChannelConnectionException"></exception>
+		/// <exception cref="ObjectDisposedException"></exception>
+		/// <returns>If the messaging infrastructure is available, it returns a reference to a new channel.</returns>
+		IMessagingChannel OpenChannel();
 
 		/// <summary>
 		/// Begins streaming any available inbound messages to the callback provided; for dispatch-only groups

@@ -165,6 +165,69 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
+	public class when_opening_a_caller_owned_channel_on_an_uninitialized_group : with_a_channel_group
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => channelGroup.OpenChannel());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_opening_a_caller_owned_channel_on_a_disposed_group : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			channelGroup.Initialize();
+			channelGroup.Dispose();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channelGroup.OpenChannel());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_opening_a_caller_owned_channel : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			opened = channelGroup.OpenChannel();
+
+		It should_open_a_new_channel = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
+
+		It should_return_a_reference_to_the_opened_channel = () =>
+			opened.ShouldEqual(mockChannel.Object);
+
+		static IMessagingChannel opened;
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
+	public class when_opening_a_caller_owned_channel_fails_to_connect_to_the_messaging_infrastructure : with_a_channel_group
+	{
+		Establish context = () =>
+		{
+			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Throws(new ChannelConnectionException());
+			channelGroup.Initialize();
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => channelGroup.OpenChannel());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+	}
+
+	[Subject(typeof(DefaultChannelGroup))]
 	public class when_asynchronously_dispatching_a_message_with_a_dispatch_only_group : with_a_channel_group
 	{
 		Establish context = () =>

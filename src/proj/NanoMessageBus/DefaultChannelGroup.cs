@@ -67,7 +67,16 @@
 		}
 		protected virtual IMessagingChannel Connect()
 		{
+			this.ThrowWhenUninitialized();
+			this.ThrowWhenDisposed();
+
 			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
+		}
+
+		public virtual IMessagingChannel OpenChannel()
+		{
+			Log.Debug("Opening a caller-owned channel for group '{0}'.", this.configuration.GroupName);
+			return this.Connect();
 		}
 
 		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
