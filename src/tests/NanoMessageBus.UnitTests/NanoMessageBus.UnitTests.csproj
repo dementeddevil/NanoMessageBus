@@ -45,6 +45,7 @@
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ChannelEnvelopeTests.cs" />
+    <Compile Include="Channels\AuditConnectorTests.cs" />
     <Compile Include="IndisposableChannelGroupTests.cs" />
     <Compile Include="SynchronousChannelGroupTests.cs" />
     <Compile Include="TransactionalDeliveryHandlerTests.cs" />

@@ -15,7 +15,7 @@
 		}
 		public virtual ChannelMessage CurrentMessage
 		{
-			get { throw new NotImplementedException(); }
+			get { throw new NotImplementedException(); } // always returns null
 		}
 		public virtual IDependencyResolver CurrentResolver
 		{
@@ -41,10 +41,12 @@
 
 		public virtual void BeginShutdown()
 		{
+			// no op
 			throw new NotImplementedException();
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
+			// not supported
 			throw new NotImplementedException();
 		}
 

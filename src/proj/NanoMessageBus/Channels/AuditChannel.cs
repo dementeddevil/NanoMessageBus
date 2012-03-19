@@ -42,6 +42,8 @@
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
+			// we're not overriding any of the properties on the context, but we still need
+			// to use the context instead of inner 
 			throw new NotImplementedException();
 		}
 
