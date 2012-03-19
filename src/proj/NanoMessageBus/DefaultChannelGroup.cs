@@ -203,7 +203,7 @@
 				this.disposed = true;
 				this.workers.Dispose();
 
-				Log.Debug("Channel group disposed.");
+				Log.Info("Channel group disposed.");
 				Log.Verbose("Exiting critical section (Dispose).");
 			}
 		}
