@@ -586,7 +586,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, false, null), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, true, null), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

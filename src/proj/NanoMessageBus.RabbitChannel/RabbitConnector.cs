@@ -77,6 +77,18 @@
 			}
 			catch (OperationInterruptedException e)
 			{
+				var shutdownCode = e.ShutdownReason == null ? 0 : e.ShutdownReason.ReplyCode;
+				if (shutdownCode == PreconditionFailed)
+				{
+					Log.Fatal("Attempting to redefine existing queue/exchange with different parameters; unable to continue.");
+					throw new ChannelConfigurationException(e.Message, e);
+				}
+				if (shutdownCode == ResourceLocked)
+				{
+					Log.Fatal("Attempting to access a queue locked exlusively by another consumer; unable to continue.");
+					throw new ChannelConfigurationException(e.Message, e);
+				}
+
 				Log.Info("Connection attempt interrupted; socked closed.");
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
@@ -97,8 +109,6 @@
 		{
 			foreach (var config in this.configuration.Values)
 			{
-				// TODO: what happens when this throws because a queue/exchange is defined
-				// but with slightly different values? (e.g. durable vs non-durable, etc.)
 				Log.Debug("Initializing the messaging infrastructure.");
 				config.ConfigureChannel(model);
 			}
@@ -187,6 +197,8 @@
 				throw new ChannelConnectionException(exception.Message, exception);
 		}
 
+		private const int PreconditionFailed = 406;
+		private const int ResourceLocked = 405;
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitConnector));
 		private readonly IDictionary<string, RabbitChannelGroupConfiguration> configuration;
 		private readonly ConnectionFactory factory;

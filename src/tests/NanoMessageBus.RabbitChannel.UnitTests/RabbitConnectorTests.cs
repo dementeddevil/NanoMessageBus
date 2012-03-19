@@ -205,6 +205,44 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitConnector))]
+	public class when_establishing_the_underlying_connection_throws_because_the_queue_has_been_defined_differently : using_a_connector
+	{
+		Establish context = () =>
+			mockFactory
+				.Setup(x => x.CreateConnection(connector.MaxRedirects))
+				.Throws(new OperationInterruptedException(args));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelConfigurationException>();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
+
+		const int PreconditionFailed = 406;
+		static readonly ShutdownEventArgs args = 
+			new ShutdownEventArgs(ShutdownInitiator.Peer, PreconditionFailed, string.Empty);
+	}
+
+	[Subject(typeof(RabbitConnector))]
+	public class when_establishing_the_underlying_connection_throws_because_the_queue_is_locked_by_another_consumer : using_a_connector
+	{
+		Establish context = () =>
+			mockFactory
+				.Setup(x => x.CreateConnection(connector.MaxRedirects))
+				.Throws(new OperationInterruptedException(args));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelConfigurationException>();
+
+		Because of = () =>
+			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
+
+		const int QueueLocked = 405;
+		static readonly ShutdownEventArgs args =
+			new ShutdownEventArgs(ShutdownInitiator.Peer, QueueLocked, string.Empty);
+	}
+
+	[Subject(typeof(RabbitConnector))]
 	public class when_establishing_the_underlying_connection_throws_because_the_socket_threw_an_exception : using_a_connector
 	{
 		Establish context = () =>

@@ -141,11 +141,12 @@
 		}
 		public virtual RabbitChannelGroupConfiguration WithRandomInputQueue()
 		{
-			return this.WithInputQueue(string.Empty); // auto-generate
+			return this.WithInputQueue(string.Empty); // string.Empty = have RabbitMQ auto-generate the queue name
 		}
 		public virtual RabbitChannelGroupConfiguration WithExclusiveReceive()
 		{
-			this.ExclusiveQueue = true;
+			// once defined as exclusive, you can't reconnect unless you delete the queue
+			this.ExclusiveQueue = this.AutoDelete = true;
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithAutoDeleteQueue()
