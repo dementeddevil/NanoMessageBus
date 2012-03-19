@@ -96,6 +96,7 @@
     <Compile Include="Serialization\BinarySerializer.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\SerializationExtensions.cs" />
+    <Compile Include="SynchronousChannelGroup.cs" />
     <Compile Include="SystemTime.cs" />
     <Compile Include="TaskWorker.cs" />
     <Compile Include="TaskWorkerGroup.cs" />
