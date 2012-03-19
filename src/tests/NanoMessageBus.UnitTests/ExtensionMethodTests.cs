@@ -48,6 +48,33 @@ namespace NanoMessageBus
 		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
 		static string value;
 	}
+
+	[Subject(typeof(ExtensionMethods))]
+	public class when_attempting_to_set_an_existing_key_in_a_dictionary
+	{
+		Establish context = () =>
+			Populated.Add("key", "42");
+
+		Because of = () =>
+			Populated.TrySetValue("key", null);
+
+		It should_not_touch_the_existing_value = () =>
+			Populated["key"].ShouldEqual("42");
+
+		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
+	}
+
+	[Subject(typeof(ExtensionMethods))]
+	public class when_attempting_to_set_a_nonexistent_key_in_a_dictionary
+	{
+		Because of = () =>
+			Populated.TrySetValue("key", "some key");
+
+		It should_set_the_key_to_the_new_value = () =>
+			Populated["key"].ShouldEqual("some key");
+
+		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
+	}
 }
 
 // ReSharper enable InconsistentNaming
