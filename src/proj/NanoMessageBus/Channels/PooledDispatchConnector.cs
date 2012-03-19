@@ -31,9 +31,17 @@
 			throw new System.NotImplementedException();
 		}
 
-		public PooledDispatchConnector(IChannelConnector connector)
+		public virtual void Release(PooledDispatchChannel channel)
+		{
+			throw new NotImplementedException();
+		}
+
+		public PooledDispatchConnector(IChannelConnector connector) : this()
 		{
 			this.connector = connector;
+		}
+		protected PooledDispatchConnector()
+		{
 		}
 		~PooledDispatchConnector()
 		{

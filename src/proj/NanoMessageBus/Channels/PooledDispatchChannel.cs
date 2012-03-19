@@ -7,51 +7,77 @@
 	{
 		public virtual int State
 		{
-			get { return 0; }
+			get { return this.state; }
 		}
+		public virtual IMessagingChannel Channel
+		{
+			get { return this.channel; }
+		}
+
 		public virtual string GroupName
 		{
-			get { throw new NotImplementedException(); }
+			get { return this.channel.GroupName; }
 		}
 		public virtual ChannelMessage CurrentMessage
 		{
-			get { throw new NotImplementedException(); } // always returns null
+			get { return null; }
 		}
 		public virtual IDependencyResolver CurrentResolver
 		{
-			get { throw new NotImplementedException(); }
+			get { return this.channel.CurrentResolver; }
 		}
 		public virtual IChannelTransaction CurrentTransaction
 		{
-			get { throw new NotImplementedException(); }
+			get { return this.channel.CurrentTransaction; }
 		}
 		public virtual IChannelGroupConfiguration CurrentConfiguration
 		{
-			get { throw new NotImplementedException(); }
+			get { return this.channel.CurrentConfiguration; }
 		}
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
-			throw new NotImplementedException();
+			return this.channel.PrepareDispatch(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{
-			throw new NotImplementedException();
+			if (envelope == null)
+				throw new ArgumentNullException("envelope");
+
+			this.ThrowWhenDisposed();
+			this.channel.Send(envelope);
 		}
 
 		public virtual void BeginShutdown()
 		{
-			// no op
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			// not supported
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
-		public PooledDispatchChannel(IMessagingChannel channel, int state)
+		protected virtual void ThrowWhenDisposed()
 		{
+			if (!this.disposed)
+				return;
+
+			Log.Warn("The channel has been disposed.");
+			throw new ObjectDisposedException(typeof(PooledDispatchChannel).Name);
+		}
+
+		public PooledDispatchChannel(PooledDispatchConnector connector, IMessagingChannel channel, int state)
+		{
+			if (connector == null)
+				throw new ArgumentNullException("connector");
+
+			if (channel == null)
+				throw new ArgumentNullException("channel");
+
+			if (state < 0)
+				throw new ArgumentException("State greater than or equal to zero.");
+
+			this.connector = connector;
 			this.channel = channel;
 			this.state = state;
 		}
@@ -67,12 +93,17 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			// TODO: release actual channel back to the pool
-			throw new NotImplementedException();
+			if (!disposing || this.disposed)
+				return;
+
+			this.disposed = true;
+			this.connector.Release(this);
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchChannel));
+		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchChannel)); // TODO
+		private readonly PooledDispatchConnector connector;
 		private readonly IMessagingChannel channel;
+		private bool disposed;
 		private readonly int state;
 	}
 }
