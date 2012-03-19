@@ -43,7 +43,7 @@
 			this.ThrowWhenDisposed();
 
 			foreach (var listener in this.listeners)
-				listener.Audit(envelope);
+				listener.AuditSend(envelope);
 
 			this.channel.Send(envelope);
 		}

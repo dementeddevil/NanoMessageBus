@@ -4,7 +4,7 @@
 
 	public interface IAuditListener : IDisposable
 	{
-		void Audit(IDeliveryContext delivery);
-		void Audit(ChannelEnvelope envelope);
+		void AuditReceive(IDeliveryContext delivery);
+		void AuditSend(ChannelEnvelope envelope);
 	}
 }
