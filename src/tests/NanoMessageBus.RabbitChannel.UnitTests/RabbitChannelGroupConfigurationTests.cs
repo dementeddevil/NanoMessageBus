@@ -17,6 +17,9 @@ namespace NanoMessageBus.Channels
 	{
 		It should_default_to_dispatch_only = () =>
 			config.DispatchOnly.ShouldBeTrue();
+
+		It should_default_to_asynchronous_operations = () =>
+			config.Synchronous.ShouldBeFalse();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -44,6 +47,16 @@ namespace NanoMessageBus.Channels
 	{
 		It should_contain_the_default_value = () =>
 			config.GroupName.ShouldEqual("all");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_synchronous_operations : using_channel_config
+	{
+		Because of = () =>
+			config.WithSynchronousOperation();
+
+		It should_indicate_operations_to_be_synchronous = () =>
+			config.Synchronous.ShouldBeTrue();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

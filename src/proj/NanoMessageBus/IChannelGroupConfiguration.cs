@@ -16,6 +16,11 @@
 		string GroupName { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether the particular configuration should support asynchronous operations.
+		/// </summary>
+		bool Synchronous { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether the connection is configured for dispatch or full duplex.
 		/// </summary>
 		bool DispatchOnly { get; }

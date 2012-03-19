@@ -68,6 +68,7 @@
 		public virtual string InputQueue { get; private set; }
 		public virtual Uri ReturnAddress { get; private set; } // null for send-only endpoints
 		public virtual IChannelMessageBuilder MessageBuilder { get; private set; }
+		public virtual bool Synchronous { get; private set; }
 		public virtual bool DispatchOnly { get; private set; }
 		public virtual int MinWorkers { get; private set; }
 		public virtual int MaxWorkers { get; private set; }
@@ -162,6 +163,12 @@
 			this.PurgeOnStartup = true;
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithSynchronousOperation()
+		{
+			this.Synchronous = true;
+			return this;
+		}
+
 		public virtual RabbitChannelGroupConfiguration WithDispatchOnly()
 		{
 			this.DispatchOnly = true;
@@ -288,6 +295,7 @@
 			this.Serializer = DefaultSerializer;
 			this.MessageAdapter = new RabbitMessageAdapter(this);
 			this.DependencyResolver = null;
+			this.Synchronous = false;
 			this.DispatchOnly = true;
 			this.DurableQueue = true;
 
