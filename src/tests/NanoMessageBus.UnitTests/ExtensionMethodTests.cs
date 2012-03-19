@@ -75,6 +75,20 @@ namespace NanoMessageBus
 
 		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
 	}
+
+	[Subject(typeof(ExtensionMethods))]
+	public class when_expressing_an_object_as_a_string
+	{
+		It should_return_the_string_representation_of_the_object = () =>
+			new Uri("http://www.google.com/").AsString().ShouldEqual("http://www.google.com/");
+	}
+
+	[Subject(typeof(ExtensionMethods))]
+	public class when_expressing_a_null_object_as_a_string
+	{
+		It should_return_a_null_string = () =>
+			((Uri)null).AsString().ShouldBeNull();
+	}
 }
 
 // ReSharper enable InconsistentNaming
