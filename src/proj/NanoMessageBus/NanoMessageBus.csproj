@@ -54,6 +54,7 @@
     <Compile Include="Channels\IAuditListener.cs" />
     <Compile Include="Channels\PooledDispatchChannel.cs" />
     <Compile Include="Channels\PooledDispatchConnector.cs" />
+    <Compile Include="Channels\HttpRequestAuditor.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ChannelShutdownException.cs" />
     <Compile Include="ChannelConfigurationException.cs" />
@@ -119,6 +120,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup />

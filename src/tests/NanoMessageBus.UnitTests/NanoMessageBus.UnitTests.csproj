@@ -48,6 +48,7 @@
     <Compile Include="Channels\AuditConnectorTests.cs" />
     <Compile Include="Channels\AuditChannelTests.cs" />
     <Compile Include="Channels\PooledDispatchChannelTests.cs" />
+    <Compile Include="Channels\HttpRequestAuditorTests.cs" />
     <Compile Include="IndisposableChannelGroupTests.cs" />
     <Compile Include="SynchronousChannelGroupTests.cs" />
     <Compile Include="TransactionalDeliveryHandlerTests.cs" />
@@ -88,6 +89,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
