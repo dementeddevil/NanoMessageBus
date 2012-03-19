@@ -49,6 +49,11 @@
     <Compile Include="ChannelException.cs" />
     <Compile Include="ChannelConnectionException.cs" />
     <Compile Include="ChannelGroupFactory.cs" />
+    <Compile Include="Channels\AuditChannel.cs" />
+    <Compile Include="Channels\AuditConnector.cs" />
+    <Compile Include="Channels\IAuditListener.cs" />
+    <Compile Include="Channels\PooledDispatchChannel.cs" />
+    <Compile Include="Channels\PooledDispatchConnector.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ChannelShutdownException.cs" />
     <Compile Include="DeadLetterException.cs" />
