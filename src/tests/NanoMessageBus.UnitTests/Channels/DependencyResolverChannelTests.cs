@@ -104,7 +104,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
-	public class when_calling_receive_on_the_channel : with_the_dependency_resolver_channel
+	public class when_calling_receive_on_the_resolver_channel : with_the_dependency_resolver_channel
 	{
 		Because of = () =>
 			channel.Receive(callback);

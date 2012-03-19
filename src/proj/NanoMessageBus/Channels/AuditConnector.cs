@@ -61,7 +61,7 @@
 				this.inner.Dispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector));
+		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector)); // TODO
 		private readonly IChannelConnector inner;
 		private readonly Func<IMessagingChannel, IEnumerable<IAuditListener>> factory;
 		private bool emptyFactory;
