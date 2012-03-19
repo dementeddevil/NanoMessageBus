@@ -28,7 +28,6 @@
 		protected virtual void Serialize(JsonWriter writer, object graph)
 		{
 #if DEBUG
-			
 			writer.Formatting = Formatting.Indented;
 #endif
 
