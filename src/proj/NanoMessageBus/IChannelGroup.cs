@@ -24,10 +24,11 @@
 		void Initialize();
 
 		/// <summary>
-		/// Creates a messaging channel that is not under the control of the channel group and which is owned
+		/// Creates a messaging channel that is not controlled or tracked by channel group and which is owned
 		/// and controlled by the caller.
 		/// </summary>
 		/// <exception cref="ChannelConnectionException"></exception>
+		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="ObjectDisposedException"></exception>
 		/// <returns>If the messaging infrastructure is available, it returns a reference to a new channel.</returns>
 		IMessagingChannel OpenChannel();
