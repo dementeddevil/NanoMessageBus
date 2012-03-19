@@ -9,14 +9,17 @@
 	{
 		public virtual ConnectionState CurrentState
 		{
-			get { throw new System.NotImplementedException(); }
+			get { return this.connector.CurrentState; }
 		}
 		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
-			get { throw new System.NotImplementedException(); }
+			get { return this.connector.ChannelGroups; }
 		}
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
+			var channel = this.connector.Connect(channelGroup);
+			return new PooledDispatchChannel(this, channel, this.stateIndex);
+
 			// TODO: how to safely clear the active channels when the connection becomes unavailable?
 			// without having each and every channel throw and call back instructing the connector to
 			// clear the active channel collection and restart?
@@ -38,6 +41,9 @@
 
 		public PooledDispatchConnector(IChannelConnector connector) : this()
 		{
+			if (connector == null)
+				throw new ArgumentNullException("connector");
+
 			this.connector = connector;
 		}
 		protected PooledDispatchConnector()
@@ -55,11 +61,16 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			throw new System.NotImplementedException();
+			if (!disposing)
+				return;
+
+			// TODO: clear the channels collection and reset the state index to zero?
+			this.connector.Dispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector));
 		private readonly ConcurrentBag<IMessagingChannel> channels;
 		private readonly IChannelConnector connector;
+		private int stateIndex;
 	}
 }
