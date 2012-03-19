@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Linq;
 	using Channels;
 	using Logging;
 
@@ -32,6 +31,11 @@
 			foreach (var connector in channelConnectors)
 				this.AddConnector(connector);
 
+			return this;
+		}
+		public virtual MessagingWireup WithAuditing(Func<IMessagingChannel, IEnumerable<IAuditListener>> auditors)
+		{
+			this.auditorFactory = auditors;
 			return this;
 		}
 		public virtual MessagingWireup WithDeliveryHandler(Func<IDeliveryHandler, IDeliveryHandler> callback)
@@ -77,14 +81,25 @@
 
 		protected virtual IMessagingHost StartHost()
 		{
-			var host = new DefaultMessagingHost(this.connectors.ToArray(), new DefaultChannelGroupFactory().Build);
+			this.AuditActivity();
+
+			var host = new DefaultMessagingHost(this.connectors, new DefaultChannelGroupFactory().Build);
 			host.Initialize();
 			return host;
 		}
+		protected virtual void AuditActivity()
+		{
+			if (this.auditorFactory == null)
+				return;
+
+			for (var i = 0; i < this.connectors.Count; i++)
+				this.connectors[i] = new AuditConnector(this.connectors[i], this.auditorFactory);
+		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
-		private readonly ICollection<IChannelConnector> connectors = new LinkedList<IChannelConnector>();
+		private readonly IList<IChannelConnector> connectors = new List<IChannelConnector>();
 		private Func<IDeliveryHandler, IDeliveryHandler> handlerCallback;
+		private Func<IMessagingChannel, IEnumerable<IAuditListener>> auditorFactory;
 		private bool transactionScope;
 	}
 }
