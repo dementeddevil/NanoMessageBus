@@ -97,6 +97,8 @@
 		{
 			foreach (var config in this.configuration.Values)
 			{
+				// TODO: what happens when this throws because a queue/exchange is defined
+				// but with slightly different values? (e.g. durable vs non-durable, etc.)
 				Log.Debug("Initializing the messaging infrastructure.");
 				config.ConfigureChannel(model);
 			}
