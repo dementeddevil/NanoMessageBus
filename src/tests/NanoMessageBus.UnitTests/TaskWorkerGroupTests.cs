@@ -343,63 +343,6 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
-	public class when_restarting_an_active_worker_group : with_a_worker_group
-	{
-		Establish context = () =>
-		{
-			SystemTime.SleepResolver = x => { };
-			workerGroup.Initialize(BuildChannel, Restart);
-			workerGroup.StartActivity(CountInvocations);
-		};
-		Cleanup after = () =>
-			SystemTime.SleepResolver = null;
-
-		static bool Restart()
-		{
-			Thread.Sleep(1);
-			if (++restartAttempts < 5)
-				return false;
-
-			restarted = 0;
-			return true;
-		}
-		static void CountInvocations(IWorkItem<IMessagingChannel> worker)
-		{
-			while (invocations >= 0)
-				worker.PerformOperation(() =>
-				{
-					if (restarted > 0)
-						Interlocked.Increment(ref activityNotCanceled);
-
-					Interlocked.Increment(ref invocations);
-				});
-		}
-
-		Because of = () =>
-		{
-			Thread.Sleep(100);
-			workerGroup.Restart();
-			Interlocked.Increment(ref restarted);
-			invocationsBeforeRestart = invocations;
-			Thread.Sleep(100);
-		};
-
-		It should_initiate_cancellation_current_activities = () =>
-			activityNotCanceled.ShouldEqual(0);
-
-		It should_invoke_the_restart_callback_until_it_returns_true = () =>
-			restartAttempts.ShouldEqual(5);
-
-		It should_then_resume_invocations_to_the_previously_executing_activity = () =>
-			invocations.ShouldBeGreaterThan(invocationsBeforeRestart);
-
-		static int restarted;
-		static int activityNotCanceled;
-		static int invocationsBeforeRestart;
-		static int restartAttempts;
-	}
-
-	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_the_state_callback_returns_null_during_restart_operations : with_a_worker_group
 	{
 		Establish context = () =>
@@ -458,6 +401,72 @@ namespace NanoMessageBus
 
 		It should_only_allow_a_single_restart_instance_at_a_time = () =>
 			invocations.ShouldEqual(1);
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_restarting_an_active_worker_group : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			SystemTime.SleepResolver = x => { };
+			workerGroup.Initialize(BuildChannel, Restart);
+			workerGroup.StartActivity(CountInvocations);
+		};
+		Cleanup after = () =>
+		{
+			SystemTime.SleepResolver = null;
+
+			// code coverage
+			invocations = -1;
+			restarted = 1;
+			CountInvocations(null);
+			Increment();
+		};
+
+		static bool Restart()
+		{
+			Thread.Sleep(1);
+			if (++restartAttempts < 5)
+				return false;
+
+			restarted = 0;
+			return true;
+		}
+		static void CountInvocations(IWorkItem<IMessagingChannel> worker)
+		{
+			while (invocations >= 0)
+				worker.PerformOperation(Increment);
+		}
+		private static void Increment()
+		{
+			if (restarted > 0)
+				Interlocked.Increment(ref activityNotCanceled);
+
+			Interlocked.Increment(ref invocations);
+		}
+
+		Because of = () =>
+		{
+			Thread.Sleep(100);
+			workerGroup.Restart();
+			Interlocked.Increment(ref restarted);
+			invocationsBeforeRestart = invocations;
+			Thread.Sleep(100);
+		};
+
+		It should_initiate_cancellation_current_activities = () =>
+			activityNotCanceled.ShouldEqual(0);
+
+		It should_invoke_the_restart_callback_until_it_returns_true = () =>
+			restartAttempts.ShouldEqual(5);
+
+		It should_then_resume_invocations_to_the_previously_executing_activity = () =>
+			invocations.ShouldBeGreaterThan(invocationsBeforeRestart);
+
+		static int restarted;
+		static int activityNotCanceled;
+		static int invocationsBeforeRestart;
+		static int restartAttempts;
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
