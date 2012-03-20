@@ -18,20 +18,11 @@
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			var channel = this.connector.Connect(channelGroup);
-			return new PooledDispatchChannel(this, channel, this.stateIndex);
+			var config = channel.CurrentConfiguration;
+			if (config.DispatchOnly && config.Synchronous)
+				return new PooledDispatchChannel(this, channel, this.stateIndex);
 
-			// TODO: how to safely clear the active channels when the connection becomes unavailable?
-			// without having each and every channel throw and call back instructing the connector to
-			// clear the active channel collection and restart?
-
-			////CancellationTokenSource.cs
-			//////m_state uses the pattern "volatile int32 reads, with cmpxch writes" which is safe for updates and cannot suffer torn reads. 
-			////private volatile int m_state;
-
-			////if (Interlocked.CompareExchange(ref m_state, NOTIFYING, NOT_CANCELED) == NOT_CANCELED) 
-			////Interlocked.Exchange(ref m_state, NOTIFYINGCOMPLETE); 
-
-			throw new System.NotImplementedException();
+			return channel;
 		}
 
 		public virtual void Release(IMessagingChannel channel, int state)

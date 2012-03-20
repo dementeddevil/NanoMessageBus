@@ -65,13 +65,37 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(PooledDispatchConnector))]
 	public class when_a_full_duplex_channel_is_established : using_the_pooled_dispatch_connector
 	{
-		It should_NOT_wrap_the_channel;
+		Establish context = () =>
+			mockConfig.Setup(x => x.DispatchOnly).Returns(false);
+
+		Because of = () =>
+			connectedChannel = connector.Connect(ChannelGroupName);
+
+		It should_invoke_the_underlying_connector = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName));
+
+		It should_NOT_wrap_the_channel = () =>
+			connectedChannel.ShouldEqual(mockChannel.Object);
+
+		static IMessagingChannel connectedChannel;
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
 	public class when_an_asynchronous_channel_is_established : using_the_pooled_dispatch_connector
 	{
-		It should_NOT_wrap_the_channel;
+		Establish context = () =>
+			mockConfig.Setup(x => x.Synchronous).Returns(false);
+
+		Because of = () =>
+			connectedChannel = connector.Connect(ChannelGroupName);
+
+		It should_invoke_the_underlying_connector = () =>
+			mockConnector.Verify(x => x.Connect(ChannelGroupName));
+
+		It should_NOT_wrap_the_channel = () =>
+			connectedChannel.ShouldEqual(mockChannel.Object);
+
+		static IMessagingChannel connectedChannel;
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -95,6 +119,11 @@ namespace NanoMessageBus.Channels
 		{
 			mockConnector = new Mock<IChannelConnector>();
 			mockChannel = new Mock<IMessagingChannel>();
+			mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
+			mockConfig.Setup(x => x.Synchronous).Returns(true);
+
+			mockChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 			thrown = null;
 
@@ -108,6 +137,7 @@ namespace NanoMessageBus.Channels
 
 		protected const string ChannelGroupName = "Test Group";
 		protected static PooledDispatchConnector connector;
+		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Exception thrown;
