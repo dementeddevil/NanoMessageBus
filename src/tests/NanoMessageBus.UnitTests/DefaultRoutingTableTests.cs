@@ -288,6 +288,8 @@ namespace NanoMessageBus
 			return new GenericHandler<T>();
 		}
 
+		Cleanup after = () => GetHandler<int>(null); // code coverage
+
 		Because of = () =>
 			handled = routes.Route(mockContext.Object, string.Empty);
 
