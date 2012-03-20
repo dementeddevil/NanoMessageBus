@@ -134,13 +134,17 @@
 			Log.Verbose("Dispatching message '{0}' with correlation identifier '{1}' to {2} recipient(s).",
 				message.MessageId, message.CorrelationId, targets.Length);
 
-			this.channel.Send(envelope);
+			this.Dispatch(envelope);
 
 			this.dispatched = true;
 			this.MessageCount = 0;
 			this.HeaderCount = 0;
 
 			return this.channel.CurrentTransaction;
+		}
+		protected virtual void Dispatch(ChannelEnvelope envelope)
+		{
+			this.channel.Send(envelope);
 		}
 		protected virtual IEnumerable<Uri> BuildRecipients()
 		{
