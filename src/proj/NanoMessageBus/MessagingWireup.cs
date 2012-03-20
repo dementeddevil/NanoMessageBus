@@ -20,6 +20,9 @@
 
 			Log.Debug("Adding channel connector of type '{0}'.", channelConnector.GetType());
 
+			if (channelConnector.GetType() != typeof(PooledDispatchConnector))
+				channelConnector = new PooledDispatchConnector(channelConnector);
+
 			if (channelConnector.GetType() != typeof(DependencyResolverConnector))
 				channelConnector = new DependencyResolverConnector(channelConnector);
 
@@ -81,17 +84,18 @@
 
 		protected virtual IMessagingHost StartHost()
 		{
-			this.AuditActivity();
+			this.AuditConnection();
 
 			var host = new DefaultMessagingHost(this.connectors, new DefaultChannelGroupFactory().Build);
 			host.Initialize();
 			return host;
 		}
-		protected virtual void AuditActivity()
+		protected virtual void AuditConnection()
 		{
 			if (this.auditorFactory == null)
 				return;
 
+			// AuditConnector -> DependencyResolverConnector -> PooledConnector -> RabbitConnector
 			for (var i = 0; i < this.connectors.Count; i++)
 				this.connectors[i] = new AuditConnector(this.connectors[i], this.auditorFactory);
 		}
