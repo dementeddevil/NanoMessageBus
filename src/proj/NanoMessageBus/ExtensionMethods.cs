@@ -30,5 +30,10 @@
 			if (values != null && !values.ContainsKey(key))
 				values[key] = value;
 		}
+
+		internal static Guid MessageId(this ChannelEnvelope envelope)
+		{
+			return envelope == null || envelope.Message == null ? Guid.Empty : envelope.Message.MessageId;
+		}
 	}
 }

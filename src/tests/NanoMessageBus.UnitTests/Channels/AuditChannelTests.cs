@@ -133,7 +133,7 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			channel.Send(envelope);
 
-		It should_provide_the_envelope_to_each_audit_listener = () =>
+		It should_provide_the_envelope_to_each_auditor = () =>
 			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope), Times.Once()));
 
 		It should_pass_the_envelope_to_the_underlying_channel_for_delivery = () =>

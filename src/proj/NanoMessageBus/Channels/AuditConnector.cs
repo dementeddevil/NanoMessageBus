@@ -17,12 +17,17 @@
 		}
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
+			Log.Debug("Attempting to open a channel for group '{0}'.", channelGroup);
 			var channel = this.connector.Connect(channelGroup);
 			var auditors = this.ResolveAuditors(channel);
 
 			if (auditors.Count > 0)
+			{
+				Log.Verbose("{0} auditors configured; creating new AuditChannel.", auditors.Count);
 				return new AuditChannel(channel, auditors);
+			}
 
+			Log.Info("No auditors have been configured, no further attempts to audit will occur.");
 			this.emptyFactory = true;
 			return channel;
 		}
@@ -57,11 +62,14 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (disposing)
-				this.connector.Dispose();
+			if (!disposing)
+				return;
+
+			Log.Debug("Disposing the underlying connection.");
+			this.connector.Dispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector)); // TODO
+		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector));
 		private readonly IChannelConnector connector;
 		private readonly Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory;
 		private bool emptyFactory;

@@ -24,6 +24,7 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
+			Log.Debug("Preparing a dispatch");
 			return new DefaultDispatchContext(this).WithMessage(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
@@ -38,10 +39,12 @@
 		{
 			try
 			{
+				Log.Verbose("Sending envelope '{0}' through the underlying channel.", envelope.MessageId());
 				this.channel.Send(envelope);
 			}
 			catch (ChannelConnectionException)
 			{
+				Log.Info("Channel is unavailable, tearing down the channel.");
 				this.connector.Teardown(this.channel, this.token);
 				throw;
 			}
@@ -49,10 +52,12 @@
 
 		public virtual void BeginShutdown()
 		{
+			Log.Error("This channel does not support asynchronous operations.");
 			throw new NotSupportedException();
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
+			Log.Error("This channel does not support asynchronous operations.");
 			throw new NotSupportedException();
 		}
 
@@ -95,11 +100,12 @@
 			if (!disposing || this.disposed)
 				return;
 
+			Log.Verbose("Releasing the channel back to the pool for later use.");
 			this.disposed = true;
 			this.connector.Release(this.channel, this.token);
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchChannel)); // TODO
+		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchChannel));
 		private readonly PooledDispatchConnector connector;
 		private readonly IMessagingChannel channel;
 		private bool disposed;

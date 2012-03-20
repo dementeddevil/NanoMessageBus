@@ -28,10 +28,12 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
+			Log.Debug("Preparing a dispatch");
 			return new DefaultDispatchContext(this).WithMessage(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{
+			Log.Verbose("Sending envelope '{0}' through the underlying channel.", envelope.MessageId());
 			this.channel.Send(envelope);
 		}
 
@@ -54,6 +56,7 @@
 			}
 			finally
 			{
+				Log.Verbose("Delivery completed, disposing nested resolver.");
 				this.currentResolver.Dispose();
 				this.currentResolver = null;
 				this.currentContext = null;
@@ -86,6 +89,7 @@
 			if (!disposing)
 				return;
 
+			Log.Verbose("Disposing the underlying channel and resolver.");
 			this.channel.Dispose();
 			this.resolver.Dispose();
 		}

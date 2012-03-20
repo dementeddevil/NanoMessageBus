@@ -29,6 +29,7 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
+			Log.Debug("Preparing a dispatch");
 			return new DefaultDispatchContext(this).WithMessage(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
@@ -38,9 +39,14 @@
 
 			this.ThrowWhenDisposed();
 
+			var messageId = envelope.MessageId();
 			foreach (var auditor in this.auditors)
+			{
+				Log.Debug("Providing envelope '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
 				auditor.AuditSend(envelope);
+			}
 
+			Log.Verbose("Sending envelope '{0}' through the underlying channel.", messageId);
 			this.channel.Send(envelope);
 		}
 
@@ -105,13 +111,17 @@
 
 			this.disposed = true;
 
-			foreach (var listener in this.auditors)
-				listener.Dispose();
+			foreach (var auditor in this.auditors)
+			{
+				Log.Verbose("Disposing auditor of type '{0}'.", auditor.GetType());
+				auditor.Dispose();
+			}
 
+			Log.Verbose("Disposing the underlying channel.");
 			this.channel.Dispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel)); // TODO
+		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel));
 		private readonly IMessagingChannel channel;
 		private readonly ICollection<IMessageAuditor> auditors;
 		private IDeliveryContext currentContext;

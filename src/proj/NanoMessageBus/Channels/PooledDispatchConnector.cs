@@ -23,12 +23,19 @@
 
 			ConcurrentBag<IMessagingChannel> items;
 			if (!this.available.TryGetValue(channelGroup, out items))
+			{
+				Log.Debug("Channel group '{0}' is not pooled, resolving through underlying connector.", channelGroup);
 				return this.connector.Connect(channelGroup);
+			}
 
 			IMessagingChannel channel;
 			if (!items.TryTake(out channel))
+			{
+				Log.Debug("No available channel group in the pool for '{0}', establishing a new channel.", channelGroup);
 				channel = this.connector.Connect(channelGroup);
+			}
 
+			Log.Verbose("Resolving channel for '{0}' from the pool of available channels.", channelGroup);
 			this.open.Add(channel);
 			return new PooledDispatchChannel(this, channel, this.currentToken);
 		}
@@ -37,6 +44,8 @@
 		{
 			if (channel == null)
 				throw new ArgumentNullException("channel");
+
+			Log.Verbose("Releasing channel back to the pool for reuse.");
 
 			if (this.open.Remove(channel) && this.currentToken == token && this.currentToken >= 0)
 				this.available[channel.CurrentConfiguration.GroupName].Add(channel);
@@ -54,6 +63,7 @@
 			if (this.FirstOneThrough(token, token + 1))
 				this.ClearAvailableChannels();
 
+			Log.Verbose("Tearing down channel.");
 			channel.Dispose();
 		}
 		private bool FirstOneThrough(int token, int assignment)
@@ -66,10 +76,20 @@
 		}
 		protected virtual void ClearAvailableChannels()
 		{
-			IMessagingChannel disconnected;
+			Log.Debug("Clearing available channels; underlying connection no longer available.");
+
+			var count = 0;
 			foreach (var collection in this.available.Values)
+			{
+				IMessagingChannel disconnected;
 				while (collection.TryTake(out disconnected))
+				{
+					count++;
 					disconnected.Dispose();
+				}
+			}
+
+			Log.Info("{0} pooled channels disposed across {1} channel groups.", count, this.available.Values.Count);
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -87,8 +107,12 @@
 				throw new ArgumentNullException("connector");
 
 			foreach (var config in connector.ChannelGroups.Where(x => x.DispatchOnly && x.Synchronous))
+			{
+				Log.Info("Channels for group '{0}' will be pooled.", config.GroupName);
 				this.available[config.GroupName] = new ConcurrentBag<IMessagingChannel>();
+			}
 
+			Log.Debug("{0} pooled channel groups configured.", this.available.Values.Count);
 			this.connector = connector;
 		}
 		protected PooledDispatchConnector()
@@ -110,13 +134,18 @@
 				return;
 
 			if (this.currentToken < 0 || !this.FirstOneThrough(this.currentToken, Disposed))
+			{
+				Log.Debug("Connector has already been disposed.");
 				return; // already disposed
+			}
 
 			this.ClearAvailableChannels();
+
+			Log.Debug("Disposing the underlying connection.");
 			this.connector.Dispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector)); // TODO
+		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector));
 		private readonly ICollection<IMessagingChannel> open = new HashSet<IMessagingChannel>();
 		private readonly IDictionary<string, ConcurrentBag<IMessagingChannel>> available =
 			new Dictionary<string, ConcurrentBag<IMessagingChannel>>();

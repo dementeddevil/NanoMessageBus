@@ -130,7 +130,7 @@ namespace NanoMessageBus.Channels
 		It should_return_the_undecorated_channel = () =>
 			connectedChannel.ShouldEqual(mockChannel.Object);
 
-		It should_never_again_invoke_the_audit_listener_callback = () =>
+		It should_never_again_invoke_the_auditor_callback = () =>
 			calls.ShouldEqual(1);
 
 		static IMessagingChannel connectedChannel;
