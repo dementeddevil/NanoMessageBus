@@ -30,10 +30,5 @@
 			if (values != null && !values.ContainsKey(key))
 				values[key] = value;
 		}
-
-		public static string AsString<T>(this T value) where T : class
-		{
-			return value == null ? null : value.ToString();
-		}
 	}
 }

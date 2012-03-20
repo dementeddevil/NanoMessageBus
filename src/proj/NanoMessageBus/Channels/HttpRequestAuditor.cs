@@ -33,12 +33,16 @@
 			AppendHeaders(headers, "client-ip", this.UserAddress);
 			AppendHeaders(headers, "raw-url", request.RawUrl);
 			AppendHeaders(headers, "http-method", request.HttpMethod);
-			AppendHeaders(headers, "referring-url", request.UrlReferrer.AsString());
+			AppendHeaders(headers, "referring-url", AsString(request.UrlReferrer));
 			AppendHeaders(headers, "request-stamp", this.context.Timestamp.ToString(Iso8601));
 		}
 		private static void AppendHeaders(IDictionary<string, string> headers, string key, string value)
 		{
 			headers.TrySetValue(HeaderFormat.FormatWith(key), value);
+		}
+		private static string AsString(object value)
+		{
+			return value == null ? null : value.ToString();
 		}
 
 		public HttpRequestAuditor(HttpContextBase context)

@@ -70,23 +70,26 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			mockDispatch = new Mock<IDispatchContext>();
-			mockWrappedChannel
-				.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>()))
-				.Returns(mockDispatch.Object);
+			var mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.DispatchTable).Returns(new Mock<IDispatchTable>().Object);
+			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 		};
 
 		Because of = () =>
-			dispatch = channel.PrepareDispatch("Hello, World!");
+			dispatchContext = channel.PrepareDispatch(MyMessage);
 
-		It should_return_a_reference_to_a_dispatch_context_instance = () =>
-			dispatch.ShouldEqual(mockDispatch.Object);
+		It should_return_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
 
-		It should_directly_invoke_the_underlying_channel_using_the_message_provided = () =>
-			mockWrappedChannel.Verify(x => x.PrepareDispatch("Hello, World!"), Times.Once());
+		It should_contain_the_message_specified = () =>
+			dispatchContext.MessageCount.ShouldEqual(1);
 
-		static Mock<IDispatchContext> mockDispatch;
-		static IDispatchContext dispatch;
+		It should_not_invoke_the_underlying_channel = () =>
+			mockWrappedChannel.Verify(x => x.PrepareDispatch(MyMessage), Times.Never());
+
+		const string MyMessage = "My message";
+		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();
+		static IDispatchContext dispatchContext;
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]

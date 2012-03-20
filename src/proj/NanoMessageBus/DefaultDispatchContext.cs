@@ -169,10 +169,10 @@
 			throw new InvalidOperationException("The set of messages has already been dispatched.");
 		}
 
-		public DefaultDispatchContext(IMessagingChannel channel, IDispatchTable dispatchTable)
+		public DefaultDispatchContext(IMessagingChannel channel)
 		{
 			this.channel = channel;
-			this.dispatchTable = dispatchTable;
+			this.dispatchTable = this.channel.CurrentConfiguration.DispatchTable;
 
 			var config = channel.CurrentConfiguration;
 			this.builder = config.MessageBuilder;

@@ -548,9 +548,12 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
+			mockDispatchTable = new Mock<IDispatchTable>();
+
 			mockConfig = new Mock<IChannelGroupConfiguration>();
 			mockConfig.Setup(x => x.ReturnAddress).Returns(OutgoingReturnAddress);
 			mockConfig.Setup(x => x.MessageBuilder).Returns(new DefaultChannelMessageBuilder());
+			mockConfig.Setup(x => x.DispatchTable).Returns(mockDispatchTable.Object);
 
 			mockMessage = new Mock<ChannelMessage>();
 			mockMessage.Setup(x => x.ReturnAddress).Returns(IncomingReturnAddress);
@@ -562,18 +565,15 @@ namespace NanoMessageBus
 			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 
-			mockDelivery
-				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
-				.Callback<ChannelEnvelope>(x =>
-				{
-					envelope = x;
-					message = envelope.Message;
-					messages = message.Messages.ToArray();
-					headers = message.Headers;
-					recipients = envelope.Recipients.ToArray();
-				});
+			mockDelivery.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>())).Callback<ChannelEnvelope>(x =>
+			{
+				envelope = x;
+				message = envelope.Message;
+				messages = message.Messages.ToArray();
+				headers = message.Headers;
+				recipients = envelope.Recipients.ToArray();
+			});
 
-			mockDispatchTable = new Mock<IDispatchTable>();
 			envelope = null;
 			message = null;
 			messages = null;
@@ -582,12 +582,8 @@ namespace NanoMessageBus
 			thrown = null;
 			transaction = null;
 
-			Build(mockDelivery.Object, mockDispatchTable.Object);
+			dispatchContext = new DefaultDispatchContext(mockDelivery.Object);
 		};
-		protected static void Build(IMessagingChannel channel, IDispatchTable dispatchTable)
-		{
-			dispatchContext = new DefaultDispatchContext(channel, dispatchTable);
-		}
 		protected static void Try(Action callback)
 		{
 			thrown = Catch.Exception(callback);

@@ -81,16 +81,23 @@ namespace NanoMessageBus.Channels
 	public class when_preparing_a_dispatch : using_the_audit_channel
 	{
 		Establish context = () =>
-			mockChannel.Setup(x => x.PrepareDispatch(MyMessage)).Returns(mockContext.Object);
+		{
+			var mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.DispatchTable).Returns(new Mock<IDispatchTable>().Object);
+			mockChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+		};
 
 		Because of = () =>
 			dispatchContext = channel.PrepareDispatch(MyMessage);
 
-		It should_provide_the_message_specified_to_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.PrepareDispatch(MyMessage), Times.Once());
+		It should_return_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
 
-		It should_return_the_dispatch_context_from_the_underlying_channel = () =>
-			dispatchContext.ShouldEqual(mockContext.Object);
+		It should_contain_the_message_specified = () =>
+			dispatchContext.MessageCount.ShouldEqual(1);
+
+		It should_not_invoke_the_underlying_channel = () =>
+			mockChannel.Verify(x => x.PrepareDispatch(MyMessage), Times.Never());
 
 		const string MyMessage = "My message";
 		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();

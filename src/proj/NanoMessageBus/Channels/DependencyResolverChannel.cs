@@ -28,7 +28,7 @@
 
 		public virtual IDispatchContext PrepareDispatch(object message = null)
 		{
-			return this.CurrentContext.PrepareDispatch(message);
+			return new DefaultDispatchContext(this).WithMessage(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{

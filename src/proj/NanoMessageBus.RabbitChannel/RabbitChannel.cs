@@ -127,7 +127,7 @@
 		{
 			this.EnsureTransaction();
 
-			var context = new DefaultDispatchContext(this, this.configuration.DispatchTable);
+			var context = new DefaultDispatchContext(this);
 			return message == null ? context : context.WithMessage(message);
 		}
 
