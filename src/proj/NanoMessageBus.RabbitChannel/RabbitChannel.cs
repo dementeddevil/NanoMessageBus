@@ -11,10 +11,6 @@
 
 	public class RabbitChannel : IMessagingChannel
 	{
-		public virtual string GroupName
-		{
-			get { return this.configuration.GroupName; }
-		}
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IDependencyResolver CurrentResolver { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }

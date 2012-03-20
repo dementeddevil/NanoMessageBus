@@ -39,7 +39,7 @@
 				throw new ArgumentNullException("channel");
 
 			if (this.open.Remove(channel) && this.currentToken == token && this.currentToken >= 0)
-				this.available[channel.GroupName].Add(channel);
+				this.available[channel.CurrentConfiguration.GroupName].Add(channel);
 			else
 				throw new InvalidOperationException("Cannot release a channel that didn't originate with this connector.");
 		}

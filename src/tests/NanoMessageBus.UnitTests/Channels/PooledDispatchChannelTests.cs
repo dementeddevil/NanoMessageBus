@@ -43,15 +43,11 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			mockChannel.Setup(x => x.GroupName).Returns("Hello, World!");
 			mockChannel.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockChannel.Setup(x => x.CurrentResolver).Returns(new Mock<IDependencyResolver>().Object);
 			mockChannel.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 		};
-
-		It should_expose_the_group_name_from_the_underlying_channel = () =>
-			channel.GroupName.ShouldEqual(mockChannel.Object.GroupName);
 
 		It should_ALWAYS_return_null = () =>
 			channel.CurrentMessage.ShouldBeNull();

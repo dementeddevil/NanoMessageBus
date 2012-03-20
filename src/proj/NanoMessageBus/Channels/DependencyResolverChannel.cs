@@ -5,10 +5,6 @@
 
 	public class DependencyResolverChannel : IMessagingChannel
 	{
-		public virtual string GroupName
-		{
-			get { return this.CurrentContext.GroupName; }
-		}
 		public virtual ChannelMessage CurrentMessage
 		{
 			get { return this.CurrentContext.CurrentMessage; }

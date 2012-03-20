@@ -45,15 +45,11 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			mockChannel.Setup(x => x.GroupName).Returns("Hello, World!");
 			mockChannel.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockChannel.Setup(x => x.CurrentResolver).Returns(new Mock<IDependencyResolver>().Object);
 			mockChannel.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 		};
-
-		It should_expose_the_group_name_from_the_underlying_channel = () =>
-			channel.GroupName.ShouldEqual(mockChannel.Object.GroupName);
 
 		It should_expose_the_current_message_from_the_underlying_channel = () =>
 			channel.CurrentMessage.ShouldEqual(mockChannel.Object.CurrentMessage);
@@ -181,7 +177,6 @@ namespace NanoMessageBus.Channels
 		Because of = () => channel.Receive(context =>
 		{
 			delivery = context;
-			groupName = context.GroupName;
 			contextMessage = context.CurrentMessage;
 			contextTransaction = context.CurrentTransaction;
 			contextConfiguration = context.CurrentConfiguration;
@@ -190,9 +185,6 @@ namespace NanoMessageBus.Channels
 
 		It should_invoke_the_callback_specified_providing_itself_as_a_parameter = () =>
 			delivery.ShouldEqual(channel);
-
-		It should_expose_the_original_group_name = () =>
-			groupName.ShouldEqual(mockOriginal.Object.GroupName);
 
 		It should_expose_the_original_context_CurrentResolver = () =>
 			contextResolver.ShouldEqual(mockOriginal.Object.CurrentResolver);
@@ -205,9 +197,6 @@ namespace NanoMessageBus.Channels
 
 		It should_expose_the_original_context_CurrentConfiguration = () =>
 			contextConfiguration.ShouldEqual(mockOriginal.Object.CurrentConfiguration);
-
-		It should_revert_the_group_name_back_to_the_constructed_value_upon_completion = () =>
-			channel.GroupName.ShouldEqual(mockOriginal.Object.GroupName);
 
 		It should_revert_the_nested_resolver_back_to_the_constructed_value_upon_completion = () =>
 			channel.CurrentResolver.ShouldEqual(mockChannel.Object.CurrentResolver);

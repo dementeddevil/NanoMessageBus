@@ -5,10 +5,6 @@
 
 	public class PooledDispatchChannel : IMessagingChannel
 	{
-		public virtual string GroupName
-		{
-			get { return this.channel.GroupName; }
-		}
 		public virtual ChannelMessage CurrentMessage
 		{
 			get { return null; }

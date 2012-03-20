@@ -22,9 +22,6 @@ namespace NanoMessageBus
 	[Subject(typeof(DefaultHandlerContext))]
 	public class when_constructing_a_new_handler_context : with_a_handler_context
 	{
-		It should_expose_the_underlying_delivery_group_name = () =>
-			handlerContext.GroupName.ShouldEqual(GroupName);
-
 		It should_expose_the_underlying_delivery_message = () =>
 			handlerContext.CurrentMessage.ShouldEqual(mockMessage.Object);
 
@@ -152,7 +149,6 @@ namespace NanoMessageBus
 			mockDispatch = new Mock<IDispatchContext>();
 
 			mockDelivery = new Mock<IDeliveryContext>();
-			mockDelivery.Setup(x => x.GroupName).Returns(GroupName);
 			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
 			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);

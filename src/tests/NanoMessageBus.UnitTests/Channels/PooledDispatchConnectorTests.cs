@@ -271,7 +271,6 @@ namespace NanoMessageBus.Channels
 		protected static Mock<IMessagingChannel> Create(IChannelGroupConfiguration config)
 		{
 			var mock = new Mock<IMessagingChannel>();
-			mock.Setup(x => x.GroupName).Returns(config.GroupName);
 			mock.Setup(x => x.CurrentConfiguration).Returns(config);
 			mockChannels.Add(mock);
 			return mock;
