@@ -34,7 +34,7 @@
 			throw new System.NotImplementedException();
 		}
 
-		public virtual void Release(PooledDispatchChannel channel)
+		public virtual void Release(IMessagingChannel channel, int state)
 		{
 			throw new NotImplementedException();
 		}
@@ -69,7 +69,7 @@
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector));
-		private readonly ConcurrentBag<IMessagingChannel> channels;
+		private readonly ConcurrentBag<IMessagingChannel> channels = new ConcurrentBag<IMessagingChannel>();
 		private readonly IChannelConnector connector;
 		private int stateIndex;
 	}

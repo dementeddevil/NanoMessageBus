@@ -5,15 +5,6 @@
 
 	public class PooledDispatchChannel : IMessagingChannel
 	{
-		public virtual int State
-		{
-			get { return this.state; }
-		}
-		public virtual IMessagingChannel Channel
-		{
-			get { return this.channel; }
-		}
-
 		public virtual string GroupName
 		{
 			get { return this.channel.GroupName; }
@@ -97,7 +88,7 @@
 				return;
 
 			this.disposed = true;
-			this.connector.Release(this);
+			this.connector.Release(this.channel, this.state);
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchChannel)); // TODO

@@ -86,9 +86,6 @@ namespace NanoMessageBus.Channels
 		It should_wrap_over_the_channel = () =>
 			connectedChannel.ShouldBeOfType<PooledDispatchChannel>();
 
-		It should_provide_the_current_state_index = () =>
-			((PooledDispatchChannel)connectedChannel).State.ShouldEqual(0); // TODO
-
 		static IMessagingChannel connectedChannel;
 	}
 

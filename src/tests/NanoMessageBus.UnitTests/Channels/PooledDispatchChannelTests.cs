@@ -50,12 +50,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 		};
 
-		It should_expose_the_state_index_provided_during_construction = () =>
-			channel.State.ShouldEqual(StateIndex);
-
-		It should_expose_the_underlying_channel = () =>
-			channel.Channel.ShouldEqual(mockChannel.Object);
-
 		It should_expose_the_group_name_from_the_underlying_channel = () =>
 			channel.GroupName.ShouldEqual(mockChannel.Object.GroupName);
 
@@ -78,8 +72,8 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			channel.Dispose();
 
-		It should_pass_a_self_reference_back_to_the_connector = () =>
-			mockConnector.Verify(x => x.Release(channel), Times.Once());
+		It should_pass_the_underlying_channel_and_state_index_back_to_the_connector = () =>
+			mockConnector.Verify(x => x.Release(mockChannel.Object, StateIndex), Times.Once());
 
 		It should_NOT_dispose_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Never());
@@ -95,7 +89,7 @@ namespace NanoMessageBus.Channels
 			channel.Dispose();
 
 		It should_pass_a_self_reference_back_to_the_connector_exactly_once = () =>
-			mockConnector.Verify(x => x.Release(channel), Times.Once());
+			mockConnector.Verify(x => x.Release(mockChannel.Object, StateIndex), Times.Once());
 
 		It should_never_dispose_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Never());
