@@ -54,5 +54,10 @@
 		/// Gets an optional reference to resolver used to manage dependencies.
 		/// </summary>
 		IDependencyResolver DependencyResolver { get; }
+
+		/// <summary>
+		/// Gets a reference to the dispatch table to determine the appropriate recipients for a given type of message.
+		/// </summary>
+		IDispatchTable DispatchTable { get; }
 	}
 }
