@@ -14,7 +14,7 @@ namespace NanoMessageBus.Channels
 	public class when_a_null_connector_is_specified : using_the_audit_connector
 	{
 		Because of = () =>
-			Try(() => new AuditConnector(null, x => new IAuditListener[0]));
+			Try(() => new AuditConnector(null, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();

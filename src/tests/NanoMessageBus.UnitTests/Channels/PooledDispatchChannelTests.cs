@@ -29,7 +29,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
-	public class when_a_negative_state_index_is_provided_during_construction : using_the_pooled_dispatch_channel
+	public class when_a_negative_token_is_provided_during_construction : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>
 			Try(() => new PooledDispatchChannel(mockConnector.Object, mockChannel.Object, -1));
@@ -72,8 +72,8 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			channel.Dispose();
 
-		It should_pass_the_underlying_channel_and_state_index_back_to_the_connector = () =>
-			mockConnector.Verify(x => x.Release(mockChannel.Object, StateIndex), Times.Once());
+		It should_pass_the_underlying_channel_and_token_back_to_the_connector = () =>
+			mockConnector.Verify(x => x.Release(mockChannel.Object, ReleaseToken), Times.Once());
 
 		It should_NOT_dispose_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Never());
@@ -89,7 +89,7 @@ namespace NanoMessageBus.Channels
 			channel.Dispose();
 
 		It should_pass_a_self_reference_back_to_the_connector_exactly_once = () =>
-			mockConnector.Verify(x => x.Release(mockChannel.Object, StateIndex), Times.Once());
+			mockConnector.Verify(x => x.Release(mockChannel.Object, ReleaseToken), Times.Once());
 
 		It should_never_dispose_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Never());
@@ -151,6 +151,24 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
+	public class when_sending_an_envelope_results_in_a_ChannelConnectionException : using_the_pooled_dispatch_channel
+	{
+		Establish context = () =>
+			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
+
+		Because of = () =>
+			Try(() => channel.Send(envelope));
+
+		It should_tear_down_the_channel = () =>
+			mockConnector.Verify(x => x.Teardown(mockChannel.Object, ReleaseToken), Times.Once());
+
+		It should_rethrow_the_exception = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
+	}
+
+	[Subject(typeof(PooledDispatchChannel))]
 	public class when_initiating_shutdown_on_the_pooled_dispatch_channel : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>
@@ -177,7 +195,7 @@ namespace NanoMessageBus.Channels
 			mockChannel = new Mock<IMessagingChannel>();
 			mockConnector = new Mock<PooledDispatchConnector>();
 
-			channel = new PooledDispatchChannel(mockConnector.Object, mockChannel.Object, StateIndex);
+			channel = new PooledDispatchChannel(mockConnector.Object, mockChannel.Object, ReleaseToken);
 
 			thrown = null;
 		};
@@ -186,7 +204,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(callback);
 		}
 
-		protected const int StateIndex = 42;
+		protected const int ReleaseToken = 42;
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static Mock<PooledDispatchConnector> mockConnector;
 		protected static PooledDispatchChannel channel;
