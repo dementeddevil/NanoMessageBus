@@ -18,32 +18,32 @@
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			var channel = this.connector.Connect(channelGroup);
-			var listeners = this.ResolveListeners(channel);
+			var auditors = this.ResolveAuditors(channel);
 
-			if (listeners.Count > 0)
-				return new AuditChannel(channel, listeners);
+			if (auditors.Count > 0)
+				return new AuditChannel(channel, auditors);
 
 			this.emptyFactory = true;
 			return channel;
 		}
-		protected virtual ICollection<IAuditListener> ResolveListeners(IMessagingChannel channel)
+		protected virtual ICollection<IMessageAuditor> ResolveAuditors(IMessagingChannel channel)
 		{
 			if (this.emptyFactory)
-				return new IAuditListener[0];
+				return new IMessageAuditor[0];
 
-			return this.listenerFactory(channel).Where(x => x != null).ToArray();
+			return this.auditorFactory(channel).Where(x => x != null).ToArray();
 		}
 
-		public AuditConnector(IChannelConnector connector, Func<IMessagingChannel, IEnumerable<IAuditListener>> listenerFactory)
+		public AuditConnector(IChannelConnector connector, Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory)
 		{
 			if (connector == null)
 				throw new ArgumentNullException("connector");
 
-			if (listenerFactory == null)
-				throw new ArgumentNullException("listenerFactory");
+			if (auditorFactory == null)
+				throw new ArgumentNullException("auditorFactory");
 
 			this.connector = connector;
-			this.listenerFactory = listenerFactory;
+			this.auditorFactory = auditorFactory;
 		}
 		~AuditConnector()
 		{
@@ -63,7 +63,7 @@
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector)); // TODO
 		private readonly IChannelConnector connector;
-		private readonly Func<IMessagingChannel, IEnumerable<IAuditListener>> listenerFactory;
+		private readonly Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory;
 		private bool emptyFactory;
 	}
 }

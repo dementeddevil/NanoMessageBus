@@ -77,7 +77,7 @@ namespace NanoMessageBus.Channels
 	public class when_a_new_channel_is_established : using_the_audit_connector
 	{
 		Establish context = () =>
-			listeners.Add(new Mock<IAuditListener>());
+			auditors.Add(new Mock<IMessageAuditor>());
 
 		Because of = () =>
 			connectedChannel = connector.Connect(ChannelGroupName);
@@ -85,10 +85,10 @@ namespace NanoMessageBus.Channels
 		It should_invoke_the_underlying_connector = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName));
 
-		It should_resolve_the_set_of_audit_listeners = () =>
+		It should_resolve_the_set_of_auditors = () =>
 			calls.ShouldEqual(1);
 
-		It should_provide_the_resolved_channel_to_the_listeners_callback = () =>
+		It should_provide_the_resolved_channel_to_the_auditor_callback = () =>
 			callbackChannel.ShouldEqual(mockChannel.Object);
 
 		It should_wrap_over_the_channel = () =>
@@ -98,7 +98,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(AuditConnector))]
-	public class when_no_audit_listeners_exist : using_the_audit_connector
+	public class when_no_auditors_exist : using_the_audit_connector
 	{
 		Because of = () =>
 			connectedChannel = connector.Connect(ChannelGroupName);
@@ -106,10 +106,10 @@ namespace NanoMessageBus.Channels
 		It should_invoke_the_underlying_connector = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName));
 
-		It should_resolve_the_set_of_audit_listeners = () =>
+		It should_resolve_the_set_of_auditors = () =>
 			calls.ShouldEqual(1);
 
-		It should_provide_the_resolved_channel_to_the_listeners_callback = () =>
+		It should_provide_the_resolved_channel_to_the_auditor_callback = () =>
 			callbackChannel.ShouldEqual(mockChannel.Object);
 
 		It should_return_the_undecorated_channel = () =>
@@ -119,10 +119,10 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(AuditConnector))]
-	public class when_more_channels_are_establish_with_no_audit_listeners : using_the_audit_connector
+	public class when_more_channels_are_establish_with_no_auditors : using_the_audit_connector
 	{
 		Establish context = () =>
-			connector.Connect(ChannelGroupName); // no listeners resolved
+			connector.Connect(ChannelGroupName); // no auditors resolved
 
 		Because of = () =>
 			connectedChannel = connector.Connect(ChannelGroupName); // shouldn't invoke callback
@@ -144,7 +144,7 @@ namespace NanoMessageBus.Channels
 			mockChannel = new Mock<IMessagingChannel>();
 			mockConnector.Setup(x => x.Connect(ChannelGroupName)).Returns(mockChannel.Object);
 
-			listeners.Clear();
+			auditors.Clear();
 			thrown = null;
 			calls = 0;
 			callbackChannel = null;
@@ -153,7 +153,7 @@ namespace NanoMessageBus.Channels
 			{
 				calls++;
 				callbackChannel = c;
-				return listeners.Select(x => x.Object);
+				return auditors.Select(x => x.Object);
 			});
 		};
 
@@ -169,7 +169,7 @@ namespace NanoMessageBus.Channels
 		protected static Exception thrown;
 		protected static IMessagingChannel callbackChannel;
 		protected static int calls;
-		protected static ICollection<Mock<IAuditListener>> listeners = new List<Mock<IAuditListener>>();
+		protected static ICollection<Mock<IMessageAuditor>> auditors = new List<Mock<IMessageAuditor>>();
 	}
 }
 

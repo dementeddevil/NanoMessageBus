@@ -14,14 +14,14 @@ namespace NanoMessageBus.Channels
 	public class when_a_null_channel_is_provided_to_the_audit_channel : using_the_audit_channel
 	{
 		Because of = () =>
-			Try(() => new AuditChannel(null, mockListeners.Select(x => x.Object).ToArray()));
+			Try(() => new AuditChannel(null, mockAuditors.Select(x => x.Object).ToArray()));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(AuditChannel))]
-	public class when_a_null_set_of_audit_listeners_is_provided_to_the_audit_channel : using_the_audit_channel
+	public class when_a_null_set_of_auditor_is_provided_to_the_audit_channel : using_the_audit_channel
 	{
 		Because of = () =>
 			Try(() => new AuditChannel(mockChannel.Object, null));
@@ -31,10 +31,10 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(AuditChannel))]
-	public class when_an_empty_set_of_audit_listeners_is_provided_to_the_audit_channel : using_the_audit_channel
+	public class when_an_empty_set_of_auditor_is_provided_to_the_audit_channel : using_the_audit_channel
 	{
 		Because of = () =>
-			Try(() => new AuditChannel(mockChannel.Object, new IAuditListener[0]));
+			Try(() => new AuditChannel(mockChannel.Object, new IMessageAuditor[0]));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentException>();
@@ -70,8 +70,8 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			channel.Dispose();
 
-		It should_dispose_each_of_the_audit_listeners = () =>
-			mockListeners.ForEach(mock => mock.Verify(x => x.Dispose(), Times.Once()));
+		It should_dispose_each_of_the_auditor = () =>
+			mockAuditors.ForEach(mock => mock.Verify(x => x.Dispose(), Times.Once()));
 
 		It should_dispose_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Once());
@@ -127,7 +127,7 @@ namespace NanoMessageBus.Channels
 			channel.Send(envelope);
 
 		It should_provide_the_envelope_to_each_audit_listener = () =>
-			mockListeners.ForEach(mock => mock.Verify(x => x.AuditSend(envelope), Times.Once()));
+			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope), Times.Once()));
 
 		It should_pass_the_envelope_to_the_underlying_channel_for_delivery = () =>
 			mockChannel.Verify(x => x.Send(envelope), Times.Once());
@@ -225,8 +225,8 @@ namespace NanoMessageBus.Channels
 		Establish context = () =>
 		{
 			mockChannel = new Mock<IMessagingChannel>();
-			mockListeners.Add(new Mock<IAuditListener>());
-			channel = new AuditChannel(mockChannel.Object, mockListeners.Select(x => x.Object).ToArray());
+			mockAuditors.Add(new Mock<IMessageAuditor>());
+			channel = new AuditChannel(mockChannel.Object, mockAuditors.Select(x => x.Object).ToArray());
 
 			thrown = null;
 		};
@@ -235,7 +235,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(callback);
 		}
 
-		protected static List<Mock<IAuditListener>> mockListeners = new List<Mock<IAuditListener>>();
+		protected static List<Mock<IMessageAuditor>> mockAuditors = new List<Mock<IMessageAuditor>>();
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static AuditChannel channel;
 		protected static Exception thrown;

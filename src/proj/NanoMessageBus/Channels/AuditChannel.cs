@@ -38,8 +38,8 @@
 
 			this.ThrowWhenDisposed();
 
-			foreach (var listener in this.listeners)
-				listener.AuditSend(envelope);
+			foreach (var auditor in this.auditors)
+				auditor.AuditSend(envelope);
 
 			this.channel.Send(envelope);
 		}
@@ -74,19 +74,19 @@
 			throw new ObjectDisposedException(typeof(AuditChannel).Name);
 		}
 
-		public AuditChannel(IMessagingChannel channel, ICollection<IAuditListener> listeners)
+		public AuditChannel(IMessagingChannel channel, ICollection<IMessageAuditor> auditors)
 		{
 			if (channel == null)
 				throw new ArgumentNullException("channel");
 
-			if (listeners == null)
-				throw new ArgumentNullException("listeners");
+			if (auditors == null)
+				throw new ArgumentNullException("auditors");
 
-			if (listeners.Count == 0)
-				throw new ArgumentException("At least one audit listener must be provided.", "listeners");
+			if (auditors.Count == 0)
+				throw new ArgumentException("At least one auditor must be provided.", "auditors");
 
 			this.channel = channel;
-			this.listeners = listeners;
+			this.auditors = auditors;
 		}
 		~AuditChannel()
 		{
@@ -105,7 +105,7 @@
 
 			this.disposed = true;
 
-			foreach (var listener in this.listeners)
+			foreach (var listener in this.auditors)
 				listener.Dispose();
 
 			this.channel.Dispose();
@@ -113,7 +113,7 @@
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel)); // TODO
 		private readonly IMessagingChannel channel;
-		private readonly ICollection<IAuditListener> listeners;
+		private readonly ICollection<IMessageAuditor> auditors;
 		private IDeliveryContext currentContext;
 		private bool disposed;
 	}

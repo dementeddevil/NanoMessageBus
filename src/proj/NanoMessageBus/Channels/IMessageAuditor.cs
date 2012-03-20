@@ -2,7 +2,7 @@
 {
 	using System;
 
-	public interface IAuditListener : IDisposable
+	public interface IMessageAuditor : IDisposable
 	{
 		void AuditReceive(IDeliveryContext delivery);
 		void AuditSend(ChannelEnvelope envelope);

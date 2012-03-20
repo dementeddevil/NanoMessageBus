@@ -4,7 +4,7 @@
 	using System.Collections.Generic;
 	using System.Web;
 
-	public class HttpRequestAuditor : IAuditListener
+	public class HttpRequestAuditor : IMessageAuditor
 	{
 		private string UserAddress
 		{

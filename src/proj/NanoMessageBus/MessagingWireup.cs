@@ -36,7 +36,7 @@
 
 			return this;
 		}
-		public virtual MessagingWireup WithAuditing(Func<IMessagingChannel, IEnumerable<IAuditListener>> auditors)
+		public virtual MessagingWireup WithAuditing(Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditors)
 		{
 			this.auditorFactory = auditors;
 			return this;
@@ -103,7 +103,7 @@
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
 		private readonly IList<IChannelConnector> connectors = new List<IChannelConnector>();
 		private Func<IDeliveryHandler, IDeliveryHandler> handlerCallback;
-		private Func<IMessagingChannel, IEnumerable<IAuditListener>> auditorFactory;
+		private Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory;
 		private bool transactionScope;
 	}
 }
