@@ -41,6 +41,10 @@
 			this.auditorFactory = auditors;
 			return this;
 		}
+		public virtual MessagingWireup WithAuditing<TResolver>(Func<TResolver, IEnumerable<IMessageAuditor>> auditors) where TResolver : class
+		{
+			return this.WithAuditing(channel => auditors(channel.CurrentResolver.As<TResolver>()));
+		}
 		public virtual MessagingWireup WithDeliveryHandler(Func<IDeliveryHandler, IDeliveryHandler> callback)
 		{
 			Log.Info("Alternate delivery handler provided.");
