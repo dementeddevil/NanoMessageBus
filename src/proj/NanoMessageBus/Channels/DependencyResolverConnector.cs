@@ -31,7 +31,7 @@
 			}
 			catch
 			{
-				channel.Dispose();
+				channel.TryDispose();
 				throw;
 			}
 		}
@@ -56,7 +56,7 @@
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				this.connector.Dispose();
+				this.connector.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverConnector));

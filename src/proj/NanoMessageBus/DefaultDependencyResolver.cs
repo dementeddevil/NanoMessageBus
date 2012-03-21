@@ -54,7 +54,7 @@
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing && this.disposable)
-				this.container.Dispose();
+				this.container.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDependencyResolver<T>));

@@ -116,11 +116,11 @@
 			foreach (var auditor in this.auditors)
 			{
 				Log.Verbose("Disposing auditor of type '{0}'.", auditor.GetType());
-				auditor.Dispose();
+				auditor.TryDispose();
 			}
 
 			Log.Verbose("Disposing the underlying channel.");
-			this.channel.Dispose();
+			this.channel.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel));

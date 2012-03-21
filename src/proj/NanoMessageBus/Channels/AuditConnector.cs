@@ -66,7 +66,7 @@
 				return;
 
 			Log.Debug("Disposing the underlying connection.");
-			this.connector.Dispose();
+			this.connector.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector));

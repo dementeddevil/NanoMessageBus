@@ -59,7 +59,7 @@
 			finally
 			{
 				Log.Verbose("Delivery completed, disposing nested resolver.");
-				this.currentResolver.Dispose();
+				this.currentResolver.TryDispose();
 				this.currentResolver = null;
 				this.currentContext = null;
 			}
@@ -92,8 +92,8 @@
 				return;
 
 			Log.Verbose("Disposing the underlying channel and resolver.");
-			this.channel.Dispose();
-			this.resolver.Dispose();
+			this.channel.TryDispose();
+			this.resolver.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverChannel));

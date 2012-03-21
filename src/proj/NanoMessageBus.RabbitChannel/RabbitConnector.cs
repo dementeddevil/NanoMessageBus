@@ -186,7 +186,7 @@
 			{
 				Log.Debug("Blocking up to {0} ms before forcing the existing connection to close.", this.shutdownTimeout);
 
-				// calling connection.Dispose() can thrown while connection.Abort() closes without throwing
+				// calling connection.TryDispose() can thrown while connection.Abort() closes without throwing
 				this.connection.Abort(this.shutdownTimeout);
 			}
 

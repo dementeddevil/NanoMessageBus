@@ -68,7 +68,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorker<IMessagingChannel>))]
-	public class when_token_has_been_cancelled : with_a_worker
+	public class when_the_token_has_been_cancelled : with_a_worker
 	{
 		Establish context = () =>
 			tokenSource.Cancel();

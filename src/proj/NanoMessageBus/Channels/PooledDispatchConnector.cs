@@ -64,7 +64,7 @@
 				this.ClearAvailableChannels();
 
 			Log.Verbose("Tearing down channel.");
-			channel.Dispose();
+			channel.TryDispose();
 		}
 		private bool FirstOneThrough(int token, int assignment)
 		{
@@ -85,7 +85,7 @@
 				while (collection.TryTake(out disconnected))
 				{
 					count++;
-					disconnected.Dispose();
+					disconnected.TryDispose();
 				}
 			}
 
@@ -142,7 +142,7 @@
 			this.ClearAvailableChannels();
 
 			Log.Debug("Disposing the underlying connection.");
-			this.connector.Dispose();
+			this.connector.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector));

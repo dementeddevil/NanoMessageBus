@@ -74,18 +74,8 @@
 
 			this.disposed = true;
 
-			try
-			{
-				this.inner.Dispose();
-			}
-			catch (Exception e)
-			{
-				Log.Verbose("Channel message subscription threw an exception when disposing: {0} {1}.", e.GetType(), e.Message);
-			}
-			finally
-			{
-				Log.Debug("Channel message subscription disposed.");
-			}
+			this.inner.TryDispose();
+			Log.Debug("Channel message subscription disposed.");
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitSubscription));

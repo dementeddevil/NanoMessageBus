@@ -21,7 +21,7 @@ namespace NanoMessageBus
 			if (this.token.IsCancellationRequested)
 			{
 				Log.Debug("Token cancellation has been requested.");
-				this.State.Dispose();
+				this.State.TryDispose();
 			}
 			else
 				operation();

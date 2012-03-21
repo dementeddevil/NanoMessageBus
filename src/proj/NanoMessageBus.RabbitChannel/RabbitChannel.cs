@@ -72,7 +72,7 @@
 			catch (ChannelConnectionException)
 			{
 				Log.Warn("The channel has become unavailable, aborting current transaction.");
-				this.CurrentTransaction.Dispose();
+				this.CurrentTransaction.TryDispose();
 				throw;
 			}
 			catch (SerializationException e)
@@ -245,7 +245,7 @@
 
 			Log.Verbose("The current transaction has been completed, creating a new transaction.");
 
-			this.CurrentTransaction.Dispose();
+			this.CurrentTransaction.TryDispose();
 			return this.CurrentTransaction = new RabbitTransaction(this, this.transactionType);
 		}
 		protected virtual void Try(Action callback)
@@ -311,12 +311,12 @@
 				return;
 
 			Log.Debug("Disposing channel.");
-			this.CurrentTransaction.Dispose(); // must happen here because it checks for dispose
+			this.CurrentTransaction.TryDispose(); // must happen here because it checks for dispose
 
 			this.disposed = true;
 
 			if (this.subscription != null)
-				this.subscription.Dispose();
+				this.subscription.TryDispose();
 
 			// dispose can throw while abort does the exact same thing without throwing
 			this.channel.Abort();

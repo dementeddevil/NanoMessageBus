@@ -48,8 +48,8 @@
 			}
 			catch (Exception e)
 			{
-				Log.Info("Unhandled exception of type '{0}' when disposing resource of type '{1}'. Message: {2}\nStack Trace:{3}",
-					e.GetType(), resource.GetType(), e.Message, e.StackTrace);
+				Log.Error("Disposing resource of type '{0}' caused an exception of type '{1}'. Message: {2}\nStack Trace:{3}",
+					resource.GetType(), e.GetType(), e.Message, e.StackTrace);
 
 				if (rethrow)
 					throw;

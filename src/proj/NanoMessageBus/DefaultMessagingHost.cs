@@ -169,13 +169,13 @@
 				this.disposed = true;
 
 				foreach (var group in this.groups.Values)
-					group.Dispose();
+					group.TryDispose();
 
 				Log.Info("Disposing {0} messaging infrastructure connectors and their respective connections, if any.",
 					this.connectors.Count);
 
 				foreach (var connector in this.connectors)
-					connector.Dispose();
+					connector.TryDispose();
 
 				Log.Verbose("Exiting critical section (Dispose).");
 			}

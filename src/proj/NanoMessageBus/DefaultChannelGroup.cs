@@ -201,7 +201,7 @@
 				}
 
 				this.disposed = true;
-				this.workers.Dispose();
+				this.workers.TryDispose();
 
 				Log.Info("Channel group disposed.");
 				Log.Verbose("Exiting critical section (Dispose).");

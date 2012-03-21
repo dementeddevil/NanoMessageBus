@@ -51,7 +51,7 @@
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				this.container.Dispose();
+				this.container.TryDispose();
 		}
 
 		private readonly ILifetimeScope container;
