@@ -123,7 +123,7 @@ namespace NanoMessageBus
 		{
 			new Uri("http://www.google.com/"), 
 			new Uri("http://www.yahoo.com/"), 
-			new Uri("http://xkcd.com/"), 
+			new Uri("http://xkcd.com/") 
 		};
 	}
 
