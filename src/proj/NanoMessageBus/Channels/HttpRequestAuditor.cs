@@ -29,14 +29,14 @@
 			var headers = envelope.Message.Headers;
 			var request = this.context.Request;
 
-			AppendHeaders(headers, "useragent", request.UserAgent);
-			AppendHeaders(headers, "client-ip", this.UserAddress);
-			AppendHeaders(headers, "raw-url", request.RawUrl);
-			AppendHeaders(headers, "http-method", request.HttpMethod);
-			AppendHeaders(headers, "referring-url", AsString(request.UrlReferrer));
-			AppendHeaders(headers, "request-stamp", this.context.Timestamp.ToString(Iso8601));
+			AppendHeader(headers, "useragent", request.UserAgent);
+			AppendHeader(headers, "client-ip", this.UserAddress);
+			AppendHeader(headers, "raw-url", request.RawUrl);
+			AppendHeader(headers, "http-method", request.HttpMethod);
+			AppendHeader(headers, "referring-url", AsString(request.UrlReferrer));
+			AppendHeader(headers, "request-stamp", this.context.Timestamp.ToIsoString());
 		}
-		private static void AppendHeaders(IDictionary<string, string> headers, string key, string value)
+		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
 		{
 			headers.TrySetValue(HeaderFormat.FormatWith(key), value);
 		}
@@ -67,7 +67,6 @@
 		}
 
 		private const string HeaderFormat = "x-audit-{0}";
-		private const string Iso8601 = "o";
 		private const string ProxiedClient = "X-Forwarded-For";
 		private const string UserAddressFormat = "{0}, {1}";
 		private readonly HttpContextBase context;
