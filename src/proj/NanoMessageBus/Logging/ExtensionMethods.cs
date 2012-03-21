@@ -13,7 +13,7 @@ namespace NanoMessageBus.Logging
 			return string.Format(
 				CultureInfo.InvariantCulture,
 				MessageFormat,
-				DateTime.UtcNow,
+				DateTime.UtcNow, // we always want the *real* point in time
 				Thread.CurrentThread.GetName(),
 				typeToLog.Name,
 				string.Format(CultureInfo.InvariantCulture, message, values));
