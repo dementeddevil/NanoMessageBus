@@ -4,6 +4,7 @@
 	using System.Runtime.Serialization.Formatters;
 	using System.Text;
 	using Newtonsoft.Json;
+	using Newtonsoft.Json.Converters;
 	using JsonNetSerializer = Newtonsoft.Json.JsonSerializer;
 
 	public class JsonSerializer : ISerializer
@@ -57,6 +58,7 @@
 			DefaultValueHandling = DefaultValueHandling.Ignore,
 			NullValueHandling = NullValueHandling.Ignore,
 			MissingMemberHandling = MissingMemberHandling.Ignore,
+			Converters = { new IsoDateTimeConverter() }
 		};
 	}
 }
