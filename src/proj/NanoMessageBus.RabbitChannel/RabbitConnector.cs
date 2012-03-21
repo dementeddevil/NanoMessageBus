@@ -85,7 +85,7 @@
 				}
 				if (shutdownCode == ResourceLocked)
 				{
-					Log.Fatal("Attempting to access a queue locked exlusively by another consumer; unable to continue.");
+					Log.Fatal("Attempting to access a queue locked exclusively by another consumer; unable to continue.");
 					throw new ChannelConfigurationException(e.Message, e);
 				}
 
@@ -99,7 +99,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Info("Unhandled exception of type '{0}'; socket aborted. Message: {1}", e.GetType(), e.Message);
+				Log.Info("Unhandled exception of type '{0}'; socket aborted. Message: {1}\nStack Trace:{2}", e.GetType(), e.Message, e.StackTrace);
 				this.Close(channel, ConnectionState.Closed, e);
 			}
 
