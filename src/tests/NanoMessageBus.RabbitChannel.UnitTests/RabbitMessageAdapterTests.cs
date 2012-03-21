@@ -87,6 +87,9 @@ namespace NanoMessageBus.Channels
 		It should_populate_the_ChannelMessage_with_the_correct_persistence_value = () =>
 			result.Persistent.ShouldBeTrue();
 
+		It should_populate_the_ChannelMessage_with_the_correct_dispatch_time = () =>
+			result.Dispatched.ShouldEqual(0L.ToDateTime());
+
 		It should_populate_the_ChannelMessage_with_the_correct_payload = () =>
 			result.Messages.ShouldEqual(deserialized);
 

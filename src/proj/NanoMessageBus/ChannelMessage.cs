@@ -68,6 +68,12 @@
 		public virtual bool Persistent { get; set; }
 
 		/// <summary>
+		/// Gets or sets a value indicating the point in time at which the message was dispatched.
+		/// </summary>
+		[IgnoreDataMember, XmlIgnore, SoapIgnore]
+		public virtual DateTime Dispatched { get; set; }
+
+		/// <summary>
 		/// Initializes a new instance of the ChannelMessage class.
 		/// </summary>
 		/// <param name="messageId">The value which uniquely identifies the message.</param>

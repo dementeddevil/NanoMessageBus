@@ -59,6 +59,7 @@
 				new Dictionary<string, string>(),
 				payload)
 			{
+				Dispatched = properties.Timestamp.UnixTime.ToDateTime(),
 				Expiration = properties.Expiration.ToDateTime(),
 				Persistent = properties.DeliveryMode == Persistent
 			};
