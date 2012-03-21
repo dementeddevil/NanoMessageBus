@@ -56,6 +56,12 @@
 			}
 		}
 
+		public static string ToIsoString(this DateTime value)
+		{
+			return value.ToString(Iso8601);
+		}
+
+		private const string Iso8601 = "o";
 		private static readonly ILog Log = LogFactory.Build(typeof(ExtensionMethods));
 	}
 }

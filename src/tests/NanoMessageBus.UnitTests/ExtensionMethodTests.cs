@@ -128,6 +128,18 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(ExtensionMethods))]
+	public class when_formatting_a_date_as_an_iso_string
+	{
+		Because of = () =>
+			serialized = new DateTime(2000, 1, 2, 3, 4, 5, 6, DateTimeKind.Utc).ToIsoString();
+
+		It should_format_the_date_using_iso_standard = () =>
+			serialized.ShouldEqual("2000-01-02T03:04:05.0060000Z");
+
+		static string serialized;
+	}
+
+	[Subject(typeof(ExtensionMethods))]
 	public class when_the_caller_requests_an_exception_caught_during_dispose_should_be_rethrown
 	{
 		Establish context = () =>

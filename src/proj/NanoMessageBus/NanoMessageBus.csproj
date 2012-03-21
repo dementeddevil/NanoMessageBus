@@ -52,6 +52,7 @@
     <Compile Include="Channels\AuditChannel.cs" />
     <Compile Include="Channels\AuditConnector.cs" />
     <Compile Include="Channels\IMessageAuditor.cs" />
+    <Compile Include="Channels\PointOfOriginAuditor.cs" />
     <Compile Include="Channels\PooledDispatchChannel.cs" />
     <Compile Include="Channels\PooledDispatchConnector.cs" />
     <Compile Include="Channels\HttpRequestAuditor.cs" />
