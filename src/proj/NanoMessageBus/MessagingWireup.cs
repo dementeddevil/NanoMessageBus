@@ -43,7 +43,11 @@
 		}
 		public virtual MessagingWireup WithAuditing<TResolver>(Func<TResolver, IEnumerable<IMessageAuditor>> auditors) where TResolver : class
 		{
-			return this.WithAuditing(channel => auditors(channel.CurrentResolver.As<TResolver>()));
+			return this.WithAuditing(channel =>
+			{
+				var resolver = channel.CurrentResolver;
+				return resolver == null ? new IMessageAuditor[0] : auditors(channel.CurrentResolver.As<TResolver>());
+			});
 		}
 		public virtual MessagingWireup WithDeliveryHandler(Func<IDeliveryHandler, IDeliveryHandler> callback)
 		{
