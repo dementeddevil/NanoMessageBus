@@ -2,6 +2,8 @@
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
+	using System.Web;
 	using Channels;
 	using Logging;
 
@@ -9,7 +11,7 @@
 	/// Performs the primary wireup to create an active instance of the host.
 	/// </summary>
 	/// <remarks>
-	/// This class is designed to be used during wireup and then thrown away.
+	/// This class is designed to be used during the wireup process and then thrown away.
 	/// </remarks>
 	public class MessagingWireup
 	{
@@ -36,9 +38,13 @@
 
 			return this;
 		}
+
 		public virtual MessagingWireup WithAuditing(Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditors)
 		{
-			this.auditorFactory = auditors;
+			if (auditors == null)
+				throw new ArgumentNullException();
+
+			this.auditorFactory = x => auditors(x).Concat(this.AppendAuditors());
 			return this;
 		}
 		public virtual MessagingWireup WithAuditing<TResolver>(Func<TResolver, IEnumerable<IMessageAuditor>> auditors) where TResolver : class
@@ -49,6 +55,15 @@
 				return resolver == null ? new IMessageAuditor[0] : auditors(channel.CurrentResolver.As<TResolver>());
 			});
 		}
+		protected virtual IEnumerable<IMessageAuditor> AppendAuditors()
+		{
+			yield return new PointOfOriginAuditor();
+
+			var context = HttpContext.Current;
+			if (context != null)
+				yield return new HttpRequestAuditor(new HttpContextWrapper(context));
+		}
+
 		public virtual MessagingWireup WithDeliveryHandler(Func<IDeliveryHandler, IDeliveryHandler> callback)
 		{
 			Log.Info("Alternate delivery handler provided.");
