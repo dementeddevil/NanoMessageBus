@@ -1,12 +1,19 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections.Generic;
 
 	public class PointOfOriginAuditor : IMessageAuditor
 	{
 		public virtual void AuditReceive(IDeliveryContext delivery)
 		{
+			if (delivery == null)
+				throw new ArgumentNullException("delivery");
+
+			var header = delivery.CurrentMessage.Headers.TryGetValue(DispatchStamp);
+
+			DateTime dispatched;
+			if (DateTime.TryParse(header, out dispatched))
+				delivery.CurrentMessage.Dispatched = dispatched.ToUniversalTime();
 		}
 		public virtual void AuditSend(ChannelEnvelope envelope)
 		{
@@ -14,12 +21,8 @@
 				throw new ArgumentNullException("envelope");
 
 			var headers = envelope.Message.Headers;
-			AppendHeader(headers, "origin-host", Environment.MachineName.ToLowerInvariant());
-			AppendHeader(headers, "dispatch-stamp", SystemTime.UtcNow.ToIsoString());
-		}
-		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
-		{
-			headers.TrySetValue(HeaderFormat.FormatWith(key), value);
+			headers[OriginHost] = Environment.MachineName.ToLowerInvariant();
+			headers[DispatchStamp] = SystemTime.UtcNow.ToIsoString();
 		}
 
 		public PointOfOriginAuditor()
@@ -41,5 +44,7 @@
 		}
 
 		private const string HeaderFormat = "x-audit-{0}";
+		private static readonly string OriginHost = HeaderFormat.FormatWith("origin-host");
+		private static readonly string DispatchStamp = HeaderFormat.FormatWith("dispatched");
 	}
 }

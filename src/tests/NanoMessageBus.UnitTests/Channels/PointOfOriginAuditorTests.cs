@@ -10,13 +10,36 @@ namespace NanoMessageBus.Channels
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(PointOfOriginAuditor))]
-	public class when_receiving_a_any_kind_of_message_delivery : using_the_point_of_origin_auditor
+	public class when_receiving_a_null_delivery : using_the_point_of_origin_auditor
 	{
 		Because of = () =>
 			Try(() => auditor.AuditReceive(null));
 
-		It should_do_nothing = () =>
-			thrown.ShouldBeNull();
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(PointOfOriginAuditor))]
+	public class when_receiving_a_delivery_with_a_dispatch_stamp_header : using_the_point_of_origin_auditor
+	{
+		Establish context = () =>
+		{
+			message = new ChannelMessage(Guid.Empty, Guid.Empty, null, new Dictionary<string, string>(), null);
+			message.Headers["x-audit-dispatched"] = Dispatched.ToIsoString();
+
+			mockDelivery = new Mock<IDeliveryContext>();
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(message);
+		};
+
+		Because of = () =>
+			auditor.AuditReceive(mockDelivery.Object);
+
+		It should_correct_the_origin_dispatch_date_of_the_message = () =>
+			message.Dispatched.ShouldEqual(Dispatched);
+
+		static Mock<IDeliveryContext> mockDelivery;
+		static ChannelMessage message;
+		static readonly DateTime Dispatched = SystemTime.UtcNow;
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
@@ -45,7 +68,7 @@ namespace NanoMessageBus.Channels
 			messageHeaders["x-audit-origin-host"].ShouldEqual(Environment.MachineName.ToLowerInvariant());
 
 		It should_append_the_current_time_to_the_headers = () =>
-			messageHeaders["x-audit-dispatch-stamp"].ShouldEqual(SystemTime.UtcNow.ToString("o"));
+			messageHeaders["x-audit-dispatched"].ShouldEqual(SystemTime.UtcNow.ToString("o"));
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
