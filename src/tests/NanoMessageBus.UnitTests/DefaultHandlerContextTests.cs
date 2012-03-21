@@ -5,6 +5,7 @@ namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -68,6 +69,62 @@ namespace NanoMessageBus
 
 		It should_not_send_the_message_to_any_other_recipients = () =>
 			recipients.Length.ShouldEqual(1);
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
+	public class when_no_forwarding_recipients_are_specified : with_a_handler_context
+	{
+		Because of = () =>
+			Try(() => handlerContext.ForwardMessage(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
+	public class when_an_empty_set_of_recipients_is_specified : with_a_handler_context
+	{
+		Because of = () =>
+			Try(() => handlerContext.ForwardMessage(new Uri[] { null, null }));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentException>();
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
+	public class when_forwarding_against_a_disposed_context : with_a_handler_context
+	{
+		Establish context = () =>
+			handlerContext.Dispose();
+
+		Because of = () =>
+			Try(() => handlerContext.ForwardMessage(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ObjectDisposedException>();
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
+	public class when_forwarding_the_current_message_to_a_set_of_recipients : with_a_handler_context
+	{
+		Because of = () =>
+			handlerContext.ForwardMessage(forwardingRecipients);
+
+		It should_continue_handling_the_current_message = () =>
+			handlerContext.ContinueHandling.ShouldBeTrue();
+
+		It should_send_the_current_message = () =>
+			mockDelivery.Verify(x => x.PrepareDispatch(mockMessage.Object), Times.Once());
+
+		It should_send_to_each_recipient_specified = () =>
+			recipients.SequenceEqual(forwardingRecipients).ShouldBeTrue();
+
+		static readonly Uri[] forwardingRecipients = new[]
+		{
+			new Uri("http://www.google.com/"), 
+			new Uri("http://www.yahoo.com/"), 
+			new Uri("http://xkcd.com/"), 
+		};
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]

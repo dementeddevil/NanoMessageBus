@@ -1,6 +1,8 @@
 ﻿namespace NanoMessageBus
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 	using Logging;
 
 	public class DefaultHandlerContext : IHandlerContext
@@ -44,6 +46,23 @@
 				.WithMessage(this.delivery.CurrentMessage)
 				.WithRecipient(ChannelEnvelope.LoopbackAddress)
 				.Send();
+		}
+		public virtual void ForwardMessage(IEnumerable<Uri> recipients)
+		{
+			this.ThrowWhenDisposed();
+
+			if (recipients == null)
+				throw new ArgumentNullException("recipients");
+
+			var parsed = recipients.Where(x => x != null).ToArray();
+			if (parsed.Length == 0)
+				throw new ArgumentException("No recipients specified.", "recipients");
+
+			var dispatch = this.delivery.PrepareDispatch(this.delivery.CurrentMessage);
+			foreach (var recipient in parsed)
+				dispatch = dispatch.WithRecipient(recipient);
+
+			dispatch.Send();
 		}
 
 		protected virtual void ThrowWhenDisposed()
