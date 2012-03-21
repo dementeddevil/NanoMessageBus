@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Globalization;
+	using Logging;
 
 	public static class ExtensionMethods
 	{
@@ -35,5 +36,26 @@
 		{
 			return envelope == null || envelope.Message == null ? Guid.Empty : envelope.Message.MessageId;
 		}
+
+		public static void TryDispose(this IDisposable resource, bool rethrow = false)
+		{
+			if (resource == null)
+				return;
+
+			try
+			{
+				resource.Dispose();
+			}
+			catch (Exception e)
+			{
+				Log.Info("Unhandled exception of type '{0}' when disposing resource of type '{1}'. Message: {2}\nStack Trace:{3}",
+					e.GetType(), resource.GetType(), e.Message, e.StackTrace);
+
+				if (rethrow)
+					throw;
+			}
+		}
+
+		private static readonly ILog Log = LogFactory.Build(typeof(ExtensionMethods));
 	}
 }
