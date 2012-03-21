@@ -66,7 +66,7 @@ namespace NanoMessageBus.Serialization
 			deserialized.Sixth.ShouldEqual(original.Sixth);
 			deserialized.Seventh.ShouldEqual(original.Seventh);
 			deserialized.Eighth.ShouldEqual(original.Eighth);
-			deserialized.Ninth.ShouldEqual(original.Ninth);
+			deserialized.Ninth.ShouldBeCloseTo(original.Ninth, TimeSpan.FromSeconds(1));
 		};
 
 		static MyComplexType deserialized;
