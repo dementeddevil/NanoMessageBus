@@ -119,6 +119,32 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
+	public class when_preparing_for_dispatch_without_a_message : using_the_pooled_dispatch_channel
+	{
+		Establish context = () =>
+		{
+			var mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.DispatchTable).Returns(new Mock<IDispatchTable>().Object);
+			mockChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+		};
+
+		Because of = () =>
+			dispatchContext = channel.PrepareDispatch();
+
+		It should_return_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		It should_not_contain_any_messages = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
+
+		It should_not_invoke_the_underlying_channel = () =>
+			mockChannel.Verify(x => x.PrepareDispatch(null), Times.Never());
+
+		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();
+		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(PooledDispatchChannel))]
 	public class when_trying_to_send_with_a_null_envelope : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>

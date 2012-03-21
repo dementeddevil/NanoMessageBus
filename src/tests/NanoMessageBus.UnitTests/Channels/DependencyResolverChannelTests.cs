@@ -93,6 +93,32 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
+	public class when_preparing_to_dispatch_on_the_channel_without_a_message : with_the_dependency_resolver_channel
+	{
+		Establish context = () =>
+		{
+			var mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.DispatchTable).Returns(new Mock<IDispatchTable>().Object);
+			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+		};
+
+		Because of = () =>
+			dispatchContext = channel.PrepareDispatch();
+
+		It should_return_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		It should_not_contain_any_messages = () =>
+			dispatchContext.MessageCount.ShouldEqual(0);
+
+		It should_not_invoke_the_underlying_channel = () =>
+			mockWrappedChannel.Verify(x => x.PrepareDispatch(null), Times.Never());
+
+		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();
+		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(DependencyResolverChannel))]
 	public class when_initiating_shutdown_on_the_channel : with_the_dependency_resolver_channel
 	{
 		Because of = () =>
