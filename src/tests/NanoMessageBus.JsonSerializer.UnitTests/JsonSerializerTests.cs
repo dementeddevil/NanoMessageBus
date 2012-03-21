@@ -80,7 +80,7 @@ namespace NanoMessageBus.Serialization
 			Sixth = Guid.NewGuid(),
 			Seventh = "7th",
 			Eighth = new Uri("http://localhost/eighth"),
-			Ninth = DateTime.UtcNow
+			Ninth = SystemTime.UtcNow
 		};
 	}
 
