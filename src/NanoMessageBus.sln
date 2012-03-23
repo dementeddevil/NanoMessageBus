@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.Log4Net", "p
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.NLog", "proj\NanoMessageBus.NLog\NanoMessageBus.NLog.csproj", "{388D6333-4177-4C45-AFC3-8FE1BC54BFB6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.Log4Net2", "proj\NanoMessageBus.Log4Net2\NanoMessageBus.Log4Net2.csproj", "{EF50DE31-DF53-4150-B32B-0676159CC751}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{388D6333-4177-4C45-AFC3-8FE1BC54BFB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{388D6333-4177-4C45-AFC3-8FE1BC54BFB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{388D6333-4177-4C45-AFC3-8FE1BC54BFB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF50DE31-DF53-4150-B32B-0676159CC751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF50DE31-DF53-4150-B32B-0676159CC751}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF50DE31-DF53-4150-B32B-0676159CC751}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF50DE31-DF53-4150-B32B-0676159CC751}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,5 +104,6 @@ Global
 		{FF8B749F-B6F3-493D-A861-8F9EB4C26A0D} = {4EDD50B2-7753-4907-A001-AB2C6241219F}
 		{AD5AA5A8-44C7-46F5-B165-B0BD516BB04F} = {9D56648D-44FF-422E-A465-80BA8F5C3E0F}
 		{388D6333-4177-4C45-AFC3-8FE1BC54BFB6} = {9D56648D-44FF-422E-A465-80BA8F5C3E0F}
+		{EF50DE31-DF53-4150-B32B-0676159CC751} = {9D56648D-44FF-422E-A465-80BA8F5C3E0F}
 	EndGlobalSection
 EndGlobal
