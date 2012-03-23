@@ -15,6 +15,6 @@ bin\ilmerge\ILMerge.exe /keyfile:src\NanoMessageBus.snk /internalize /wildcards 
  "src/proj/NanoMessageBus.JsonSerializer/bin/Release/Newtonsoft.Json.dll"
  
 echo Creating NuGet packages...
-for /r %%i in (src\packages\NanoMessageBus*.nuspec) do src\.nuget\nuget.exe pack %%i --symbols
+for /r %%i in (src\packages\NanoMessageBus*.nuspec) do src\.nuget\nuget.exe pack %%i -symbols
 
 echo Done.
