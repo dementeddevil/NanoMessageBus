@@ -6,8 +6,11 @@ namespace NanoMessageBus.Logging
 	{
 		private readonly log4net.ILog log;
 
-		public Log4NetLogger(Type typeToLog)
+		public Log4NetLogger(Type typeToLog, bool autoConfigure = true)
 		{
+			if (autoConfigure)
+				log4net.Config.XmlConfigurator.Configure();
+
 			this.log = log4net.LogManager.GetLogger(typeToLog);
 		}
 
