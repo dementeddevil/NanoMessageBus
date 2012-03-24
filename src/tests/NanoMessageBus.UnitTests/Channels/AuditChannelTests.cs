@@ -216,6 +216,9 @@ namespace NanoMessageBus.Channels
 			contextResolver = context.CurrentResolver;
 		});
 
+		It should_provide_the_original_unwrapped_delivery_context_to_each_of_the_configured_auditors = () =>
+			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditReceive(mockOriginal.Object), Times.Once()));
+
 		It should_invoke_the_callback_specified_providing_itself_as_a_parameter = () =>
 			delivery.ShouldEqual(channel);
 
@@ -250,7 +253,6 @@ namespace NanoMessageBus.Channels
 		static IChannelGroupConfiguration contextConfiguration;
 		static ChannelMessage contextMessage;
 		static readonly Mock<IDeliveryContext> mockOriginal = new Mock<IDeliveryContext>();
-		static readonly ChannelEnvelope sent = new Mock<ChannelEnvelope>().Object;
 	}
 
 	public abstract class using_the_audit_channel

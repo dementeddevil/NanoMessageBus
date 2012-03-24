@@ -64,12 +64,25 @@
 		{
 			try
 			{
+				this.AuditReceive(context);
+
+				Log.Verbose("Routing delivery to configured callback.");
 				this.currentContext = context;
 				callback(this);
 			}
 			finally
 			{
 				this.currentContext = null;
+			}
+		}
+		private void AuditReceive(IDeliveryContext context)
+		{
+			var messageId = context.CurrentMessage.MessageId;
+
+			foreach (var auditor in this.auditors)
+			{
+				Log.Debug("Routing delivery for message '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
+				auditor.AuditReceive(context);
 			}
 		}
 
