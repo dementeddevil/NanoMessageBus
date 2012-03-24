@@ -80,6 +80,19 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
+	public class when_a_given_value_on_the_request_is_empty : using_an_http_request_auditor
+	{
+		Establish context = () => 
+			mockRequest.Setup(x => x.UserAgent).Returns((string)null);
+
+		Because of = () =>
+			auditor.AuditSend(mockEnvelope.Object);
+
+		It should_not_append_the_header_to_the_message = () =>
+			messageHeaders.ContainsKey("x-audit-useragent").ShouldBeFalse();
+	}
+
+	[Subject(typeof(HttpRequestAuditor))]
 	public class when_the_http_context_is_available_as_part_of_the_envelope_state : using_an_http_request_auditor
 	{
 		Establish context = () =>

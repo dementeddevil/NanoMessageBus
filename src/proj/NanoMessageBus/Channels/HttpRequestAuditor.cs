@@ -51,7 +51,8 @@
 		}
 		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
 		{
-			headers.TrySetValue(HeaderFormat.FormatWith(key), value);
+			if (!string.IsNullOrEmpty(value))
+				headers.TrySetValue(HeaderFormat.FormatWith(key), value);
 		}
 		private static string AsString(object value)
 		{
