@@ -57,7 +57,7 @@
 				this.container.TryDispose();
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDependencyResolver<T>));
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDependencyResolver<>));
 		private readonly T container;
 		private readonly Func<T, int, T> create;
 		private readonly int depth;

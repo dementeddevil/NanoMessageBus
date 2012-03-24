@@ -284,7 +284,7 @@
 			}
 		}
 
-		private static readonly ILog Log = LogFactory.Build(typeof(TaskWorkerGroup<T>));
+		private static readonly ILog Log = LogFactory.Build(typeof(TaskWorkerGroup<>));
 		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
 		private readonly object sync = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
