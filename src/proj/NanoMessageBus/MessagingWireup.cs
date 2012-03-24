@@ -64,7 +64,9 @@
 			yield return new PointOfOriginAuditor();
 
 			var context = HttpContext.Current;
-			if (context != null)
+			if (context == null)
+				yield return new HttpRequestAuditor(null);
+			else
 				yield return new HttpRequestAuditor(new HttpContextWrapper(context));
 		}
 
