@@ -6,6 +6,7 @@ namespace NanoMessageBus.Channels
 	using System;
 	using System.Collections.Generic;
 	using System.Collections.Specialized;
+	using System.Globalization;
 	using System.Web;
 	using Machine.Specifications;
 	using Moq;
@@ -54,7 +55,7 @@ namespace NanoMessageBus.Channels
 			mockRequest.Setup(x => x.RawUrl).Returns("/raw-url/?#");
 			mockRequest.Setup(x => x.HttpMethod).Returns("my-method");
 			mockRequest.Setup(x => x.UrlReferrer).Returns(new Uri("http://domain.com/referer"));
-			mockContext.Setup(x => x.Timestamp).Returns(DateTime.Parse("2010-01-01"));
+			mockContext.Setup(x => x.Timestamp).Returns(DateTime.Parse("2010-01-01", null, DateTimeStyles.AssumeUniversal));
 		};
 
 		Because of = () =>
@@ -76,7 +77,7 @@ namespace NanoMessageBus.Channels
 			messageHeaders["x-audit-referring-url"].ShouldEqual("http://domain.com/referer");
 
 		It should_append_the_request_stamp_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000");
+			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000Z");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -105,7 +106,7 @@ namespace NanoMessageBus.Channels
 			mockRequest.Setup(x => x.RawUrl).Returns("/raw-url/?#");
 			mockRequest.Setup(x => x.HttpMethod).Returns("my-method");
 			mockRequest.Setup(x => x.UrlReferrer).Returns(new Uri("http://domain.com/referer"));
-			mockContext.Setup(x => x.Timestamp).Returns(DateTime.Parse("2010-01-01"));
+			mockContext.Setup(x => x.Timestamp).Returns(DateTime.Parse("2010-01-01", null, DateTimeStyles.AssumeUniversal));
 		};
 
 		Because of = () =>
@@ -127,7 +128,7 @@ namespace NanoMessageBus.Channels
 			messageHeaders["x-audit-referring-url"].ShouldEqual("http://domain.com/referer");
 
 		It should_append_the_request_from_the_envelope_state_stamp_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000");
+			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000Z");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]

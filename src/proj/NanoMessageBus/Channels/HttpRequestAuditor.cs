@@ -24,7 +24,7 @@
 			AppendHeader(headers, "raw-url", request.RawUrl);
 			AppendHeader(headers, "http-method", request.HttpMethod);
 			AppendHeader(headers, "referring-url", AsString(request.UrlReferrer));
-			AppendHeader(headers, "request-stamp", current.Timestamp.ToIsoString());
+			AppendHeader(headers, "request-stamp", current.Timestamp.ToUniversalTime().ToIsoString());
 		}
 		private HttpContextBase GetCurrentContext(ChannelEnvelope envelope)
 		{
