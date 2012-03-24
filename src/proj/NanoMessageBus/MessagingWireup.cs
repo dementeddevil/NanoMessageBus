@@ -39,6 +39,10 @@
 			return this;
 		}
 
+		public virtual MessagingWireup WithAuditing()
+		{
+			return this.WithAuditing(x => new IMessageAuditor[0]); // append existing auditors
+		}
 		public virtual MessagingWireup WithAuditing(Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditors)
 		{
 			if (auditors == null)
