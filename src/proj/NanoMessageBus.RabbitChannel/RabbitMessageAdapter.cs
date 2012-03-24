@@ -28,7 +28,7 @@
 			catch (SerializationException e)
 			{
 				Log.Error("Unable to deserialize message: {0}", e.Message);
-				throw;
+				throw new PoisonMessageException(e.Message, e);
 			}
 			catch (DeadLetterException)
 			{
@@ -37,7 +37,7 @@
 			catch (Exception e)
 			{
 				Log.Error("General deserialize error for message: {0}", e.Message);
-				throw new SerializationException(e.Message, e);
+				throw new PoisonMessageException(e.Message, e);
 			}
 		}
 		protected virtual ChannelMessage Translate(BasicDeliverEventArgs message)
@@ -99,12 +99,12 @@
 			catch (SerializationException e)
 			{
 				Log.Error("Unable to serialize message {0}: {1}", message.MessageId, e.Message);
-				throw;
+				throw new PoisonMessageException(e.Message, e);
 			}
 			catch (Exception e)
 			{
 				Log.Error("General serialization failure for message {0}: {1}", message.MessageId, e.Message);
-				throw new SerializationException(e.Message, e);
+				throw new PoisonMessageException(e.Message, e);
 			}
 		}
 		protected virtual BasicDeliverEventArgs Translate(ChannelMessage message, IBasicProperties properties)

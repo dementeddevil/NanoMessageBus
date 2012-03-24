@@ -59,6 +59,7 @@
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ChannelShutdownException.cs" />
     <Compile Include="ChannelConfigurationException.cs" />
+    <Compile Include="PoisonMessageException.cs" />
     <Compile Include="DeadLetterException.cs" />
     <Compile Include="DefaultChannelGroup.cs" />
     <Compile Include="DefaultChannelGroupFactory.cs" />

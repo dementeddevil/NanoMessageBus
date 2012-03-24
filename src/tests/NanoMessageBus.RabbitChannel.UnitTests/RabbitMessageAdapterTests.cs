@@ -160,7 +160,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(() => adapter.Build(EmptyMessage()));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<SerializationException>();
+			thrown.ShouldBeOfType<PoisonMessageException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
@@ -169,8 +169,8 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			thrown = Catch.Exception(() => adapter.Build(new BasicDeliverEventArgs()));
 
-		It should_wrap_the_exception_inside_of_a_SerializationException = () =>
-			thrown.ShouldBeOfType<SerializationException>();
+		It should_wrap_the_exception_inside_of_a_PoisonMessageException = () =>
+			thrown.ShouldBeOfType<PoisonMessageException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
@@ -321,7 +321,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object, new BasicProperties()));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<SerializationException>();
+			thrown.ShouldBeOfType<PoisonMessageException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
@@ -330,8 +330,8 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			thrown = Catch.Exception(() => adapter.Build(new Mock<ChannelMessage>().Object, new BasicProperties()));
 
-		It should_wrap_the_exception_inside_of_a_SerializationException = () =>
-			thrown.ShouldBeOfType<SerializationException>();
+		It should_wrap_the_exception_inside_of_a_PoisonMessageException = () =>
+			thrown.ShouldBeOfType<PoisonMessageException>();
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]

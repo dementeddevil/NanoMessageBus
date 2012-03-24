@@ -7,7 +7,6 @@ namespace NanoMessageBus.Channels
 	using System.Collections;
 	using System.Globalization;
 	using System.IO;
-	using System.Runtime.Serialization;
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
@@ -493,7 +492,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_the_handling_of_a_message_throws_a_SerializationException : using_a_channel
+	public class when_the_handling_of_a_message_throws_a_PoisonMessageException : using_a_channel
 	{
 		Establish context = () =>
 		{
@@ -508,7 +507,8 @@ namespace NanoMessageBus.Channels
 			mockRealChannel.Setup(x => x.TxCommit());
 			mockRealChannel.Setup(x => x.BasicPublish(address, message.BasicProperties, message.Body));
 			mockConfiguration.Setup(x => x.PoisonMessageExchange).Returns(address);
-			mockAdapter.Setup(x => x.Build(message)).Throws(serializationException);
+			mockConfiguration.Setup(x => x.MaxAttempts).Returns(2);
+			mockAdapter.Setup(x => x.Build(message)).Throws(poisonMessageException);
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
@@ -521,7 +521,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_append_the_exception_to_the_message = () =>
-			mockAdapter.Verify(x => x.AppendException(message, serializationException));
+			mockAdapter.Verify(x => x.AppendException(message, poisonMessageException));
 
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
 			mockRealChannel.Verify(x =>
@@ -534,7 +534,7 @@ namespace NanoMessageBus.Channels
 			mockRealChannel.Verify(x => x.TxCommit(), Times.Once());
 
 		static BasicDeliverEventArgs message;
-		static readonly Exception serializationException = new SerializationException();
+		static readonly Exception poisonMessageException = new PoisonMessageException();
 		static readonly PublicationAddress address =
 			new PublicationAddress(string.Empty, string.Empty, string.Empty);
 	}

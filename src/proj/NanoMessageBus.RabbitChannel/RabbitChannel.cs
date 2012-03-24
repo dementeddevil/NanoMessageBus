@@ -3,7 +3,6 @@
 	using System;
 	using System.IO;
 	using System.Linq;
-	using System.Runtime.Serialization;
 	using Logging;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
@@ -75,7 +74,7 @@
 				this.CurrentTransaction.TryDispose();
 				throw;
 			}
-			catch (SerializationException e)
+			catch (PoisonMessageException e)
 			{
 				Log.Warn("Wire message {0} could not be deserialized; forwarding to poison message exchange.", messageId);
 				this.ForwardToPoisonMessageExchange(message, e);
