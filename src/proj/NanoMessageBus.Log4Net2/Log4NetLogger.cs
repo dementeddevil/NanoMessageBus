@@ -16,8 +16,7 @@ namespace NanoMessageBus.Logging
 
 		public virtual void Verbose(string message, params object[] values)
 		{
-			if (this.log.IsDebugEnabled)
-				this.log.DebugFormat(message, values);
+			// no op
 		}
 		public virtual void Debug(string message, params object[] values)
 		{
