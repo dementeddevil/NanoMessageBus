@@ -17,18 +17,31 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			Try(() => new HttpRequestAuditor(null));
 
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+		It should_NOT_throw_an_exception = () =>
+			thrown.ShouldBeNull();
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
-	public class when_is_being_received : using_an_http_request_auditor
+	public class when_a_message_is_being_received : using_an_http_request_auditor
 	{
 		Because of = () =>
 			auditor.AuditReceive(null);
 
 		It should_do_nothing = () =>
 			thrown.ShouldBeNull();
+	}
+
+	[Subject(typeof(HttpRequestAuditor))]
+	public class when_no_http_request_is_available : using_an_http_request_auditor
+	{
+		Establish context = () =>
+			auditor = new HttpRequestAuditor(null);
+
+		Because of = () =>
+			auditor.AuditSend(mockEnvelope.Object);
+
+		It should_not_append_anything_to_the_headers = () =>
+			messageHeaders.Count.ShouldEqual(0);
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -63,6 +76,44 @@ namespace NanoMessageBus.Channels
 			messageHeaders["x-audit-referring-url"].ShouldEqual("http://domain.com/referer");
 
 		It should_append_the_request_stamp_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000");
+	}
+
+	[Subject(typeof(HttpRequestAuditor))]
+	public class when_the_http_context_is_available_as_part_of_the_envelope_state : using_an_http_request_auditor
+	{
+		Establish context = () =>
+		{
+			auditor = new HttpRequestAuditor(null);
+			mockEnvelope.Setup(x => x.State).Returns(mockContext.Object);
+
+			mockRequest.Setup(x => x.UserAgent).Returns("MyBrowser");
+			mockRequest.Setup(x => x.UserHostAddress).Returns("127.0.0.1");
+			mockRequest.Setup(x => x.RawUrl).Returns("/raw-url/?#");
+			mockRequest.Setup(x => x.HttpMethod).Returns("my-method");
+			mockRequest.Setup(x => x.UrlReferrer).Returns(new Uri("http://domain.com/referer"));
+			mockContext.Setup(x => x.Timestamp).Returns(DateTime.Parse("2010-01-01"));
+		};
+
+		Because of = () =>
+			auditor.AuditSend(mockEnvelope.Object);
+
+		It should_append_the_browser_useragent_from_the_envelope_state_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-useragent"].ShouldEqual("MyBrowser");
+
+		It should_append_the_client_ip_address_from_the_envelope_state_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1");
+
+		It should_append_the_raw_url_from_the_envelope_state_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-raw-url"].ShouldEqual("/raw-url/?#");
+
+		It should_append_the_http_method_from_the_envelope_state_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-http-method"].ShouldEqual("my-method");
+
+		It should_append_the_referring_from_the_envelope_state_url_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-referring-url"].ShouldEqual("http://domain.com/referer");
+
+		It should_append_the_request_from_the_envelope_state_stamp_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000");
 	}
 
