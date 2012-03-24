@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>NanoMessageBus.Log4Net</id>
+    <id>NanoMessageBus.Log4Net2</id>
     <version>2.0.9</version>
     <title>NanoMessageBus Log4Net Logging Plugin</title>
     <authors>Jonathan Oliver</authors>
