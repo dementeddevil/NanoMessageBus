@@ -14,7 +14,7 @@ namespace NanoMessageBus
 	public class when_constructing_a_new_channel_envelope
 	{
 		Because of = () =>
-			envelope = new ChannelEnvelope(message, recipients);
+			envelope = new ChannelEnvelope(message, recipients, state);
 
 		It should_contain_a_reference_to_the_message_provided = () =>
 			envelope.Message.ShouldBeTheSameAs(message);
@@ -25,6 +25,10 @@ namespace NanoMessageBus
 		It should_contain_all_the_recipients_specified = () =>
 			envelope.Recipients.ToList().ForEach(uri => recipients.Contains(uri).ShouldBeTrue());
 
+		It should_contain_any_state_specified = () =>
+			envelope.State.ShouldEqual(state);
+
+		static readonly Guid state = Guid.NewGuid();
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
 		static readonly ICollection<Uri> recipients = new HashSet<Uri>
 		{

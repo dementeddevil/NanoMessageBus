@@ -31,11 +31,17 @@
 		public virtual ICollection<Uri> Recipients { get; private set; }
 
 		/// <summary>
+		/// Gets a reference to any temporary state used to better understand the context of the dispatch while in the current application process space.
+		/// </summary>
+		public virtual object State { get; private set; }
+
+		/// <summary>
 		/// Initializes a new instance of the ChannelEnvelope class.
 		/// </summary>
 		/// <param name="message">The message to be dispatched</param>
 		/// <param name="recipients">The collection of recipients to which the message will be sent</param>
-		public ChannelEnvelope(ChannelMessage message, IEnumerable<Uri> recipients)
+		/// <param name="state">Any optional and temporary state used to better understand the context of the dispatch while in the current application process space.</param>
+		public ChannelEnvelope(ChannelMessage message, IEnumerable<Uri> recipients, object state = null)
 			: this()
 		{
 			if (message == null)
@@ -51,6 +57,8 @@
 
 			if (immutable.Count == 0)
 				throw new ArgumentException("No recipients were provided.", "recipients");
+
+			this.State = state;
 		}
 
 		/// <summary>
