@@ -134,6 +134,22 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
+	public class when_a_message_is_being_proxied_by_the_same_address_multiple_times : using_an_http_request_auditor
+	{
+		Establish context = () =>
+		{
+			mockRequest.Setup(x => x.UserHostAddress).Returns("127.0.0.1");
+			requestHeaders["X-Forwarded-For"] = "127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3";
+		};
+
+		Because of = () =>
+			auditor.AuditSend(mockEnvelope.Object);
+
+		It should_return_only_the_unique_values = () =>
+			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3");
+	}
+
+	[Subject(typeof(HttpRequestAuditor))]
 	public class when_the_auditor_is_disposed : using_an_http_request_auditor
 	{
 		Because of = () =>

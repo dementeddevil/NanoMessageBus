@@ -43,8 +43,11 @@
 			if (string.IsNullOrEmpty(forwarded))
 				return request.UserHostAddress;
 
-			// TODO: if forwarded == UserHostAddress, return either
-			return UserAddressFormat.FormatWith(request.UserHostAddress, forwarded);
+			var address = request.UserHostAddress ?? string.Empty;
+			if (forwarded.StartsWith(address, StringComparison.InvariantCultureIgnoreCase))
+				return forwarded;
+
+			return UserAddressFormat.FormatWith(address, forwarded);
 		}
 		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
 		{
