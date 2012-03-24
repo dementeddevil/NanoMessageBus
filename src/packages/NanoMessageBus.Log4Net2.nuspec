@@ -3,7 +3,7 @@
   <metadata>
     <id>NanoMessageBus.Log4Net2</id>
     <version>2.0.9</version>
-    <title>NanoMessageBus Log4Net Logging Plugin</title>
+    <title>NanoMessageBus Log4Net v1.2.11 (v2.0) Logging Plugin</title>
     <authors>Jonathan Oliver</authors>
     <owners>Jonathan Oliver</owners>
     <projectUrl>https://github.com/joliver/NanoMessageBus</projectUrl>
@@ -18,7 +18,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\proj\NanoMessageBus.Log4Net\bin\Release\NanoMessageBus.Log4Net.*" target="lib\net40" />
-    <file src="..\proj\NanoMessageBus.Log4Net\**\*.cs" target="src" />
+    <file src="..\proj\NanoMessageBus.Log4Net2\bin\Release\NanoMessageBus.Log4Net2.*" target="lib\net40" />
+    <file src="..\proj\NanoMessageBus.Log4Net2\**\*.cs" target="src" />
   </files>
 </package>
