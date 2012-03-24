@@ -47,7 +47,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithMessage(0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -57,7 +57,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithMessages(0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -67,7 +67,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithCorrelationId(Guid.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -77,7 +77,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithHeader(string.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -87,7 +87,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithHeaders(new Dictionary<string, string>()));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -116,13 +116,33 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
+	public class when_attempting_to_null_state : using_a_channel_message_dispatch_context
+	{
+		Because of = () =>
+			Try(() => dispatchContext.WithState(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<NotSupportedException>();
+	}
+
+	[Subject(typeof(DefaultChannelMessageDispatchContext))]
+	public class when_attempting_to_add_state : using_a_channel_message_dispatch_context
+	{
+		Because of = () =>
+			Try(() => dispatchContext.WithState(string.Empty));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<NotSupportedException>();
+	}
+
+	[Subject(typeof(DefaultChannelMessageDispatchContext))]
 	public class when_publishing_the_dispatch : using_a_channel_message_dispatch_context
 	{
 		Because of = () =>
 			Try(() => dispatchContext.Publish());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -132,7 +152,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Reply());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.ShouldBeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -150,7 +170,10 @@ namespace NanoMessageBus
 		It should_send_append_the_recipients_to_the_envelope = () =>
 			envelope.Recipients.SequenceEqual(recipients).ShouldBeTrue();
 
-		It should_a_reference_to_the_underlying_transaction = () =>
+		It should_set_the_current_message_as_the_envelope_state = () =>
+			envelope.State.ShouldEqual(message);
+
+		It should_return_a_reference_to_the_underlying_transaction = () =>
 			transaction.ShouldEqual(mockTransaction.Object);
 
 		It should_report_the_number_of_messages_as_zero = () =>

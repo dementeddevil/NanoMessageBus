@@ -16,23 +16,23 @@
 		}
 		public virtual IDispatchContext WithMessage(object message)
 		{
-			throw new InvalidOperationException("The message collection cannot be modified.");
+			throw new NotSupportedException("The message collection cannot be modified.");
 		}
 		public virtual IDispatchContext WithMessages(params object[] messages)
 		{
-			throw new InvalidOperationException("The message collection cannot be modified.");
+			throw new NotSupportedException("The message collection cannot be modified.");
 		}
 		public virtual IDispatchContext WithCorrelationId(Guid correlationId)
 		{
-			throw new InvalidOperationException("A correlation identifier is already set.");
+			throw new NotSupportedException("A correlation identifier is already set.");
 		}
 		public virtual IDispatchContext WithHeader(string key, string value = null)
 		{
-			throw new InvalidOperationException("The headers cannot be modified.");
+			throw new NotSupportedException("The headers cannot be modified.");
 		}
 		public virtual IDispatchContext WithHeaders(IDictionary<string, string> headers)
 		{
-			throw new InvalidOperationException("The headers cannot be modified.");
+			throw new NotSupportedException("The headers cannot be modified.");
 		}
 		public virtual IDispatchContext WithRecipient(Uri recipient)
 		{
@@ -42,21 +42,26 @@
 			this.recipients.Add(recipient);
 			return this;
 		}
+		public virtual IDispatchContext WithState(object state)
+		{
+			throw new NotSupportedException("Envelope state cannot be specified.");
+		}
+
 		public virtual IChannelTransaction Send()
 		{
 			this.ThrowWhenDispatched();
 			this.dispatched = true;
 
-			this.channel.Send(new ChannelEnvelope(this.channelMessage, this.recipients));
+			this.channel.Send(new ChannelEnvelope(this.channelMessage, this.recipients, this.channelMessage));
 			return this.channel.CurrentTransaction;
 		}
 		public virtual IChannelTransaction Publish()
 		{
-			throw new InvalidOperationException("Only send can be invoked.");
+			throw new NotSupportedException("Only send can be invoked.");
 		}
 		public virtual IChannelTransaction Reply()
 		{
-			throw new InvalidOperationException("Only send can be invoked.");
+			throw new NotSupportedException("Only send can be invoked.");
 		}
 
 		protected virtual void ThrowWhenDispatched()

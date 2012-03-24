@@ -280,7 +280,7 @@ namespace NanoMessageBus
 		Because of = () =>
 			dispatchContext.WithHeader("key", "last").Send();
 
-		It should_append_the_most_recent_value_to_the_set_of_headers_on_the_dispatched_message = () =>
+		It should_overwrite_any_existing_value_on_the_headers_for_the_same_key_on_the_dispatched_message = () =>
 			headers["key"].ShouldEqual("last");
 	}
 
@@ -313,6 +313,46 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
+	public class when_attempting_to_specify_null_state : with_a_dispatch_context
+	{
+		Because of = () =>
+			Try(() => dispatchContext.WithState(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_adding_state_to_the_context : with_a_dispatch_context
+	{
+		Because of = () =>
+			dispatchContext.WithMessage(0).WithState("Hello, World!").Send();
+
+		It should_append_the_state_to_the_dispatched_envelope = () =>
+			envelope.State.ShouldEqual("Hello, World!");
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_dispatching_without_first_adding_a_message : with_a_dispatch_context
+	{
+		Because of = () =>
+			Try(() => dispatchContext.Send());
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<InvalidOperationException>();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_no_state_has_been_specified_during_message_delivery : with_a_dispatch_context
+	{
+		Because of = () =>
+			dispatchContext.WithMessage(string.Empty).Send();
+
+		It should_append_the_incoming_message_to_the_dispatch_envelope_state = () =>
+			envelope.State.ShouldEqual(mockMessage.Object);
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
 	public class when_sending_a_message : with_a_dispatch_context
 	{
 		Establish context = () =>
@@ -321,7 +361,10 @@ namespace NanoMessageBus
 				.Setup(x => x[typeof(int)])
 				.Returns(new[] { new Uri("http://recipient") });
 
-			dispatchContext.WithMessage(0).WithMessage(string.Empty);
+			dispatchContext
+				.WithMessage(0)
+				.WithState(state)
+				.WithMessage(string.Empty);
 		};
 
 		Because of = () =>
@@ -339,8 +382,13 @@ namespace NanoMessageBus
 		It should_set_the_return_address_to_the_configured_value = () =>
 			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
 
+		It should_append_the_state_to_the_dispatched_envelope = () =>
+			envelope.State.ShouldEqual(state);
+
 		It should_return_the_current_transaction = () =>
 			transaction.ShouldEqual(mockTransaction.Object);
+
+		static readonly Guid state = Guid.NewGuid();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]

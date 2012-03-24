@@ -20,7 +20,11 @@
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
 
-			var headers = envelope.Message.Headers;
+			var message = envelope.Message;
+			if (message == envelope.State)
+				return;
+
+			var headers = message.Headers;
 			headers[OriginHost] = Environment.MachineName.ToLowerInvariant();
 			headers[DispatchStamp] = SystemTime.UtcNow.ToIsoString();
 		}

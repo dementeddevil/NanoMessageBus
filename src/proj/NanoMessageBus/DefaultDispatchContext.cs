@@ -87,6 +87,16 @@
 			this.recipients.Add(recipient);
 			return this;
 		}
+		public virtual IDispatchContext WithState(object state)
+		{
+			if (state == null)
+				throw new ArgumentNullException("state");
+
+			Log.Verbose("Adding temporary, in-process state of type '{0}' to dispatch.", state.GetType());
+
+			this.applicationState = state;
+			return this;
+		}
 
 		public virtual IChannelTransaction Send()
 		{
@@ -129,7 +139,7 @@
 
 			var message = this.builder.Build(
 				this.correlationIdentifier, this.returnAddress, this.messageHeaders, this.logicalMessages);
-			var envelope = new ChannelEnvelope(message, targets);
+			var envelope = new ChannelEnvelope(message, targets, this.applicationState ?? this.channel.CurrentMessage);
 
 			Log.Verbose("Dispatching message '{0}' with correlation identifier '{1}' to {2} recipient(s).",
 				message.MessageId, message.CorrelationId, targets.Length);
@@ -148,6 +158,9 @@
 		}
 		protected virtual IEnumerable<Uri> BuildRecipients()
 		{
+			if (this.logicalMessages.Count == 0)
+				throw new InvalidOperationException("No messages have been specified.");
+
 			var type = this.logicalMessages.First().GetType();
 			var discovered = (this.dispatchTable[type] ?? new Uri[0]).Concat(this.recipients).ToArray();
 			return discovered.Length == 0 ? new[] { ChannelEnvelope.DeadLetterAddress } : discovered;
@@ -188,6 +201,7 @@
 		private readonly IChannelMessageBuilder builder;
 		private readonly Uri returnAddress;
 		private Guid correlationIdentifier;
+		private object applicationState;
 		private bool dispatched;
 	}
 }

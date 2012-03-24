@@ -70,6 +70,14 @@
 		IDispatchContext WithRecipient(Uri recipient);
 
 		/// <summary>
+		/// Specifies additional state to be added to the outbound dispatch envelope for evaluation by the upstream pipeline
+		/// while in the current application process space.
+		/// </summary>
+		/// <param name="state">The value indicating temporary state to be applied to the outbound dispatch envelope.</param>
+		/// <returns>A instance to the same dispatch to facilitate fluent construction.</returns>
+		IDispatchContext WithState(object state);
+
+		/// <summary>
 		/// Pushes the message onto the underlying channel sending it to any interested parties and completes the context.
 		/// </summary>
 		/// <exception cref="InvalidOperationException"></exception>

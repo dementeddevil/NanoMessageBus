@@ -62,13 +62,33 @@ namespace NanoMessageBus.Channels
 			SystemTime.TimeResolver = null;
 
 		Because of = () =>
-			Try(() => auditor.AuditSend(mockEnvelope.Object));
+			auditor.AuditSend(mockEnvelope.Object);
 
 		It should_append_the_originating_machine_name_to_the_headers = () =>
 			messageHeaders["x-audit-origin-host"].ShouldEqual(Environment.MachineName.ToLowerInvariant());
 
 		It should_append_the_current_time_to_the_headers = () =>
 			messageHeaders["x-audit-dispatched"].ShouldEqual(SystemTime.UtcNow.ToString("o"));
+	}
+
+	[Subject(typeof(PointOfOriginAuditor))]
+	public class when_sending_a_channel_message : using_the_point_of_origin_auditor
+	{
+		Establish context = () =>
+		{
+			mockEnvelope.Setup(x => x.State).Returns(mockMessage.Object);
+			messageHeaders["x-audit-origin-host"] = "a";
+			messageHeaders["x-audit-dispatched"] = "b";
+		};
+
+		Because of = () =>
+			auditor.AuditSend(mockEnvelope.Object);
+
+		It should_NOT_modify_the_originating_machine_header = () =>
+			messageHeaders["x-audit-origin-host"].ShouldEqual("a");
+
+		It should_NOT_modify_the_originating_dispatch_stamp = () =>
+			messageHeaders["x-audit-dispatched"].ShouldEqual("b");
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
