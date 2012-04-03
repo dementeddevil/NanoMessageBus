@@ -157,6 +157,61 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
+	public class when_releasing_a_channel_where_the_underlying_connection_has_already_been_disposed : using_the_pooled_dispatch_connector
+	{
+		Establish context = () =>
+		{
+			channel = connector.Connect(PooledGroupName);
+			connector.Dispose();
+		};
+
+		Because of = () =>
+			Try(() => channel.Dispose());
+
+		It should_dispose_the_underlying_channel = () =>
+			mockChannels[0].Verify(x => x.Dispose());
+
+		static IMessagingChannel channel;
+	}
+
+	[Subject(typeof(PooledDispatchConnector))]
+	public class when_releasing_a_channel_where_the_underlying_connection_been_reset : using_the_pooled_dispatch_connector
+	{
+		Establish context = () =>
+		{
+			mockChannels.Add(new Mock<IMessagingChannel>());
+			mockChannels.Add(new Mock<IMessagingChannel>());
+			mockChannels[0].Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
+			mockConnector.Setup(x => x.Connect(PooledGroupName)).Returns(() => mockChannels[counter++].Object);
+
+			channel1 = connector.Connect(PooledGroupName);
+			channel2 = connector.Connect(PooledGroupName);
+
+			try
+			{
+				channel1.Send(envelope); // tears down connection
+			}
+			catch (ChannelConnectionException)
+			{
+			}
+		};
+
+		Because of = () =>
+			Try(() => channel2.Dispose());
+
+		It should_dispose_the_channel_that_caused_the_exception = () =>
+			mockChannels[0].Verify(x => x.Dispose(), Times.Once());
+
+		It should_dispose_the_remaining_channel_when_its_released_back_to_the_pool = () =>
+			mockChannels[1].Verify(x => x.Dispose(), Times.Once());
+
+		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
+		static IMessagingChannel channel1;
+		static IMessagingChannel channel2;
+		static int counter;
+	}
+
+	[Subject(typeof(PooledDispatchConnector))]
 	public class when_a_pooled_channel_is_disposed_and_the_underlying_channel_made_available : using_the_pooled_dispatch_connector
 	{
 		Establish context = () =>

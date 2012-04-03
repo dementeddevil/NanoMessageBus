@@ -47,10 +47,13 @@
 
 			Log.Verbose("Releasing channel back to the pool for reuse.");
 
-			if (this.open.Remove(channel) && this.currentToken == token && this.currentToken >= 0)
+			if (!this.open.Remove(channel))
+				throw new InvalidOperationException("Cannot release a channel that didn't originate with this connector.");
+
+			if (this.currentToken >= 0 && this.currentToken == token)
 				this.available[channel.CurrentConfiguration.GroupName].Add(channel);
 			else
-				throw new InvalidOperationException("Cannot release a channel that didn't originate with this connector.");
+				channel.TryDispose();
 		}
 		public virtual void Teardown(IMessagingChannel channel, int token)
 		{
