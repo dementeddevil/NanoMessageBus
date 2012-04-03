@@ -17,6 +17,6 @@ using System.Reflection;
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: AssemblyVersion("2.0.11.0")]
-[assembly: AssemblyFileVersion("2.0.11.0")]
-//// [assembly: AssemblyInformationalVersion("2.0.11.0 Release")]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.12.0")]
+[assembly: AssemblyInformationalVersion("2.0 Release Build 12 (2012-04-03)")]
