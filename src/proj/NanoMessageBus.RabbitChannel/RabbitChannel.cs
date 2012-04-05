@@ -46,10 +46,7 @@
 			}
 
 			if (message == null)
-			{
-				Log.Verbose("Null wire message received; continue receiving.");
 				return ContinueReceiving;
-			}
 
 			this.EnsureTransaction();
 			this.TryReceive(message, callback);
