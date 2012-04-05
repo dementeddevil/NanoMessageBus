@@ -6,7 +6,8 @@ namespace NanoMessageBus.Logging
 	{
 		public virtual void Verbose(string message, params object[] values)
 		{
-			// no op
+			if (this.debug)
+				this.log.DebugFormat(message, values);
 		}
 		public virtual void Debug(string message, params object[] values)
 		{
