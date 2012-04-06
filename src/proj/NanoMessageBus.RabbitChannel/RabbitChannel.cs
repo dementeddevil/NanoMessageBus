@@ -83,6 +83,7 @@
 			}
 			catch (Exception e)
 			{
+				// TODO: should we log the exception here or in the handler?
 				Log.Warn("Handling of message '{0}' has thrown an exception, attempting to retry message.", messageId);
 				this.RetryMessage(message, e);
 			}
