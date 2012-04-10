@@ -16,25 +16,13 @@
 
 			var handled = message.Messages
 				.TakeWhile(x => this.context.ContinueHandling)
-				.Sum(x => this.TryRoute(x, unhandled));
+				.Sum(x => this.Route(x, unhandled));
 
 			if (handled == 0)
 				unhandled.Clear();
 
 			if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
 				this.ForwardToDeadLetterAddress(message, unhandled);
-		}
-		private int TryRoute(object x, ICollection<object> unhandled)
-		{
-			try
-			{
-				return this.Route(x, unhandled);
-			}
-			catch
-			{
-				// TODO: log exception here
-				throw;
-			}
 		}
 		private int Route(object message, ICollection<object> unhandled)
 		{
