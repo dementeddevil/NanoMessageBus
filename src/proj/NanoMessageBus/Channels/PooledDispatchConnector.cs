@@ -36,7 +36,7 @@
 			}
 
 			Log.Verbose("Resolving channel for '{0}' from the pool of available channels.", channelGroup);
-			this.open.Add(channel);
+			this.open.TryAdd(channel, true);
 			return new PooledDispatchChannel(this, channel, this.currentToken);
 		}
 
@@ -47,7 +47,8 @@
 
 			Log.Verbose("Releasing channel back to the pool for reuse.");
 
-			if (!this.open.Remove(channel))
+			bool value;
+			if (!this.open.TryRemove(channel, out value))
 				throw new InvalidOperationException("Cannot release a channel that didn't originate with this connector.");
 
 			if (this.currentToken >= 0 && this.currentToken == token)
@@ -60,7 +61,7 @@
 			if (channel == null)
 				throw new ArgumentNullException("channel");
 
-			if (!this.open.Contains(channel))
+			if (!this.open.ContainsKey(channel))
 				throw new InvalidOperationException("Cannot tear down a channel that didn't originate with this connector.");
 
 			if (this.FirstOneThrough(token, token + 1))
@@ -149,7 +150,8 @@
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(PooledDispatchConnector));
-		private readonly ICollection<IMessagingChannel> open = new HashSet<IMessagingChannel>();
+		private readonly ConcurrentDictionary<IMessagingChannel, bool> open =
+			new ConcurrentDictionary<IMessagingChannel, bool>();
 		private readonly IDictionary<string, ConcurrentBag<IMessagingChannel>> available =
 			new Dictionary<string, ConcurrentBag<IMessagingChannel>>();
 		private readonly IChannelConnector connector;
