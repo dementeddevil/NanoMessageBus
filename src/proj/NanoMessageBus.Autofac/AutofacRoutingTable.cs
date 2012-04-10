@@ -74,6 +74,7 @@
 				.RegisterAssemblyTypes(messageHandlerAssemblies)
 				.Where(messageHandlers.Contains)
 				.AsImplementedInterfaces()
+				.PreserveExistingDefaults()
 				.InstancePerLifetimeScope();
 		}
 
