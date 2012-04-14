@@ -4,6 +4,7 @@
 namespace NanoMessageBus.Channels
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using Machine.Specifications;
@@ -46,7 +47,7 @@ namespace NanoMessageBus.Channels
 	public class when_no_group_name_is_specified : using_channel_config
 	{
 		It should_contain_the_default_value = () =>
-			config.GroupName.ShouldEqual("group:0");
+			config.GroupName.ShouldEqual("unnamed-group");
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -176,7 +177,7 @@ namespace NanoMessageBus.Channels
 			var declaration = new QueueDeclareOk("random-queue", 0, 0);
 
 			mockChannel
-				.Setup(x => x.QueueDeclare(string.Empty, true, false, AutoDelete, null))
+				.Setup(x => x.QueueDeclare(string.Empty, true, false, AutoDelete, Moq.It.IsAny<IDictionary>()))
 				.Returns(declaration);
 
 			config.WithRandomInputQueue();
@@ -586,7 +587,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, true, null), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, true, Moq.It.IsAny<IDictionary>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -598,7 +599,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, false, false, false, null), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, false, false, false, Moq.It.IsAny<IDictionary>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -610,7 +611,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_autodelete_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, false, true, null), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, false, true, Moq.It.IsAny<IDictionary>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -623,6 +624,34 @@ namespace NanoMessageBus.Channels
 
 		It should_invoke_purge_when_initializing_the_connection = () =>
 			mockChannel.Verify(x => x.QueuePurge(config.InputQueue), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_a_poison_message_exchange : using_channel_config
+	{
+		private Establish context = () =>
+		{
+			mockChannel
+				.Setup(x => x.QueueDeclare(
+					"my queue",
+					Moq.It.IsAny<bool>(),
+					Moq.It.IsAny<bool>(),
+					Moq.It.IsAny<bool>(),
+					Moq.It.IsAny<IDictionary>()))
+				.Callback<string, bool, bool, bool, IDictionary>((a, b, c, e, values) =>
+				{
+					parameters = values;
+				});
+
+			config.WithInputQueue("my queue").WithDeadLetterExchange("my-dead-letter-exchange");
+		};
+
+		Because of = () => Configure();
+
+		It should_provide_the_parameter_to_the_queue_declaration = () =>
+			parameters["x-dead-letter-exchange"].ShouldEqual("my-dead-letter-exchange");
+
+		static IDictionary parameters;
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

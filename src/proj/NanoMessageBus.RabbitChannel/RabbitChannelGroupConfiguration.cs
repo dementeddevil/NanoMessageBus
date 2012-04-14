@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using RabbitMQ.Client;
@@ -35,8 +36,12 @@
 			if (this.DispatchOnly)
 				return;
 
+			var declarationArgs = new Hashtable();
+			if (this.DeadLetterExchange != null)
+				declarationArgs[DeadLetterExchangeDeclaration] = this.DeadLetterExchange.ExchangeName;
+
 			var declaration = channel.QueueDeclare(
-				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, null);
+				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs);
 
 			if (declaration != null)
 				this.InputQueue = declaration.QueueName;
@@ -280,7 +285,7 @@
 
 		public RabbitChannelGroupConfiguration()
 		{
-			this.GroupName = DefaultGroupName + channelGroupsCreated++;
+			this.GroupName = DefaultGroupName;
 			this.ApplicationId = DefaultAppId;
 			this.ReceiveTimeout = DefaultReceiveTimeout;
 			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
@@ -307,15 +312,15 @@
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
-		private const string DefaultGroupName = "group:";
+		private const string DefaultGroupName = "unnamed-group";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
+		private const string DeadLetterExchangeDeclaration = "x-dead-letter-exchange";
 		private const string DefaultDeadLetterExchange = "dead-letters";
 		private const string DefaultAppId = "rabbit-endpoint";
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 		private static readonly IDispatchTable DefaultDispatchTable = new RabbitDispatchTable();
 		private readonly ICollection<Type> messageTypes = new HashSet<Type>();
-		private static int channelGroupsCreated;
 	}
 }
