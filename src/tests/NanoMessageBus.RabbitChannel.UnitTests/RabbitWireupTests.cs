@@ -40,12 +40,43 @@ namespace NanoMessageBus.Channels
 	public class when_specifying_an_endpoint_address : using_the_wireup
 	{
 		Because of = () =>
-			wireup.WithEndpoint(address);
+			wireup.WithEndpoint(address).AddChannelGroup(x => x.WithGroupName("my group")).Build();
 
 		It should_contain_the_address_specified = () =>
 			wireup.EndpointAddress.ShouldEqual(address);
 
+		It should_use_username_provided_in_the_address = () =>
+			wireup.ConnectionFactory.UserName.ShouldEqual("user");
+
+		It should_use_password_provided_in_the_address = () =>
+			wireup.ConnectionFactory.Password.ShouldEqual("pass");
+
 		static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
+	}
+
+	[Subject(typeof(RabbitWireup))]
+	public class when_authentication_information_is_already_specified : using_the_wireup
+	{
+		Establish context = () => factory = new ConnectionFactory
+		{
+			UserName = "existing",
+			Password = null
+		};
+
+		Because of = () => wireup
+			.WithEndpoint(address)
+			.WithConnectionFactory(factory)
+			.AddChannelGroup(x => x.WithGroupName("group"))
+			.Build();
+
+		It should_prefer_the_username_aleady_provided_over_the_username_in_the_address = () =>
+			factory.UserName.ShouldEqual("existing");
+
+		It should_prefer_the_password_associated_with_the_existing_username_over_the_password_in_the_address = () =>
+			factory.Password.ShouldBeNull();
+
+		static readonly Uri address = new Uri("amqp://user:pass@localhost/");
+		static ConnectionFactory factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]

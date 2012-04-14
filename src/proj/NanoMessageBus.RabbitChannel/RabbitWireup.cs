@@ -66,11 +66,12 @@
 		}
 		private void AssignAuthenticationInformation()
 		{
+			if (this.ConnectionFactory.UserName != DefaultUserName)
+				return;
+
 			var authentication = this.EndpointAddress.UserInfo.Split(Delimiter);
-			this.ConnectionFactory.UserName = this.ConnectionFactory.UserName ??
-				(authentication.Length > 0 ? authentication[UserNameIndex] : null);
-			this.ConnectionFactory.Password = this.ConnectionFactory.Password ??
-				(authentication.Length > 1 ? authentication[PasswordIndex] : null);
+			this.ConnectionFactory.UserName = authentication.Length > 0 ? authentication[UserNameIndex] : null;
+			this.ConnectionFactory.Password = authentication.Length > 1 ? authentication[PasswordIndex] : null;
 		}
 
 		public RabbitWireup()
@@ -84,6 +85,7 @@
 		private readonly ICollection<RabbitChannelGroupConfiguration> configurations =
 			new LinkedList<RabbitChannelGroupConfiguration>();
 		private static readonly char[] Delimiter = ":".ToCharArray();
+		private const string DefaultUserName = "guest";
 		private const int UserNameIndex = 0;
 		private const int PasswordIndex = 1;
 	}
