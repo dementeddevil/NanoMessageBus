@@ -11,8 +11,7 @@
 	/// Represents an atomic unit of communication--a message or communiqué--that can or has been transported over
 	/// a communication medium, which holds both the messages and metadata about those messages.
 	/// </summary>
-	[DataContract]
-	[Serializable]
+	[DataContract, Serializable]
 	public class ChannelMessage
 	{
 		/// <summary>
@@ -50,7 +49,7 @@
 		/// <summary>
 		/// Gets the collection of contained messages.
 		/// </summary>
-		public virtual ICollection<object> Messages
+		public virtual IList<object> Messages
 		{
 			get { return this.immutable; }
 		}
@@ -115,6 +114,6 @@
 		private readonly IList<object> messages;
 
 		[NonSerialized, IgnoreDataMember, XmlIgnore, SoapIgnore]
-		private readonly ICollection<object> immutable;
+		private readonly IList<object> immutable;
 	}
 }
