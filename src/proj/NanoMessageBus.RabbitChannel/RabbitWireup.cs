@@ -53,10 +53,22 @@
 		}
 		public virtual RabbitConnector Build()
 		{
-			if (this.EndpointAddress != null)
-				this.ConnectionFactory.Endpoint = new AmqpTcpEndpoint(this.EndpointAddress);
-
+			this.AssignConnectionAddress();
 			return new RabbitConnector(this.ConnectionFactory, this.ShutdownTimeout, this.configurations);
+		}
+		private void AssignConnectionAddress()
+		{
+			if (this.EndpointAddress == null)
+				return;
+
+			this.ConnectionFactory.Endpoint = new AmqpTcpEndpoint(this.EndpointAddress);
+			this.AssignAuthenticationInformation();
+		}
+		private void AssignAuthenticationInformation()
+		{
+			var authentication = this.EndpointAddress.UserInfo.Split(Delimiter);
+			this.ConnectionFactory.UserName = authentication.Length > 0 ? authentication[UserNameIndex] : null;
+			this.ConnectionFactory.Password = authentication.Length > 1 ? authentication[PasswordIndex] : null;
 		}
 
 		public RabbitWireup()
@@ -69,5 +81,8 @@
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
 		private readonly ICollection<RabbitChannelGroupConfiguration> configurations =
 			new LinkedList<RabbitChannelGroupConfiguration>();
+		private static readonly char[] Delimiter = ":".ToCharArray();
+		private const int UserNameIndex = 0;
+		private const int PasswordIndex = 1;
 	}
 }
