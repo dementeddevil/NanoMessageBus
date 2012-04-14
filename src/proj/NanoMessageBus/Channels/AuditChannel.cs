@@ -41,6 +41,7 @@
 
 			this.ThrowWhenDisposed();
 
+			// TODO: register with current transaction?
 			var messageId = envelope.MessageId();
 			foreach (var auditor in this.auditors)
 			{
