@@ -68,6 +68,33 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
+	public class when_routing_a_message_to_the_registerd_handler_throws_an_AbortCurrentHandlerException : with_the_routing_table
+	{
+		Establish context = () =>
+		{
+			routes.Add(new GenericHandler<string>(x =>
+			{
+				throw new AbortCurrentHandlerException("Reason");
+			}));
+			routes.Add(new StringHandler());
+		};
+
+		Because of = () =>
+			handled = routes.Route(mockContext.Object, string.Empty);
+
+		It should_suppress_the_thrown_exception = () =>
+			thrown.ShouldBeNull();
+
+		It should_continue_processing_the_existing_message = () =>
+			handled.ShouldEqual(2);
+
+		class StringHandler : IMessageHandler<string>
+		{
+			public void Handle(string message) { }
+		}
+	}
+
+	[Subject(typeof(DefaultRoutingTable))]
 	public class when_routing_a_message_to_the_registered_handler_throws_an_exception : with_the_routing_table
 	{
 		Establish context = () => routes.Add(new GenericHandler<string>(x =>

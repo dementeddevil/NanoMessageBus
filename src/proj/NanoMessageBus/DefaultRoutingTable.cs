@@ -71,7 +71,21 @@
 			// FUTURE: route to handlers for message base classes and interfaces all the way back to System.Object
 			return routes
 				.TakeWhile(x => context.ContinueHandling)
-				.Count(route => route.Handle(context, message));
+				.Count(route => TryRoute(route, context, message));
+		}
+		private static bool TryRoute(ISequencedHandler route, IHandlerContext context, object message)
+		{
+			try
+			{
+				return route.Handle(context, message);
+			}
+			catch (AbortCurrentHandlerException e)
+			{
+				Log.Debug("Aborting executing of current handler of type '{0}' because of: {1}",
+					route.HandlerType, e.Message);
+
+				return true;
+			}
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultRoutingTable));

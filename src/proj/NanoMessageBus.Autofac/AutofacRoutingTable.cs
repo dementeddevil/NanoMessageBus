@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Reflection;
 	using Autofac;
+	using Logging;
 
 	public class AutofacRoutingTable : IRoutingTable
 	{
@@ -23,6 +24,8 @@
 		public virtual int Route(IHandlerContext context, object message)
 		{
 			var messageType = message.GetType();
+			Log.Verbose("Attempting to route message of type '{0}' to registered handlers.", messageType);
+
 			if (messageType == typeof(ChannelMessage))
 				return this.RouteToChannelMessageHandler(context, message);
 
@@ -37,7 +40,10 @@
 		{
 			var handler = this.callbacks.TryGetValue(messageType);
 			if (handler == null)
+			{
+				Log.Debug("No registered handlers for message of type '{0}'.", messageType);
 				return 0;
+			}
 
 			handler(context, message);
 			return 1;
@@ -49,7 +55,21 @@
 
 			return routes
 				.TakeWhile(x => context.ContinueHandling)
-				.Count(x => { x.Handle(message); return true; });
+				.Count(x => TryRoute(x, message));
+		}
+		private static bool TryRoute<T>(IMessageHandler<T> route, T message)
+		{
+			try
+			{
+				route.Handle(message);
+			}
+			catch (AbortCurrentHandlerException e)
+			{
+				Log.Debug("Aborting executing of current handler of type '{0}' because of: {1}",
+					route.GetType(), e.Message);
+			}
+
+			return true;
 		}
 
 		public AutofacRoutingTable(params Assembly[] messageHandlerAssemblies)
@@ -78,6 +98,7 @@
 				.InstancePerLifetimeScope();
 		}
 
+		private static readonly ILog Log = LogFactory.Build(typeof(AutofacRoutingTable));
 		private readonly IDictionary<Type, RoutingDelegate> callbacks = new Dictionary<Type, RoutingDelegate>();
 		private Func<IHandlerContext, IMessageHandler<ChannelMessage>> channelMessageCallback;
 		private static readonly MethodInfo DynamicRouteMethod =
