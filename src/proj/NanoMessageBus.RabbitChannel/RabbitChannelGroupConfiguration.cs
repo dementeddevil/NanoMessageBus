@@ -307,7 +307,7 @@
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
-		private const string DefaultGroupName = "all";
+		private const string DefaultGroupName = "all"; // TODO: call it no-name-0, no-name-1, etc.
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultDeadLetterExchange = "dead-letters";
