@@ -34,10 +34,10 @@ namespace NanoMessageBus
 	public class when_handling_a_message : with_a_channel_message_handler
 	{
 		Establish context = () =>
-			mockMessage.Setup(x => x.Messages).Returns(new object[] { "1", 2, 3.0 });
+			deliveredMessage = BuildMessage(new object[] { "1", 2, 3.0 });
 
 		Because of = () =>
-			handler.Handle(mockMessage.Object);
+			handler.Handle(deliveredMessage);
 
 		It should_route_each_logical_message_back_to_the_underlying_routing_table = () =>
 		{
@@ -52,14 +52,14 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			mockMessage.Setup(x => x.Messages).Returns(new object[] { "1", 2 });
+			deliveredMessage = BuildMessage(new object[] { "1", 2 });
 			mockRoutes
 				.Setup(x => x.Route(mockHandlerContext.Object, "1"))
 				.Callback<IHandlerContext, object>((ctx, msg) => continueProcessing = false);
 		};
 
 		Because of = () =>
-			handler.Handle(mockMessage.Object);
+			handler.Handle(deliveredMessage);
 
 		It should_route_each_logical_message_back_to_the_underlying_routing_table = () =>
 		{
@@ -72,13 +72,13 @@ namespace NanoMessageBus
 	public class when_no_routes_exist_for_any_logical_message : with_a_channel_message_handler
 	{
 		Establish context = () =>
-			mockMessage.Setup(x => x.Messages).Returns(new object[] { 0 });
+			deliveredMessage = BuildMessage(new object[] { 0 });
 
 		Because of = () =>
-			handler.Handle(mockMessage.Object);
+			handler.Handle(deliveredMessage);
 
 		It should_put_the_incoming_channel_message_into_a_channel_envelope = () =>
-			sentMessage.ShouldEqual(mockMessage.Object);
+			sentMessage.ShouldEqual(deliveredMessage);
 
 		It should_send_the_envelope_to_the_dead_letter_address = () =>
 			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
@@ -90,11 +90,11 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			continueProcessing = false;
-			mockMessage.Setup(x => x.Messages).Returns(new object[] { 0 });
+			deliveredMessage = BuildMessage(new object[] { 0 });
 		};
 
 		Because of = () =>
-			handler.Handle(mockMessage.Object);
+			handler.Handle(deliveredMessage);
 
 		It should_NEVER_send_the_incoming_channel_message_to_the_dead_letter_address = () =>
 			sentMessage.ShouldBeNull();
@@ -105,33 +105,34 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			mockMessage.Setup(x => x.Messages).Returns(new object[] { 1, "2", 3.0, 4.0M });
-			mockMessage.Setup(x => x.MessageId).Returns(messageId);
-			mockMessage.Setup(x => x.CorrelationId).Returns(correlationId);
-			mockMessage.Setup(x => x.ReturnAddress).Returns(new Uri("http://www.google.com/"));
-			mockMessage.Setup(x => x.Headers).Returns(new Dictionary<string, string>());
+			deliveredMessage = new ChannelMessage(
+				messageId,
+				correlationId,
+				new Uri("http://www.google.com/"),
+				new Dictionary<string, string>(),
+				new object[] { 1, "2", 3.0, 4.0M });
 
 			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 1)).Returns(1); // message is handled
 			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 3.0)).Returns(1); // message is handled
 		};
 
 		Because of = () =>
-			handler.Handle(mockMessage.Object);
+			handler.Handle(deliveredMessage);
 
 		It should_put_the_ignored_messages_into_a_channel_message = () =>
 			sentMessage.Messages.SequenceEqual(new object[] { "2", 4.0M }).ShouldBeTrue();
 
 		It should_add_a_unique_message_identifier_to_the_outgoing_channel_message = () =>
-			sentMessage.MessageId.ShouldNotEqual(mockMessage.Object.MessageId);
+			sentMessage.MessageId.ShouldNotEqual(deliveredMessage.MessageId);
 
 		It should_add_the_incoming_correlation_identifier_to_the_outgoing_channel_message = () =>
-			sentMessage.CorrelationId.ShouldEqual(mockMessage.Object.CorrelationId);
+			sentMessage.CorrelationId.ShouldEqual(deliveredMessage.CorrelationId);
 
 		It should_add_the_incoming_return_address_to_the_outgoing_channel_message = () =>
-			sentMessage.ReturnAddress.ShouldEqual(mockMessage.Object.ReturnAddress);
+			sentMessage.ReturnAddress.ShouldEqual(deliveredMessage.ReturnAddress);
 
 		It should_add_the_incoming_message_headers_to_the_outgoing_channel_message = () =>
-			ReferenceEquals(sentMessage.Headers, mockMessage.Object.Headers).ShouldBeTrue();
+			ReferenceEquals(sentMessage.Headers, deliveredMessage.Headers).ShouldBeTrue();
 
 		It should_forward_the_channel_envelope_to_the_dead_letter_address = () =>
 			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
@@ -155,7 +156,6 @@ namespace NanoMessageBus
 			mockDelivery = new Mock<IDeliveryContext>();
 			mockDispatchContext = new Mock<IDispatchContext>();
 			mockRoutes = new Mock<IRoutingTable>();
-			mockMessage = new Mock<ChannelMessage>();
 			continueProcessing = true;
 
 			mockHandlerContext
@@ -194,16 +194,25 @@ namespace NanoMessageBus
 		{
 			thrown = Catch.Exception(callback);
 		}
+		protected static ChannelMessage BuildMessage(IEnumerable<object> messages)
+		{
+			return new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("http://localhost"),
+				new Dictionary<string, string>(), 
+				messages);
+		}
 
 		protected static DefaultChannelMessageHandler handler;
 		protected static Mock<IHandlerContext> mockHandlerContext;
 		protected static Mock<IDispatchContext> mockDispatchContext;
 		protected static Mock<IDeliveryContext> mockDelivery;
 		protected static Mock<IRoutingTable> mockRoutes;
-		protected static Mock<ChannelMessage> mockMessage;
 		protected static Exception thrown;
 		protected static bool continueProcessing;
 
+		protected static ChannelMessage deliveredMessage;
 		protected static ChannelMessage sentMessage;
 		protected static Uri[] recipients;
 
