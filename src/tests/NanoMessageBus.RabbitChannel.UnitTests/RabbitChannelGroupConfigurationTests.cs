@@ -46,7 +46,7 @@ namespace NanoMessageBus.Channels
 	public class when_no_group_name_is_specified : using_channel_config
 	{
 		It should_contain_the_default_value = () =>
-			config.GroupName.ShouldEqual("all");
+			config.GroupName.ShouldEqual("group:0");
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

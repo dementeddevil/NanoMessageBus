@@ -280,7 +280,7 @@
 
 		public RabbitChannelGroupConfiguration()
 		{
-			this.GroupName = DefaultGroupName;
+			this.GroupName = DefaultGroupName + channelGroupsCreated++;
 			this.ApplicationId = DefaultAppId;
 			this.ReceiveTimeout = DefaultReceiveTimeout;
 			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
@@ -307,7 +307,7 @@
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
-		private const string DefaultGroupName = "all"; // TODO: call it no-name-0, no-name-1, etc.
+		private const string DefaultGroupName = "group:";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DefaultDeadLetterExchange = "dead-letters";
@@ -316,5 +316,6 @@
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 		private static readonly IDispatchTable DefaultDispatchTable = new RabbitDispatchTable();
 		private readonly ICollection<Type> messageTypes = new HashSet<Type>();
+		private static int channelGroupsCreated;
 	}
 }
