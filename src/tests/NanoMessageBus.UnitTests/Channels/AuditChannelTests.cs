@@ -156,15 +156,30 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(AuditChannel))]
 	public class when_sending_an_envelope_on_the_channel : using_the_audit_channel
 	{
+		Establish context = () =>
+		{
+			var mockTransaction = new Mock<IChannelTransaction>();
+			mockChannel.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
+			mockTransaction.Setup(x => x.Register(Moq.It.IsAny<Action>())).Callback<Action>(auditAction =>
+			{
+				registered = true;
+				auditAction();
+			});
+		};
+
 		Because of = () =>
 			channel.Send(envelope);
 
-		It should_provide_the_envelope_to_each_auditor = () =>
+		It should_register_the_audit_to_be_run_with_the_ambient_transaction = () =>
+			registered.ShouldBeTrue();
+
+		It should_provide_the_envelope_to_each_auditor = () => // the transaction commit causes this to occur
 			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope), Times.Once()));
 
 		It should_pass_the_envelope_to_the_underlying_channel_for_delivery = () =>
 			mockChannel.Verify(x => x.Send(envelope), Times.Once());
 
+		static bool registered;
 		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
 	}
 

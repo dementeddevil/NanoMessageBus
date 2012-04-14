@@ -41,16 +41,19 @@
 
 			this.ThrowWhenDisposed();
 
-			// TODO: register with current transaction?
+			this.CurrentTransaction.Register(() => this.AuditSend(envelope));
+
+			Log.Verbose("Sending envelope through the underlying channel.", envelope.MessageId());
+			this.channel.Send(envelope);
+		}
+		private void AuditSend(ChannelEnvelope envelope)
+		{
 			var messageId = envelope.MessageId();
 			foreach (var auditor in this.auditors)
 			{
 				Log.Debug("Providing envelope '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
 				auditor.AuditSend(envelope);
 			}
-
-			Log.Verbose("Sending envelope '{0}' through the underlying channel.", messageId);
-			this.channel.Send(envelope);
 		}
 
 		public virtual void BeginShutdown()
