@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Linq;
 	using Logging;
 
 	public class DefaultChannelMessageHandler : IMessageHandler<ChannelMessage>
@@ -14,9 +13,9 @@
 			Log.Verbose("Handling channel message '{0}' which contains '{1}' logical messages.",
 				message.MessageId, message.Messages.Count);
 
-			var handled = message.Messages
-				.TakeWhile(x => this.context.ContinueHandling)
-				.Sum(x => this.Route(x, unhandled));
+			var handled = 0;
+			while (message.MoveNext() && this.context.ContinueHandling)
+				handled += this.Route(message.ActiveMessage, unhandled);
 
 			if (handled == 0)
 				unhandled.Clear();
