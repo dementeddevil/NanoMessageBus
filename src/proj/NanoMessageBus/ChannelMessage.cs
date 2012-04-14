@@ -55,6 +55,18 @@
 		}
 
 		/// <summary>
+		/// Gets or sets a reference to the active logical message currently being handled.
+		/// </summary>
+		[IgnoreDataMember, XmlIgnore, SoapIgnore]
+		public virtual object ActiveMessage { get; set; }
+
+		/// <summary>
+		/// Gets a value which indicates the index of the logical message currently being handled.
+		/// </summary>
+		[IgnoreDataMember, XmlIgnore, SoapIgnore]
+		public virtual int ActiveIndex { get; private set; }
+
+		/// <summary>
 		/// Gets or sets the maximum amount of time the message will live prior to successful receipt.
 		/// </summary>
 		[IgnoreDataMember, XmlIgnore, SoapIgnore]
@@ -71,6 +83,23 @@
 		/// </summary>
 		[IgnoreDataMember, XmlIgnore, SoapIgnore]
 		public virtual DateTime Dispatched { get; set; }
+
+		/// <summary>
+		/// Sets the current active message to the next available message, if any, and increments the active index.
+		/// </summary>
+		/// <returns>If successful, returns true; otherwise false.</returns>
+		public virtual bool MoveNext()
+		{
+			if (++this.ActiveIndex >= this.messages.Count)
+			{
+				this.ActiveIndex = Inactive;
+				this.ActiveMessage = null;
+				return false;
+			}
+
+			this.ActiveMessage = this.messages[this.ActiveIndex];
+			return true;
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the ChannelMessage class.
@@ -93,6 +122,8 @@
 			this.headers = headers ?? new Dictionary<string, string>();
 			this.messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
 			this.immutable = new ReadOnlyCollection<object>(this.messages);
+
+			this.ActiveIndex = Inactive;
 		}
 
 		/// <summary>
@@ -115,5 +146,7 @@
 
 		[NonSerialized, IgnoreDataMember, XmlIgnore, SoapIgnore]
 		private readonly IList<object> immutable;
+
+		private const int Inactive = -1;
 	}
 }
