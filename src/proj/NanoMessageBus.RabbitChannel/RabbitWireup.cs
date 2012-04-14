@@ -67,8 +67,10 @@
 		private void AssignAuthenticationInformation()
 		{
 			var authentication = this.EndpointAddress.UserInfo.Split(Delimiter);
-			this.ConnectionFactory.UserName = authentication.Length > 0 ? authentication[UserNameIndex] : null;
-			this.ConnectionFactory.Password = authentication.Length > 1 ? authentication[PasswordIndex] : null;
+			this.ConnectionFactory.UserName = this.ConnectionFactory.UserName ??
+				(authentication.Length > 0 ? authentication[UserNameIndex] : null);
+			this.ConnectionFactory.Password = this.ConnectionFactory.Password ??
+				(authentication.Length > 1 ? authentication[PasswordIndex] : null);
 		}
 
 		public RabbitWireup()
