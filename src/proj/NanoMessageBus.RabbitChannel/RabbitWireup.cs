@@ -66,7 +66,7 @@
 		}
 		private void AssignAuthenticationInformation()
 		{
-			if (this.ConnectionFactory.UserName != DefaultUserName)
+			if (this.ConnectionFactory.UserName != DefaultUserName || this.ConnectionFactory.Password != DefaultPassword)
 				return;
 
 			var authentication = this.EndpointAddress.UserInfo.Split(Delimiter);
@@ -86,6 +86,7 @@
 			new LinkedList<RabbitChannelGroupConfiguration>();
 		private static readonly char[] Delimiter = ":".ToCharArray();
 		private const string DefaultUserName = "guest";
+		private const string DefaultPassword = DefaultUserName;
 		private const int UserNameIndex = 0;
 		private const int PasswordIndex = 1;
 	}
