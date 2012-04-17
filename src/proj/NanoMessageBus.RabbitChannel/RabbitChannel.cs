@@ -83,7 +83,6 @@
 			}
 			catch (Exception e)
 			{
-				Log.Warn("Handling of message '{0}' has thrown an exception, attempting to retry message.", messageId);
 				this.RetryMessage(message, e);
 			}
 		}
@@ -96,9 +95,17 @@
 			Log.Debug("Message '{0}' has been attempted {1} times.", message.MessageId(), nextAttempt);
 
 			if (nextAttempt > this.configuration.MaxAttempts)
+			{
+				Log.Error("Unable to process message '{0}', it threw an exception of type '{1}': {2} -- {3}",
+					message.MessageId(), exception.GetType(), exception.Message, exception.StackTrace);
 				this.ForwardToPoisonMessageExchange(message, exception);
+			}
 			else
+			{
+				Log.Warn("Unhandled exception of type '{0}' occurred while handling message '{1}': {2} -- {3}",
+					exception.GetType(), message.MessageId(), exception.Message, exception.StackTrace);
 				this.ForwardTo(message, this.configuration.InputQueue.ToPublicationAddress());
+			}
 		}
 		protected virtual void ForwardToPoisonMessageExchange(BasicDeliverEventArgs message, Exception exception)
 		{
