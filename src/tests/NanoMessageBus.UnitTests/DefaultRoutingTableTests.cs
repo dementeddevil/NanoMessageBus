@@ -476,6 +476,40 @@ namespace NanoMessageBus
 			handled.ShouldEqual(0);
 	}
 
+	[Subject(typeof(DefaultRoutingTable))]
+	public class when_adding_a_route_using_a_dependency_resolver : with_the_routing_table
+	{
+		Establish context = () =>
+		{
+			mockResolver = new Mock<IDependencyResolver>();
+			mockResolver.Setup(x => x.As<IDisposable>()).Returns(actualResolver);
+			mockContext.Setup(x => x.CurrentResolver).Returns(mockResolver.Object);
+
+			routes.Add<IDisposable, string>(x =>
+			{
+				resolverAfterCallback = x;
+				return new GenericHandler<string>(msg => receivedMessage = msg);
+			});
+		};
+
+		Because of = () =>
+			handled = routes.Route(mockContext.Object, "Hello, World!");
+
+		It should_provide_the_dependency_resolver = () =>
+			resolverAfterCallback.ShouldEqual(actualResolver);
+
+		It should_provide_the_message_to_the_registered_callback_handler = () =>
+			receivedMessage.ShouldEqual("Hello, World!");
+
+		It should_indicate_that_the_registered_callback_handler_handled_the_message = () =>
+			handled.ShouldEqual(1);
+
+		static readonly IDisposable actualResolver = new Mock<IDisposable>().Object;
+		static Mock<IDependencyResolver> mockResolver;
+		static IDisposable resolverAfterCallback;
+		static string receivedMessage;
+	}
+
 	public abstract class with_the_routing_table
 	{
 		Establish context = () =>

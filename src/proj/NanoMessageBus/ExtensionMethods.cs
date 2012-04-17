@@ -59,6 +59,16 @@
 			return value.ToString(Iso8601);
 		}
 
+		public static void Add<TContainer, TMessage>(
+			this IRoutingTable table,
+			Func<TContainer, IMessageHandler<TMessage>> callback,
+			int sequence = int.MaxValue,
+			Type handlerType = null)
+			where TContainer : class
+		{
+			table.Add(x => callback(x.CurrentResolver.As<TContainer>()), sequence, handlerType);
+		}
+
 		private const string Iso8601 = "o";
 		private static readonly ILog Log = LogFactory.Build(typeof(ExtensionMethods));
 	}
