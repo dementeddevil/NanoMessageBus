@@ -48,9 +48,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Error("Disposing resource of type '{0}' caused an exception of type '{1}'. Message: {2}\nStack Trace:{3}",
-					resource.GetType(), e.GetType(), e.Message, e.StackTrace);
-
+				Log.Error("Disposing resource of type '{0}' threw an exception.".FormatWith(resource.GetType()), e);
 				if (rethrow)
 					throw;
 			}

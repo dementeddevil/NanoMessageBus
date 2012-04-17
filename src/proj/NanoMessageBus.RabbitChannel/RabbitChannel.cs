@@ -96,14 +96,12 @@
 
 			if (nextAttempt > this.configuration.MaxAttempts)
 			{
-				Log.Error("Unable to process message '{0}', it threw an exception of type '{1}': {2} -- {3}",
-					message.MessageId(), exception.GetType(), exception.Message, exception.StackTrace);
+				Log.Error("Unable to process message '{0}'".FormatWith(message.MessageId()), exception);
 				this.ForwardToPoisonMessageExchange(message, exception);
 			}
 			else
 			{
-				Log.Warn("Unhandled exception of type '{0}' occurred while handling message '{1}': {2} -- {3}",
-					exception.GetType(), message.MessageId(), exception.Message, exception.StackTrace);
+				Log.Info("Unhandled exception for message '{0}'; retrying.".FormatWith(message.MessageId()), exception);
 				this.ForwardTo(message, this.configuration.InputQueue.ToPublicationAddress());
 			}
 		}

@@ -99,7 +99,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Info("Unhandled exception of type '{0}'; socket aborted. Message: {1}\nStack Trace:{2}", e.GetType(), e.Message, e.StackTrace);
+				Log.Info("Unhandled exception, socket aborted.", e);
 				this.Close(channel, ConnectionState.Closed, e);
 			}
 

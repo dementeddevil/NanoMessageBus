@@ -27,7 +27,7 @@
 			}
 			catch (SerializationException e)
 			{
-				Log.Error("Unable to deserialize message: {0}", e.Message);
+				Log.Error("Unable to deserialize message '{0}'.".FormatWith(message.MessageId()), e);
 				throw new PoisonMessageException(e.Message, e);
 			}
 			catch (DeadLetterException)
@@ -36,7 +36,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Error("General deserialize error for message: {0}", e.Message);
+				Log.Error("General deserialize error for message '{0}'.".FormatWith(message.MessageId()), e);
 				throw new PoisonMessageException(e.Message, e);
 			}
 		}
@@ -98,12 +98,12 @@
 			}
 			catch (SerializationException e)
 			{
-				Log.Error("Unable to serialize message {0}: {1}", message.MessageId, e.Message);
+				Log.Error("Unable to serialize message '{0}'.".FormatWith(message.MessageId), e);
 				throw new PoisonMessageException(e.Message, e);
 			}
 			catch (Exception e)
 			{
-				Log.Error("General serialization failure for message {0}: {1}", message.MessageId, e.Message);
+				Log.Error("General serialization failure for message '{0}'.".FormatWith(message.MessageId), e);
 				throw new PoisonMessageException(e.Message, e);
 			}
 		}

@@ -114,9 +114,7 @@
 				}
 				catch (Exception e)
 				{
-					Log.Info("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
-						this.HandlerType, e.GetType(), typeof(T), e.Message, e.StackTrace);
-
+					Log.Info("Message handler of type '{0}' while handling message of type '{1}' threw an exception.".FormatWith(this.handler.GetType(), message.GetType()), e);
 					throw;
 				}
 			}
@@ -150,9 +148,7 @@
 				}
 				catch (Exception e)
 				{
-					Log.Info("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
-						this.HandlerType, e.GetType(), typeof(T), e.Message, e.StackTrace);
-
+					Log.Info("Message handler of type '{0}' while handling message of type '{1}' threw an exception.".FormatWith(handler.GetType(), message.GetType()), e);
 					throw;
 				}
 			}

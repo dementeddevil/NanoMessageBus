@@ -65,14 +65,11 @@
 			}
 			catch (AbortCurrentHandlerException e)
 			{
-				Log.Debug("Aborting executing of current handler of type '{0}' because of: {1}",
-					route.GetType(), e.Message);
+				Log.Debug("Aborting executing of current handler of type '{0}' because of: {1}", route.GetType(), e.Message);
 			}
 			catch (Exception e)
 			{
-				Log.Info("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
-						route.GetType(), e.GetType(), typeof(T), e.Message, e.StackTrace);
-
+				Log.Info("Message handler of type '{0}' while handling message of type '{1}' threw an exception.".FormatWith(route.GetType(), message.GetType()), e);
 				throw;
 			}
 
