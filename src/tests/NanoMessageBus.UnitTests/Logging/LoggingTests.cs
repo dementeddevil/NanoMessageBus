@@ -13,11 +13,17 @@ namespace NanoMessageBus.Logging
 		{
 			var logger = LogFactory.Build(typeof(int));
 			logger.Verbose(null);
+			logger.Verbose(string.Empty, new Exception());
 			logger.Debug(null);
+			logger.Debug(string.Empty, new Exception());
 			logger.Info(null);
+			logger.Info(string.Empty, new Exception());
 			logger.Warn(null);
+			logger.Warn(string.Empty, new Exception());
 			logger.Error(null);
+			logger.Error(string.Empty, new Exception());
 			logger.Fatal(null);
+			logger.Fatal(string.Empty, new Exception());
 		});
 
 		It should_not_throw_an_exception = () =>
@@ -32,11 +38,17 @@ namespace NanoMessageBus.Logging
 			LogFactory.LogWith(type => new ConsoleLogger(type, Threshold.Verbose));
 			var logger = LogFactory.Build(typeof(int));
 			logger.Verbose(null);
+			logger.Verbose(string.Empty, new Exception());
 			logger.Debug(null);
+			logger.Debug(string.Empty, new Exception());
 			logger.Info(null);
+			logger.Info(string.Empty, new Exception());
 			logger.Warn(null);
+			logger.Warn(string.Empty, new Exception());
 			logger.Error(null);
+			logger.Error(string.Empty, new Exception());
 			logger.Fatal(null);
+			logger.Fatal(string.Empty, new Exception());
 		});
 
 		It should_not_throw_an_exception = () =>
@@ -51,11 +63,17 @@ namespace NanoMessageBus.Logging
 			LogFactory.LogWith(type => new TraceLogger(type, Threshold.Verbose));
 			var logger = LogFactory.Build(typeof(int));
 			logger.Verbose(null);
+			logger.Verbose(string.Empty, new Exception());
 			logger.Debug(null);
+			logger.Debug(string.Empty, new Exception());
 			logger.Info(null);
+			logger.Info(string.Empty, new Exception());
 			logger.Warn(null);
+			logger.Warn(string.Empty, new Exception());
 			logger.Error(null);
+			logger.Error(string.Empty, new Exception());
 			logger.Fatal(null);
+			logger.Fatal(string.Empty, new Exception());
 		});
 
 		It should_not_throw_an_exception = () =>
@@ -72,10 +90,17 @@ namespace NanoMessageBus.Logging
 		{
 			var logger = LogFactory.Build(typeof(int));
 			logger.Verbose(null);
+			logger.Verbose(string.Empty, new Exception());
 			logger.Debug(null);
+			logger.Debug(string.Empty, new Exception());
 			logger.Info(null);
+			logger.Info(string.Empty, new Exception());
 			logger.Warn(null);
+			logger.Warn(string.Empty, new Exception());
 			logger.Error(null);
+			logger.Error(string.Empty, new Exception());
+			logger.Fatal(null);
+			logger.Fatal(string.Empty, new Exception());
 		};
 
 		It should_not_log_anything = () =>
@@ -92,10 +117,17 @@ namespace NanoMessageBus.Logging
 		{
 			var logger = LogFactory.Build(typeof(int));
 			logger.Verbose(null);
+			logger.Verbose(string.Empty, new Exception());
 			logger.Debug(null);
+			logger.Debug(string.Empty, new Exception());
 			logger.Info(null);
+			logger.Info(string.Empty, new Exception());
 			logger.Warn(null);
+			logger.Warn(string.Empty, new Exception());
 			logger.Error(null);
+			logger.Error(string.Empty, new Exception());
+			logger.Fatal(null);
+			logger.Fatal(string.Empty, new Exception());
 		};
 
 		It should_not_log_anything = () =>

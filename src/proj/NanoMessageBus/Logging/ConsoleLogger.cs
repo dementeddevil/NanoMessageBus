@@ -8,26 +8,56 @@ namespace NanoMessageBus.Logging
 		{
 			this.Log(ConsoleColor.DarkGreen, Threshold.Verbose, message, values);
 		}
+		public void Verbose(string message, Exception exception)
+		{
+			this.Log(ConsoleColor.DarkGreen, Threshold.Verbose, message, exception);
+		}
+
 		public virtual void Debug(string message, params object[] values)
 		{
 			this.Log(ConsoleColor.Green, Threshold.Debug, message, values);
 		}
+		public void Debug(string message, Exception exception)
+		{
+			this.Log(ConsoleColor.Green, Threshold.Debug, message, exception);
+		}
+
 		public virtual void Info(string message, params object[] values)
 		{
 			this.Log(ConsoleColor.White, Threshold.Info, message, values);
 		}
+		public void Info(string message, Exception exception)
+		{
+			this.Log(ConsoleColor.White, Threshold.Info, message, exception);
+		}
+
 		public virtual void Warn(string message, params object[] values)
 		{
 			this.Log(ConsoleColor.Yellow, Threshold.Warn, message, values);
 		}
+		public void Warn(string message, Exception exception)
+		{
+			this.Log(ConsoleColor.Yellow, Threshold.Warn, message, exception);
+		}
+
 		public virtual void Error(string message, params object[] values)
 		{
 			this.Log(ConsoleColor.DarkRed, Threshold.Error, message, values);
 		}
+		public void Error(string message, Exception exception)
+		{
+			this.Log(ConsoleColor.DarkRed, Threshold.Error, message, exception);
+		}
+
 		public virtual void Fatal(string message, params object[] values)
 		{
 			this.Log(ConsoleColor.Red, Threshold.Fatal, message, values);
 		}
+		public void Fatal(string message, Exception exception)
+		{
+			this.Log(ConsoleColor.Red, Threshold.Fatal, message, exception);
+		}
+
 		protected virtual void Log(ConsoleColor color, Threshold severity, string message, params object[] values)
 		{
 			if (severity < this.threshold)
@@ -36,6 +66,7 @@ namespace NanoMessageBus.Logging
 			lock (Sync)
 			{
 				Console.ForegroundColor = color;
+
 				Console.WriteLine(message.FormatMessage(this.typeToLog, values));
 				Console.ForegroundColor = this.originalColor;
 			}
