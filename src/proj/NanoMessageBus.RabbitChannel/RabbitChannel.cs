@@ -160,6 +160,9 @@
 			if (recipient == null)
 				return;
 
+			if (recipient == this.configuration.DeadLetterExchange)
+				this.adapter.AppendRetryAddress(message);
+
 			this.EnsureTransaction().Register(() => this.Try(() =>
 			{
 				Log.Info("Dispatching wire message '{0}' to messaging infrastructure for recipient '{1}'.", message.MessageId(), recipient);

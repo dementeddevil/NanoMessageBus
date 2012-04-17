@@ -271,6 +271,9 @@ namespace NanoMessageBus.Channels
 			channel.Send(new ChannelEnvelope(message, recipients));
 		};
 
+		It should_append_the_retry_address_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendRetryAddress(Moq.It.IsAny<BasicDeliverEventArgs>()));
+
 		It should_send_the_message_to_the_configured_dead_letter_exchange = () =>
 			destination.ShouldEqual(mockConfiguration.Object.DeadLetterExchange);
 
@@ -326,6 +329,9 @@ namespace NanoMessageBus.Channels
 		It should_dispatch_the_message_to_the_configured_dead_letter_exchange = () =>
 			mockRealChannel.Verify(x =>
 				x.BasicPublish(address, message.BasicProperties, message.Body), Times.Once());
+
+		It should_append_the_retry_address_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendRetryAddress(message));
 
 		It should_acknowledge_message_receipt_to_the_underlying_channel = () =>
 			mockSubscription.Verify(x => x.AcknowledgeMessages(), Times.Once());
@@ -472,7 +478,7 @@ namespace NanoMessageBus.Channels
 			message.GetAttemptCount().ShouldEqual(0);
 
 		It should_append_the_retry_address_to_the_message = () =>
-			mockAdapter.Setup(x => x.AppendRetryAddress(message));
+			mockAdapter.Verify(x => x.AppendRetryAddress(message), Times.Once());
 
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
 			mockRealChannel.Verify(x =>
