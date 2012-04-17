@@ -105,7 +105,7 @@
 			public Type HandlerType { get; private set; }
 			public bool Handle(IHandlerContext context, object message)
 			{
-				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), this.HandlerType);
+				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), this.handler.GetType());
 
 				try
 				{
@@ -114,8 +114,8 @@
 				}
 				catch (Exception e)
 				{
-					Log.Error("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3}",
-						this.HandlerType, e.GetType(), typeof(T), e.Message);
+					Log.Info("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
+						this.HandlerType, e.GetType(), typeof(T), e.Message, e.StackTrace);
 
 					throw;
 				}
@@ -141,7 +141,7 @@
 					return false;
 				}
 
-				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), this.HandlerType);
+				Log.Verbose("Pushing message of type '{0}' into handler of type '{1}'.", typeof(T), handler.GetType());
 
 				try
 				{
@@ -150,7 +150,7 @@
 				}
 				catch (Exception e)
 				{
-					Log.Error("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
+					Log.Info("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
 						this.HandlerType, e.GetType(), typeof(T), e.Message, e.StackTrace);
 
 					throw;
