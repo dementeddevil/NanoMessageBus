@@ -7,6 +7,10 @@
 
 	public class DefaultHandlerContext : IHandlerContext
 	{
+		public virtual bool Active
+		{
+			get { return this.delivery.Active; }
+		}
 		public virtual ChannelMessage CurrentMessage
 		{
 			get { return this.delivery.CurrentMessage; }

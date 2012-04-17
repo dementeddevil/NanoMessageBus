@@ -27,6 +27,9 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			Initialize();
 
+		It should_be_an_active_channel = () =>
+			channel.Active.ShouldBeTrue();
+
 		It should_create_a_new_transaction = () =>
 			channel.CurrentTransaction.ShouldNotBeNull();
 
@@ -998,6 +1001,9 @@ namespace NanoMessageBus.Channels
 
 		It should_dispose_the_underlying_channel = () =>
 			mockRealChannel.Verify(x => x.Abort(), Times.Once());
+
+		It should_indicate_the_channel_is_no_longer_active = () =>
+			channel.Active.ShouldBeFalse();
 	}
 
 	[Subject(typeof(RabbitChannel))]
@@ -1148,6 +1154,9 @@ namespace NanoMessageBus.Channels
 
 		It should_allow_the_dispatch_to_proceed_so_that_the_transaction_can_complete = () =>
 			mockAdapter.Verify(x => x.Build(envelope.Message, mockRealChannel.Object.CreateBasicProperties()), Times.Once());
+
+		It should_consider_the_channel_to_be_inactive = () =>
+			channel.Active.ShouldBeFalse();
 
 		static ChannelEnvelope envelope;
 	}

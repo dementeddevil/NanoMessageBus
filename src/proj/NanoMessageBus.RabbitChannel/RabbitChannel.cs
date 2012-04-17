@@ -10,6 +10,10 @@
 
 	public class RabbitChannel : IMessagingChannel
 	{
+		public virtual bool Active
+		{
+			get { return !this.disposed && !this.shutdown; }
+		}
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IDependencyResolver CurrentResolver { get; private set; }
 		public virtual IChannelTransaction CurrentTransaction { get; private set; }

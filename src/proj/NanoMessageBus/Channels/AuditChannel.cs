@@ -6,6 +6,10 @@
 
 	public class AuditChannel : IMessagingChannel
 	{
+		public virtual bool Active
+		{
+			get { return this.CurrentContext.Active; }
+		}
 		public virtual ChannelMessage CurrentMessage
 		{
 			get { return this.CurrentContext.CurrentMessage; }

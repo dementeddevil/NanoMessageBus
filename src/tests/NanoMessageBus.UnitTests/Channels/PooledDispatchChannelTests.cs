@@ -43,6 +43,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
+			mockChannel.Setup(x => x.Active).Returns(true);
 			mockChannel.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockChannel.Setup(x => x.CurrentResolver).Returns(new Mock<IDependencyResolver>().Object);
@@ -51,6 +52,9 @@ namespace NanoMessageBus.Channels
 
 		It should_ALWAYS_return_null = () =>
 			channel.CurrentMessage.ShouldBeNull();
+
+		It should_expose_the_active_state_from_the_underlying_channel = () =>
+			channel.Active.ShouldEqual(mockChannel.Object.Active);
 
 		It should_expose_the_current_resolver_from_the_underlying_channel = () =>
 			channel.CurrentResolver.ShouldEqual(mockChannel.Object.CurrentResolver);

@@ -12,6 +12,11 @@
 	public interface IDeliveryContext
 	{
 		/// <summary>
+		/// Gets a value indicating whether the current delivery and subsequent dispatches can continue successfully.
+		/// </summary>
+		bool Active { get; }
+
+		/// <summary>
 		/// Gets the current inbound message being handled on the channel.
 		/// </summary>
 		ChannelMessage CurrentMessage { get; }

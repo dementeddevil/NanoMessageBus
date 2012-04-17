@@ -5,6 +5,10 @@
 
 	public class PooledDispatchChannel : IMessagingChannel
 	{
+		public virtual bool Active
+		{
+			get { return this.channel.Active; }
+		}
 		public virtual ChannelMessage CurrentMessage
 		{
 			get { return null; }

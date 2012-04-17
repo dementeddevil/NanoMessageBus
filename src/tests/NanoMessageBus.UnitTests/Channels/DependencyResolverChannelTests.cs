@@ -33,10 +33,14 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
+			mockWrappedChannel.Setup(x => x.Active).Returns(true);
 			mockWrappedChannel.Setup(x => x.CurrentMessage).Returns(new Mock<ChannelMessage>().Object);
 			mockWrappedChannel.Setup(x => x.CurrentTransaction).Returns(new Mock<IChannelTransaction>().Object);
 			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 		};
+
+		It should_expose_the_active_state_from_the_underlying_channel = () =>
+			channel.Active.ShouldEqual(mockWrappedChannel.Object.Active);
 
 		It should_expose_the_current_message_from_the_underlying_channel = () =>
 			channel.CurrentMessage.ShouldEqual(mockWrappedChannel.Object.CurrentMessage);
