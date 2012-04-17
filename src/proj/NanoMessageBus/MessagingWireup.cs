@@ -92,7 +92,7 @@
 		{
 			Log.Info("Starting host in full-duplex mode.");
 
-			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)));
+			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)), 0, typeof(DefaultChannelMessageHandler));
 
 			var host = this.StartHost();
 			host.BeginReceive(this.BuildDeliveryChain(table).Handle);

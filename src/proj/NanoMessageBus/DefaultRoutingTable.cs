@@ -150,8 +150,8 @@
 				}
 				catch (Exception e)
 				{
-					Log.Error("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3}",
-						this.HandlerType, e.GetType(), typeof(T), e.Message);
+					Log.Error("Message handler of type '{0}' threw an exception of type '{1}' when handling message of type '{2}': {3} -- {4}",
+						this.HandlerType, e.GetType(), typeof(T), e.Message, e.StackTrace);
 
 					throw;
 				}
