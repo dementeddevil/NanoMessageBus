@@ -116,8 +116,8 @@
 			if (!this.committed)
 				return;
 
-			Log.Warn("The transaction has already committed.");
-			throw new InvalidOperationException("The transaction has already committed.");
+			Log.Warn("The transaction has already been committed.");
+			throw new InvalidOperationException("The transaction has been already committed.");
 		}
 
 		public RabbitTransaction(RabbitChannel channel, RabbitTransactionType transactionType)
