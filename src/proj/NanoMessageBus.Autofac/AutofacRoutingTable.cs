@@ -69,7 +69,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Info("Message handler of type '{0}' while handling message of type '{1}' threw an exception.".FormatWith(route.GetType(), message.GetType()), e);
+				Log.Debug("Message handler of type '{0}' threw an exception while handling message of type '{1}'.".FormatWith(route.GetType(), message.GetType()), e);
 				throw;
 			}
 

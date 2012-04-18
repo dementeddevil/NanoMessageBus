@@ -114,7 +114,7 @@
 				}
 				catch (Exception e)
 				{
-					Log.Info("Message handler of type '{0}' while handling message of type '{1}' threw an exception.".FormatWith(this.handler.GetType(), message.GetType()), e);
+					Log.Debug("Message handler of type '{0}' threw an exception while handling message of type '{1}'.".FormatWith(this.handler.GetType(), message.GetType()), e);
 					throw;
 				}
 			}
@@ -148,7 +148,7 @@
 				}
 				catch (Exception e)
 				{
-					Log.Info("Message handler of type '{0}' while handling message of type '{1}' threw an exception.".FormatWith(handler.GetType(), message.GetType()), e);
+					Log.Debug("Message handler of type '{0}' threw an exception while handling message of type '{1}'.".FormatWith(handler.GetType(), message.GetType()), e);
 					throw;
 				}
 			}
