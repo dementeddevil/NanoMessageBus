@@ -77,6 +77,24 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitTransaction))]
+	public class when_an_action_is_registered_as_the_transaction_is_being_committed : using_a_transaction
+	{
+		Establish context = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			Initialize();
+
+			transaction.Register(() => transaction.Register(callback));
+		};
+
+		Because of = () =>
+			transaction.Commit();
+
+		It should_invoke_the_callback_registration = () =>
+			invocations.ShouldEqual(1);
+	}
+
+	[Subject(typeof(RabbitTransaction))]
 	public class when_an_action_is_registered_with_the_committed_transaction : using_a_transaction
 	{
 		Establish context = () =>

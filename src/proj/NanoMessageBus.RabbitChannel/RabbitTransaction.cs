@@ -20,7 +20,7 @@
 			this.ThrowWhenRolledBack();
 			this.ThrowWhenCommitted();
 
-			if (this.transactionType == RabbitTransactionType.None)
+			if (this.transactionType == RabbitTransactionType.None || this.committing)
 				callback();
 			else
 				this.callbacks.Add(callback);
@@ -31,7 +31,7 @@
 			this.ThrowWhenDisposed();
 			this.ThrowWhenRolledBack();
 
-			this.committed = true;
+			this.committing = true;
 
 			try
 			{
@@ -40,7 +40,10 @@
 			finally
 			{
 				this.callbacks.Clear();
+				this.committing = false;
 			}
+
+			this.committed = true;
 		}
 		protected virtual void TryCommit()
 		{
@@ -160,6 +163,7 @@
 		private readonly RabbitChannel channel;
 		private readonly RabbitTransactionType transactionType;
 		private bool disposed;
+		private bool committing;
 		private bool committed;
 		private bool rolledBack;
 	}
