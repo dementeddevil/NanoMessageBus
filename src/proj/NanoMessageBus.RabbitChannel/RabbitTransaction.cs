@@ -42,14 +42,13 @@
 				this.callbacks.Clear();
 				this.committing = false;
 			}
-
-			this.committed = true;
 		}
 		protected virtual void TryCommit()
 		{
 			foreach (var callback in this.callbacks)
 				callback();
 
+			this.committed = true;
 			this.AcknowledgeReceipt();
 			this.CommitChannel();
 		}

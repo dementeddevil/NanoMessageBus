@@ -84,14 +84,43 @@ namespace NanoMessageBus.Channels
 			transactionType = RabbitTransactionType.Full;
 			Initialize();
 
-			transaction.Register(() => transaction.Register(callback));
+			transaction.Register(() =>
+			{
+				finished = transaction.Finished;
+				transaction.Register(callback);
+			});
 		};
 
 		Because of = () =>
 			transaction.Commit();
 
+		It should_NOT_consider_the_transaction_as_committed = () =>
+			finished.ShouldBeFalse();
+
 		It should_invoke_the_callback_registration = () =>
 			invocations.ShouldEqual(1);
+
+		static bool finished;
+	}
+
+	[Subject(typeof(RabbitTransaction))]
+	public class when_all_callbacks_have_completed_and_the_channel_is_notified_to_commit : using_a_transaction
+	{
+		Establish context = () =>
+		{
+			transactionType = RabbitTransactionType.Full;
+			Initialize();
+
+			mockChannel.Setup(x => x.CommitTransaction()).Callback(() => finished = transaction.Finished);
+		};
+
+		Because of = () =>
+			transaction.Commit();
+
+		It should_consider_the_transaction_as_committed = () =>
+			finished.ShouldBeTrue();
+
+		static bool finished;
 	}
 
 	[Subject(typeof(RabbitTransaction))]
