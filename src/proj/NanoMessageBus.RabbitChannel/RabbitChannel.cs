@@ -146,6 +146,10 @@
 			if (this.subscription == null)
 				this.ThrowWhenShuttingDown();
 
+			this.EnsureTransaction().Register(() => this.EnlistSend(envelope));
+		}
+		private void EnlistSend(ChannelEnvelope envelope)
+		{
 			var message = this.CurrentMessage == envelope.Message
 				? this.delivery
 				: this.adapter.Build(envelope.Message, this.channel.CreateBasicProperties());
