@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
+	using System.IO;
 	using Logging;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Exceptions;
@@ -24,14 +25,28 @@
 		}
 		protected virtual void TryReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
+			// TODO: make this throw EndOfStreamException and then catch with a ChannelConnectionException...
+			// TODO: also, let's have some infrastructure code throw an unhandled exception
+			// and see if we can get something to spin at 100% CPU and then determine how best to remedy
+			// the situation--perhaps be trying to reconnect?
 			try
 			{
 				Log.Verbose("Starting channel message subscription.");
 				this.PerformReceive(timeout, callback);
 			}
+			catch (EndOfStreamException e)
+			{
+				Log.Info("Inconsistent receiving state of internal RabbitMQ 'SharedQueue', aborting receive.", e);
+				throw new ChannelConnectionException(e.Message, e);
+			}
 			catch (OperationInterruptedException e)
 			{
-				Log.Debug("Channel operation interrupted, aborting receive.");
+				Log.Debug("Channel operation interrupted, aborting receive.", e);
+				throw new ChannelConnectionException(e.Message, e);
+			}
+			catch (Exception e)
+			{
+				Log.Warn("Unexpected exception thrown.", e);
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}
