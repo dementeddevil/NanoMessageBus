@@ -25,10 +25,6 @@
 		}
 		protected virtual void TryReceive(TimeSpan timeout, Func<BasicDeliverEventArgs, bool> callback)
 		{
-			// TODO: make this throw EndOfStreamException and then catch with a ChannelConnectionException...
-			// TODO: also, let's have some infrastructure code throw an unhandled exception
-			// and see if we can get something to spin at 100% CPU and then determine how best to remedy
-			// the situation--perhaps be trying to reconnect?
 			try
 			{
 				Log.Verbose("Starting channel message subscription.");
