@@ -24,27 +24,29 @@
 			if (this.DispatchOnly || address == null)
 				return;
 
-			TryDeclareExchange(channel, address.ExchangeName, address.ExchangeType);
-			channel.QueueDeclare(address.ExchangeName, true, false, false, null);
+			TryDeclare(address.ExchangeName, name => channel.ExchangeDeclare(
+				name, address.ExchangeType, true, true, null));
+			TryDeclare(address.ExchangeName, name => channel.QueueDeclare(
+				name, true, false, false, null));
 			channel.QueueBind(address.ExchangeName, address.ExchangeName, address.RoutingKey, null);
 		}
 		protected virtual void DeclareExchanges(IModel channel)
 		{
 			foreach (var name in this.MessageTypes.Select(x => x.FullName.NormalizeName()))
-				TryDeclareExchange(channel, name, ExchangeType.Fanout);
+				TryDeclare(name, x => channel.ExchangeDeclare(x, ExchangeType.Fanout, true, true, null));
 		}
-		private static void TryDeclareExchange(IModel channel, string name, string exchangeType)
+		private static void TryDeclare(string resource, Action<string> callback)
 		{
 			try
 			{
-				channel.ExchangeDeclare(name, exchangeType, true, true, null);
+				callback(resource);
 			}
 			catch (OperationInterruptedException e)
 			{
-				if (e.ShutdownReason.ReplyCode != ExchangeRedeclaration)
+				if (e.ShutdownReason.ReplyCode != RedeclarationFailed)
 					throw;
 
-				Log.Info("The exchange '{0}' has already been declared using different parameters.", name);
+				Log.Info("The resource '{0}' has already been declared using different parameters.", resource);
 			}
 		}
 		protected virtual void DeclareQueue(IModel channel)
@@ -53,11 +55,14 @@
 				return;
 
 			var declarationArgs = new Hashtable();
+			declarationArgs["x-expires"] = TimeSpan.FromDays(7).TotalMilliseconds;
+
 			if (this.DeadLetterExchange != null)
 				declarationArgs[DeadLetterExchangeDeclaration] = this.DeadLetterExchange.ExchangeName;
 
-			var declaration = channel.QueueDeclare(
-				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs);
+			QueueDeclareOk declaration = null;
+			TryDeclare(this.InputQueue, x => declaration = channel.QueueDeclare(
+				x, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs));
 
 			if (declaration != null)
 				this.InputQueue = declaration.QueueName;
@@ -328,7 +333,7 @@
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
-		private const int ExchangeRedeclaration = 406;
+		private const int RedeclarationFailed = 406;
 		private const string DefaultGroupName = "unnamed-group";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";

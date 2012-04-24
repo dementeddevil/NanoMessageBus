@@ -535,10 +535,17 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_configuring_a_new_receive_channel : using_channel_config
 	{
-		Establish context = () => config
-			.WithInputQueue("some-queue")
-			.WithPoisonMessageExchange("poison-msgs")
-			.WithDeadLetterExchange("dead-letters");
+		Establish context = () =>
+		{
+			mockChannel
+				.Setup(x => x.QueueDeclare("some-queue", true, false, false, Moq.It.IsAny<IDictionary>()))
+				.Callback<string, bool, bool, bool, IDictionary>((a, b, c, d, e) => queueDeclarationArgs = e);
+
+			config
+				.WithInputQueue("some-queue")
+				.WithPoisonMessageExchange("poison-msgs")
+				.WithDeadLetterExchange("dead-letters");
+		};
 
 		Because of = () => Configure();
 
@@ -562,6 +569,33 @@ namespace NanoMessageBus.Channels
 
 		It should_bind_dead_letter_exchange_and_queue = () =>
 			mockChannel.Verify(x => x.QueueBind("dead-letters", "dead-letters", string.Empty, null));
+
+		It should_set_the_queue_expiration_to_7_days = () =>
+			queueDeclarationArgs["x-expires"].ShouldEqual(TimeSpan.FromDays(7).TotalMilliseconds);
+
+		static IDictionary queueDeclarationArgs;
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_redeclaring_the_setting_for_a_queue : using_channel_config
+	{
+		Establish context = () =>
+		{
+			const int Redeclaration = 406;
+			var reason = new ShutdownEventArgs(ShutdownInitiator.Peer, Redeclaration, string.Empty);
+			var exception = new OperationInterruptedException(reason);
+
+			config.WithInputQueue("some-queue");
+			mockChannel
+				.Setup(x => x.QueueDeclare("some-queue", true, false, false, Moq.It.IsAny<IDictionary>()))
+				.Throws(exception);
+		};
+
+		Because of = () =>
+			Try(Configure);
+
+		It should_NOT_throw_an_exception = () =>
+			thrown.ShouldBeNull();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
