@@ -4,7 +4,9 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
+	using Logging;
 	using RabbitMQ.Client;
+	using RabbitMQ.Client.Exceptions;
 	using Serialization;
 
 	public class RabbitChannelGroupConfiguration : IChannelGroupConfiguration
@@ -22,14 +24,28 @@
 			if (this.DispatchOnly || address == null)
 				return;
 
-			channel.ExchangeDeclare(address.ExchangeName, address.ExchangeType, true, false, null);
+			TryDeclareExchange(channel, address.ExchangeName, address.ExchangeType);
 			channel.QueueDeclare(address.ExchangeName, true, false, false, null);
 			channel.QueueBind(address.ExchangeName, address.ExchangeName, address.RoutingKey, null);
 		}
 		protected virtual void DeclareExchanges(IModel channel)
 		{
-			foreach (var type in this.MessageTypes)
-				channel.ExchangeDeclare(type.FullName.NormalizeName(), ExchangeType.Fanout, true, false, null);
+			foreach (var name in this.MessageTypes.Select(x => x.FullName.NormalizeName()))
+				TryDeclareExchange(channel, name, ExchangeType.Fanout);
+		}
+		private static void TryDeclareExchange(IModel channel, string name, string exchangeType)
+		{
+			try
+			{
+				channel.ExchangeDeclare(name, exchangeType, true, true, null);
+			}
+			catch (OperationInterruptedException e)
+			{
+				if (e.ShutdownReason.ReplyCode != ExchangeRedeclaration)
+					throw;
+
+				Log.Info("The exchange '{0}' has already been declared using different parameters.", name);
+			}
 		}
 		protected virtual void DeclareQueue(IModel channel)
 		{
@@ -312,6 +328,7 @@
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
+		private const int ExchangeRedeclaration = 406;
 		private const string DefaultGroupName = "unnamed-group";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
@@ -321,6 +338,7 @@
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 		private static readonly IDispatchTable DefaultDispatchTable = new RabbitDispatchTable();
+		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannelGroupConfiguration));
 		private readonly ICollection<Type> messageTypes = new HashSet<Type>();
 	}
 }
