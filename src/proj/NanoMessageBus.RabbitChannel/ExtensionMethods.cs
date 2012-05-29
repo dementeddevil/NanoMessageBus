@@ -81,8 +81,14 @@
 		}
 		public static DateTime ToDateTime(this string value)
 		{
+			long epoch;
+			if (long.TryParse(value, out epoch))
+				return epoch.ToDateTime();
+
 			DateTime parsed;
-			DateTime.TryParse(value, out parsed);
+			if (DateTime.TryParse(value, out parsed))
+				return parsed;
+
 			return parsed;
 		}
 		public static Uri ToUri(this string value)

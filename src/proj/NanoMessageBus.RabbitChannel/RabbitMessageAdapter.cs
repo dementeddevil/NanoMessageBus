@@ -123,7 +123,7 @@
 
 			var expiration = message.Expiration;
 			properties.Expiration = (expiration == DateTime.MinValue || expiration == DateTime.MaxValue)
-				? string.Empty : expiration.ToString(CultureInfo.InvariantCulture);
+				? string.Empty : expiration.ToEpochTime().ToString(CultureInfo.InvariantCulture);
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();

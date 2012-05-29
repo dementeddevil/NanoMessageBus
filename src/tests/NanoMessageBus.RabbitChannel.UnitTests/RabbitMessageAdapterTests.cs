@@ -43,7 +43,7 @@ namespace NanoMessageBus.Channels
 				ContentEncoding = "content encoding",
 				CorrelationId = Guid.NewGuid().ToString(),
 				DeliveryMode = 2, // persistent
-				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToString(CultureInfo.InvariantCulture),
+				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToEpochTime().ToString(CultureInfo.InvariantCulture),
 				Headers = new Hashtable(),
 				MessageId = Guid.NewGuid().ToString(),
 				Type = "message type",
@@ -79,7 +79,7 @@ namespace NanoMessageBus.Channels
 			result.CorrelationId.ShouldEqual(message.BasicProperties.CorrelationId.ToGuid());
 
 		It should_populate_the_ChannelMessage_with_the_correct_expiration = () =>
-			result.Expiration.ShouldEqual(DateTime.Parse(message.BasicProperties.Expiration));
+			result.Expiration.ShouldEqual(long.Parse(message.BasicProperties.Expiration).ToDateTime());
 
 		It should_populate_the_ChannelMessage_with_the_correct_return_address = () =>
 			result.ReturnAddress.ShouldEqual(message.BasicProperties.ReplyTo.ToUri());
@@ -242,7 +242,7 @@ namespace NanoMessageBus.Channels
 			result.BasicProperties.ReplyTo.ShouldEqual(message.ReturnAddress.ToString());
 
 		It should_populate_the_wire_message_with_the_correct_expiration_time = () =>
-			result.BasicProperties.Expiration.ShouldEqual(message.Expiration.ToString(CultureInfo.InvariantCulture));
+			result.BasicProperties.Expiration.ShouldEqual(message.Expiration.ToEpochTime().ToString(CultureInfo.InvariantCulture));
 
 		It should_populate_the_wire_message_with_the_correct_message_type = () =>
 			result.BasicProperties.Type.ShouldEqual(message.Messages.First().GetType().FullName);
