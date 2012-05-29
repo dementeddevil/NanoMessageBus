@@ -415,6 +415,8 @@ namespace NanoMessageBus.Channels
 		{
 			message.Body = new byte[] { 1, 2, 3, 4 }; // body
 
+			thrown = new Exception("Message handling failed");
+
 			mockConfiguration.Setup(x => x.MaxAttempts).Returns(1); // allow one failure
 			mockRealChannel
 				.Setup(x => x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), Moq.It.IsAny<IBasicProperties>(), message.Body))
@@ -431,9 +433,12 @@ namespace NanoMessageBus.Channels
 
 		Because of = () =>
 		{
-			channel.Receive(delivery => { throw new Exception("Message handling failed"); });
+			channel.Receive(delivery => { throw thrown; });
 			Receive(message);
 		};
+
+		It should_append_the_exception_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendException(message, thrown, 0));
 
 		It should_push_the_message_back_on_the_wire_with_the_incoming_properties = () =>
 			sentProperites.ShouldEqual(message.BasicProperties);
@@ -475,7 +480,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_append_the_exception_to_the_message = () =>
-			mockAdapter.Verify(x => x.AppendException(message, raise));
+			mockAdapter.Verify(x => x.AppendException(message, raise, 0));
 
 		It should_clear_the_failure_count_on_the_message = () =>
 			message.GetAttemptCount().ShouldEqual(0);
@@ -530,7 +535,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_append_the_exception_to_the_message = () =>
-			mockAdapter.Verify(x => x.AppendException(message, poisonMessageException));
+			mockAdapter.Verify(x => x.AppendException(message, poisonMessageException, 0));
 
 		It should_dispatch_the_message_to_the_configured_poison_message_exchange = () =>
 			mockRealChannel.Verify(x =>

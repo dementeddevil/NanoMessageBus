@@ -363,7 +363,7 @@ namespace NanoMessageBus.Channels
 	public class when_no_message_is_supplied_to_which_an_exception_should_be_appended : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception()));
+			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception(), 0));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -373,7 +373,7 @@ namespace NanoMessageBus.Channels
 	public class when_no_exception_is_supplied_when_appending_an_exception : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendException(EmptyMessage(), null));
+			thrown = Catch.Exception(() => adapter.AppendException(EmptyMessage(), null, 0));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -383,25 +383,47 @@ namespace NanoMessageBus.Channels
 	public class when_adding_an_exception_to_the_wire_message : using_a_message_adapter
 	{
 		Because of = () =>
-			adapter.AppendException(message, simple);
+			adapter.AppendException(message, simple, 0);
 
 		It should_append_the_exception_message = () =>
-			message.GetHeader("x-exception0-message").ShouldNotBeNull();
+			message.GetHeader("x-exception0.0-message").ShouldNotBeNull();
 
 		It should_append_the_exception_message_as_a_string = () =>
-			message.GetHeader("x-exception0-message").ShouldBeOfType<string>();
+			message.GetHeader("x-exception0.0-message").ShouldBeOfType<string>();
 
 		It should_append_the_exception_type = () =>
-			message.GetHeader("x-exception0-type").ShouldNotBeNull();
+			message.GetHeader("x-exception0.0-type").ShouldNotBeNull();
 
 		It should_append_the_exception_type_as_a_string = () =>
-			message.GetHeader("x-exception0-type").ShouldBeOfType<string>();
+			message.GetHeader("x-exception0.0-type").ShouldBeOfType<string>();
 
 		It should_append_the_exception_stack_trace = () =>
-			message.GetHeader("x-exception0-stacktrace").ShouldNotBeNull();
+			message.GetHeader("x-exception0.0-stacktrace").ShouldNotBeNull();
 
 		It should_append_the_exception_stacktrace_as_a_string = () =>
-			message.GetHeader("x-exception0-stacktrace").ShouldBeOfType<string>();
+			message.GetHeader("x-exception0.0-stacktrace").ShouldBeOfType<string>();
+
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
+		static readonly Exception simple = new Exception();
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_adding_an_exception_identical_to_the_previous_attempt : using_a_message_adapter
+	{
+		Establish context = () =>
+			adapter.AppendException(message, simple, 0);
+
+		Because of = () =>
+			adapter.AppendException(message, simple, 1);
+
+		It should_NOT_append_the_duplicat__exception_message = () =>
+			message.GetHeader("x-exception1.0-message").ShouldBeNull();
+
+		It should_NOT_append_the_exception_type = () =>
+			message.GetHeader("x-exception1.0-type").ShouldBeNull();
+
+		It should_NOT_append_the_exception_stack_trace = () =>
+			message.GetHeader("x-exception1.0-stacktrace").ShouldBeNull();
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception simple = new Exception();
@@ -411,16 +433,16 @@ namespace NanoMessageBus.Channels
 	public class when_adding_a_nested_exception_to_the_wire_message : using_a_message_adapter
 	{
 		Because of = () =>
-			adapter.AppendException(message, nested);
+			adapter.AppendException(message, nested, 0);
 
 		It should_append_the_inner_exception_message = () =>
-			message.GetHeader("x-exception1-message").ShouldNotBeNull();
+			message.GetHeader("x-exception0.1-message").ShouldNotBeNull();
 
 		It should_append_the_inner_exception_type = () =>
-			message.GetHeader("x-exception1-type").ShouldNotBeNull();
+			message.GetHeader("x-exception0.1-type").ShouldNotBeNull();
 
 		It should_append_the_inner_exception_stack_trace = () =>
-			message.GetHeader("x-exception1-stacktrace").ShouldNotBeNull();
+			message.GetHeader("x-exception0.1-stacktrace").ShouldNotBeNull();
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception nested = new Exception("outer", new Exception("inner"));
@@ -430,16 +452,16 @@ namespace NanoMessageBus.Channels
 	public class when_adding_a_multi_layer_exception_to_the_wire_message : using_a_message_adapter
 	{
 		Because of = () =>
-			adapter.AppendException(message, multiple);
+			adapter.AppendException(message, multiple, 0);
 
 		It should_append_each_layer_of_the_exception_message = () =>
-			message.GetHeader("x-exception2-message").ShouldNotBeNull();
+			message.GetHeader("x-exception0.2-message").ShouldNotBeNull();
 
 		It should_append_each_layer_of_the_exception_type = () =>
-			message.GetHeader("x-exception2-type").ShouldNotBeNull();
+			message.GetHeader("x-exception0.2-type").ShouldNotBeNull();
 
 		It should_append_each_layer_of_theexception_stack_trace = () =>
-			message.GetHeader("x-exception2-stacktrace").ShouldNotBeNull();
+			message.GetHeader("x-exception0.2-stacktrace").ShouldNotBeNull();
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception multiple = new Exception("0", new Exception("1", new Exception("2")));
@@ -449,7 +471,7 @@ namespace NanoMessageBus.Channels
 	public class when_no_message_is_supplied_when_purging_the_message_from_the_cache : using_a_message_adapter
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception()));
+			thrown = Catch.Exception(() => adapter.AppendException(null, new Exception(), 0));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();

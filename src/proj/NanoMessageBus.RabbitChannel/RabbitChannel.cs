@@ -92,16 +92,13 @@
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
 		{
-			var nextAttempt = message.GetAttemptCount() + 1;
-			message.SetAttemptCount(nextAttempt);
-
-			// 0-based to 1-based value
+			var nextAttempt = this.AppendException(message, exception) + 1;
 			Log.Debug("Message '{0}' has been attempted {1} times.", message.MessageId(), nextAttempt);
 
 			if (nextAttempt > this.configuration.MaxAttempts)
 			{
 				Log.Error("Unable to process message '{0}'".FormatWith(message.MessageId()), exception);
-				this.ForwardToPoisonMessageExchange(message, exception);
+				this.ForwardToPoisonMessageExchange(message, null);
 			}
 			else
 			{
@@ -113,12 +110,25 @@
 		{
 			Log.Info("Message '{0}' is a poison message.", message.MessageId());
 
+			this.AppendException(message, exception);
 			message.SetAttemptCount(0);
 			this.adapter.AppendRetryAddress(message);
-			this.adapter.AppendException(message, exception);
 
 			this.ForwardTo(message, this.configuration.PoisonMessageExchange);
 		}
+		protected virtual int AppendException(BasicDeliverEventArgs message, Exception exception)
+		{
+			if (exception == null)
+				return 0;
+
+			var currentAttempt = message.GetAttemptCount();
+			message.SetAttemptCount(currentAttempt + 1); // 1-based value
+
+			this.adapter.AppendException(message, exception, currentAttempt);
+
+			return currentAttempt;
+		}
+
 		protected virtual void ForwardTo(BasicDeliverEventArgs message, PublicationAddress address)
 		{
 			Log.Debug("Forwarding message '{0}' to recipient '{1}'.", message.MessageId(), address);

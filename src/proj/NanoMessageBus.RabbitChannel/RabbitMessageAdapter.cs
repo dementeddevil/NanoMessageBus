@@ -154,7 +154,7 @@
 			Log.Verbose("Poison message source address is '{0}'", address);
 		}
 
-		public virtual void AppendException(BasicDeliverEventArgs message, Exception exception)
+		public virtual void AppendException(BasicDeliverEventArgs message, Exception exception, int attempt)
 		{
 			if (message == null)
 				throw new ArgumentNullException("message");
@@ -162,18 +162,33 @@
 			if (exception == null)
 				throw new ArgumentNullException("exception");
 
-			this.AppendException(message, exception, 0);
+			this.AppendException(message, exception, attempt, 0);
 		}
-		protected virtual void AppendException(BasicDeliverEventArgs message, Exception exception, int depth)
+		protected virtual void AppendException(BasicDeliverEventArgs message, Exception exception, int attempt, int depth)
 		{
-			if (exception == null)
+			if (!this.CanAppendException(message, exception, attempt, depth))
 				return;
 
-			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "type"), exception.GetType().ToString());
-			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "message"), exception.Message);
-			message.SetHeader(ExceptionHeaderFormat.FormatWith(depth, "stacktrace"), exception.StackTrace ?? string.Empty);
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "type"), exception.GetType().ToString());
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "message"), exception.Message);
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "stacktrace"), exception.StackTrace ?? string.Empty);
+			this.AppendException(message, exception.InnerException, attempt, depth + 1);	
+		}
+		protected virtual bool CanAppendException(BasicDeliverEventArgs message, Exception exception, int attempt, int depth)
+		{
+			if (exception == null)
+				return false;
 
-			this.AppendException(message, exception.InnerException, depth + 1);
+			if (attempt == 0 || depth > 1)
+				return true;
+
+			var previousType = (string)message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "type"));
+			var previousMessage = (string)message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "message"));
+			var previousStackTrace = (string)message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "stacktrace"));
+
+			return exception.GetType().ToString() != previousType
+				|| exception.Message != previousMessage
+				|| (exception.StackTrace ?? string.Empty) != previousStackTrace;
 		}
 
 		public RabbitMessageAdapter(RabbitChannelGroupConfiguration configuration) : this()
@@ -187,7 +202,7 @@
 		private const byte Persistent = 2;
 		private const string ContentType = "application/vnd.nmb.rabbit-msg";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
-		private const string ExceptionHeaderFormat = "x-exception{0}-{1}";
+		private const string ExceptionHeaderFormat = "x-exception{0}.{1}-{2}";
 		private const string RetryAddressHeaderKey = "retry-address";
 		private const string RetryAddressValueFormat = "direct://default/{0}";
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitMessageAdapter));
