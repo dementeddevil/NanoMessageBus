@@ -141,6 +141,7 @@
 			this.InputQueue = name;
 			this.AutoDelete = this.InputQueue.Length == 0;
 			this.DispatchOnly = false;
+			this.GroupName = this.GroupName == DefaultGroupName ? name : this.GroupName;
 
 			return this;
 		}

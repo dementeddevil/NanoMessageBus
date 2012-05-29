@@ -51,6 +51,26 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_group_name_is_specified_on_a_duplex_channel : using_channel_config
+	{
+		Because of = () =>
+			config = config.WithInputQueue("my-queue");
+
+		It should_contain_the_input_queue_name = () =>
+			config.GroupName.ShouldEqual("my-queue");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_group_name_is_specified_on_a_duplex_channel : using_channel_config
+	{
+		Because of = () =>
+			config = config.WithInputQueue("my-queue").WithGroupName("my-group");
+
+		It should_contain_the_group_name_specified = () =>
+			config.GroupName.ShouldEqual("my-group");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_synchronous_operations : using_channel_config
 	{
 		Because of = () =>
