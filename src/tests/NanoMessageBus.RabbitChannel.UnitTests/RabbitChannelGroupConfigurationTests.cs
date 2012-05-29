@@ -10,7 +10,6 @@ namespace NanoMessageBus.Channels
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
-	using RabbitMQ.Client.Exceptions;
 	using Serialization;
 	using It = Machine.Specifications.It;
 
@@ -535,17 +534,10 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_configuring_a_new_receive_channel : using_channel_config
 	{
-		Establish context = () =>
-		{
-			mockChannel
-				.Setup(x => x.QueueDeclare("some-queue", true, false, false, Moq.It.IsAny<IDictionary>()))
-				.Callback<string, bool, bool, bool, IDictionary>((a, b, c, d, e) => queueDeclarationArgs = e);
-
-			config
-				.WithInputQueue("some-queue")
-				.WithPoisonMessageExchange("poison-msgs")
-				.WithDeadLetterExchange("dead-letters");
-		};
+		Establish context = () => config
+			.WithInputQueue("some-queue")
+			.WithPoisonMessageExchange("poison-msgs")
+			.WithDeadLetterExchange("dead-letters");
 
 		Because of = () => Configure();
 
@@ -553,7 +545,7 @@ namespace NanoMessageBus.Channels
 			mockChannel.Verify(x => x.BasicQos(0, (ushort)config.ChannelBuffer, false), Times.Once());
 
 		It should_declare_the_poison_message_exchange = () =>
-			mockChannel.Verify(x => x.ExchangeDeclare("poison-msgs", ExchangeType.Fanout, true, true, null));
+			mockChannel.Verify(x => x.ExchangeDeclare("poison-msgs", ExchangeType.Fanout, true, false, null));
 
 		It should_declare_a_poison_message_queue = () =>
 			mockChannel.Verify(x => x.QueueDeclare("poison-msgs", true, false, false, null));
@@ -562,40 +554,13 @@ namespace NanoMessageBus.Channels
 			mockChannel.Verify(x => x.QueueBind("poison-msgs", "poison-msgs", string.Empty, null));
 
 		It should_declare_the_dead_letter_exchange_if_specified = () =>
-			mockChannel.Verify(x => x.ExchangeDeclare("dead-letters", ExchangeType.Fanout, true, true, null));
+			mockChannel.Verify(x => x.ExchangeDeclare("dead-letters", ExchangeType.Fanout, true, false, null));
 
 		It should_declare_a_dead_letter_queue_if_specified = () =>
 			mockChannel.Verify(x => x.QueueDeclare("dead-letters", true, false, false, null));
 
 		It should_bind_dead_letter_exchange_and_queue = () =>
 			mockChannel.Verify(x => x.QueueBind("dead-letters", "dead-letters", string.Empty, null));
-
-		It should_set_the_queue_expiration_to_7_days = () =>
-			queueDeclarationArgs["x-expires"].ShouldEqual(TimeSpan.FromDays(7).TotalMilliseconds);
-
-		static IDictionary queueDeclarationArgs;
-	}
-
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_redeclaring_the_setting_for_a_queue : using_channel_config
-	{
-		Establish context = () =>
-		{
-			const int Redeclaration = 406;
-			var reason = new ShutdownEventArgs(ShutdownInitiator.Peer, Redeclaration, string.Empty);
-			var exception = new OperationInterruptedException(reason);
-
-			config.WithInputQueue("some-queue");
-			mockChannel
-				.Setup(x => x.QueueDeclare("some-queue", true, false, false, Moq.It.IsAny<IDictionary>()))
-				.Throws(exception);
-		};
-
-		Because of = () =>
-			Try(Configure);
-
-		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -730,50 +695,10 @@ namespace NanoMessageBus.Channels
 		It should_declare_a_durable_fanout_exchange_for_each_type = () =>
 			types.ToList().ForEach(type => mockChannel.Verify(model =>
 				model.ExchangeDeclare(
-					type.FullName.NormalizeName(), ExchangeType.Fanout, true, true, null), Times.Once()));
+					type.FullName.NormalizeName(), ExchangeType.Fanout, true, false, null), Times.Once()));
 
 		static readonly IEnumerable<Type> types =
 			new object[] { "1", 2, 3.0, 4.0M, "5", (ushort)6 }.Select(x => x.GetType());
-	}
-
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_declaring_an_exchange_raises_an_exception : using_channel_config
-	{
-		Establish context = () =>
-		{
-			config.WithMessageTypes(new[] { typeof(string) });
-			mockChannel
-				.Setup(x => x.ExchangeDeclare("system-string", ExchangeType.Fanout, true, true, null))
-				.Throws(new Exception());
-		};
-
-		Because of = () =>
-			Try(Configure);
-
-		It should_bubble_up_the_exception_to_the_caller = () =>
-			thrown.ShouldBeOfType<Exception>();
-	}
-
-	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_an_exchange_has_already_been_declared_with_different_settings : using_channel_config
-	{
-		Establish context = () =>
-		{
-			const int ExchangeRedeclaration = 406;
-			var reason = new ShutdownEventArgs(ShutdownInitiator.Peer, ExchangeRedeclaration, string.Empty);
-			var exception = new OperationInterruptedException(reason);
-
-			config.WithMessageTypes(new[] { typeof(string) });
-			mockChannel
-				.Setup(x => x.ExchangeDeclare("system-string", ExchangeType.Fanout, true, true, null))
-				.Throws(exception);
-		};
-
-		Because of = () =>
-			Try(Configure);
-
-		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

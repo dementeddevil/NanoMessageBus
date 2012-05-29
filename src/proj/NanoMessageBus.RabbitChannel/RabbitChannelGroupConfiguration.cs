@@ -4,9 +4,7 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Logging;
 	using RabbitMQ.Client;
-	using RabbitMQ.Client.Exceptions;
 	using Serialization;
 
 	public class RabbitChannelGroupConfiguration : IChannelGroupConfiguration
@@ -24,30 +22,14 @@
 			if (this.DispatchOnly || address == null)
 				return;
 
-			TryDeclare(address.ExchangeName, name => channel.ExchangeDeclare(
-				name, address.ExchangeType, true, true, null));
-			TryDeclare(address.ExchangeName, name => channel.QueueDeclare(
-				name, true, false, false, null));
+			channel.ExchangeDeclare(address.ExchangeName, address.ExchangeType, true, false, null);
+			channel.QueueDeclare(address.ExchangeName, true, false, false, null);
 			channel.QueueBind(address.ExchangeName, address.ExchangeName, address.RoutingKey, null);
 		}
 		protected virtual void DeclareExchanges(IModel channel)
 		{
-			foreach (var name in this.MessageTypes.Select(x => x.FullName.NormalizeName()))
-				TryDeclare(name, x => channel.ExchangeDeclare(x, ExchangeType.Fanout, true, true, null));
-		}
-		private static void TryDeclare(string resource, Action<string> callback)
-		{
-			try
-			{
-				callback(resource);
-			}
-			catch (OperationInterruptedException e)
-			{
-				if (e.ShutdownReason.ReplyCode != RedeclarationFailed)
-					throw;
-
-				Log.Info("The resource '{0}' has already been declared using different parameters.", resource);
-			}
+			foreach (var type in this.MessageTypes)
+				channel.ExchangeDeclare(type.FullName.NormalizeName(), ExchangeType.Fanout, true, false, null);
 		}
 		protected virtual void DeclareQueue(IModel channel)
 		{
@@ -55,14 +37,11 @@
 				return;
 
 			var declarationArgs = new Hashtable();
-			declarationArgs["x-expires"] = TimeSpan.FromDays(7).TotalMilliseconds;
-
 			if (this.DeadLetterExchange != null)
 				declarationArgs[DeadLetterExchangeDeclaration] = this.DeadLetterExchange.ExchangeName;
 
-			QueueDeclareOk declaration = null;
-			TryDeclare(this.InputQueue, x => declaration = channel.QueueDeclare(
-				x, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs));
+			var declaration = channel.QueueDeclare(
+				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs);
 
 			if (declaration != null)
 				this.InputQueue = declaration.QueueName;
@@ -333,7 +312,6 @@
 		private const int DefaultWorkerCount = 1;
 		private const int DefaultMaxAttempts = 3;
 		private const int DefaultChannelBuffer = 1024;
-		private const int RedeclarationFailed = 406;
 		private const string DefaultGroupName = "unnamed-group";
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
@@ -343,7 +321,6 @@
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();
 		private static readonly IDispatchTable DefaultDispatchTable = new RabbitDispatchTable();
-		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannelGroupConfiguration));
 		private readonly ICollection<Type> messageTypes = new HashSet<Type>();
 	}
 }
