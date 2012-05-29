@@ -66,7 +66,7 @@
 				Log.Verbose("Translating wire-specific message into channel message.");
 				this.CurrentMessage = this.adapter.Build(message);
 
-				Log.Info("Routing message '{0}' to configured receiver callback.", messageId);
+				Log.Info("Routing message '{0}' received through group '{1}' to configured receiver callback.", messageId, this.configuration.GroupName);
 				callback(this);
 			}
 			catch (ChannelConnectionException)
