@@ -44,6 +44,10 @@
 		}
 		public virtual void DeferMessage()
 		{
+			if (this.deferred)
+				return;
+
+			this.deferred = true;
 			this.DropMessage();
 
 			this.delivery.PrepareDispatch()
@@ -106,5 +110,6 @@
 		private readonly IDeliveryContext delivery;
 		private bool continueHandling;
 		private bool disposed;
+		private bool deferred;
 	}
 }

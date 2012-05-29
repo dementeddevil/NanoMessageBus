@@ -72,6 +72,22 @@ namespace NanoMessageBus
 
 		It should_not_send_the_message_to_any_other_recipients = () =>
 			recipients.Length.ShouldEqual(1);
+
+		It should_only_invoke_the_behavior_once = () =>
+			deliveryCount.ShouldEqual(1);
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
+	public class when_deferring_a_message_multiple_times : with_a_handler_context
+	{
+		Establish context = () =>
+			handlerContext.DeferMessage();
+
+		Because of = () =>
+			handlerContext.DeferMessage();
+
+		It should_only_invoke_the_behavior_once = () =>
+			deliveryCount.ShouldEqual(1);
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -232,11 +248,13 @@ namespace NanoMessageBus
 				{
 					sent = queuedMessage;
 					recipients = queuedRecipients.ToArray();
+					deliveryCount++;
 				});
 
 			sent = null;
 			recipients = null;
 			thrown = null;
+			deliveryCount = 0;
 			queuedMessage = null;
 			queuedRecipients = new List<Uri>();
 
@@ -260,6 +278,7 @@ namespace NanoMessageBus
 		protected static Mock<IDependencyResolver> mockResolver;
 		protected static Mock<IChannelGroupConfiguration> mockConfig;
 		protected static Exception thrown;
+		protected static int deliveryCount;
 
 		protected static ChannelMessage sent;
 		protected static Uri[] recipients;
