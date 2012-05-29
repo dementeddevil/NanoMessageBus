@@ -47,7 +47,7 @@
 			throw new NotSupportedException("Envelope state cannot be specified.");
 		}
 
-		public virtual IChannelTransaction Send()
+		public virtual IChannelTransaction Send(params object[] messages)
 		{
 			this.ThrowWhenDispatched();
 			this.dispatched = true;
@@ -55,11 +55,11 @@
 			this.channel.Send(new ChannelEnvelope(this.channelMessage, this.recipients, this.channelMessage));
 			return this.channel.CurrentTransaction;
 		}
-		public virtual IChannelTransaction Publish()
+		public virtual IChannelTransaction Publish(params object[] messages)
 		{
 			throw new NotSupportedException("Only send can be invoked.");
 		}
-		public virtual IChannelTransaction Reply()
+		public virtual IChannelTransaction Reply(params object[] messages)
 		{
 			throw new NotSupportedException("Only send can be invoked.");
 		}

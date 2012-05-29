@@ -80,9 +80,10 @@
 		/// <summary>
 		/// Pushes the message onto the underlying channel sending it to any interested parties and completes the context.
 		/// </summary>
+		/// <param name="messages">The messages to be dispatched as part of the operation.</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <returns>The current transaction.</returns>
-		IChannelTransaction Send();
+		IChannelTransaction Send(params object[] messages);
 
 		/// <summary>
 		/// Pushes the message onto the underlying channel publishing it to all interested parties, and completes the context.
@@ -90,15 +91,17 @@
 		/// <remarks>
 		/// The first message in the transmission will be used to determine message type, and thus, the recipients of the message.
 		/// </remarks>
+		/// <param name="messages">The messages to be dispatched as part of the operation.</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <returns>The current transaction.</returns>
-		IChannelTransaction Publish();
+		IChannelTransaction Publish(params object[] messages);
 
 		/// <summary>
 		/// Pushes the message onto the channel sending it to the original sender, if any, and completes the context.
 		/// </summary>
+		/// <param name="messages">The messages to be dispatched as part of the operation.</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <returns>The current transaction.</returns>
-		IChannelTransaction Reply();
+		IChannelTransaction Reply(params object[] messages);
 	}
 }

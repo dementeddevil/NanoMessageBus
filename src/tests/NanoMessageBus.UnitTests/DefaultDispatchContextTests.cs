@@ -392,6 +392,36 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
+	public class when_supplying_messages_during_send : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.Send(0, 1, 2, 3);
+
+		It should_append_each_message_to_the_dispatched_envelope = () =>
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3}).ShouldBeTrue();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_supplying_messages_during_publish : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.Publish(0, 1, 2, 3);
+
+		It should_append_each_message_to_the_dispatched_envelope = () =>
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).ShouldBeTrue();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
+	public class when_supplying_messages_during_reply : with_a_dispatch_context
+	{
+		Establish context = () =>
+			dispatchContext.Reply(0, 1, 2, 3);
+
+		It should_append_each_message_to_the_dispatched_envelope = () =>
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).ShouldBeTrue();
+	}
+
+	[Subject(typeof(DefaultDispatchContext))]
 	public class when_sending_with_the_same_context_more_than_once : with_a_dispatch_context
 	{
 		Establish context = () =>

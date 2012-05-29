@@ -33,6 +33,10 @@
 			if (messages.Length == 0)
 				throw new ArgumentException("The set of messages provided cannot be empty.", "messages");
 
+			return this.WithMessages((IEnumerable<object>)messages);
+		}
+		private IDispatchContext WithMessages(IEnumerable<object> messages)
+		{
 			foreach (var message in messages.Where(x => x != null))
 				this.WithMessage(message);
 
@@ -98,23 +102,32 @@
 			return this;
 		}
 
-		public virtual IChannelTransaction Send()
+		public virtual IChannelTransaction Send(params object[] messages)
 		{
+			if (messages != null)
+				this.WithMessages((IEnumerable<object>)messages);
+
 			Log.Verbose("Sending message to registered recipients.");
 			return this.Dispatch(this.BuildRecipients().ToArray());
 		}
-		public virtual IChannelTransaction Publish()
+		public virtual IChannelTransaction Publish(params object[] messages)
 		{
+			if (messages != null)
+				this.WithMessages((IEnumerable<object>)messages);
+
 			Log.Verbose("Publishing message to registered subscribers.");
 			return this.Dispatch(this.BuildRecipients().ToArray());
 		}
-		public virtual IChannelTransaction Reply()
+		public virtual IChannelTransaction Reply(params object[] messages)
 		{
 			if (this.channel.CurrentMessage == null)
 			{
 				Log.Warn("A reply can only be sent because of an incoming message.");
 				throw new InvalidOperationException("A reply can only be sent because of an incoming message.");
 			}
+
+			if (messages != null)
+				this.WithMessages((IEnumerable<object>)messages);
 
 			var message = this.channel.CurrentMessage;
 			var incomingReturnAddress = message.ReturnAddress;
