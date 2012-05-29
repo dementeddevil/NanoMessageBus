@@ -15,10 +15,13 @@
 			if (DateTime.TryParse(header, out dispatched))
 				delivery.CurrentMessage.Dispatched = dispatched.ToUniversalTime();
 		}
-		public virtual void AuditSend(ChannelEnvelope envelope)
+		public virtual void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
+
+			//if (delivery != null && delivery.CurrentMessage == envelope.Message)
+			//    return;
 
 			var message = envelope.Message;
 			if (message == envelope.State)

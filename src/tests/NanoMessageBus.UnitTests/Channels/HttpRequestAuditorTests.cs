@@ -39,7 +39,7 @@ namespace NanoMessageBus.Channels
 			auditor = new HttpRequestAuditor(null);
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_not_append_anything_to_the_headers = () =>
 			messageHeaders.Count.ShouldEqual(0);
@@ -59,7 +59,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_the_browser_useragent_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-useragent"].ShouldEqual("MyBrowser");
@@ -87,7 +87,7 @@ namespace NanoMessageBus.Channels
 			mockRequest.Setup(x => x.UserAgent).Returns((string)null);
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_not_append_the_header_to_the_message = () =>
 			messageHeaders.ContainsKey("x-audit-useragent").ShouldBeFalse();
@@ -110,7 +110,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_the_browser_useragent_from_the_envelope_state_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-useragent"].ShouldEqual("MyBrowser");
@@ -141,7 +141,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_all_client_ip_address_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3");
@@ -157,7 +157,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_return_only_the_unique_values = () =>
 			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3");

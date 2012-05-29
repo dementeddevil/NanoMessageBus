@@ -46,7 +46,7 @@ namespace NanoMessageBus.Channels
 	public class when_sending_a_null_message : using_the_point_of_origin_auditor
 	{
 		Because of = () =>
-			Try(() => auditor.AuditSend(null));
+			Try(() => auditor.AuditSend(null, null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -62,7 +62,7 @@ namespace NanoMessageBus.Channels
 			SystemTime.TimeResolver = null;
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_the_originating_machine_name_to_the_headers = () =>
 			messageHeaders["x-audit-origin-host"].ShouldEqual(Environment.MachineName.ToLowerInvariant());
@@ -82,13 +82,29 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object);
+			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_NOT_modify_the_originating_machine_header = () =>
 			messageHeaders["x-audit-origin-host"].ShouldEqual("a");
 
 		It should_NOT_modify_the_originating_dispatch_stamp = () =>
 			messageHeaders["x-audit-dispatched"].ShouldEqual("b");
+	}
+
+	[Subject(typeof(PointOfOriginAuditor))]
+	public class when_sending_the_incoming_channel_message : using_the_point_of_origin_auditor
+	{
+		Establish context = () => 
+			mockEnvelope.Setup(x => x.State).Returns(mockMessage.Object);
+
+		Because of = () =>
+			auditor.AuditSend(mockEnvelope.Object, null);
+
+		It should_NOT_modify_the_incoming_machine_header = () =>
+			messageHeaders.ContainsKey("x-audit-origin-host").ShouldBeFalse();
+
+		It should_NOT_modify_the_incoming_dispatch_stamp = () =>
+			messageHeaders.ContainsKey("x-audit-dispatched").ShouldBeFalse();
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]

@@ -10,7 +10,7 @@
 		{
 			// no op
 		}
-		public virtual void AuditSend(ChannelEnvelope envelope)
+		public virtual void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
 			var current = this.GetCurrentContext(envelope);
 			if (current == null)

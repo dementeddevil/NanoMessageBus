@@ -5,6 +5,6 @@
 	public interface IMessageAuditor : IDisposable
 	{
 		void AuditReceive(IDeliveryContext delivery);
-		void AuditSend(ChannelEnvelope envelope);
+		void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery);
 	}
 }

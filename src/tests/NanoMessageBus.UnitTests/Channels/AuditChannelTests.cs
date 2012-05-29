@@ -178,7 +178,7 @@ namespace NanoMessageBus.Channels
 			registered.ShouldBeTrue();
 
 		It should_provide_the_envelope_to_each_auditor = () => // the transaction commit causes this to occur
-			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope), Times.Once()));
+			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope, channel), Times.Once()));
 
 		It should_pass_the_envelope_to_the_underlying_channel_for_delivery = () =>
 			mockChannel.Verify(x => x.Send(envelope), Times.Once());

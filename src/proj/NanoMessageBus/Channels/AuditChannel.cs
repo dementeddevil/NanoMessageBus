@@ -56,7 +56,7 @@
 			foreach (var auditor in this.auditors)
 			{
 				Log.Debug("Providing envelope '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
-				auditor.AuditSend(envelope);
+				auditor.AuditSend(envelope, this);
 			}
 		}
 
