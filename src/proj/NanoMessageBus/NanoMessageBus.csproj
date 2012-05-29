@@ -45,7 +45,7 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="SkipCurrentHandlerException.cs" />
+    <Compile Include="AbortCurrentHandlerException.cs" />
     <Compile Include="ChannelEnvelope.cs" />
     <Compile Include="ChannelException.cs" />
     <Compile Include="ChannelConnectionException.cs" />
