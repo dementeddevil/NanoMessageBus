@@ -112,6 +112,10 @@
 					this.handler.Handle((T)message);
 					return true;
 				}
+				catch (AbortCurrentHandlerException)
+				{
+					throw;
+				}
 				catch (Exception e)
 				{
 					Log.Debug("Message handler of type '{0}' threw an exception while handling message of type '{1}'.".FormatWith(this.handler.GetType(), message.GetType()), e);
@@ -145,6 +149,10 @@
 				{
 					handler.Handle((T)message);
 					return true;
+				}
+				catch (AbortCurrentHandlerException)
+				{
+					throw;
 				}
 				catch (Exception e)
 				{
