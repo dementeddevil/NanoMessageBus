@@ -94,17 +94,22 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(PointOfOriginAuditor))]
 	public class when_sending_the_incoming_channel_message : using_the_point_of_origin_auditor
 	{
-		Establish context = () => 
-			mockEnvelope.Setup(x => x.State).Returns(mockMessage.Object);
+		Establish context = () =>
+		{
+			mockDelivery = new Mock<IDeliveryContext>();
+			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);
+		};
 
 		Because of = () =>
-			auditor.AuditSend(mockEnvelope.Object, null);
+			auditor.AuditSend(mockEnvelope.Object, mockDelivery.Object);
 
 		It should_NOT_modify_the_incoming_machine_header = () =>
 			messageHeaders.ContainsKey("x-audit-origin-host").ShouldBeFalse();
 
 		It should_NOT_modify_the_incoming_dispatch_stamp = () =>
 			messageHeaders.ContainsKey("x-audit-dispatched").ShouldBeFalse();
+
+		static Mock<IDeliveryContext> mockDelivery;
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]

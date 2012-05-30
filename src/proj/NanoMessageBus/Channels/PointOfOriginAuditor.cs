@@ -20,8 +20,8 @@
 			if (envelope == null)
 				throw new ArgumentNullException("envelope");
 
-			//if (delivery != null && delivery.CurrentMessage == envelope.Message)
-			//    return;
+			if (delivery != null && delivery.CurrentMessage == envelope.Message)
+				return;
 
 			var message = envelope.Message;
 			if (message == envelope.State)
