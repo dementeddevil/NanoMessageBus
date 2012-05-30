@@ -84,7 +84,7 @@ namespace NanoMessageBus.Serialization
 		};
 	}
 
-	[Subject(typeof(JsonSerializer))]
+	[Subject(typeof(BsonSerializer))]
 	public abstract class using_the_bson_serializer
 	{
 		Establish context = () =>

@@ -79,7 +79,7 @@ namespace NanoMessageBus.Serialization
 			Fifth = 5,
 			Sixth = Guid.NewGuid(),
 			Seventh = "7th",
-			Eighth = new Uri("http://localhost/eighth"),
+			Eighth = new Uri("http://domain.com/path/query?#hash", UriKind.Absolute),
 			Ninth = SystemTime.UtcNow
 		};
 	}

@@ -56,7 +56,10 @@
 			TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
 			DefaultValueHandling = DefaultValueHandling.Ignore,
 			NullValueHandling = NullValueHandling.Ignore,
-			MissingMemberHandling = MissingMemberHandling.Ignore
+			MissingMemberHandling = MissingMemberHandling.Ignore,
+			DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+			DateFormatHandling = DateFormatHandling.IsoDateFormat,
+			DateParseHandling = DateParseHandling.DateTime
 		};
 	}
 }
