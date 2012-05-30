@@ -398,7 +398,7 @@ namespace NanoMessageBus
 			dispatchContext.Send(0, 1, 2, 3);
 
 		It should_append_each_message_to_the_dispatched_envelope = () =>
-			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3}).ShouldBeTrue();
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).ShouldBeTrue();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
