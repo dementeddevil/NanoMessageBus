@@ -303,6 +303,22 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_no_message_is_received_from_the_subscription_against_a_closed_channel : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockRealChannel.Setup(x => x.CloseReason).Returns(new ShutdownEventArgs(ShutdownInitiator.Peer, 0, string.Empty));
+			channel.Receive(delivery => { });
+		};
+
+		Because of = () =>
+			Try(() => Receive(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<OperationInterruptedException>();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_the_message_received_has_expired : using_a_channel
 	{
 		Establish context = () =>
@@ -1232,6 +1248,10 @@ namespace NanoMessageBus.Channels
 			return new ChannelEnvelope(
 				new ChannelMessage(Guid.NewGuid(), Guid.NewGuid(), null, null, new object[] { 1, 2, 3 }),
 				new[] { recipient });
+		}
+		protected static void Try(Action callback)
+		{
+			thrown = Catch.Exception(callback);
 		}
 
 		protected const string DefaultChannelGroup = "some group name";

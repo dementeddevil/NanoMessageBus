@@ -141,20 +141,6 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitSubscription))]
-	public class when_receiving_a_message_throws_an_EndOfStreamException : using_a_subscription
-	{
-		Establish context = () => mockRealSubscription
-			.Setup(x => x.BeginReceive(DefaultTimeout))
-			.Throws(new EndOfStreamException());
-
-		Because of = () =>
-			thrown = Catch.Exception(() => subscription.Receive(DefaultTimeout, DisposeCallback));
-
-		It should_throw_a_ChannelConnectionException = () =>
-			thrown.ShouldBeOfType<ChannelConnectionException>();
-	}
-
-	[Subject(typeof(RabbitSubscription))]
 	public class when_receiving_a_message_throws_any_unexpected_exception : using_a_subscription
 	{
 		Establish context = () => mockRealSubscription

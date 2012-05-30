@@ -30,11 +30,6 @@
 				Log.Verbose("Starting channel message subscription.");
 				this.PerformReceive(timeout, callback);
 			}
-			catch (EndOfStreamException e)
-			{
-				Log.Info("Inconsistent receiving state of internal RabbitMQ 'SharedQueue', aborting receive.", e);
-				throw new ChannelConnectionException(e.Message, e);
-			}
 			catch (OperationInterruptedException e)
 			{
 				Log.Debug("Channel operation interrupted, aborting receive.", e);

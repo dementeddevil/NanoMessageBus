@@ -50,7 +50,10 @@
 			}
 
 			if (message == null)
+			{
+				this.ThrowWhenClosed();
 				return ContinueReceiving;
+			}
 
 			this.EnsureTransaction();
 			this.TryReceive(message, callback);
@@ -227,6 +230,14 @@
 			this.shutdown = true;
 		}
 
+		protected virtual void ThrowWhenClosed()
+		{
+			var reason = this.channel.CloseReason;
+			if (reason == null)
+				return;
+
+			throw new OperationInterruptedException(reason);
+		}
 		protected virtual void ThrowWhenDispatchOnly()
 		{
 			if (!this.configuration.DispatchOnly)
