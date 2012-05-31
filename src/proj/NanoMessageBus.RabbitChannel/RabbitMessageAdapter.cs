@@ -182,9 +182,9 @@
 			if (attempt == 0 || depth > 1)
 				return true;
 
-			var previousType = (string)message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "type"));
-			var previousMessage = (string)message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "message"));
-			var previousStackTrace = (string)message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "stacktrace"));
+			var previousType = message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "type")).AsString();
+			var previousMessage = message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "message")).AsString();
+			var previousStackTrace = message.GetHeader(ExceptionHeaderFormat.FormatWith(attempt - 1, 0, "stacktrace")).AsString();
 
 			return exception.GetType().ToString() != previousType
 				|| exception.Message != previousMessage

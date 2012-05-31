@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections;
+	using System.Text;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Framing.v0_9;
@@ -97,6 +98,13 @@
 			Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out parsed);
 			return parsed;
 		}
+		public static string AsString(this object value)
+		{
+			if (value is string)
+				return value as string;
+
+			return TextEncoding.GetString((byte[])value);
+		}
 
 		public static string ContentFormat(this IBasicProperties properties)
 		{
@@ -114,5 +122,7 @@
 		}
 
 		private const string AttemptCountHeader = "x-retry-count";
+
+		private static readonly Encoding TextEncoding = Encoding.UTF8;
 	}
 }
