@@ -100,6 +100,10 @@
 		}
 		public static string AsString(this object value)
 		{
+			// TODO: better code coverage on these
+			if (value == null)
+				return null;
+
 			if (value is string)
 				return value as string;
 
