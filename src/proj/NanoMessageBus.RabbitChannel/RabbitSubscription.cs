@@ -30,6 +30,10 @@
 				Log.Verbose("Starting channel message subscription.");
 				this.PerformReceive(timeout, callback);
 			}
+			catch (ChannelConnectionException)
+			{
+				throw; // TODO: add a test to assert this
+			}
 			catch (OperationInterruptedException e)
 			{
 				Log.Debug("Channel operation interrupted, aborting receive.", e);
