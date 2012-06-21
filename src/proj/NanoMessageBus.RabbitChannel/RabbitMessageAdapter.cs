@@ -47,7 +47,7 @@
 			expiration = expiration == DateTime.MinValue ? DateTime.MaxValue : expiration;
 
 			if (expiration <= SystemTime.UtcNow)
-				throw new DeadLetterException();
+				throw new DeadLetterException(expiration);
 
 			var payload = this.configuration.Serializer.Deserialize<object[]>(
 				message.Body, properties.ContentFormat(), properties.ContentEncoding);

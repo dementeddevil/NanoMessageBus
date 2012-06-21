@@ -9,5 +9,11 @@
 	[Serializable]
 	public class DeadLetterException : ChannelException
 	{
+		public DateTime Expiration { get; private set; }
+
+		public DeadLetterException(DateTime expiration)
+		{
+			this.Expiration = expiration;
+		}
 	}
 }
