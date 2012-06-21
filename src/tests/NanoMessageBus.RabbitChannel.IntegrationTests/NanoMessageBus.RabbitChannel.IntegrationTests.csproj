@@ -57,9 +57,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Autofac.2.6.1.841\lib\NET40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="Machine.Specifications, Version=0.5.6.0, Culture=neutral, PublicKeyToken=5c474de7a495cff1, processorArchitecture=MSIL">
+    <Reference Include="Machine.Specifications, Version=0.5.7.0, Culture=neutral, PublicKeyToken=5c474de7a495cff1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Machine.Specifications-Signed.0.5.6.0\lib\net40\Machine.Specifications.dll</HintPath>
+      <HintPath>..\..\packages\Machine.Specifications-Signed.0.5.7\lib\net40\Machine.Specifications.dll</HintPath>
     </Reference>
     <Reference Include="RabbitMQ.Client, Version=2.8.1.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
