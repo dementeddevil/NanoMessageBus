@@ -1,7 +1,6 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.IO;
 	using Logging;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Exceptions;
@@ -32,7 +31,7 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				throw; // TODO: add a test to assert this
+				throw;
 			}
 			catch (OperationInterruptedException e)
 			{

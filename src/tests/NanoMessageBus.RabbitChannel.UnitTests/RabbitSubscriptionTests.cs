@@ -141,6 +141,23 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitSubscription))]
+	public class when_receiving_a_message_throws_an_ChannelConnectionException : using_a_subscription
+	{
+		Establish context = () => mockRealSubscription
+			.Setup(x => x.BeginReceive(DefaultTimeout))
+			.Throws(new ChannelConnectionException("test", new Exception()));
+
+		Because of = () =>
+			thrown = Catch.Exception(() => subscription.Receive(DefaultTimeout, DisposeCallback));
+
+		It should_throw_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		It should_not_wrap_a_ChannelConnectionException_over_a_ChannelConnectionException = () =>
+			thrown.InnerException.ShouldBeOfType<Exception>();
+	}
+
+	[Subject(typeof(RabbitSubscription))]
 	public class when_receiving_a_message_throws_any_unexpected_exception : using_a_subscription
 	{
 		Establish context = () => mockRealSubscription
