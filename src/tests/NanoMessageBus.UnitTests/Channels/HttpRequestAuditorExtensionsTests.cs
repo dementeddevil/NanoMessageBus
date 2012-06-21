@@ -5,6 +5,7 @@ namespace NanoMessageBus.Channels
 {
 	using System;
 	using System.Collections.Specialized;
+	using System.Globalization;
 	using System.Linq;
 	using System.Security.Principal;
 	using System.Text;
@@ -14,59 +15,20 @@ namespace NanoMessageBus.Channels
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(HttpRequestAuditorExtensions))]
-	public class when_cloning_an_http_context
+	public class when_cloning_a_null_context
 	{
-		Establish context = () =>
-		{
-			var mockContext = new Mock<HttpContextBase>();
-			var mockRequest = new Mock<HttpRequestBase>();
+		private Because of = () =>
+			thrown = Catch.Exception(() => ((HttpContextBase)null).Clone());
 
-			mockContext.Setup(x => x.Request).Returns(mockRequest.Object);
-			mockContext.Setup(x => x.User).Returns(new Mock<IPrincipal>().Object);
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentNullException>();
 
-			mockContext.Setup(x => x.Error).Returns(error);
-			mockContext.Setup(x => x.AllErrors).Returns(new[] { error });
-			mockContext.Setup(x => x.IsDebuggingEnabled).Returns(true);
-			mockContext.Setup(x => x.IsCustomErrorEnabled).Returns(true);
-			mockContext.Setup(x => x.IsPostNotification).Returns(true);
-			mockContext.Setup(x => x.SkipAuthorization).Returns(true);
-			mockContext.Setup(x => x.Timestamp).Returns(SystemTime.UtcNow);
+		static Exception thrown;
+	}
 
-			mockRequest.Setup(x => x.UserAgent).Returns("user agent");
-			mockRequest.Setup(x => x.AcceptTypes).Returns(new[] { "gzip" });
-			mockRequest.Setup(x => x.AnonymousID).Returns("anonymous id");
-			mockRequest.Setup(x => x.ApplicationPath).Returns("application path");
-			mockRequest.Setup(x => x.AppRelativeCurrentExecutionFilePath).Returns("app relative path");
-			mockRequest.Setup(x => x.ContentEncoding).Returns(Encoding.UTF32);
-			mockRequest.Setup(x => x.ContentLength).Returns(42);
-			mockRequest.Setup(x => x.ContentType).Returns("custom/content");
-			mockRequest.Setup(x => x.FilePath).Returns("file/path/here");
-			mockRequest.Setup(x => x.HttpMethod).Returns("custom method");
-			mockRequest.Setup(x => x.IsAuthenticated).Returns(true);
-			mockRequest.Setup(x => x.IsLocal).Returns(true);
-			mockRequest.Setup(x => x.IsSecureConnection).Returns(true);
-			mockRequest.Setup(x => x.Path).Returns("standard/path");
-			mockRequest.Setup(x => x.PathInfo).Returns("standard/path/info");
-			mockRequest.Setup(x => x.PhysicalApplicationPath).Returns("physical app path");
-			mockRequest.Setup(x => x.PhysicalPath).Returns("physical/path");
-			mockRequest.Setup(x => x.RawUrl).Returns("raw/url?value");
-			mockRequest.Setup(x => x.RequestType).Returns("request-type");
-			mockRequest.Setup(x => x.TotalBytes).Returns(42 + 42);
-			mockRequest.Setup(x => x.Url).Returns(new Uri("http://www.google.com/"));
-			mockRequest.Setup(x => x.UrlReferrer).Returns(new Uri("http://www.google.com/referer"));
-			mockRequest.Setup(x => x.UserHostAddress).Returns("host-address");
-			mockRequest.Setup(x => x.UserHostName).Returns("host-name");
-			mockRequest.Setup(x => x.UserLanguages).Returns(new[] { "en-us" });
-
-			mockRequest.Setup(x => x.Headers).Returns(new NameValueCollection());
-			mockRequest.Setup(x => x.Form).Returns(new NameValueCollection());
-			mockRequest.Setup(x => x.QueryString).Returns(new NameValueCollection());
-			mockRequest.Setup(x => x.ServerVariables).Returns(new NameValueCollection());
-			mockRequest.Setup(x => x.Cookies).Returns(new HttpCookieCollection());
-
-			original = mockContext.Object;
-		};
-
+	[Subject(typeof(HttpRequestAuditorExtensions))]
+	public class when_cloning_an_http_context : using_an_http_context
+	{
 		Because of = () =>
 			clone = original.Clone();
 
@@ -188,11 +150,17 @@ namespace NanoMessageBus.Channels
 		It should_return_the_clone_the_cookies = () =>
 			ReferenceEquals(clone.Request.Cookies, original.Request.Cookies).ShouldBeFalse();
 
+		It should_contain_all_request_cookies = () =>
+			clone.Request.Cookies.Count.ShouldEqual(original.Request.Cookies.Count);
+
 		It should_return_the_header_collection = () =>
 			clone.Request.Headers.ShouldNotBeNull();
 
 		It should_return_the_clone_the_headers = () =>
 			ReferenceEquals(clone.Request.Headers, original.Request.Headers).ShouldBeFalse();
+
+		It should_contain_all_request_headers= () =>
+			clone.Request.Headers.Count.ShouldEqual(original.Request.Headers.Count);
 
 		It should_return_the_form_collection = () =>
 			clone.Request.Form.ShouldNotBeNull();
@@ -200,11 +168,17 @@ namespace NanoMessageBus.Channels
 		It should_return_the_clone_the_form_data = () =>
 			ReferenceEquals(clone.Request.Form, original.Request.Form).ShouldBeFalse();
 
+		It should_contain_all_request_form_data = () =>
+			clone.Request.Form.Count.ShouldEqual(original.Request.Form.Count);
+
 		It should_return_the_query_string_collection = () =>
 			clone.Request.QueryString.ShouldNotBeNull();
 
 		It should_return_the_clone_the_query_string_data = () =>
 			ReferenceEquals(clone.Request.QueryString, original.Request.QueryString).ShouldBeFalse();
+
+		It should_contain_all_request_query_string_data = () =>
+			clone.Request.QueryString.Count.ShouldEqual(original.Request.QueryString.Count);
 
 		It should_return_the_server_variables_collection = () =>
 			clone.Request.ServerVariables.ShouldNotBeNull();
@@ -212,10 +186,107 @@ namespace NanoMessageBus.Channels
 		It should_return_the_clone_the_server_variables_data = () =>
 			ReferenceEquals(clone.Request.ServerVariables, original.Request.ServerVariables).ShouldBeFalse();
 
-		static HttpContextBase original;
+		It should_contain_all_request_server_variables_data = () =>
+			clone.Request.ServerVariables.Count.ShouldEqual(original.Request.ServerVariables.Count);
+
 		static HttpContextBase clone;
+	}
+
+	[Subject(typeof(HttpRequestAuditorExtensions))]
+	public class when_assigning_settable_values : using_an_http_context
+	{
+		Establish context = () =>
+			clone = original.Clone();
+
+		Because of = () =>
+		{
+			clone.SkipAuthorization = false;
+			clone.User = null;
+			clone.Request.ContentEncoding = Encoding.UTF7;
+		};
+
+		It should_NOT_set_the_skip_authorization_value = () =>
+			clone.SkipAuthorization.ShouldBeTrue();
+
+		It should_NOT_set_user_property = () =>
+			clone.User.ShouldEqual(original.User);
+
+		It should_NOT_set_the_content_encoding = () =>
+			clone.Request.ContentEncoding.ShouldEqual(original.Request.ContentEncoding);
+		
+		static HttpContextBase clone;
+	}
+
+	public abstract class using_an_http_context
+	{
+		Establish context = () =>
+		{
+			var mockContext = new Mock<HttpContextBase>();
+			var mockRequest = new Mock<HttpRequestBase>();
+
+			mockContext.Setup(x => x.Request).Returns(mockRequest.Object);
+			mockContext.Setup(x => x.User).Returns(new Mock<IPrincipal>().Object);
+
+			mockContext.Setup(x => x.Error).Returns(error);
+			mockContext.Setup(x => x.AllErrors).Returns(new[] { error });
+			mockContext.Setup(x => x.IsDebuggingEnabled).Returns(true);
+			mockContext.Setup(x => x.IsCustomErrorEnabled).Returns(true);
+			mockContext.Setup(x => x.IsPostNotification).Returns(true);
+			mockContext.Setup(x => x.SkipAuthorization).Returns(true);
+			mockContext.Setup(x => x.Timestamp).Returns(SystemTime.UtcNow);
+
+			mockRequest.Setup(x => x.UserAgent).Returns("user agent");
+			mockRequest.Setup(x => x.AcceptTypes).Returns(new[] { "gzip" });
+			mockRequest.Setup(x => x.AnonymousID).Returns("anonymous id");
+			mockRequest.Setup(x => x.ApplicationPath).Returns("application path");
+			mockRequest.Setup(x => x.AppRelativeCurrentExecutionFilePath).Returns("app relative path");
+			mockRequest.Setup(x => x.ContentEncoding).Returns(Encoding.UTF32);
+			mockRequest.Setup(x => x.ContentLength).Returns(42);
+			mockRequest.Setup(x => x.ContentType).Returns("custom/content");
+			mockRequest.Setup(x => x.FilePath).Returns("file/path/here");
+			mockRequest.Setup(x => x.HttpMethod).Returns("custom method");
+			mockRequest.Setup(x => x.IsAuthenticated).Returns(true);
+			mockRequest.Setup(x => x.IsLocal).Returns(true);
+			mockRequest.Setup(x => x.IsSecureConnection).Returns(true);
+			mockRequest.Setup(x => x.Path).Returns("standard/path");
+			mockRequest.Setup(x => x.PathInfo).Returns("standard/path/info");
+			mockRequest.Setup(x => x.PhysicalApplicationPath).Returns("physical app path");
+			mockRequest.Setup(x => x.PhysicalPath).Returns("physical/path");
+			mockRequest.Setup(x => x.RawUrl).Returns("raw/url?value");
+			mockRequest.Setup(x => x.RequestType).Returns("request-type");
+			mockRequest.Setup(x => x.TotalBytes).Returns(42 + 42);
+			mockRequest.Setup(x => x.Url).Returns(new Uri("http://www.google.com/"));
+			mockRequest.Setup(x => x.UrlReferrer).Returns(new Uri("http://www.google.com/referer"));
+			mockRequest.Setup(x => x.UserHostAddress).Returns("host-address");
+			mockRequest.Setup(x => x.UserHostName).Returns("host-name");
+			mockRequest.Setup(x => x.UserLanguages).Returns(new[] { "en-us" });
+
+			mockRequest.Setup(x => x.Headers).Returns(Generate(1));
+			mockRequest.Setup(x => x.Form).Returns(Generate(2));
+			mockRequest.Setup(x => x.QueryString).Returns(Generate(3));
+			mockRequest.Setup(x => x.ServerVariables).Returns(Generate(4));
+			mockRequest.Setup(x => x.Cookies).Returns(new HttpCookieCollection()
+			{
+				new HttpCookie("key", "value")
+			});
+
+			original = mockContext.Object;
+		};
+
+		private static NameValueCollection Generate(int items)
+		{
+			var collection = new NameValueCollection();
+
+			for (var i = 0; i < items; i++)
+				collection[i.ToString(CultureInfo.InvariantCulture)] = Guid.NewGuid().ToString();
+
+			return collection;
+		}
+
+		protected static HttpContextBase original;
 		static readonly Exception error = new Exception();
 	}
+
 }
 
 // ReSharper enable InconsistentNaming

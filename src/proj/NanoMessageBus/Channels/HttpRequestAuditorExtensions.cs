@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections.Specialized;
+	using System.Linq;
 	using System.Security.Principal;
 	using System.Text;
 	using System.Web;
@@ -14,6 +15,9 @@
 		}
 		public static HttpContextBase Clone(this HttpContextBase context)
 		{
+			if (context == null)
+				throw new ArgumentNullException("context");
+
 			return new HttpContextClone(context);
 		}
 	}
@@ -243,8 +247,8 @@
 			this.serverVariables = new NameValueCollection(request.ServerVariables);
 
 			this.cookies = new HttpCookieCollection();
-			foreach (HttpCookie cookie in request.Cookies)
-				this.cookies.Add(cookie);
+			for (var i = 0; i < request.Cookies.Count; i++)
+				this.cookies.Add(request.Cookies[i]);
 		}
 
 		private readonly string userAgent;
