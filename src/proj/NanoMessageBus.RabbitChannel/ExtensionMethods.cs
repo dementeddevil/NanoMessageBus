@@ -100,14 +100,11 @@
 		}
 		public static string AsString(this object value)
 		{
-			// TODO: better code coverage on these
 			if (value == null)
 				return null;
 
-			if (value is string)
-				return value as string;
-
-			return TextEncoding.GetString((byte[])value);
+			var @string = value as string;
+			return @string ?? TextEncoding.GetString((byte[])value);
 		}
 
 		public static string ContentFormat(this IBasicProperties properties)

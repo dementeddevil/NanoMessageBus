@@ -416,14 +416,14 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			adapter.AppendException(message, simple, 1);
 
-		It should_NOT_append_the_duplicat__exception_message = () =>
-			message.GetHeader("x-exception1.0-message").ShouldBeNull();
+		It should_NOT_append_the_duplicate_exception_message = () =>
+			message.GetHeader("x-exception1.0-message").AsString().ShouldBeNull();
 
 		It should_NOT_append_the_exception_type = () =>
-			message.GetHeader("x-exception1.0-type").ShouldBeNull();
+			message.GetHeader("x-exception1.0-type").AsString().ShouldBeNull();
 
 		It should_NOT_append_the_exception_stack_trace = () =>
-			message.GetHeader("x-exception1.0-stacktrace").ShouldBeNull();
+			message.GetHeader("x-exception1.0-stacktrace").AsString().ShouldBeNull();
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception simple = new Exception();
