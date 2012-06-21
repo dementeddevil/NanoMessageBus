@@ -102,7 +102,6 @@ namespace NanoMessageBus
 			routes.Add(x => new GenericHandler<string>(message =>
 			{
 				throw new AbortCurrentHandlerException("Reason");
-				
 			}));
 
 			routes.Add(new StringHandler());
