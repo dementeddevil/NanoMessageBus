@@ -299,7 +299,6 @@ namespace NanoMessageBus.Channels
 		protected static HttpContextBase original;
 		static readonly Exception error = new Exception();
 	}
-
 }
 
 // ReSharper enable InconsistentNaming
