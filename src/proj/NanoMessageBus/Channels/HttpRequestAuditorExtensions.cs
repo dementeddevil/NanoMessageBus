@@ -2,7 +2,6 @@
 {
 	using System;
 	using System.Collections.Specialized;
-	using System.Linq;
 	using System.Security.Principal;
 	using System.Text;
 	using System.Web;
@@ -11,7 +10,7 @@
 	{
 		public static HttpContextBase Clone(this HttpContext context)
 		{
-			return (new HttpContextWrapper(context)).Clone();
+			return context == null ? null : (new HttpContextWrapper(context)).Clone();
 		}
 		public static HttpContextBase Clone(this HttpContextBase context)
 		{

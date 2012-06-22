@@ -15,7 +15,7 @@ namespace NanoMessageBus.Channels
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(HttpRequestAuditorExtensions))]
-	public class when_cloning_a_null_context
+	public class when_cloning_a_null_HttpContextBase
 	{
 		private Because of = () =>
 			thrown = Catch.Exception(() => ((HttpContextBase)null).Clone());
@@ -24,6 +24,18 @@ namespace NanoMessageBus.Channels
 			thrown.ShouldBeOfType<ArgumentNullException>();
 
 		static Exception thrown;
+	}
+
+	[Subject(typeof(HttpRequestAuditorExtensions))]
+	public class when_cloning_a_null_HttpContext
+	{
+		Because of = () =>
+			clone = HttpContext.Current.Clone();
+
+		It should_return_null = () =>
+			clone.ShouldBeNull();
+
+		static HttpContextBase clone;
 	}
 
 	[Subject(typeof(HttpRequestAuditorExtensions))]
@@ -48,7 +60,8 @@ namespace NanoMessageBus.Channels
 			clone.Error.ShouldEqual(original.Error);
 
 		It should_return_a_reference_to_all_on_the_original = () =>
-			clone.AllErrors.SequenceEqual(original.AllErrors).ShouldBeTrue();
+			(clone.AllErrors ?? new Exception[0]).SequenceEqual(
+				original.AllErrors ?? new Exception[0]).ShouldBeTrue();
 
 		It should_indicate_if_debugging_is_enabled = () =>
 			clone.IsDebuggingEnabled.ShouldEqual(original.IsDebuggingEnabled);
@@ -265,7 +278,7 @@ namespace NanoMessageBus.Channels
 			mockRequest.Setup(x => x.Form).Returns(Generate(2));
 			mockRequest.Setup(x => x.QueryString).Returns(Generate(3));
 			mockRequest.Setup(x => x.ServerVariables).Returns(Generate(4));
-			mockRequest.Setup(x => x.Cookies).Returns(new HttpCookieCollection()
+			mockRequest.Setup(x => x.Cookies).Returns(new HttpCookieCollection
 			{
 				new HttpCookie("key", "value")
 			});
