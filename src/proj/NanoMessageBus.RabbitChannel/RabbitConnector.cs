@@ -72,7 +72,7 @@
 			}
 			catch (PossibleAuthenticationFailureException e)
 			{
-				Log.Warn("Invalid security credentials.");
+				Log.Warn("Invalid security credentials; manual intervention may be required.");
 				this.Close(channel, ConnectionState.Unauthenticated, e);
 			}
 			catch (OperationInterruptedException e)
@@ -108,6 +108,12 @@
 				Log.Debug("Initializing the messaging infrastructure for '{0}'.", config.GroupName);
 				config.ConfigureChannel(model);
 			}
+		}
+
+		public virtual void Close()
+		{
+			lock (this.sync)
+				this.Close(null, ConnectionState.Closed);
 		}
 
 		protected virtual void ThrowWhenDisposed()
@@ -178,12 +184,13 @@
 				channel.Abort();
 			}
 
-			if (this.connection != null)
+			var currentConnection = this.connection; // local reference for thread safety
+			if (currentConnection != null)
 			{
 				Log.Debug("Blocking up to {0} ms before forcing the existing connection to close.", this.shutdownTimeout);
 
-				// calling connection.TryDispose() can thrown while connection.Abort() closes without throwing
-				this.connection.Abort(this.shutdownTimeout);
+				// calling connection.Dispose() can throw while connection.Abort() closes without throwing
+				currentConnection.Abort(this.shutdownTimeout);
 			}
 
 			this.connection = null;

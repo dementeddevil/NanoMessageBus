@@ -43,6 +43,8 @@
 		}
 		protected virtual bool CanConnect()
 		{
+			this.connector.Close();
+
 			using (var channel = this.TryConnect())
 				return channel != null;
 		}

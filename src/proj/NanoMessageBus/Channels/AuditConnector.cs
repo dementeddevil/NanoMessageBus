@@ -38,6 +38,10 @@
 
 			return this.auditorFactory(channel).Where(x => x != null).ToArray();
 		}
+		public virtual void Close()
+		{
+			this.connector.Close();
+		}
 
 		public AuditConnector(IChannelConnector connector, Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory)
 		{

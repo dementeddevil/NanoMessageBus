@@ -295,6 +295,29 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Connect(PooledGroupName), Times.Exactly(2));
 	}
 
+	[Subject(typeof(PooledDispatchConnector))]
+	public class when_closing_the_connection : using_the_pooled_dispatch_connector
+	{
+		Establish context = () =>
+		{
+		    var channel = connector.Connect(PooledGroupName);
+			connector.Connect(PooledGroupName).Dispose();
+			channel.Dispose();
+		};
+
+		Because of = () =>
+			connector.Close();
+
+		It should_teardown_any_available_channels_waiting_in_the_pool = () =>
+			mockChannels[0].Verify(x => x.Dispose(), Times.Once());
+
+		It should_invoke_close_on_the_underlying_connector = () =>
+			mockConnector.Verify(x => x.Close(), Times.Once());
+
+		It should_teardown_any_channels_released_back_to_the_pool = () =>
+			mockChannels[1].Verify(x => x.Dispose(), Times.Once());
+	}
+
 	public abstract class using_the_pooled_dispatch_connector
 	{
 		Establish context = () =>

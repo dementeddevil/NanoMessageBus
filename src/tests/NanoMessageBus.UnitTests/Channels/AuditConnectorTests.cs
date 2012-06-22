@@ -98,6 +98,16 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(AuditConnector))]
+	public class when_the_connector_is_closed : using_the_audit_connector
+	{
+		Because of = () =>
+			connector.Close();
+
+		It should_invoke_close_on_the_underlying_connector = () =>
+			mockConnector.Verify(x => x.Close(), Times.Once());
+	}
+
+	[Subject(typeof(AuditConnector))]
 	public class when_no_auditors_exist : using_the_audit_connector
 	{
 		Because of = () =>

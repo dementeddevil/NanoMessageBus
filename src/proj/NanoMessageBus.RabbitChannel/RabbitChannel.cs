@@ -12,7 +12,7 @@
 	{
 		public virtual bool Active
 		{
-			get { return !this.disposed && !this.shutdown; }
+			get { return !this.disposed && !this.shutdown; } // TODO: also query the connector.ConnectionState (we need a reference to it first)
 		}
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IDependencyResolver CurrentResolver { get; private set; }
