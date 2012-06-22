@@ -107,7 +107,8 @@ namespace NanoMessageBus.Channels
 				mockRealChannel.Object,
 				mockConnector.Object,
 				mockConfiguration.Object,
-				() => {
+				() =>
+				{
 					invocations++;
 					return mockSubscription.Object;
 				});
