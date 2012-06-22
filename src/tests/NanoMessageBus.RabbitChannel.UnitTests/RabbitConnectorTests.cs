@@ -208,15 +208,24 @@ namespace NanoMessageBus.Channels
 	public class when_establishing_the_underlying_connection_throws_because_the_queue_has_been_defined_differently : using_a_connector
 	{
 		Establish context = () =>
+		{
 			mockFactory
 				.Setup(x => x.CreateConnection(connector.MaxRedirects))
+				.Returns(mockConnection.Object);
+
+			mockConnection
+				.Setup(x => x.CreateModel())
 				.Throws(new OperationInterruptedException(args));
-
-		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ChannelConfigurationException>();
-
+		};
+			
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		It should_abort_the_underlying_connection = () =>
+			mockConnection.Verify(x => x.Abort(Moq.It.IsAny<int>()), Times.Once());
 
 		const int PreconditionFailed = 406;
 		static readonly ShutdownEventArgs args = 
@@ -227,12 +236,21 @@ namespace NanoMessageBus.Channels
 	public class when_establishing_the_underlying_connection_throws_because_the_queue_is_locked_by_another_consumer : using_a_connector
 	{
 		Establish context = () =>
+		{
 			mockFactory
 				.Setup(x => x.CreateConnection(connector.MaxRedirects))
+				.Returns(mockConnection.Object);
+
+			mockConnection
+				.Setup(x => x.CreateModel())
 				.Throws(new OperationInterruptedException(args));
+		};
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ChannelConfigurationException>();
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		It should_abort_the_underlying_connection = () =>
+			mockConnection.Verify(x => x.Abort(Moq.It.IsAny<int>()), Times.Once());
 
 		Because of = () =>
 			thrown = Catch.Exception(() => connector.Connect(DefaultGroupName));

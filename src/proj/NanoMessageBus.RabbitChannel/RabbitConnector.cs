@@ -78,18 +78,14 @@
 			catch (OperationInterruptedException e)
 			{
 				var shutdownCode = e.ShutdownReason == null ? 0 : e.ShutdownReason.ReplyCode;
-				if (shutdownCode == PreconditionFailed)
-				{
-					Log.Fatal("Attempting to redefine existing queue/exchange with different parameters; unable to continue.");
-					throw new ChannelConfigurationException(e.Message, e);
-				}
-				if (shutdownCode == ResourceLocked)
-				{
-					Log.Fatal("Attempting to access a queue locked exclusively by another consumer; unable to continue.");
-					throw new ChannelConfigurationException(e.Message, e);
-				}
 
-				Log.Info("Connection attempt interrupted; socked closed.");
+				if (shutdownCode == PreconditionFailed)
+					Log.Warn("Attempting to redefine existing queue/exchange with different parameters; manual intervention may be required.");
+				else if (shutdownCode == ResourceLocked)
+					Log.Warn("Attempting to access a queue locked exclusively by another consumer; manual intervention may be required.");
+				else
+					Log.Info("Connection attempt interrupted; socked closed.");
+
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
 			catch (IOException e)
@@ -109,7 +105,7 @@
 		{
 			foreach (var config in this.configuration.Values)
 			{
-				Log.Debug("Initializing the messaging infrastructure.");
+				Log.Debug("Initializing the messaging infrastructure for '{0}'.", config.GroupName);
 				config.ConfigureChannel(model);
 			}
 		}
