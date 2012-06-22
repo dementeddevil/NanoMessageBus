@@ -103,11 +103,14 @@ namespace NanoMessageBus.Channels
 		{
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
 
-			channel = new RabbitChannel(mockRealChannel.Object, mockConfiguration.Object, () =>
-			{
-				invocations++;
-				return mockSubscription.Object;
-			});
+			channel = new RabbitChannel(
+				mockRealChannel.Object,
+				mockConnector.Object,
+				mockConfiguration.Object,
+				() => {
+					invocations++;
+					return mockSubscription.Object;
+				});
 		};
 
 		Because of = () =>
@@ -1183,6 +1186,16 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_the_underlying_connector_state_is_not_open : using_a_channel
+	{
+		Establish context = () =>
+			mockConnector.Setup(x => x.CurrentState).Returns(ConnectionState.Closing);
+
+		It should_mark_the_channel_as_not_active = () =>
+			channel.Active.ShouldBeFalse();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_attempting_to_send_on_a_send_only_channel_that_is_shutting_down : using_a_channel
 	{
 		Establish context = () =>
@@ -1200,11 +1213,13 @@ namespace NanoMessageBus.Channels
 		Establish context = () =>
 		{
 			mockRealChannel = new Mock<IModel>();
+			mockConnector = new Mock<IChannelConnector>();
 			mockAdapter = new Mock<RabbitMessageAdapter>();
 			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
 			mockSubscription = new Mock<RabbitSubscription>();
 
 			var timeout = TimeSpan.FromMilliseconds(100);
+			mockConnector.Setup(x => x.CurrentState).Returns(ConnectionState.Open);
 			mockConfiguration.Setup(x => x.ReceiveTimeout).Returns(timeout);
 			mockConfiguration.Setup(x => x.MessageAdapter).Returns(mockAdapter.Object);
 			mockConfiguration.Setup(x => x.InputQueue).Returns(InputQueueName);
@@ -1229,7 +1244,10 @@ namespace NanoMessageBus.Channels
 		protected static void Initialize()
 		{
 			channel = new RabbitChannel(
-				mockRealChannel.Object, mockConfiguration.Object, () => mockSubscription.Object);
+				mockRealChannel.Object,
+				mockConnector.Object,
+				mockConfiguration.Object,
+				() => mockSubscription.Object);
 		}
 		protected static void Receive(BasicDeliverEventArgs message)
 		{
@@ -1257,6 +1275,7 @@ namespace NanoMessageBus.Channels
 		protected const string DefaultChannelGroup = "some group name";
 		protected const string InputQueueName = "input-queue";
 		protected static Mock<IModel> mockRealChannel;
+		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<RabbitMessageAdapter> mockAdapter;
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;
 		protected static Mock<RabbitSubscription> mockSubscription;

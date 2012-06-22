@@ -47,6 +47,7 @@
 			var channel = this.EstablishChannel();
 			return new RabbitChannel(
 				channel,
+				this,
 				config,
 				() => new RabbitSubscription(new Subscription(channel, config)));
 		}

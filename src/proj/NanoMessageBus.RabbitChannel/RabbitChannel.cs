@@ -12,7 +12,7 @@
 	{
 		public virtual bool Active
 		{
-			get { return !this.disposed && !this.shutdown; } // TODO: also query the connector.ConnectionState (we need a reference to it first)
+			get { return !this.disposed && !this.shutdown && this.connector.CurrentState == ConnectionState.Open; }
 		}
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IDependencyResolver CurrentResolver { get; private set; }
@@ -302,10 +302,12 @@
 
 		public RabbitChannel(
 			IModel channel,
+			IChannelConnector connector,
 			RabbitChannelGroupConfiguration configuration,
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
+			this.connector = connector;
 			this.CurrentConfiguration = this.configuration = configuration;
 			this.adapter = configuration.MessageAdapter;
 			this.transactionType = configuration.TransactionType;
@@ -362,6 +364,7 @@
 		private const bool FinishedReceiving = false; // returning false means the receiving handler will exit.
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannel));
 		private readonly IModel channel;
+		private readonly IChannelConnector connector;
 		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;
 		private readonly RabbitTransactionType transactionType;
