@@ -324,6 +324,7 @@
 			if (this.configuration.ChannelBuffer <= 0 || this.configuration.DispatchOnly)
 				return;
 
+			// TODO: if no-ack, channel buffer size is ignored
 			Log.Debug("Buffering up to {0} message(s) on the channel.", this.configuration.ChannelBuffer);
 			this.channel.BasicQos(0, (ushort)this.configuration.ChannelBuffer, false);
 		}
