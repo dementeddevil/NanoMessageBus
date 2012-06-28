@@ -102,7 +102,7 @@
 				}
 			}
 
-			Log.Info("{0} pooled channels disposed across {1} channel groups.", count, this.available.Values.Count);
+			Log.Debug("{0} pooled channels disposed across {1} channel groups.", count, this.available.Values.Count);
 		}
 
 		protected virtual void ThrowWhenDisposed()
