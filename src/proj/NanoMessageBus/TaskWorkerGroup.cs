@@ -76,7 +76,10 @@
 			using (var state = this.stateCallback())
 			{
 				if (state == null)
+				{
+					this.Restart();
 					return;
+				}
 
 				Log.Verbose("Creating worker.");
 				var worker = new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
