@@ -42,11 +42,11 @@
 		public virtual void Close()
 		{
 			var token = this.currentToken;
-			if (!this.FirstOneThrough(token, token + 1))
-				return;
-
-			this.ClearAvailableChannels();
-			this.connector.Close();
+			if (this.FirstOneThrough(token, token + 1))
+			{
+				this.ClearAvailableChannels();
+				this.connector.Close();
+			}
 		}
 
 		public virtual void Release(IMessagingChannel channel, int token)
