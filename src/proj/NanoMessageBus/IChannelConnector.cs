@@ -32,10 +32,5 @@
 		/// <exception cref="KeyNotFoundException"></exception>
 		/// <returns>An open channel through which messages may be sent or received according to the configuration.</returns>
 		IMessagingChannel Connect(string channelGroup);
-
-		/// <summary>
-		/// Closes the underlying connection and cleans up any enlisted resources.
-		/// </summary>
-		void Close();
 	}
 }

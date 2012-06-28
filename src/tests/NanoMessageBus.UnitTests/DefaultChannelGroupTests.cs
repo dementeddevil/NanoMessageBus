@@ -108,9 +108,6 @@ namespace NanoMessageBus
 		Because of = () =>
 			restarted = restartCallback();
 
-		It should_should_close_the_previous_connection = () =>
-			mockConnector.Verify(x => x.Close(), Times.Exactly(1));
-
 		It should_open_a_new_channel = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
@@ -131,9 +128,6 @@ namespace NanoMessageBus
 
 		Because of = () =>
 			restarted = restartCallback();
-
-		It should_should_close_the_previous_connection = () =>
-			mockConnector.Verify(x => x.Close(), Times.Exactly(1));
 
 		It should_attempt_to_open_a_new_channel = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
@@ -160,9 +154,6 @@ namespace NanoMessageBus
 
 		Because of = () =>
 			restarted = restartCallback();
-
-		It should_should_close_the_previous_connection = () =>
-			mockConnector.Verify(x => x.Close(), Times.Exactly(1));
 
 		It should_attempt_to_open_a_new_channel = () =>
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));

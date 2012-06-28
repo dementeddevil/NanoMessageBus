@@ -95,16 +95,6 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(DependencyResolverConnector))]
-	public class when_closing_the_connector : with_the_dependency_resolver_connector
-	{
-		Because of = () =>
-			connector.Close();
-
-		It should_invoke_close_on_the_underlying_connector = () =>
-			mockWrappedConnector.Verify(x => x.Close(), Times.Once());
-	}
-
-	[Subject(typeof(DependencyResolverConnector))]
 	public class when_disposing_the_connector : with_the_dependency_resolver_connector
 	{
 		Because of = () =>

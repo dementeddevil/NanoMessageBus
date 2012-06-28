@@ -35,10 +35,6 @@
 				throw;
 			}
 		}
-		public virtual void Close()
-		{
-			this.connector.Close();
-		}
 
 		public DependencyResolverConnector(IChannelConnector connector)
 		{
