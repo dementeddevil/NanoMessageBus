@@ -87,7 +87,7 @@
 
 			lock (this.sync)
 			{
-				Log.Verbose("Entering critical section (Dispose).");
+				Log.Verbose("Entering critical section (BeginReceive).");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenReceiving();
@@ -100,7 +100,7 @@
 				});
 
 				Log.Info("Receive operations started against {0} channel groups.", activated);
-				Log.Verbose("Exiting critical section (Dispose).");
+				Log.Verbose("Exiting critical section (BeginReceive).");
 			}
 		}
 
