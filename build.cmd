@@ -1,5 +1,6 @@
 @echo off
 set path=%path%;C:/Windows/Microsoft.NET/Framework/v4.0.30319;
+set EnableNuGetPackageRestore=true
 
 echo Building project...
 msbuild src/NanoMessageBus.sln /nologo /v:q /p:Configuration=Release /t:Clean
