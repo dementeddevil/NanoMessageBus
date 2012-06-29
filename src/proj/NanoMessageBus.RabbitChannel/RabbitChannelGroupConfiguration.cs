@@ -75,6 +75,7 @@
 		public virtual IChannelMessageBuilder MessageBuilder { get; private set; }
 		public virtual bool Synchronous { get; private set; }
 		public virtual bool DispatchOnly { get; private set; }
+		public virtual int MaxDispatchBuffer { get; private set; }
 		public virtual int MinWorkers { get; private set; }
 		public virtual int MaxWorkers { get; private set; }
 		public virtual TimeSpan ReceiveTimeout { get; private set; }
@@ -181,6 +182,14 @@
 			this.DispatchOnly = true;
 			this.InputQueue = null;
 
+			return this;
+		}
+		public virtual RabbitChannelGroupConfiguration WithMaxDispatchBuffer(int maxMessageCount)
+		{
+			if (maxMessageCount <= 0)
+				throw new ArgumentOutOfRangeException("maxMessageCount", maxMessageCount, "The value must be positive.");
+
+			this.MaxDispatchBuffer = maxMessageCount;
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithTransaction(RabbitTransactionType transaction)
@@ -292,6 +301,7 @@
 			this.MinWorkers = this.MaxWorkers = DefaultWorkerCount;
 			this.ChannelBuffer = DefaultChannelBuffer;
 			this.MaxAttempts = DefaultMaxAttempts;
+			this.MaxDispatchBuffer = int.MaxValue;
 			this.TransactionType = RabbitTransactionType.Full;
 
 			this.PoisonMessageExchange = new PublicationAddress(

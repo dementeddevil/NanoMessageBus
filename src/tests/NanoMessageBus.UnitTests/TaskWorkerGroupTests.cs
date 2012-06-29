@@ -312,6 +312,46 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
+	public class when_enqueing_a_work_item_beyond_the_max_capacity_of_the_worker_group_buffer : with_a_worker_group
+	{
+		Establish context = () =>
+		{
+			minWorkers = maxWorkers = 1;
+			maxBufferSize = 1;
+			Build();
+
+			workerGroup.Enqueue(FirstCallback); // should never be invoked
+			workerGroup.Enqueue(NextCallback);
+			workerGroup.Initialize(BuildChannel, RestartDelegate);
+		};
+
+		Because of = () =>
+			TryAndWait(() => workerGroup.StartQueue());
+
+		It should_discard_the_earliest_work_item = () =>
+			firstWorkItemPerformed.ShouldBeFalse();
+
+		It should_invoke_the_latest_work_item = () =>
+			secondWorkItemPerformed.ShouldBeTrue();
+
+		Cleanup after = () =>
+			FirstCallback(null); // code coverage
+
+		static void FirstCallback(IWorkItem<IMessagingChannel> item)
+		{
+			firstWorkItemPerformed = true;
+		}
+		static void NextCallback(IWorkItem<IMessagingChannel> item)
+		{
+			secondWorkItemPerformed = true;
+			workerGroup.Dispose();
+		}
+
+		static bool firstWorkItemPerformed;
+		static bool secondWorkItemPerformed;
+	}
+
+	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_restarting_an_uninitialized_worker_group : with_a_worker_group
 	{
 		Because of = () =>
@@ -518,7 +558,7 @@ namespace NanoMessageBus
 		};
 		protected static void Build()
 		{
-			workerGroup = new TaskWorkerGroup<IMessagingChannel>(minWorkers, maxWorkers);
+			workerGroup = new TaskWorkerGroup<IMessagingChannel>(minWorkers, maxWorkers, maxBufferSize);
 		}
 		protected static void Try(Action action)
 		{
@@ -543,6 +583,7 @@ namespace NanoMessageBus
 		protected static TaskWorkerGroup<IMessagingChannel> workerGroup;
 		protected static int minWorkers = 1;
 		protected static int maxWorkers = 1;
+		protected static int maxBufferSize = int.MaxValue;
 		protected static int invocations;
 		protected static Exception thrown;
 

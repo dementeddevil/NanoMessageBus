@@ -232,6 +232,33 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_dispatch_buffer_size_is_specified : using_channel_config
+	{
+		It should_not_limited_the_outbound_buffer_size = () =>
+			config.MaxDispatchBuffer.ShouldEqual(int.MaxValue);
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_non_positive_dispatch_buffer_size_is_specified : using_channel_config
+	{
+		Because of = () =>
+			Try(() => config.WithMaxDispatchBuffer(0));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentOutOfRangeException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_dispatch_buffer_size_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithMaxDispatchBuffer(42);
+
+		It should_be_marked_on_the_configuration = () =>
+			config.MaxDispatchBuffer.ShouldEqual(42);
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_no_transaction_type_has_been_configured : using_channel_config
 	{
 		It should_default_to_full_transactions = () =>

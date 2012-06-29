@@ -24,6 +24,11 @@
 		/// Gets a value indicating whether the connection is configured for dispatch or full duplex.
 		/// </summary>
 		bool DispatchOnly { get; }
+
+		/// <summary>
+		/// Gets a value indicating the maximum number of items allowed in the dispatch-only buffer
+		/// </summary>
+		int MaxDispatchBuffer { get; }
 		
 		/// <summary>
 		/// Gets a value indicating the minimum number of workers to be allocated for work.

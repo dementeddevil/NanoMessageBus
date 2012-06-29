@@ -96,7 +96,9 @@
 
 			try
 			{
-				Log.Verbose("Adding work item.");
+				this.DiscardItem();
+
+				Log.Verbose("Adding new work item.");
 				this.workItems.Add(workItem);
 				return true;
 			}
@@ -106,6 +108,18 @@
 				return false;
 			}
 		}
+		protected virtual void DiscardItem()
+		{
+			if (this.workItems.Count < this.maxQueueSize)
+				return;
+
+			Log.Debug("Work item buffer capacity of {0} items reached, discarding earliest work item.",
+				this.maxQueueSize);
+
+			Action<IWorkItem<T>> overflow;
+			this.workItems.TryTake(out overflow);
+		}
+
 		public virtual void StartQueue()
 		{
 			Log.Debug("Starting work item queue.");
@@ -231,7 +245,7 @@
 			get { return this.workers; } // for test purposes only
 		}
 
-		public TaskWorkerGroup(int minWorkers, int maxWorkers)
+		public TaskWorkerGroup(int minWorkers, int maxWorkers, int maxQueueSize)
 		{
 			if (minWorkers <= 0)
 				throw new ArgumentException("The minimum number of workers is 1.", "minWorkers");
@@ -241,6 +255,7 @@
 
 			this.minWorkers = minWorkers;
 			this.maxWorkers = maxWorkers;
+			this.maxQueueSize = maxQueueSize;
 		}
 		~TaskWorkerGroup()
 		{
@@ -294,6 +309,7 @@
 		private readonly ICollection<Task> workers = new LinkedList<Task>();
 		private readonly int minWorkers;
 		private readonly int maxWorkers;
+		private readonly int maxQueueSize;
 		private CancellationTokenSource tokenSource;
 		private Action<IWorkItem<T>, CancellationToken> activityCallback;
 		private Func<T> stateCallback;

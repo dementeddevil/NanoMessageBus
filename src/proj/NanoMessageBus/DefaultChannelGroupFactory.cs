@@ -20,7 +20,8 @@
 			}
 
 			Log.Debug("Building an asynchronous channel group named '{0}'.", configuration.GroupName);
-			var workers = new TaskWorkerGroup<IMessagingChannel>(configuration.MinWorkers, configuration.MaxWorkers);
+			var workers = new TaskWorkerGroup<IMessagingChannel>(
+				configuration.MinWorkers, configuration.MaxWorkers, configuration.MaxDispatchBuffer);
 			return new DefaultChannelGroup(connector, configuration, workers);
 		}
 
