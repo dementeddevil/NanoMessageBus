@@ -64,6 +64,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
+			mockConfiguration.Setup(x => x.TransactionType).Returns(RabbitTransactionType.Acknowledge);
 			mockConfiguration.Setup(x => x.ChannelBuffer).Returns(BufferSize);
 			mockRealChannel.Setup(x => x.BasicQos(0, BufferSize, false));
 		};
