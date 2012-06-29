@@ -111,12 +111,6 @@
 			}
 		}
 
-		public virtual void Close()
-		{
-			lock (this.sync)
-				this.Close(null, ConnectionState.Closed);
-		}
-
 		protected virtual void ThrowWhenDisposed()
 		{
 			if (!this.disposed)
