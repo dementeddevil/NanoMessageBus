@@ -81,7 +81,7 @@
 		private const string HeaderFormat = "x-audit-{0}";
 		private const string ProxiedClient = "X-Forwarded-For";
 		private const string UserAddressFormat = "{0}, {1}";
-		private static readonly Uri EmptyUrl = new Uri("/", UriKind.Relative);
+		private static readonly Uri EmptyUrl = new Uri("http://localhost", UriKind.Absolute);
 		private readonly HttpContextBase httpContext;
 	}
 }
