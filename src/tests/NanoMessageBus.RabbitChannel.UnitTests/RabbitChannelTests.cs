@@ -78,6 +78,24 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_opening_a_non_tx_full_duplex_channel_with_a_channel_buffer_size_specified : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockConfiguration.Setup(x => x.TransactionType).Returns(RabbitTransactionType.None);
+			mockConfiguration.Setup(x => x.ChannelBuffer).Returns(BufferSize);
+		};
+
+		Because of = () =>
+			Initialize();
+
+		It should_NOT_specify_the_QOS_to_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.BasicQos(0, Moq.It.IsAny<ushort>(), false), Times.Never());
+
+		const ushort BufferSize = 42;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_opening_a_dispatch_only_channel_with_a_channel_buffer_size_specified : using_a_channel
 	{
 		Establish context = () =>

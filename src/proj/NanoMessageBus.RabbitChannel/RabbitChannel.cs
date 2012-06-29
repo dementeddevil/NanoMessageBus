@@ -324,8 +324,11 @@
 			if (this.configuration.ChannelBuffer <= 0 || this.configuration.DispatchOnly)
 				return;
 
-			// TODO: if no-ack, channel buffer size is ignored
-			Log.Debug("Buffering up to {0} message(s) on the channel.", this.configuration.ChannelBuffer);
+			Log.Debug("Buffering up to {0} message(s) on the channel.",
+				this.transactionType == RabbitTransactionType.None ? long.MaxValue : this.configuration.ChannelBuffer);
+			if (this.configuration.TransactionType == RabbitTransactionType.None)
+				return;
+
 			this.channel.BasicQos(0, (ushort)this.configuration.ChannelBuffer, false);
 		}
 		protected RabbitChannel() { }
