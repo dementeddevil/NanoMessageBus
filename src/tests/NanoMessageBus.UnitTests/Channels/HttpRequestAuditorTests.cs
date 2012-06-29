@@ -53,6 +53,7 @@ namespace NanoMessageBus.Channels
 			mockRequest.Setup(x => x.UserAgent).Returns("MyBrowser");
 			mockRequest.Setup(x => x.UserHostAddress).Returns("127.0.0.1");
 			mockRequest.Setup(x => x.RawUrl).Returns("/raw-url/?#");
+			mockRequest.Setup(x => x.Url).Returns(new Uri("http://www.google.com/"));
 			mockRequest.Setup(x => x.HttpMethod).Returns("my-method");
 			mockRequest.Setup(x => x.UrlReferrer).Returns(new Uri("http://domain.com/referer"));
 			mockContext.Setup(x => x.Timestamp).Returns(DateTime.Parse("2010-01-01", null, DateTimeStyles.AssumeUniversal));
@@ -69,6 +70,9 @@ namespace NanoMessageBus.Channels
 
 		It should_append_the_raw_url_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-raw-url"].ShouldEqual("/raw-url/?#");
+
+		It should_append_the_hostname_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-hostname"].ShouldEqual("www.google.com");
 
 		It should_append_the_http_method_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-http-method"].ShouldEqual("my-method");

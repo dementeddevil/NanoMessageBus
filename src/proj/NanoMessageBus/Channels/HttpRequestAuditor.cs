@@ -22,6 +22,7 @@
 			AppendHeader(headers, "useragent", request.UserAgent);
 			AppendHeader(headers, "client-ip", GetUserAddress(request));
 			AppendHeader(headers, "raw-url", request.RawUrl);
+			AppendHeader(headers, "hostname", (request.Url ?? EmptyUrl).Host);
 			AppendHeader(headers, "http-method", request.HttpMethod);
 			AppendHeader(headers, "referring-url", AsString(request.UrlReferrer));
 			AppendHeader(headers, "request-stamp", current.Timestamp.ToUniversalTime().ToIsoString());
@@ -80,6 +81,7 @@
 		private const string HeaderFormat = "x-audit-{0}";
 		private const string ProxiedClient = "X-Forwarded-For";
 		private const string UserAddressFormat = "{0}, {1}";
+		private static readonly Uri EmptyUrl = new Uri("/", UriKind.Relative);
 		private readonly HttpContextBase httpContext;
 	}
 }
