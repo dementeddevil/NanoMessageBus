@@ -173,11 +173,14 @@ namespace NanoMessageBus
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
 	public class when_the_state_callback_returns_null : with_a_worker_group
 	{
-		Establish context = () => 
+		Establish context = () =>
 			workerGroup.Initialize(() => null, () => restarted = true);
 
 		Because of = () =>
 			TryAndWait(() => workerGroup.StartActivity(EmptyActivity));
+
+		It should_wait_for_restart_to_be_invoked = () =>
+			Thread.Sleep(100);
 
 		It should_NOT_throw_an_exception = () =>
 			thrown.ShouldBeNull();
@@ -400,7 +403,7 @@ namespace NanoMessageBus
 			TryAndWait(() => workerGroup.Restart());
 
 		It should_still_invoke_the_restart_callback = () =>
-			invocations.ShouldEqual(1);
+			invocations.ShouldBeGreaterThanOrEqualTo(1);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
