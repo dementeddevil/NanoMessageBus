@@ -152,18 +152,27 @@
 		}
 		public virtual RabbitChannelGroupConfiguration WithExclusiveReceive()
 		{
+			this.InputQueue = this.InputQueue ?? string.Empty;
+			this.DispatchOnly = false;
+
 			// once defined as exclusive, you can't reconnect unless you delete the queue
 			this.ExclusiveQueue = this.AutoDelete = true;
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithAutoDeleteQueue()
 		{
+			this.InputQueue = this.InputQueue ?? string.Empty;
 			this.AutoDelete = true;
+			this.DispatchOnly = false;
+
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithTransientQueue()
 		{
+			this.InputQueue = this.InputQueue ?? string.Empty;
+			this.DispatchOnly = false;
 			this.DurableQueue = false;
+
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithCleanQueue()

@@ -626,19 +626,31 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_specifying_input_queue_exclusivity : using_channel_config
+	public class when_specifying_named_input_queue_exclusivity : using_channel_config
 	{
 		Establish context = () =>
 			config.WithInputQueue("some-queue").WithExclusiveReceive();
 
 		Because of = () => Configure();
 
-		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, true, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+		It should_build_the_channel_with_the_named_exclusive_value_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare("some-queue", true, true, true, Moq.It.IsAny<IDictionary>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_specifying_input_queue_durability : using_channel_config
+	public class when_specifying_exclusive_receive_without_an_input_queue : using_channel_config
+	{
+		Establish context = () =>
+			config.WithExclusiveReceive();
+
+		Because of = () => Configure();
+
+		It should_build_the_channel_with_the_randomly_named_exclusive_queue = () =>
+			mockChannel.Verify(x => x.QueueDeclare(string.Empty, true, true, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_named_input_queue_durability : using_channel_config
 	{
 		Establish context = () =>
 			config.WithInputQueue("some-queue").WithTransientQueue();
@@ -646,11 +658,23 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, false, false, false, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare("some-queue", false, false, false, Moq.It.IsAny<IDictionary>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
-	public class when_specifying_a_queue_as_auto_delete : using_channel_config
+	public class when_specifying_unnamed_input_queue_durability : using_channel_config
+	{
+		Establish context = () =>
+			config.WithTransientQueue();
+
+		Because of = () => Configure();
+
+		It should_build_the_channel_with_the_exclusive_value_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare(string.Empty, false, false, false, Moq.It.IsAny<IDictionary>()), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_a_named_queue_as_auto_delete : using_channel_config
 	{
 		Establish context = () =>
 			config.WithInputQueue("some-queue").WithAutoDeleteQueue();
@@ -658,7 +682,19 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_autodelete_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(config.InputQueue, true, false, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare("some-queue", true, false, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_specifying_an_unnamed_queue_as_auto_delete : using_channel_config
+	{
+		Establish context = () =>
+			config.WithAutoDeleteQueue();
+
+		Because of = () => Configure();
+
+		It should_build_the_channel_with_the_autodelete_value_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare(string.Empty, true, false, true, Moq.It.IsAny<IDictionary>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
