@@ -332,6 +332,22 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitConnector))]
+	public class when_the_underlying_connection_has_been_closed : using_a_connector
+	{
+		Establish context = () =>
+			connector.Connect(DefaultGroupName);
+
+		Because of = () =>
+			mockConnection.Raise(x => x.ConnectionShutdown += null, new ShutdownEventArgs(ShutdownInitiator.Peer, 0, string.Empty));
+
+		It should_abort_the_connection = () =>
+			mockConnection.Verify(x => x.Abort((ushort)shutdownTimeout.TotalMilliseconds));
+
+		It should_mark_itself_as_closed = () =>
+			connector.CurrentState.ShouldEqual(ConnectionState.Closed);
+	}
+
+	[Subject(typeof(RabbitConnector))]
 	public class when_disposing_an_open_connector : using_a_connector
 	{
 		Establish context = () =>

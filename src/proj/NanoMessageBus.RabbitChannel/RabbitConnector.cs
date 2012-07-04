@@ -66,6 +66,9 @@
 				Log.Debug("Attempting to establish a new connection to the messaging infrastructure.");
 				this.CurrentState = ConnectionState.Opening;
 				this.connection = this.factory.CreateConnection(this.MaxRedirects);
+				this.connection.ConnectionShutdown += (sender, args) =>
+					this.Close(null, ConnectionState.Closed);
+
 				this.CurrentState = ConnectionState.Open;
 
 				channel = this.connection.CreateModel();
