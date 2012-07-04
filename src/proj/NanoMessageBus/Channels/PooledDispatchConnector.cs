@@ -28,6 +28,17 @@
 				return this.connector.Connect(channelGroup);
 			}
 
+			while (true)
+			{
+				var channel = this.TryConnect(channelGroup, items); // throws if unable to connect
+				if (channel.Active)
+					return channel;
+
+				channel.Dispose();
+			}
+		}
+		private IMessagingChannel TryConnect(string channelGroup, IProducerConsumerCollection<IMessagingChannel> items)
+		{
 			IMessagingChannel channel;
 			if (!items.TryTake(out channel))
 			{
@@ -45,13 +56,13 @@
 			if (channel == null)
 				throw new ArgumentNullException("channel");
 
-			Log.Verbose("Releasing channel back to the pool for reuse.");
+			Log.Verbose("Trying to release the channel back to the pool for reuse.");
 
 			bool value;
 			if (!this.open.TryRemove(channel, out value))
 				throw new InvalidOperationException("Cannot release a channel that didn't originate with this connector.");
 
-			if (this.currentToken >= 0 && this.currentToken == token)
+			if (this.currentToken >= 0 && this.currentToken == token && channel.Active)
 				this.available[channel.CurrentConfiguration.GroupName].Add(channel);
 			else
 				channel.TryDispose();

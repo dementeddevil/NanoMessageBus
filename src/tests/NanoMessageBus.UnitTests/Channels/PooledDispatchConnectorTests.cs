@@ -215,12 +215,38 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
+	public class when_the_channel_has_become_inactive_while_sitting_in_the_pool : using_the_pooled_dispatch_connector
+	{
+		Establish context = () =>
+		{
+			mockChannels.Add(new Mock<IMessagingChannel>());
+			mockChannels.Add(new Mock<IMessagingChannel>());
+			mockChannels[0].Setup(x => x.Active).Returns(false); // never returned
+			mockChannels[1].Setup(x => x.Active).Returns(true); // returned
+
+			mockConnector.Setup(x => x.Connect(PooledGroupName)).Returns(() => mockChannels[counter++].Object);
+		};
+
+		Because of = () =>
+			channel = connector.Connect(PooledGroupName);
+
+		It should_dispose_the_inactive_channel = () =>
+			mockChannels[0].Verify(x => x.Dispose());
+
+		It should_return_the_active_channel = () =>
+			channel.Active.ShouldBeTrue();
+
+		static int counter;
+		static IMessagingChannel channel;
+	}
+
+	[Subject(typeof(PooledDispatchConnector))]
 	public class when_releasing_a_channel_where_the_underlying_channel_has_become_inactive : using_the_pooled_dispatch_connector
 	{
 		Establish context = () =>
 		{
 			mockChannels.Add(new Mock<IMessagingChannel>());
-			mockChannels[0].Setup(x => x.Active).Returns(() => false);
+			mockChannels[0].Setup(x => x.Active).Returns(() => calls++ == 0); // first call = active, second = inactive
 			mockConnector.Setup(x => x.Connect(PooledGroupName)).Returns(() => mockChannels[0].Object);
 
 			channel = connector.Connect(PooledGroupName);
@@ -232,6 +258,7 @@ namespace NanoMessageBus.Channels
 		It should_dispose_the_channel = () =>
 			mockChannels[0].Verify(x => x.Dispose(), Times.Once());
 
+		static int calls;
 		static IMessagingChannel channel;
 	}
 
