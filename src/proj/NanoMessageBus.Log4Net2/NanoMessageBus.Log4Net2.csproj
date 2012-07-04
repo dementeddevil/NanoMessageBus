@@ -41,12 +41,10 @@
     <Compile Include="..\GlobalSuppressions.cs">
       <Link>Properties\GlobalSuppressions.cs</Link>
     </Compile>
-    <Compile Include="..\NanoMessageBus.Log4Net\Log4NetLogger.cs">
-      <Link>Log4NetLogger.cs</Link>
-    </Compile>
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Log4NetLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
