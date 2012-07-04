@@ -971,6 +971,12 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			thrown = Catch.Exception(() => channel.Send(mockEnvelope.Object));
 
+		It should_mark_the_channel_as_inactive = () =>
+			channel.Active.ShouldBeFalse();
+
+		It should_abort_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.Abort(), Times.Once());
+
 		It should_throw_a_ChannelConnectionException = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();
 
@@ -990,6 +996,12 @@ namespace NanoMessageBus.Channels
 
 		Because of = () =>
 			thrown = Catch.Exception(() => channel.CommitTransaction());
+
+		It should_mark_the_channel_as_inactive = () =>
+			channel.Active.ShouldBeFalse();
+
+		It should_abort_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.Abort(), Times.Once());
 
 		It should_throw_a_ChannelConnectionException = () =>
 			thrown.ShouldBeOfType<ChannelConnectionException>();

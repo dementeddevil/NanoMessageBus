@@ -291,11 +291,15 @@
 			catch (IOException e)
 			{
 				Log.Info("Channel operation failed, aborting channel.");
+
+				this.Dispose();
 				throw new ChannelConnectionException(e.Message, e);
 			}
 			catch (OperationInterruptedException e)
 			{
 				Log.Info("Channel operation interrupted, aborting channel.");
+
+				this.Dispose();
 				throw new ChannelConnectionException(e.Message, e);
 			}
 		}
