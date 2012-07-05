@@ -130,7 +130,7 @@
 			try
 			{
 				foreach (var item in this.workItems.GetConsumingEnumerable(token))
-					item(worker);
+					item(worker); // TODO: #60 if this operation isn't completely successful, the item should be re-enqueued
 			}
 			catch (OperationCanceledException)
 			{
