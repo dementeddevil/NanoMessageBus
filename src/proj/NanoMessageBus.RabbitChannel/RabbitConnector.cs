@@ -182,20 +182,30 @@
 				channel.Abort();
 			}
 
-			var currentConnection = this.connection; // local reference for thread safety
-			if (currentConnection != null)
-			{
-				Log.Debug("Blocking up to {0} ms before forcing the existing connection to close.", this.shutdownTimeout);
-
-				// calling connection.Dispose() can throw while connection.Abort() closes without throwing
-				currentConnection.Abort(this.shutdownTimeout);
-			}
-
+			this.TryAbortConnection();
 			this.connection = null;
 			this.CurrentState = state;
 
 			if (exception != null)
 				throw new ChannelConnectionException(exception.Message, exception);
+		}
+		private void TryAbortConnection()
+		{
+			var currentConnection = this.connection; // local reference for thread safety
+			if (currentConnection == null)
+				return;
+
+			Log.Debug("Blocking up to {0} ms before forcing the existing connection to close.", this.shutdownTimeout);
+
+			try
+			{
+				// calling connection.Dispose() can throw exceptions while connection.Abort() closes without throwing
+				currentConnection.Abort(this.shutdownTimeout);
+			}
+			catch (NotSupportedException)
+			{
+				// well, okay, Abort throws has thrown this exception.
+			}
 		}
 
 		private const int PreconditionFailed = 406;

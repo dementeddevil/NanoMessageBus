@@ -405,6 +405,22 @@ namespace NanoMessageBus.Channels
 			thrown.ShouldBeOfType<ObjectDisposedException>();
 	}
 
+	[Subject(typeof(RabbitConnector))]
+	public class when_closing_the_current_connection_throws_an_exception : using_a_connector
+	{
+		Establish context = () =>
+		{
+			mockConnection.Setup(x => x.Abort(0)).Throws(new NotSupportedException());
+			connector.Connect(DefaultGroupName);
+		};
+
+		Because of = () =>
+			thrown = Catch.Exception(() => connector.Dispose());
+
+		It should_suppress_the_exception = () =>
+			thrown.ShouldBeNull();
+	}
+
 	public abstract class using_a_connector
 	{
 		Establish context = () =>
