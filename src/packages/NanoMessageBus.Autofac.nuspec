@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NanoMessageBus.Autofac</id>
-    <version>2.0.20</version>
+    <version>2.0.21</version>
     <title>NanoMessageBus Autofac Wireup Plugin</title>
     <authors>Jonathan Oliver</authors>
     <owners>Jonathan Oliver</owners>
@@ -13,7 +13,7 @@
     <language>es-US</language>
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, ioc, inversion of control, dependecy injection, Autofac</tags>
     <dependencies>
-      <dependency id="NanoMessageBus" version="2.0.20" />
+      <dependency id="NanoMessageBus" version="2.0.21" />
       <dependency id="Autofac" version="[2.6.1.841]" />
     </dependencies>
   </metadata>
