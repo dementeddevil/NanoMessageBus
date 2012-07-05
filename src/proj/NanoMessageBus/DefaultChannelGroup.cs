@@ -88,7 +88,27 @@
 			this.ThrowWhenFullDuplex();
 
 			return this.workers.Enqueue(worker => this.TryOperation(() => callback(worker.State.PrepareDispatch())));
+
+			// TODO: #60 re-enqueue if the operation fails
+			return this.workers.Enqueue(worker => this.TryBeginDispatch(worker, callback));
 		}
+		protected virtual void TryBeginDispatch(IWorkItem<IMessagingChannel> worker, Action<IDispatchContext> callback)
+		{
+			this.TryOperation(() =>
+			{
+				try
+				{
+					callback(worker.State.PrepareDispatch());
+				}
+				catch (ChannelConnectionException)
+				{
+					Log.Debug("Work item failed; re-adding for later attempt.");
+					this.BeginDispatch(callback);
+					throw;
+				}
+			});
+		}
+
 		public virtual void BeginReceive(Action<IDeliveryContext> callback)
 		{
 			if (callback == null)
