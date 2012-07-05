@@ -87,9 +87,6 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			return this.workers.Enqueue(worker => this.TryOperation(() => callback(worker.State.PrepareDispatch())));
-
-			// TODO: #60 re-enqueue if the operation fails
 			return this.workers.Enqueue(worker => this.TryBeginDispatch(worker, callback));
 		}
 		protected virtual void TryBeginDispatch(IWorkItem<IMessagingChannel> worker, Action<IDispatchContext> callback)
@@ -102,7 +99,7 @@
 				}
 				catch (ChannelConnectionException)
 				{
-					Log.Debug("Work item failed; re-adding for later attempt.");
+					Log.Debug("Work item failed due to lost connection; re-enqueuing for later attempt.");
 					this.BeginDispatch(callback);
 					throw;
 				}

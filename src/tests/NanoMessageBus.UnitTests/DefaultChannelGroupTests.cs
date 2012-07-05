@@ -289,7 +289,11 @@ namespace NanoMessageBus
 			mockChannel.Setup(x => x.PrepareDispatch(null)).Throws(new ChannelConnectionException());
 			mockWorkers
 				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
-				.Callback<Action<IWorkItem<IMessagingChannel>>>(x => x(mockWorker.Object));
+				.Callback<Action<IWorkItem<IMessagingChannel>>>(x =>
+				{
+					// prevent an infinite loop because the queue happens to run on the same thread during this test
+					if (count++ < 1) x(mockWorker.Object);
+				});
 
 			channelGroup.Initialize();
 		};
@@ -302,6 +306,11 @@ namespace NanoMessageBus
 
 		It should_restart_the_worker_group = () =>
 			mockWorkers.Verify(x => x.Restart(), Times.Once());
+
+		It should_re_enqueue_the_failed_async_dispatch = () =>
+			mockWorkers.Verify(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()), Times.Exactly(2));
+
+		static int count;
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
