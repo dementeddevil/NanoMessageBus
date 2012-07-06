@@ -196,6 +196,7 @@
 
 		public virtual void AcknowledgeMessage()
 		{
+			Log.Verbose("Requesting acknowledgement of received messages against messaging infrastructure on channel {0}.", this.identifier);
 			this.ThrowWhenDisposed();
 
 			if (this.subscription == null || this.transactionType == RabbitTransactionType.None)
@@ -206,6 +207,7 @@
 		}
 		public virtual void CommitTransaction()
 		{
+			Log.Verbose("Requesting commmit of transaction against messaging infrastructure on channel {0}.", this.identifier);
 			this.ThrowWhenDisposed();
 
 			if (this.transactionType == RabbitTransactionType.Full)
@@ -218,6 +220,7 @@
 		}
 		public virtual void RollbackTransaction()
 		{
+			Log.Verbose("Requesting rollback of transaction against messaging infrastructure on channel {0}.", this.identifier);
 			this.Try(() =>
 			{
 				this.ThrowWhenDisposed();
@@ -225,7 +228,7 @@
 				if (this.transactionType == RabbitTransactionType.Full)
 				{
 					Log.Verbose("Rolling back transaction against the messaging infrastructure on channel {0}.", this.identifier);
-					this.Try(this.channel.TxRollback);
+					this.channel.TxRollback();
 				}
 
 				this.EnsureTransaction();
