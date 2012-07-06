@@ -290,22 +290,22 @@
 		{
 			try
 			{
-				if (this.tryOperation)
+				if (this.stableChannel)
 					callback();
 			}
 			catch (IOException e)
 			{
-				this.CatchOperation("Channel operation failed, aborting channel {0}.", e);
+				this.ShutdownChannel("Channel operation failed, aborting channel {0}.", e);
 			}
 			catch (OperationInterruptedException e)
 			{
-				this.CatchOperation("Channel operation interrupted, aborting channel {0}.", e);
+				this.ShutdownChannel("Channel operation interrupted, aborting channel {0}.", e);
 			}
 		}
-		private void CatchOperation(string message, Exception e)
+		private void ShutdownChannel(string message, Exception e)
 		{
 			Log.Info(message, this.identifier);
-			this.tryOperation = false;
+			this.stableChannel = false;
 			this.Dispose();
 			throw new ChannelConnectionException(e.Message, e);
 		}
@@ -388,7 +388,7 @@
 		private readonly int identifier;
 		private RabbitSubscription subscription;
 		private BasicDeliverEventArgs delivery;
-		private bool tryOperation = true;
+		private bool stableChannel = true;
 		private bool disposed;
 		private volatile bool shutdown;
 	}
