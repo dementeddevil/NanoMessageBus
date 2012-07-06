@@ -51,7 +51,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitTransaction))]
-	public class when_committing_a_transaction_where_no_actions_have_been_registered : using_a_transaction
+	public class when_committing_a_full_transaction_where_no_actions_have_been_registered : using_a_transaction
 	{
 		Establish context = () =>
 		{
@@ -62,11 +62,11 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			transaction.Commit();
 
-		It should_NOT_acknowledge_message_delivery_to_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.AcknowledgeMessage(), Times.Never());
+		It should_acknowledge_message_delivery_to_the_underlying_channel = () =>
+			mockChannel.Verify(x => x.AcknowledgeMessage(), Times.Once());
 
-		It should_NOT_commit_against_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.CommitTransaction(), Times.Never());
+		It should_commit_against_the_underlying_channel = () =>
+			mockChannel.Verify(x => x.CommitTransaction(), Times.Once());
 	}
 
 	[Subject(typeof(RabbitTransaction))]
@@ -130,7 +130,6 @@ namespace NanoMessageBus.Channels
 			transactionType = RabbitTransactionType.Full;
 			Initialize();
 
-			transaction.Register(callback);
 			mockChannel.Setup(x => x.CommitTransaction()).Callback(() => finished = transaction.Finished);
 		};
 
@@ -147,10 +146,7 @@ namespace NanoMessageBus.Channels
 	public class when_an_action_is_registered_with_the_committed_transaction : using_a_transaction
 	{
 		Establish context = () =>
-		{
-			transaction.Register(callback);
 			transaction.Commit();
-		};
 
 		Because of = () =>
 			thrown = Catch.Exception(() => transaction.Register(callback));
@@ -210,8 +206,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.CommitTransaction());
 			mockChannel.Setup(x => x.AcknowledgeMessage());
 			Initialize();
-
-			transaction.Register(callback);
 		};
 
 		Because of = () =>
@@ -234,8 +228,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.AcknowledgeMessage());
 
 			Initialize();
-
-			transaction.Register(callback);
 		};
 
 		Because of = () =>
@@ -252,10 +244,7 @@ namespace NanoMessageBus.Channels
 	public class when_commiting_a_disposed_transaction : using_a_transaction
 	{
 		Establish context = () =>
-		{
-			transaction.Register(callback);
 			transaction.Dispose();
-		};
 
 		Because of = () =>
 			thrown = Catch.Exception(() => transaction.Commit());
@@ -268,10 +257,7 @@ namespace NanoMessageBus.Channels
 	public class when_attempting_to_commit_a_rolled_back_transaction : using_a_transaction
 	{
 		Establish context = () =>
-		{
-			transaction.Register(callback);
 			transaction.Rollback();
-		};
 
 		Because of = () =>
 			thrown = Catch.Exception(() => transaction.Commit());
@@ -307,8 +293,6 @@ namespace NanoMessageBus.Channels
 			transactionType = RabbitTransactionType.Full;
 			mockChannel.Setup(x => x.RollbackTransaction());
 			Initialize();
-
-			transaction.Register(callback);
 		};
 
 		Because of = () =>
@@ -327,7 +311,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.RollbackTransaction());
 			Initialize();
 
-			transaction.Register(callback);
 			transaction.Rollback();
 		};
 
@@ -342,10 +325,7 @@ namespace NanoMessageBus.Channels
 	public class when_rolling_back_a_committed_transaction : using_a_transaction
 	{
 		Establish context = () =>
-		{
-			transaction.Register(callback);
 			transaction.Commit();
-		};
 
 		Because of = () =>
 			thrown = Catch.Exception(() => transaction.Rollback());
@@ -388,8 +368,6 @@ namespace NanoMessageBus.Channels
 			transactionType = RabbitTransactionType.Full;
 			mockChannel.Setup(x => x.RollbackTransaction());
 			Initialize();
-
-			transaction.Register(callback);
 		};
 
 		Because of = () =>
@@ -408,7 +386,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.RollbackTransaction());
 			Initialize();
 
-			transaction.Register(callback);
 			transaction.Commit();
 		};
 
@@ -428,7 +405,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.RollbackTransaction());
 			Initialize();
 
-			transaction.Register(callback);
 			transaction.Rollback();
 		};
 
@@ -448,7 +424,6 @@ namespace NanoMessageBus.Channels
 			mockChannel.Setup(x => x.RollbackTransaction());
 			Initialize();
 
-			transaction.Register(callback);
 			transaction.Dispose();
 		};
 

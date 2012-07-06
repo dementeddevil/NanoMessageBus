@@ -13,8 +13,6 @@
 
 		public virtual void Register(Action callback)
 		{
-			this.active = true;
-
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
@@ -30,9 +28,6 @@
 
 		public virtual void Commit()
 		{
-			if (!this.active)
-				return;
-
 			this.ThrowWhenDisposed();
 			this.ThrowWhenRolledBack();
 
@@ -95,7 +90,7 @@
 		}
 		protected virtual void RollbackChannel()
 		{
-			if (this.active && this.transactionType == RabbitTransactionType.Full)
+			if (this.transactionType == RabbitTransactionType.Full)
 				this.channel.RollbackTransaction();
 		}
 
@@ -166,7 +161,6 @@
 		private readonly ICollection<Action> callbacks = new LinkedList<Action>();
 		private readonly RabbitChannel channel;
 		private readonly RabbitTransactionType transactionType;
-		private bool active;
 		private bool disposed;
 		private bool committing;
 		private bool committed;
