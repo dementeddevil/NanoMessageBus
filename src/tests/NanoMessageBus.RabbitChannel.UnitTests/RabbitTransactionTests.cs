@@ -226,7 +226,6 @@ namespace NanoMessageBus.Channels
 			transactionType = RabbitTransactionType.Full;
 			mockChannel.Setup(x => x.CommitTransaction());
 			mockChannel.Setup(x => x.AcknowledgeMessage());
-
 			Initialize();
 		};
 
@@ -270,13 +269,7 @@ namespace NanoMessageBus.Channels
 	public class when_rolling_back_a_transaction : using_a_transaction
 	{
 		Because of = () =>
-		{
-			transactionType = RabbitTransactionType.Acknowledge;
-
-			Initialize();
-			transaction.Register(callback);
 			transaction.Rollback();
-		};
 
 		It should_mark_the_transaction_as_finished = () =>
 			transaction.Finished.ShouldBeTrue();
