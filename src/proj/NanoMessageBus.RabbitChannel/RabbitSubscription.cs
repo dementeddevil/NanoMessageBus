@@ -1,6 +1,7 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
+	using System.IO;
 	using Logging;
 	using RabbitMQ.Client.Events;
 	using RabbitMQ.Client.Exceptions;
@@ -83,8 +84,26 @@
 
 			this.disposed = true;
 
-			this.inner.TryDispose();
-			Log.Debug("Channel message subscription disposed.");
+			try
+			{
+				this.inner.Dispose();
+			}
+			catch (IOException)
+			{
+				Log.Debug("Unable to cleanly dispose subscription; operation failed.");
+			}
+			catch (OperationInterruptedException)
+			{
+				Log.Debug("Unable to cleanly dispose subscription; operation interrupted.");
+			}
+			catch (Exception e)
+			{
+				Log.Error("Unable to cleanly dispose subscription.", e);
+			}
+			finally
+			{
+				Log.Debug("Channel message subscription disposed.");
+			}
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitSubscription));

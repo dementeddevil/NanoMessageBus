@@ -211,7 +211,33 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitSubscription))]
-	public class when_disposing_a_subscription_which_throws_an_exception : using_a_subscription
+	public class when_disposing_a_subscription_which_throws_an_IOException : using_a_subscription
+	{
+		Establish context = () =>
+			mockRealSubscription.Setup(x => x.Dispose()).Throws(new IOException());
+
+		Because of = () =>
+			subscription.Dispose();
+
+		It should_suppress_the_exception = () =>
+			thrown.ShouldEqual(null);
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_disposing_a_subscription_which_throws_an_OperationInterruptedException : using_a_subscription
+	{
+		Establish context = () =>
+			mockRealSubscription.Setup(x => x.Dispose()).Throws(new OperationInterruptedException(null));
+
+		Because of = () =>
+			subscription.Dispose();
+
+		It should_suppress_the_exception = () =>
+			thrown.ShouldEqual(null);
+	}
+
+	[Subject(typeof(RabbitSubscription))]
+	public class when_disposing_a_subscription_which_throws_an_unhandled_exception : using_a_subscription
 	{
 		Establish context = () =>
 			mockRealSubscription.Setup(x => x.Dispose()).Throws(new Exception());
