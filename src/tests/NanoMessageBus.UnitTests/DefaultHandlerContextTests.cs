@@ -56,6 +56,16 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
+	public class when_the_underlying_delivery_becomes_inactive : with_a_handler_context
+	{
+		Establish context = () =>
+			mockDelivery.Setup(x => x.Active).Returns(false);
+
+		It should_indicate_that_handling_should_be_discontinued = () =>
+			handlerContext.ContinueHandling.ShouldBeFalse();
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
 	public class when_deferring_a_message : with_a_handler_context
 	{
 		Because of = () =>
