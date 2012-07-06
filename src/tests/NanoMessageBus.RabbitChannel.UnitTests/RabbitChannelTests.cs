@@ -219,6 +219,7 @@ namespace NanoMessageBus.Channels
 			mockAdapter.Setup(x => x.Build(message)).Returns(new Mock<ChannelMessage>().Object);
 			channel.Receive(deliveryContext => delivery = deliveryContext);
 			Receive(message);
+			channel.CurrentTransaction.Register(EmptyCallback);
 			(committed = delivery.CurrentTransaction).Commit();
 		};
 
@@ -1047,6 +1048,8 @@ namespace NanoMessageBus.Channels
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
+
+			channel.CurrentTransaction.Register(EmptyCallback);
 		};
 
 		Because of = () =>
@@ -1302,6 +1305,9 @@ namespace NanoMessageBus.Channels
 		protected static void Try(Action callback)
 		{
 			thrown = Catch.Exception(callback);
+		}
+		protected static void EmptyCallback()
+		{
 		}
 
 		protected const string DefaultChannelGroup = "some group name";
