@@ -218,15 +218,18 @@
 		}
 		public virtual void RollbackTransaction()
 		{
-			this.ThrowWhenDisposed();
-
-			if (this.transactionType == RabbitTransactionType.Full)
+			this.Try(() =>
 			{
-				Log.Verbose("Rolling back transaction against the messaging infrastructure on channel {0}.", this.identifier);
-				this.Try(this.channel.TxRollback);
-			}
+				this.ThrowWhenDisposed();
 
-			this.EnsureTransaction();
+				if (this.transactionType == RabbitTransactionType.Full)
+				{
+					Log.Verbose("Rolling back transaction against the messaging infrastructure on channel {0}.", this.identifier);
+					this.Try(this.channel.TxRollback);
+				}
+
+				this.EnsureTransaction();
+			});
 		}
 
 		public virtual void BeginShutdown()
@@ -291,7 +294,7 @@
 			try
 			{
 				if (this.suppressOperations)
-					Log.Debug("Channel {0} is unstable, suppressing further communication.");
+					Log.Debug("Channel {0} is unstable, suppressing further communication.", this.identifier);
 				else
 					callback();
 			}
