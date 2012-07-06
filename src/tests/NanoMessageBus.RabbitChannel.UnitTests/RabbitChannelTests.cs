@@ -711,6 +711,58 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_resulting_from_a_receive_operation_throws : using_a_channel
+	{
+		Establish context = () =>
+		{
+			message = new BasicDeliverEventArgs
+			{
+				BasicProperties = new BasicProperties(),
+				Body = new byte[] { 0, 1, 2, 3, 4 }
+			};
+
+			RequireTransaction(RabbitTransactionType.Full);
+			mockAdapter
+				.Setup(x => x.Build(envelope.Message, Moq.It.IsAny<IBasicProperties>()))
+				.Returns(message);
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Throws(new IOException());
+
+			Initialize();
+		};
+
+		Because of = () =>
+		{
+			channel.Receive(delivery =>
+			{
+				channel.Send(envelope);
+				channel.CurrentTransaction.Commit();
+			});
+
+			Try(() => Receive(message));
+		};
+
+		It should_raise_a_ChannelConnectionException = () =>
+			thrown.ShouldBeOfType<ChannelConnectionException>();
+
+		It should_NOT_rollback_against_the_misbehaving_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.TxRollback(), Times.Never());
+
+		It should_mark_the_current_transaction_as_finished = () =>
+			channel.CurrentTransaction.Finished.ShouldBeTrue();
+
+		It should_dispose_the_underlying_channel = () =>
+			mockRealChannel.Verify(x => x.Abort(), Times.Once());
+
+		static readonly ChannelEnvelope envelope = SimpleEnvelope(ChannelEnvelope.LoopbackAddress);
+		static BasicDeliverEventArgs message;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_preparing_to_dispatch : using_a_channel
 	{
 		Because of = () =>
@@ -852,7 +904,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_committing_a_transaction_against_a_transactional_channel : using_a_channel
+	public class when_committing_an_empty_transaction_against_a_transactional_channel : using_a_channel
 	{
 		Establish context = () =>
 		{

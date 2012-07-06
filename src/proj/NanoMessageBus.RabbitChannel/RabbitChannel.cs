@@ -290,8 +290,8 @@
 		{
 			try
 			{
-				//if (this.tryOperation)
-				callback();
+				if (this.tryOperation)
+					callback();
 			}
 			catch (IOException e)
 			{
@@ -305,7 +305,7 @@
 		private void CatchOperation(string message, Exception e)
 		{
 			Log.Info(message, this.identifier);
-			//this.tryOperation = false;
+			this.tryOperation = false;
 			this.Dispose();
 			throw new ChannelConnectionException(e.Message, e);
 		}
@@ -388,7 +388,7 @@
 		private readonly int identifier;
 		private RabbitSubscription subscription;
 		private BasicDeliverEventArgs delivery;
-		//private bool tryOperation = true;
+		private bool tryOperation = true;
 		private bool disposed;
 		private volatile bool shutdown;
 	}
