@@ -290,22 +290,24 @@
 		{
 			try
 			{
-				if (this.stableChannel)
+				if (this.suppressOperations)
+					Log.Debug("Channel {0} is unstable, suppressing further communication.");
+				else
 					callback();
 			}
 			catch (IOException e)
 			{
-				this.ShutdownChannel("Channel operation failed, aborting channel {0}.", e);
+				this.ShutdownChannel("Channel operation failed, aborting channel {0}. Further operations will be suppressed.", e);
 			}
 			catch (OperationInterruptedException e)
 			{
-				this.ShutdownChannel("Channel operation interrupted, aborting channel {0}.", e);
+				this.ShutdownChannel("Channel operation interrupted, aborting channel {0}. Further operations will be suppressed.", e);
 			}
 		}
 		private void ShutdownChannel(string message, Exception e)
 		{
 			Log.Info(message, this.identifier);
-			this.stableChannel = false;
+			this.suppressOperations = true;
 			this.Dispose();
 			throw new ChannelConnectionException(e.Message, e);
 		}
@@ -388,7 +390,7 @@
 		private readonly int identifier;
 		private RabbitSubscription subscription;
 		private BasicDeliverEventArgs delivery;
-		private bool stableChannel = true;
+		private bool suppressOperations;
 		private bool disposed;
 		private volatile bool shutdown;
 	}
