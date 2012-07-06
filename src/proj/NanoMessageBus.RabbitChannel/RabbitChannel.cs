@@ -354,6 +354,11 @@
 			if (this.disposed)
 				return;
 
+			// TODO: disposing the current transaction will attempt a rollback against the underlying (and unavailable) channel
+			// which then invokes dispose here (again)
+
+			// TODO: we may also be able to reproduce issue #61 locally without too much trouble
+
 			Log.Debug("Disposing channel.");
 			this.CurrentTransaction.TryDispose(); // must happen here because it checks for dispose
 

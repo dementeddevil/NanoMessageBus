@@ -33,6 +33,7 @@
 			return this.delivery.PrepareDispatch(message);
 		}
 
+		// TODO: ContinueHandling is also conditioned upon this.Active
 		public virtual bool ContinueHandling
 		{
 			get { return this.continueHandling; }
