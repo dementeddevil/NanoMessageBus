@@ -81,6 +81,51 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_clustered_queues_are_not_specified : using_channel_config
+	{
+		It should_default_to_single_node_queues = () =>
+			config.Clustered.ShouldBeFalse();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_clustered_queues_are_requested : using_channel_config
+	{
+		Because of = () =>
+			config.WithInputQueue("some-queue").WithClustering();
+
+		It should_indicate_replicated_queues_will_be_created = () =>
+			config.Clustered.ShouldBeTrue();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_configuring_with_clustering : using_channel_config
+	{
+		Establish context = () =>
+		{
+			mockChannel
+				.Setup(x => x.QueueDeclare(
+					"my queue",
+					Moq.It.IsAny<bool>(),
+					Moq.It.IsAny<bool>(),
+					Moq.It.IsAny<bool>(),
+					Moq.It.IsAny<IDictionary>()))
+				.Callback<string, bool, bool, bool, IDictionary>((a, b, c, e, values) =>
+				{
+					parameters = values;
+				});
+
+			config.WithInputQueue("my queue").WithClustering();
+		};
+
+		Because of = () => Configure();
+
+		It should_provide_the_parameter_to_the_queue_declaration = () =>
+			parameters["x-ha-policy"].ShouldEqual("all");
+
+		static IDictionary parameters;
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_the_receipt_timeout : using_channel_config
 	{
 		Because of = () =>
@@ -712,7 +757,7 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_a_poison_message_exchange : using_channel_config
 	{
-		private Establish context = () =>
+		Establish context = () =>
 		{
 			mockChannel
 				.Setup(x => x.QueueDeclare(

@@ -40,6 +40,9 @@
 			if (this.DeadLetterExchange != null)
 				declarationArgs[DeadLetterExchangeDeclaration] = this.DeadLetterExchange.ExchangeName;
 
+			if (this.Clustered)
+				declarationArgs[ClusteredQueueDeclaration] = ReplicateToAllNodes;
+
 			var declaration = channel.QueueDeclare(
 				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs);
 
@@ -71,6 +74,7 @@
 
 		public virtual string GroupName { get; private set; }
 		public virtual string InputQueue { get; private set; }
+		public virtual bool Clustered { get; private set; }
 		public virtual Uri ReturnAddress { get; private set; } // null for send-only endpoints
 		public virtual IChannelMessageBuilder MessageBuilder { get; private set; }
 		public virtual bool Synchronous { get; private set; }
@@ -183,6 +187,11 @@
 		public virtual RabbitChannelGroupConfiguration WithSynchronousOperation()
 		{
 			this.Synchronous = true;
+			return this;
+		}
+		public virtual RabbitChannelGroupConfiguration WithClustering()
+		{
+			this.Clustered = true;
 			return this;
 		}
 
@@ -336,6 +345,8 @@
 		private const string DefaultReturnAddressFormat = "direct://default/{0}";
 		private const string DefaultPoisonMessageExchange = "poison-messages";
 		private const string DeadLetterExchangeDeclaration = "x-dead-letter-exchange";
+		private const string ClusteredQueueDeclaration = "x-ha-policy";
+		private const string ReplicateToAllNodes = "all";
 		private const string DefaultDeadLetterExchange = "dead-letters";
 		private const string DefaultAppId = "rabbit-endpoint";
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
