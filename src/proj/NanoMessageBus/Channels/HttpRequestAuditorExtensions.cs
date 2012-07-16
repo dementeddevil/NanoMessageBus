@@ -68,7 +68,7 @@
 			this.allErrors = context.AllErrors;
 			this.debuggingEnabled = context.IsDebuggingEnabled;
 			this.customErrors = context.IsCustomErrorEnabled;
-			this.postNotification = context.IsPostNotification;
+			this.postNotification = IsMicrosoftCLR && context.IsPostNotification;
 			this.timestamp = context.Timestamp;
 			this.skipAuthorization = context.SkipAuthorization;
 			this.user = context.User;
@@ -76,6 +76,7 @@
 			request = new HttpRequestClone(context.Request);
 		}
 
+		private static readonly bool IsMicrosoftCLR = (Type.GetType("Mono.Runtime") == null);
 		private readonly HttpRequestBase request;
 		private readonly Exception error;
 		private readonly Exception[] allErrors;
