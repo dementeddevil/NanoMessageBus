@@ -207,7 +207,7 @@
 		}
 		public virtual void CommitTransaction()
 		{
-			Log.Verbose("Requesting commmit of transaction against messaging infrastructure on channel {0}.", this.identifier);
+			Log.Verbose("Requesting commit of transaction against messaging infrastructure on channel {0}.", this.identifier);
 			this.ThrowWhenDisposed();
 
 			if (this.transactionType == RabbitTransactionType.Full)
