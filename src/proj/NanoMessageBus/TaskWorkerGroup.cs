@@ -171,7 +171,7 @@
 		}
 		protected virtual void Restart(CancellationToken token)
 		{
-			Log.Verbose("Starting single restart worker à-la circuit-breaker pattern.");
+			Log.Verbose("Starting single restart worker via the circuit-breaker pattern.");
 			while (!token.IsCancellationRequested && !this.restartCallback())
 			{
 				// FUTURE: sleep for 500ms at a time to check if token has been cancelled
