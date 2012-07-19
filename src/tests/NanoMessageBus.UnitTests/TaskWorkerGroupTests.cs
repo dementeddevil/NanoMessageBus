@@ -153,7 +153,7 @@ namespace NanoMessageBus
 	{
 		Establish context = () =>
 		{
-			minWorkers = maxWorkers = 3;
+			minWorkers = maxWorkers = 42;
 			Build();
 
 			workerGroup.Initialize(() =>
@@ -164,7 +164,10 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
+		{
 			workerGroup.StartActivity(EmptyActivity);
+			Thread.Sleep(10);
+		};
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
 			invocations.ShouldEqual(minWorkers);
@@ -245,7 +248,12 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
+		{
 			workerGroup.StartQueue();
+
+			if (!MicrosoftRuntime)
+				Thread.Sleep(1000);
+		};
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
 			invocations.ShouldEqual(minWorkers);
@@ -474,7 +482,7 @@ namespace NanoMessageBus
 		static bool Restart()
 		{
 			Thread.Sleep(1);
-			if (++restartAttempts < 5)
+			if (++restartAttempts < RestartAttempts)
 				return false;
 
 			restarted = 0;
@@ -506,7 +514,7 @@ namespace NanoMessageBus
 			activityNotCanceled.ShouldEqual(0);
 
 		It should_invoke_the_restart_callback_until_it_returns_true = () =>
-			restartAttempts.ShouldEqual(5);
+			restartAttempts.ShouldEqual(RestartAttempts);
 
 		It should_then_resume_invocations_to_the_previously_executing_activity = () =>
 			invocations.ShouldBeGreaterThan(invocationsBeforeRestart);
@@ -515,6 +523,7 @@ namespace NanoMessageBus
 		static int activityNotCanceled;
 		static int invocationsBeforeRestart;
 		static int restartAttempts;
+		const int RestartAttempts = 5;
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -584,15 +593,16 @@ namespace NanoMessageBus
 
 		protected static Mock<IMessagingChannel> mockChannel;
 		protected static TaskWorkerGroup<IMessagingChannel> workerGroup;
-		protected static int minWorkers = 1;
-		protected static int maxWorkers = 1;
-		protected static int maxBufferSize = int.MaxValue;
+		protected static int minWorkers;
+		protected static int maxWorkers;
+		protected static int maxBufferSize;
 		protected static int invocations;
 		protected static Exception thrown;
 
 		protected static readonly Action<IWorkItem<IMessagingChannel>> EmptyActivity = x => { };
 		protected static readonly Func<IMessagingChannel> BuildChannel = () => mockChannel.Object;
 		protected static readonly Func<bool> RestartDelegate = () => true;
+		protected static readonly bool MicrosoftRuntime = Type.GetType("Mono.Runtime") == null;
 	}
 }
 
