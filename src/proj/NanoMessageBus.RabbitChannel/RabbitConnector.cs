@@ -81,7 +81,7 @@
 			}
 			catch (OperationInterruptedException e)
 			{
-				var shutdownCode = e.ShutdownReason == null ? 0 : e.ShutdownReason.ReplyCode;
+				var shutdownCode = e.ShutdownReason == null ? 0 : (int)e.ShutdownReason.ReplyCode;
 
 				if (shutdownCode == PreconditionFailed)
 					Log.Warn("Attempting to redefine existing queue/exchange with different parameters; manual intervention may be required.");
