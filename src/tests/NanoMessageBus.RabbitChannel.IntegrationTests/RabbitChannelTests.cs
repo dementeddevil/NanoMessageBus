@@ -130,6 +130,54 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_a_message_receipt_HAS_been_committed_transactionally : using_the_channel
+	{
+		Establish context = () =>
+			receiverConfig
+				.WithTransaction(RabbitTransactionType.Full)
+				.WithCleanQueue();
+
+		Because of = () =>
+		{
+			OpenSender().Send(BuildEnvelope("my message"));
+			OpenReceiver(delivery =>
+			{
+				delivery.CurrentTransaction.Commit();
+				receiverChannel.Dispose(); // shut down current channel
+				OpenReceiver(Receive); // open a new channel on a different thread
+				return ExitCurrentThread;
+			});
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
+
+		It should_not_find_a_message_to_receive = () =>
+			messagesReceived.ShouldEqual(0);
+
+		const bool ExitCurrentThread = true;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_transactionally : using_the_channel
+	{
+		Establish context = () =>
+		{
+			senderConfig.WithTransaction(RabbitTransactionType.Full);
+			OpenReceiver(Receive); // open a new channel on a different thread
+		};
+
+		Because of = () =>
+		{
+			var sender = OpenSender();
+			sender.Send(BuildEnvelope("my message"));
+			sender.CurrentTransaction.Commit();
+			Thread.Sleep(25);
+		};
+
+		It should_receive_the_message = () =>
+			messagesReceived.ShouldEqual(1);
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_a_message_delivery_fails : using_the_channel
 	{
 		Establish context = () =>
