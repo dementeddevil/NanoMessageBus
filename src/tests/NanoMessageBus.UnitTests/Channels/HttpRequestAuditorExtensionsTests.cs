@@ -95,7 +95,7 @@ namespace NanoMessageBus.Channels
 
 		It should_return_the_same_app_relative_path = () =>
 			clone.Request.AppRelativeCurrentExecutionFilePath.ShouldEqual(
-			original.Request.AppRelativeCurrentExecutionFilePath);
+				original.Request.AppRelativeCurrentExecutionFilePath);
 
 		It should_return_the_same_content_encoding = () =>
 			clone.Request.ContentEncoding.ShouldEqual(original.Request.ContentEncoding);
@@ -244,7 +244,7 @@ namespace NanoMessageBus.Channels
 			mockContext.Setup(x => x.AllErrors).Returns(new[] { error });
 			mockContext.Setup(x => x.IsDebuggingEnabled).Returns(true);
 			mockContext.Setup(x => x.IsCustomErrorEnabled).Returns(true);
-			mockContext.Setup(x => x.IsPostNotification).Returns(true);
+			mockContext.Setup(x => x.IsPostNotification).Returns(MicrosoftRuntime); // not supported on Mono
 			mockContext.Setup(x => x.SkipAuthorization).Returns(true);
 			mockContext.Setup(x => x.Timestamp).Returns(SystemTime.UtcNow);
 
@@ -296,6 +296,7 @@ namespace NanoMessageBus.Channels
 			return collection;
 		}
 
+		private static readonly bool MicrosoftRuntime = Type.GetType("Mono.Runtime") == null;
 		protected static HttpContextBase original;
 		static readonly Exception error = new Exception();
 	}
