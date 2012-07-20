@@ -302,7 +302,9 @@
 			}
 		}
 
+// ReSharper disable StaticFieldInGenericType
 		private static readonly ILog Log = LogFactory.Build(typeof(TaskWorkerGroup<>));
+// ReSharper restore StaticFieldInGenericType
 		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
 		private readonly object sync = new object();
 		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
