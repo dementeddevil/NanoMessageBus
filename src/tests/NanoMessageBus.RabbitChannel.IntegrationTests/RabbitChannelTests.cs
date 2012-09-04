@@ -93,7 +93,7 @@ namespace NanoMessageBus.Channels
 				WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
 				return ExitCurrentThread;
 			});
-			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout + DefaultSleepTimeout);
 		};
 
 		It should_not_remove_the_message_from_the_input_queue = () =>
