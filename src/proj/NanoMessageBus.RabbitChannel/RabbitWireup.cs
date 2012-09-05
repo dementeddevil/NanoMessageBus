@@ -66,6 +66,10 @@
 		}
 		public virtual RabbitConnector Build()
 		{
+			var failover = this.ConnectionFactory as FailoverRabbitConnectionFactory;
+			if (failover != null)
+				this.EndpointAddress = this.EndpointAddress ?? failover.Endpoints.FirstOrDefault();
+
 			this.AssignConnectionAddress();
 			return new RabbitConnector(this.ConnectionFactory, this.ShutdownTimeout, this.configurations);
 		}
