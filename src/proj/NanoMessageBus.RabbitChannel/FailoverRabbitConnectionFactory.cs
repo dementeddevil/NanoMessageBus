@@ -14,7 +14,7 @@
 			get { return this.endpoints; }
 		}
 
-		public virtual void AddEndpoints(string brokers)
+		public virtual FailoverRabbitConnectionFactory AddEndpoints(string brokers)
 		{
 			var split = brokers
 				.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
@@ -22,17 +22,21 @@
 
 			if (!string.IsNullOrEmpty(brokers))
 				this.AddEndpoints(split);
+
+			return this;
 		}
-		public virtual void AddEndpoints(params Uri[] brokers)
+		public virtual FailoverRabbitConnectionFactory AddEndpoints(params Uri[] brokers)
 		{
-			this.AddEndpoints((IEnumerable<Uri>)brokers);
+			return this.AddEndpoints((IEnumerable<Uri>)brokers);
 		}
-		public virtual void AddEndpoints(IEnumerable<Uri> brokers)
+		public virtual FailoverRabbitConnectionFactory AddEndpoints(IEnumerable<Uri> brokers)
 		{
 			(brokers ?? new Uri[0])
 				.Where(x => x != null)
 				.ToList()
 				.ForEach(x => this.AddEndpoint(x));
+
+			return this;
 		}
 		public virtual bool AddEndpoint(Uri endpoint)
 		{
@@ -46,7 +50,7 @@
 			return true;
 		}
 
-		public void RandomizeEndpoints()
+		public FailoverRabbitConnectionFactory RandomizeEndpoints()
 		{
 			var random = new Random();
 
@@ -57,6 +61,8 @@
 				this.endpoints[next] = this.endpoints[i];
 				this.endpoints[i] = item;
 			}
+
+			return this;
 		}
 
 		public override IConnection CreateConnection(int maxRedirects)
