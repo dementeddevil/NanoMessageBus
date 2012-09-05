@@ -40,7 +40,7 @@ namespace NanoMessageBus.Channels
 	public class when_specifying_an_endpoint_address : using_the_wireup
 	{
 		Because of = () =>
-			wireup.WithEndpoint(address).AddChannelGroup(x => x.WithGroupName("my group")).Build();
+			wireup.AddEndpoint(address).AddChannelGroup(x => x.WithGroupName("my group")).Build();
 
 		It should_contain_the_address_specified = () =>
 			wireup.EndpointAddress.ShouldEqual(address);
@@ -64,7 +64,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () => wireup
-			.WithEndpoint(address)
+			.AddEndpoint(address)
 			.WithConnectionFactory(factory)
 			.AddChannelGroup(x => x.WithGroupName("group"))
 			.Build();
@@ -83,7 +83,7 @@ namespace NanoMessageBus.Channels
 	public class when_specifying_a_null_endpoint_address : using_the_wireup
 	{
 		Because of = () =>
-			Try(() => wireup.WithEndpoint(null));
+			Try(() => wireup.AddEndpoint(null));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -162,7 +162,7 @@ namespace NanoMessageBus.Channels
 				.AddChannelGroup(x => x.WithGroupName("1"))
 				.AddChannelGroup(x => x.WithGroupName("2"))
 				.WithConnectionFactory(factory)
-				.WithEndpoint(address);
+				.AddEndpoint(address);
 		};
 
 		Because of = () =>

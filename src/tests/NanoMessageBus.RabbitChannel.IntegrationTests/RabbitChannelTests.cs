@@ -212,7 +212,7 @@ namespace NanoMessageBus.Channels
 
 			wireup = new RabbitWireup()
 				.WithConnectionFactory(connectionFactory = new ConnectionFactory())
-				.WithEndpoint(connectionUri = new Uri(ConfigurationManager.AppSettings["ConnectionUri"]))
+				.AddEndpoint(connectionUri = new Uri(ConfigurationManager.AppSettings["ConnectionUri"]))
 				.WithShutdownTimout(ShutdownTimeout)
 				.AddChannelGroup(x =>
 				{

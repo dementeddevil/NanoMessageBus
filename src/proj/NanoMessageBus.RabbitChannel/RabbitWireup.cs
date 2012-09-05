@@ -15,14 +15,28 @@
 		public virtual TimeSpan ShutdownTimeout { get; private set; }
 		public virtual ConnectionFactory ConnectionFactory { get; private set; }
 
-		public virtual RabbitWireup WithEndpoint(Uri address)
+		public virtual RabbitWireup AddEndpoint(Uri address, bool ordered = false)
 		{
 			if (address == null)
 				throw new ArgumentNullException("address");
 
+			this.AppendConnection(address, ordered);
 			this.EndpointAddress = address;
 			return this;
 		}
+		private void AppendConnection(Uri address, bool ordered)
+		{
+			var failover = this.ConnectionFactory as FailoverRabbitConnectionFactory;
+			if (failover == null)
+				return;
+
+			failover.AddEndpoint(address);
+			if (ordered)
+				return;
+
+			failover.RandomizeEndpoints();
+		}
+
 		public virtual RabbitWireup WithShutdownTimout(TimeSpan timeout)
 		{
 			if (timeout < TimeSpan.Zero)
@@ -76,7 +90,7 @@
 		public RabbitWireup()
 		{
 			this.ShutdownTimeout = DefaultTimeout;
-			this.ConnectionFactory = new ConnectionFactory();
+			this.ConnectionFactory = new FailoverRabbitConnectionFactory();
 		}
 
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
