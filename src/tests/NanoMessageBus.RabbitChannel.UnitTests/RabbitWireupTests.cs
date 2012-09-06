@@ -43,8 +43,8 @@ namespace NanoMessageBus.Channels
 		Establish context = () =>
 			factory = new Mock<FailoverRabbitConnectionFactory>();
 
-	    Because of = () =>
-	        wireup
+		Because of = () =>
+			wireup
 				.WithConnectionFactory(factory.Object)
 				.AddEndpoint(address)
 				.AddChannelGroup(x => x.WithGroupName("my group")).Build();
@@ -55,7 +55,7 @@ namespace NanoMessageBus.Channels
 		It should_randomize_the_order_of_the_endpoints = () =>
 			factory.Verify(x => x.RandomizeEndpoints(), Times.Once());
 
-	    static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
+		static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
 		static Mock<FailoverRabbitConnectionFactory> factory;
 	}
 
