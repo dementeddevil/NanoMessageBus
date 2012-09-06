@@ -133,7 +133,7 @@
 
 			return this;
 		}
-		public virtual RabbitChannelGroupConfiguration WithInputQueue(string name)
+		public virtual RabbitChannelGroupConfiguration WithInputQueue(string name, bool clustered = false)
 		{
 			if (name == null)
 				throw new ArgumentNullException("name");
@@ -147,6 +147,7 @@
 			this.AutoDelete = this.InputQueue.Length == 0;
 			this.DispatchOnly = false;
 			this.GroupName = this.GroupName == DefaultGroupName ? name : this.GroupName;
+			this.Clustered = clustered;
 
 			return this;
 		}
@@ -187,11 +188,6 @@
 		public virtual RabbitChannelGroupConfiguration WithSynchronousOperation()
 		{
 			this.Synchronous = true;
-			return this;
-		}
-		public virtual RabbitChannelGroupConfiguration WithClustering()
-		{
-			this.Clustered = true;
 			return this;
 		}
 

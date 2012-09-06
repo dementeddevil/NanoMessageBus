@@ -91,7 +91,7 @@ namespace NanoMessageBus.Channels
 	public class when_clustered_queues_are_requested : using_channel_config
 	{
 		Because of = () =>
-			config.WithInputQueue("some-queue").WithClustering();
+			config.WithInputQueue("some-queue", clustered: true);
 
 		It should_indicate_replicated_queues_will_be_created = () =>
 			config.Clustered.ShouldBeTrue();
@@ -114,7 +114,7 @@ namespace NanoMessageBus.Channels
 					parameters = values;
 				});
 
-			config.WithInputQueue("my queue").WithClustering();
+			config.WithInputQueue("my queue", clustered: true);
 		};
 
 		Because of = () => Configure();
