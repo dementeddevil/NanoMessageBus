@@ -161,7 +161,13 @@ namespace NanoMessageBus.Channels
 			new Uri("amqp://machine-a"), 
 			new Uri("amqp://machine-b"),
 			new Uri("amqp://machine-c"),
-			new Uri("amqp://machine-d")
+			new Uri("amqp://machine-d"),
+			new Uri("amqp://machine-e"),
+			new Uri("amqp://machine-f"),
+			new Uri("amqp://machine-g"),
+			new Uri("amqp://machine-h"),
+			new Uri("amqp://machine-i"),
+			new Uri("amqp://machine-j")
 		};
 	}
 
