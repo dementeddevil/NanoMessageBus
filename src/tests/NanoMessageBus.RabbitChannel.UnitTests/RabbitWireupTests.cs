@@ -219,7 +219,7 @@ namespace NanoMessageBus.Channels
 			.WithConnectionFactory(factory);
 
 		Because of = () =>
-			wireup.WithCertificateAuthentication();
+			wireup.UsingCertificateAuthentication();
 
 		It should_attempt_external_rabbit_authentication_first = () =>
 			factory.AuthMechanisms.First().ShouldBeOfType<ExternalMechanismFactory>();

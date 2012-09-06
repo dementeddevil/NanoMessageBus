@@ -30,7 +30,7 @@
 			this.ConnectionFactory = factory;
 			return this;
 		}
-		public virtual RabbitWireup WithCertificateAuthentication()
+		public virtual RabbitWireup UsingCertificateAuthentication()
 		{
 			this.ConnectionFactory.AuthMechanisms = new AuthMechanismFactory[]
 			{
