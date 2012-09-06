@@ -526,6 +526,46 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_expired_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithExpiredMessageExchange("my-exchange");
+
+		It should_contain_the_exchange_specified = () =>
+			config.ExpiredMessageExchange.ExchangeName.ShouldEqual("my-exchange");
+
+		It should_be_a_fanout_exchange = () =>
+			config.ExpiredMessageExchange.ExchangeType.ShouldEqual(ExchangeType.Fanout);
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_expired_message_exchange_is_specified : using_channel_config
+	{
+		It should_point_to_the_default_exchange = () =>
+			config.ExpiredMessageExchange.ToString().ShouldEqual("fanout://expired-messages/");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_expired_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => config.WithExpiredMessageExchange(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_an_empty_expired_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithExpiredMessageExchange(string.Empty);
+
+		It should_no_longer_point_to_any_expired_message_exchange = () =>
+			config.ExpiredMessageExchange.ShouldBeNull();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_the_maximum_number_of_receive_attempts : using_channel_config
 	{
 		Because of = () =>
