@@ -69,7 +69,7 @@ namespace NanoMessageBus
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
-	public class when_no_routes_exist_for_any_logical_message : with_a_channel_message_handler
+	public class when_no_handlers_exist_for_any_logical_message : with_a_channel_message_handler
 	{
 		Establish context = () =>
 			deliveredMessage = BuildMessage(new object[] { 0 });
@@ -80,8 +80,8 @@ namespace NanoMessageBus
 		It should_put_the_incoming_channel_message_into_a_channel_envelope = () =>
 			sentMessage.ShouldEqual(deliveredMessage);
 
-		It should_send_the_envelope_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+		It should_send_the_envelope_to_the_unhandled_message_address = () =>
+			recipients[0].ShouldEqual(ChannelEnvelope.UnhandledMessageAddress);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -134,8 +134,8 @@ namespace NanoMessageBus
 		It should_add_the_incoming_message_headers_to_the_outgoing_channel_message = () =>
 			ReferenceEquals(sentMessage.Headers, deliveredMessage.Headers).ShouldBeTrue();
 
-		It should_forward_the_channel_envelope_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+		It should_forward_the_channel_envelope_to_the_unhandled_message_address = () =>
+			recipients[0].ShouldEqual(ChannelEnvelope.UnhandledMessageAddress);
 
 		static readonly Guid messageId = Guid.NewGuid();
 		static readonly Guid correlationId = Guid.NewGuid();

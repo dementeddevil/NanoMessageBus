@@ -7,11 +7,11 @@
 	/// which doesn't have any handlers configured.
 	/// </summary>
 	[Serializable]
-	public class DeadLetterException : ChannelException
+	public class ExpiredMessageException : ChannelException
 	{
 		public DateTime Expiration { get; private set; }
 
-		public DeadLetterException(DateTime expiration)
+		public ExpiredMessageException(DateTime expiration)
 		{
 			this.Expiration = expiration;
 		}

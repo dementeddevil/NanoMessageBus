@@ -21,6 +21,21 @@
 		public static readonly Uri DeadLetterAddress = new Uri("default://dead-letter-queue/");
 
 		/// <summary>
+		/// Represents the address used for dispatching a message to the expired message queue
+		/// </summary>
+		public static readonly Uri ExpiredMessageAddress = new Uri("default://expired-message-queue/");
+
+		/// <summary>
+		/// Represents the address used for dispatching a message to the unhandled message queue
+		/// </summary>
+		public static readonly Uri UnhandledMessageAddress = new Uri("default://unhandled-message-queue/");
+
+		/// <summary>
+		/// Represents the address used for dispatching a message to the unroutable message queue
+		/// </summary>
+		public static readonly Uri UnroutableMessageAddress = new Uri("default://unroutable-message-queue/");
+
+		/// <summary>
 		/// Gets the message to be dispatched.
 		/// </summary>
 		public virtual ChannelMessage Message { get; private set; }

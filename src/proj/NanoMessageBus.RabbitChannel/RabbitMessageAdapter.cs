@@ -30,7 +30,7 @@
 				Log.Error("Unable to deserialize message '{0}'.".FormatWith(message.MessageId()), e);
 				throw new PoisonMessageException(e.Message, e);
 			}
-			catch (DeadLetterException)
+			catch (ExpiredMessageException)
 			{
 				throw;
 			}
@@ -47,7 +47,7 @@
 			expiration = expiration == DateTime.MinValue ? DateTime.MaxValue : expiration;
 
 			if (expiration <= SystemTime.UtcNow)
-				throw new DeadLetterException(expiration);
+				throw new ExpiredMessageException(expiration);
 
 			var payload = this.configuration.Serializer.Deserialize<object[]>(
 				message.Body, properties.ContentFormat(), properties.ContentEncoding);
