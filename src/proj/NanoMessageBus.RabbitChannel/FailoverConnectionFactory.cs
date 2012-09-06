@@ -6,6 +6,7 @@
 	using System.Collections.Specialized;
 	using System.Linq;
 	using System.Net.Security;
+	using System.Security.Authentication;
 	using System.Security.Cryptography.X509Certificates;
 	using System.Web;
 	using RabbitMQ.Client;
@@ -98,6 +99,7 @@
 
 			return new SslOption
 			{
+				Version = SslProtocols.Tls,
 				AcceptablePolicyErrors = GetAcceptablePolicyFailures(parsed),
 				ServerName = parsed[RemoteNameKey] ?? hostname,
 				Enabled = certificate != null || !string.IsNullOrEmpty(certificatePath),
