@@ -7,6 +7,7 @@ namespace NanoMessageBus.Channels
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Net;
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
@@ -169,7 +170,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			factory = new FailoverFactoryStub();
+			factory = new FailoverFactoryStub(nslookup: DnsLookup);
 			factory.AddEndpoints(Endpoints);
 		};
 
@@ -179,9 +180,18 @@ namespace NanoMessageBus.Channels
 		It should_provide_the_max_redirect_value_to_the_base_class = () =>
 			((FailoverFactoryStub)factory).MaxRedirects.ShouldEqual(42);
 
-		It should_provide_each_broker_address_to_the_base_class = () =>
-			((FailoverFactoryStub)factory).ConnectedEndpoints.Select(x => x.HostName)
-				.ShouldEqual(Endpoints.Select(x => x.Host));
+		It should_resolve_the_ip_address_for_each_endpoint = () =>
+			resolutionCount.ShouldEqual(4);
+
+		It should_translate_the_endpoint_to_ip_addresses_for_the_base_class = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.ToList()
+				.ForEach(x => x.HostName.ShouldEqual("127.0.0.1"));
+
+		static ICollection<IPAddress> DnsLookup(string hostname)
+		{
+			resolutionCount++;
+			return new[] { IPAddress.Parse("127.0.0.1") };
+		}
 
 		static readonly IList<Uri> Endpoints = new[]
 		{
@@ -190,6 +200,7 @@ namespace NanoMessageBus.Channels
 			new Uri("amqp://machine-c"),
 			new Uri("amqp://machine-d")
 		};
+		static int resolutionCount;
 	}
 
 	[Subject(typeof(FailoverRabbitConnectionFactory))]
@@ -250,7 +261,8 @@ namespace NanoMessageBus.Channels
 			return this.CanConnect ? new Mock<IConnection>().Object : null;
 		}
 
-		public FailoverFactoryStub(bool canConnect = true)
+		public FailoverFactoryStub(bool canConnect = true, Func<string, ICollection<IPAddress>> nslookup = null)
+			: base(nslookup)
 		{
 			this.CanConnect = canConnect;
 		}
