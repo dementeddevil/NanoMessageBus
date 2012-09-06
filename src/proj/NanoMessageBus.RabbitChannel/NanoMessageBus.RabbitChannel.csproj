@@ -44,6 +44,7 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CertificateStore.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FailoverRabbitConnectionFactory.cs" />
     <Compile Include="RabbitChannel.cs" />
