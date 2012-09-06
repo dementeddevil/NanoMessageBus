@@ -120,14 +120,8 @@
 		}
 		public FailoverRabbitConnectionFactory(Func<string, ICollection<IPAddress>> nslookup, CertificateStore certificates)
 		{
-			// TODO: make sure that identity can be establish using the certificate file alone
 			this.nslookup = nslookup ?? Dns.GetHostAddresses;
 			this.certificates = certificates ?? new CertificateStore();
-			this.AuthMechanisms = new AuthMechanismFactory[]
-			{
-				new PlainMechanismFactory(), 
-				new ExternalMechanismFactory()
-			};
 		}
 
 		private const string CertificatePathKey = "cert-path";

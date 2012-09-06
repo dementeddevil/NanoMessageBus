@@ -7,6 +7,7 @@ namespace NanoMessageBus.Channels
 	using System.Linq;
 	using Machine.Specifications;
 	using Moq;
+	using RabbitMQ.Client;
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitWireup))]
@@ -207,6 +208,24 @@ namespace NanoMessageBus.Channels
 
 		It should_leave_endpoint_on_the_connection_factory_as_the_default_value = () =>
 			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://localhost:5672");
+
+		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
+	}
+
+	[Subject(typeof(RabbitWireup))]
+	public class when_indicating_client_identity_should_be_asserted_with_a_certificate : using_the_wireup
+	{
+		Establish context = () => wireup
+			.WithConnectionFactory(factory);
+
+		Because of = () =>
+			wireup.WithCertificateAuthentication();
+
+		It should_attempt_external_rabbit_authentication_first = () =>
+			factory.AuthMechanisms.First().ShouldBeOfType<ExternalMechanismFactory>();
+
+		It should_attempt_plain_rabbit_authentication_first = () =>
+			factory.AuthMechanisms.Last().ShouldBeOfType<PlainMechanismFactory>();
 
 		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
 	}

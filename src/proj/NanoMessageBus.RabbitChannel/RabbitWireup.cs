@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using RabbitMQ.Client;
 
 	public class RabbitWireup
 	{
@@ -29,6 +30,15 @@
 			this.ConnectionFactory = factory;
 			return this;
 		}
+		public virtual RabbitWireup WithCertificateAuthentication()
+		{
+			this.ConnectionFactory.AuthMechanisms = new AuthMechanismFactory[]
+			{
+				new ExternalMechanismFactory(), 
+				new PlainMechanismFactory()
+			};
+			return this;
+		}
 		public virtual RabbitWireup AddEndpoint(Uri address, bool ordered = false)
 		{
 			if (address == null)
@@ -51,6 +61,7 @@
 
 			return this;
 		}
+
 		public virtual RabbitConnector Build()
 		{
 			return new RabbitConnector(this.ConnectionFactory, this.ShutdownTimeout, this.configurations);
