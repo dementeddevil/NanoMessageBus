@@ -3,7 +3,6 @@
 
 namespace NanoMessageBus.Channels
 {
-	using System;
 	using System.Security.Cryptography.X509Certificates;
 	using Machine.Specifications;
 
@@ -73,18 +72,11 @@ namespace NanoMessageBus.Channels
 		{
 			store = new CertificateStore();
 			resolved = null;
-			thrown = null;
 		};
-
-		protected static void Try(Action callback)
-		{
-			thrown = Catch.Exception(callback);
-		}
 
 		protected const string KnownFingerprint = "A43489159A520F0D93D032CCAF37E7FE20A8B419";
 		protected static CertificateStore store;
 		protected static X509Certificate resolved;
-		protected static Exception thrown;
 	}
 }
 
