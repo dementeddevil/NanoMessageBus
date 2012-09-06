@@ -63,6 +63,38 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	public class when_adding_an_endpoint_with_authentication_information : using_the_failover_connection_factory
+	{
+		Because of = () =>
+			factory.AddEndpoint(new Uri("amqp://new-user:new-pass@localhost:5672/"));
+
+		It should_set_overwrite_the_connection_username_with_the_endpoint_username = () =>
+			factory.UserName.ShouldEqual("new-user");
+
+		It should_set_overwrite_the_connection_password_with_the_endpoint_password = () =>
+			factory.Password.ShouldEqual("new-pass");
+	}
+
+	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	public class when_adding_an_endpoint_with_no_authentication_information : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory.UserName = "keep";
+			factory.Password = "this";
+		};
+
+		Because of = () =>
+			factory.AddEndpoint(new Uri("amqp://localhost:5672/"));
+
+		It should_leave_the_existing_connection_username_alone = () =>
+			factory.UserName.ShouldEqual("keep");
+
+		It should_leave_the_existing_connection_password_alone = () =>
+			factory.Password.ShouldEqual("this");
+	}
+
+	[Subject(typeof(FailoverRabbitConnectionFactory))]
 	public class when_adding_multiple_endpoints_as_a_collection : using_the_failover_connection_factory
 	{
 		Because of = () =>
