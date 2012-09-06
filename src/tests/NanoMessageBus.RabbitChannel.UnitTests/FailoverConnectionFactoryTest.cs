@@ -14,7 +14,7 @@ namespace NanoMessageBus.Channels
 	using RabbitMQ.Client.Exceptions;
 	using It = Machine.Specifications.It;
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_a_null_endpoint : using_the_failover_connection_factory
 	{
 		Because of = () =>
@@ -24,7 +24,7 @@ namespace NanoMessageBus.Channels
 			thrown.ShouldBeOfType<ArgumentNullException>();
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_an_endpoint_for_the_first_time : using_the_failover_connection_factory
 	{
 		Because of = () =>
@@ -39,7 +39,7 @@ namespace NanoMessageBus.Channels
 		static bool added;
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_an_endpoint_multiple_times : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -63,7 +63,7 @@ namespace NanoMessageBus.Channels
 		static int added;
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_an_endpoint_with_authentication_information : using_the_failover_connection_factory
 	{
 		Because of = () =>
@@ -76,7 +76,7 @@ namespace NanoMessageBus.Channels
 			factory.Password.ShouldEqual("new-pass");
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_an_endpoint_with_no_authentication_information : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -95,7 +95,7 @@ namespace NanoMessageBus.Channels
 			factory.Password.ShouldEqual("this");
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_multiple_endpoints_as_a_collection : using_the_failover_connection_factory
 	{
 		Because of = () =>
@@ -113,7 +113,7 @@ namespace NanoMessageBus.Channels
 		};
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_multiple_endpoints_as_a_set_of_parameters : using_the_failover_connection_factory
 	{
 		Because of = () =>
@@ -131,7 +131,7 @@ namespace NanoMessageBus.Channels
 		};
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_adding_a_string_representation_of_multiple_endpoints : using_the_failover_connection_factory
 	{
 		Because of = () =>
@@ -144,7 +144,7 @@ namespace NanoMessageBus.Channels
 			factory.Endpoints.Count().ShouldEqual(3);
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_randomizing_the_set_of_endpoints : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -165,7 +165,7 @@ namespace NanoMessageBus.Channels
 		};
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_establishing_a_connection : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -194,7 +194,7 @@ namespace NanoMessageBus.Channels
 		static int resolutionCount;
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_establishing_without_any_configured_endpoints : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -207,7 +207,7 @@ namespace NanoMessageBus.Channels
 			((FailoverFactoryStub)factory).ConnectedEndpoints.Single().HostName.ShouldEqual("localhost");
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_establishing_a_connection_fails : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -220,7 +220,7 @@ namespace NanoMessageBus.Channels
 			thrown.ShouldBeOfType<BrokerUnreachableException>();
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_establishing_an_ssl_connection_using_a_certificate_file : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -241,7 +241,7 @@ namespace NanoMessageBus.Channels
 		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=c:/mycert.cer", UriKind.Absolute);
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_establishing_an_ssl_connection_using_a_certificate_file_and_passphrase : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -265,7 +265,7 @@ namespace NanoMessageBus.Channels
 		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=c:/mycert.cer&cert-passphrase=1234", UriKind.Absolute);
 	}
 
-	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	[Subject(typeof(FailoverConnectionFactory))]
 	public class when_establishing_an_ssl_connection_using_a_certificate_thumbprint : using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -295,7 +295,7 @@ namespace NanoMessageBus.Channels
 	public abstract class using_the_failover_connection_factory
 	{
 		Establish context = () =>
-			factory = new FailoverRabbitConnectionFactory();
+			factory = new FailoverConnectionFactory();
 
 		protected static void Try(Action callback)
 		{
@@ -303,11 +303,11 @@ namespace NanoMessageBus.Channels
 		}
 
 		protected static readonly Uri DefaultEndpoint = new Uri("amqp://guest:guest@localhost:5672/");
-		protected static FailoverRabbitConnectionFactory factory;
+		protected static FailoverConnectionFactory factory;
 		protected static Exception thrown;
 	}
 
-	internal class FailoverFactoryStub : FailoverRabbitConnectionFactory
+	internal class FailoverFactoryStub : FailoverConnectionFactory
 	{
 		public int MaxRedirects { get; private set; }
 		public IList<AmqpTcpEndpoint> ConnectedEndpoints { get; private set; }

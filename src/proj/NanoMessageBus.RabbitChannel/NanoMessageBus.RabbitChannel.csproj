@@ -46,7 +46,7 @@
     </Compile>
     <Compile Include="CertificateStore.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FailoverRabbitConnectionFactory.cs" />
+    <Compile Include="FailoverConnectionFactory.cs" />
     <Compile Include="RabbitChannel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitChannelGroupConfiguration.cs" />

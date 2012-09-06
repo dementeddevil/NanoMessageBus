@@ -41,7 +41,7 @@ namespace NanoMessageBus.Channels
 	public class when_specifying_an_endpoint_address : using_the_wireup
 	{
 		Establish context = () =>
-			factory = new Mock<FailoverRabbitConnectionFactory>();
+			factory = new Mock<FailoverConnectionFactory>();
 
 		Because of = () =>
 			wireup
@@ -56,14 +56,14 @@ namespace NanoMessageBus.Channels
 			factory.Verify(x => x.RandomizeEndpoints(), Times.Once());
 
 		static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
-		static Mock<FailoverRabbitConnectionFactory> factory;
+		static Mock<FailoverConnectionFactory> factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
 	public class when_specifying_a_strictly_ordered_endpoint_address : using_the_wireup
 	{
 		Establish context = () =>
-			factory = new Mock<FailoverRabbitConnectionFactory>();
+			factory = new Mock<FailoverConnectionFactory>();
 
 		Because of = () =>
 			wireup
@@ -78,13 +78,13 @@ namespace NanoMessageBus.Channels
 			factory.Verify(x => x.RandomizeEndpoints(), Times.Never());
 
 		static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
-		static Mock<FailoverRabbitConnectionFactory> factory;
+		static Mock<FailoverConnectionFactory> factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
 	public class when_authentication_information_is_already_specified : using_the_wireup
 	{
-		Establish context = () => factory = new FailoverRabbitConnectionFactory
+		Establish context = () => factory = new FailoverConnectionFactory
 		{
 			UserName = "existing",
 			Password = null
@@ -103,7 +103,7 @@ namespace NanoMessageBus.Channels
 			factory.Password.ShouldBeNull();
 
 		static readonly Uri address = new Uri("amqp://user:pass@localhost/");
-		static FailoverRabbitConnectionFactory factory;
+		static FailoverConnectionFactory factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -168,7 +168,7 @@ namespace NanoMessageBus.Channels
 		It should_contain_the_connection_factory_specified = () =>
 			factory.ShouldEqual(wireup.ConnectionFactory);
 
-		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
+		static readonly FailoverConnectionFactory factory = new FailoverConnectionFactory();
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -176,7 +176,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			factory = new FailoverRabbitConnectionFactory();
+			factory = new FailoverConnectionFactory();
 
 			wireup
 				.AddChannelGroup(x => x.WithGroupName("1"))
@@ -193,7 +193,7 @@ namespace NanoMessageBus.Channels
 
 		static readonly Uri address = new Uri("amqp-0-9://a-different-host:5672");
 		static RabbitConnector connector;
-		static FailoverRabbitConnectionFactory factory;
+		static FailoverConnectionFactory factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -209,7 +209,7 @@ namespace NanoMessageBus.Channels
 		It should_leave_endpoint_on_the_connection_factory_as_the_default_value = () =>
 			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://localhost:5672");
 
-		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
+		static readonly FailoverConnectionFactory factory = new FailoverConnectionFactory();
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -227,7 +227,7 @@ namespace NanoMessageBus.Channels
 		It should_attempt_plain_rabbit_authentication_first = () =>
 			factory.AuthMechanisms.Last().ShouldBeOfType<PlainMechanismFactory>();
 
-		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
+		static readonly FailoverConnectionFactory factory = new FailoverConnectionFactory();
 	}
 
 	public abstract class using_the_wireup

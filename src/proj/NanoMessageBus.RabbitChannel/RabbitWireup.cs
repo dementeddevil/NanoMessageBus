@@ -12,7 +12,7 @@
 			get { return this.configurations.ToList(); }
 		}
 		public virtual TimeSpan ShutdownTimeout { get; private set; }
-		public virtual FailoverRabbitConnectionFactory ConnectionFactory { get; private set; }
+		public virtual FailoverConnectionFactory ConnectionFactory { get; private set; }
 
 		public virtual RabbitWireup WithShutdownTimout(TimeSpan timeout)
 		{
@@ -22,7 +22,7 @@
 			this.ShutdownTimeout = timeout;
 			return this;
 		}
-		public virtual RabbitWireup WithConnectionFactory(FailoverRabbitConnectionFactory factory)
+		public virtual RabbitWireup WithConnectionFactory(FailoverConnectionFactory factory)
 		{
 			if (factory == null)
 				throw new ArgumentNullException("factory");
@@ -70,7 +70,7 @@
 		public RabbitWireup()
 		{
 			this.ShutdownTimeout = DefaultTimeout;
-			this.ConnectionFactory = new FailoverRabbitConnectionFactory();
+			this.ConnectionFactory = new FailoverConnectionFactory();
 		}
 
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);

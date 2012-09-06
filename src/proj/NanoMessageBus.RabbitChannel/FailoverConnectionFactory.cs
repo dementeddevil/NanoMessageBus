@@ -9,14 +9,14 @@
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Exceptions;
 
-	public class FailoverRabbitConnectionFactory : ConnectionFactory
+	public class FailoverConnectionFactory : ConnectionFactory
 	{
 		public virtual IEnumerable<Uri> Endpoints
 		{
 			get { return this.brokers; }
 		}
 
-		public virtual FailoverRabbitConnectionFactory AddEndpoints(string endpoint)
+		public virtual FailoverConnectionFactory AddEndpoints(string endpoint)
 		{
 			var split = endpoint
 				.Split(EndpointDelimiter, StringSplitOptions.RemoveEmptyEntries)
@@ -27,11 +27,11 @@
 
 			return this;
 		}
-		public virtual FailoverRabbitConnectionFactory AddEndpoints(params Uri[] endpoints)
+		public virtual FailoverConnectionFactory AddEndpoints(params Uri[] endpoints)
 		{
 			return this.AddEndpoints((IEnumerable<Uri>)endpoints);
 		}
-		public virtual FailoverRabbitConnectionFactory AddEndpoints(IEnumerable<Uri> endpoints)
+		public virtual FailoverConnectionFactory AddEndpoints(IEnumerable<Uri> endpoints)
 		{
 			(endpoints ?? new Uri[0])
 				.Where(x => x != null)
@@ -58,7 +58,7 @@
 
 			return true;
 		}
-		public virtual FailoverRabbitConnectionFactory RandomizeEndpoints()
+		public virtual FailoverConnectionFactory RandomizeEndpoints()
 		{
 			var random = new Random();
 
@@ -103,10 +103,10 @@
 			};
 		}
 
-		public FailoverRabbitConnectionFactory() : this(null)
+		public FailoverConnectionFactory() : this(null)
 		{
 		}
-		public FailoverRabbitConnectionFactory(CertificateStore certificates)
+		public FailoverConnectionFactory(CertificateStore certificates)
 		{
 			this.certificates = certificates ?? new CertificateStore();
 		}

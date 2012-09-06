@@ -210,7 +210,7 @@ namespace NanoMessageBus.Channels
 			receiverChannel = null;
 
 			wireup = new RabbitWireup()
-				.WithConnectionFactory(connectionFactory = new FailoverRabbitConnectionFactory())
+				.WithConnectionFactory(connectionFactory = new FailoverConnectionFactory())
 				.AddEndpoint(connectionUri = new Uri(ConfigurationManager.AppSettings["ConnectionUri"]))
 				.WithShutdownTimout(ShutdownTimeout)
 				.AddChannelGroup(x =>
@@ -300,7 +300,7 @@ namespace NanoMessageBus.Channels
 		protected static readonly TimeSpan DefaultSleepTimeout = TimeSpan.FromMilliseconds(250);
 		static readonly TimeSpan ShutdownTimeout = TimeSpan.FromMilliseconds(100);
 		protected static RabbitWireup wireup;
-		protected static FailoverRabbitConnectionFactory connectionFactory;
+		protected static FailoverConnectionFactory connectionFactory;
 		protected static Uri connectionUri;
 		protected static RabbitChannelGroupConfiguration receiverConfig;
 		protected static RabbitChannelGroupConfiguration senderConfig;

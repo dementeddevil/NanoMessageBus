@@ -45,7 +45,7 @@
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CertificateStoreTests.cs" />
-    <Compile Include="FailoverRabbitConnectionFactoryTest.cs" />
+    <Compile Include="FailoverConnectionFactoryTest.cs" />
     <Compile Include="RabbitMessageAdapterTests.cs" />
     <Compile Include="RabbitDispatchTableTests.cs" />
     <Compile Include="RabbitWireupTests.cs" />
