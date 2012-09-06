@@ -35,7 +35,9 @@
 				throw new ArgumentNullException("address");
 
 			this.ConnectionFactory.AddEndpoint(address);
-			this.ConnectionFactory.RandomizeEndpoints();
+			if (!ordered)
+				this.ConnectionFactory.RandomizeEndpoints();
+
 			return this;
 		}
 		public virtual RabbitWireup AddChannelGroup(Action<RabbitChannelGroupConfiguration> callback)

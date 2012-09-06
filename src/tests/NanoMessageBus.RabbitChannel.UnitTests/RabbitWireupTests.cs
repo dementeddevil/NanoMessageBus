@@ -59,6 +59,28 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitWireup))]
+	public class when_specifying_a_strictly_ordered_endpoint_address : using_the_wireup
+	{
+		Establish context = () =>
+			factory = new Mock<FailoverRabbitConnectionFactory>();
+
+		Because of = () =>
+			wireup
+				.WithConnectionFactory(factory.Object)
+				.AddEndpoint(address, ordered: true)
+				.AddChannelGroup(x => x.WithGroupName("my group")).Build();
+
+		It should_set_the_address_provided_on_the_connection_factory = () =>
+			factory.Verify(x => x.AddEndpoint(address), Times.Once());
+
+		It should_NOT_randomize_the_order_of_the_endpoints = () =>
+			factory.Verify(x => x.RandomizeEndpoints(), Times.Never());
+
+		static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
+		static Mock<FailoverRabbitConnectionFactory> factory;
+	}
+
+	[Subject(typeof(RabbitWireup))]
 	public class when_authentication_information_is_already_specified : using_the_wireup
 	{
 		Establish context = () => factory = new FailoverRabbitConnectionFactory
