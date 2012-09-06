@@ -7,6 +7,7 @@ namespace NanoMessageBus.Channels
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Net.Security;
 	using System.Security.Cryptography.X509Certificates;
 	using Machine.Specifications;
 	using Moq;
@@ -241,6 +242,9 @@ namespace NanoMessageBus.Channels
 		It should_indicate_that_ssl_is_enabled = () =>
 			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
 
+		It should_contain_the_server_name_from_the_endpoint_hostname = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.ServerName.ShouldEqual("localhost");
+
 		It should_attempt_to_load_the_certificate_from_the_File = () =>
 			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.CertPath.ShouldEqual("c:/mycert.cer");
 
@@ -261,6 +265,9 @@ namespace NanoMessageBus.Channels
 
 		It should_indicate_that_ssl_is_enabled = () =>
 			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
+
+		It should_contain_the_server_name_from_the_endpoint_hostname = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.ServerName.ShouldEqual("localhost");
 
 		It should_attempt_to_load_the_certificate_from_the_file_specified = () =>
 			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.CertPath.ShouldEqual("c:/mycert.cer");
@@ -291,11 +298,54 @@ namespace NanoMessageBus.Channels
 		It should_indicate_that_ssl_is_enabled = () =>
 			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
 
+		It should_contain_the_server_name_from_the_endpoint_hostname = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.ServerName.ShouldEqual("localhost");
+
 		It should_attempt_to_load_the_certificate_from_the_file_specified = () =>
 			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Certs.Count.ShouldEqual(1);
 
 		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-id=my-cert-thumbprint", UriKind.Absolute);
 		static Mock<CertificateStore> certificates;
+	}
+
+	[Subject(typeof(FailoverConnectionFactory))]
+	public class when_the_endpoint_ignores_the_broker_certificate_name : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory = new FailoverFactoryStub();
+			factory.AddEndpoint(Endpoint);
+		};
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		It should_indicate_that_ssl_is_enabled = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
+
+		It should_indicate_certificate_name_mismatches_are_okay = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints
+				.First().Ssl.AcceptablePolicyErrors.ShouldEqual(SslPolicyErrors.RemoteCertificateNameMismatch);
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=/cer.cer&remote-name-match=false", UriKind.Absolute);
+	}
+
+	[Subject(typeof(FailoverConnectionFactory))]
+	public class when_the_endpoint_explicitly_specifies_the_remote_server_name : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory = new FailoverFactoryStub();
+			factory.AddEndpoint(Endpoint);
+		};
+
+		It should_contain_the_server_name_from_the_endpoint_querystring_parameter = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.ServerName.ShouldEqual("test-cert-name");
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=/cer.cer&remote-name=test-cert-name", UriKind.Absolute);
 	}
 
 	public abstract class using_the_failover_connection_factory

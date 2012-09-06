@@ -3,7 +3,9 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Collections.Specialized;
 	using System.Linq;
+	using System.Net.Security;
 	using System.Security.Cryptography.X509Certificates;
 	using System.Web;
 	using RabbitMQ.Client;
@@ -76,7 +78,7 @@
 		public override IConnection CreateConnection(int maxRedirects)
 		{
 			var endpoints = this.brokers
-				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x.Query) })
+				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x.Host, x.Query) })
 				.ToArray();
 			if (endpoints.Length == 0)
 				endpoints = new[] { new AmqpTcpEndpoint(DefaultEndpoint) };
@@ -88,7 +90,7 @@
 
 			return connection;
 		}
-		private SslOption ToSsl(string querystring)
+		private SslOption ToSsl(string hostname, string querystring)
 		{
 			var parsed = HttpUtility.ParseQueryString(querystring);
 			var certificatePath = parsed[CertificatePathKey];
@@ -96,11 +98,19 @@
 
 			return new SslOption
 			{
+				AcceptablePolicyErrors = GetAcceptablePolicyFailures(parsed),
+				ServerName = parsed[RemoteNameKey] ?? hostname,
 				Enabled = certificate != null || !string.IsNullOrEmpty(certificatePath),
 				CertPath = certificatePath,
 				CertPassphrase = parsed[CertificatePassphraseKey],
 				Certs = certificate == null ? new X509CertificateCollection() : new X509CertificateCollection(new[] { certificate })
 			};
+		}
+		private static SslPolicyErrors GetAcceptablePolicyFailures(NameValueCollection values)
+		{
+			var mismatch = (values[AllowRemoteServerNameMatchKey] ?? string.Empty)
+				.Equals(bool.FalseString, StringComparison.InvariantCultureIgnoreCase);
+			return mismatch ? SslPolicyErrors.RemoteCertificateNameMismatch : SslPolicyErrors.None;
 		}
 
 		public FailoverConnectionFactory() : this(null)
@@ -112,6 +122,8 @@
 		}
 
 		private const string CertificatePathKey = "cert-path";
+		private const string RemoteNameKey = "remote-name";
+		private const string AllowRemoteServerNameMatchKey = "remote-name-match";
 		private const string CertificatePassphraseKey = "cert-passphrase";
 		private const string CertificateIdKey = "cert-id";
 		private const string DefaultUserName = "guest";
