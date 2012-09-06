@@ -39,6 +39,14 @@
 			};
 			return this;
 		}
+		public virtual RabbitWireup AddEndpoints(string addresses, bool ordered = false)
+		{
+			this.ConnectionFactory.AddEndpoints(addresses);
+			if (!ordered)
+				this.ConnectionFactory.RandomizeEndpoints();
+
+			return this;
+		}
 		public virtual RabbitWireup AddEndpoint(Uri address, bool ordered = false)
 		{
 			if (address == null)

@@ -82,6 +82,48 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitWireup))]
+	public class when_specifying_an_endpoint_address_as_a_string : using_the_wireup
+	{
+		Establish context = () =>
+			factory = new Mock<FailoverConnectionFactory>();
+
+		Because of = () =>
+			wireup
+				.WithConnectionFactory(factory.Object)
+				.AddEndpoints(Endpoints);
+
+		It should_provide_the_endpoints_to_the_underlying_connection_factory = () =>
+			factory.Verify(x => x.AddEndpoints(Endpoints), Times.Once());
+
+		It should_randomize_the_order_of_the_endpoints = () =>
+			factory.Verify(x => x.RandomizeEndpoints(), Times.Once());
+
+		const string Endpoints = "amqp://localhost|amqps://localhost";
+		static Mock<FailoverConnectionFactory> factory;
+	}
+
+	[Subject(typeof(RabbitWireup))]
+	public class when_specifying_a_strictly_ordered_endpoint_address_as_a_string : using_the_wireup
+	{
+		Establish context = () =>
+			factory = new Mock<FailoverConnectionFactory>();
+
+		Because of = () =>
+			wireup
+				.WithConnectionFactory(factory.Object)
+				.AddEndpoints(Endpoints, ordered: true);
+
+		It should_provide_the_endpoints_to_the_underlying_connection_factory = () =>
+			factory.Verify(x => x.AddEndpoints(Endpoints), Times.Once());
+
+		It should_NOT_randomize_the_order_of_the_endpoints = () =>
+			factory.Verify(x => x.RandomizeEndpoints(), Times.Never());
+
+		const string Endpoints = "amqp://localhost|amqps://localhost";
+		static Mock<FailoverConnectionFactory> factory;
+	}
+
+	[Subject(typeof(RabbitWireup))]
 	public class when_authentication_information_is_already_specified : using_the_wireup
 	{
 		Establish context = () => factory = new FailoverConnectionFactory
