@@ -4,7 +4,6 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Net;
 	using System.Security.Cryptography.X509Certificates;
 	using System.Web;
 	using RabbitMQ.Client;
@@ -76,7 +75,9 @@
 
 		public override IConnection CreateConnection(int maxRedirects)
 		{
-			var endpoints = this.brokers.SelectMany(this.ToAmqpEndpoint).ToArray();
+			var endpoints = this.brokers
+				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x.Query) })
+				.ToArray();
 			if (endpoints.Length == 0)
 				endpoints = new[] { new AmqpTcpEndpoint(DefaultEndpoint) };
 
@@ -87,20 +88,7 @@
 
 			return connection;
 		}
-		private IEnumerable<AmqpTcpEndpoint> ToAmqpEndpoint(Uri endpoint)
-		{
-			return this.nslookup(endpoint.Host).Select(x => ToAmqpEndpoint(endpoint, x));
-		}
-		private AmqpTcpEndpoint ToAmqpEndpoint(Uri endpoint, IPAddress address)
-		{
-			return new AmqpTcpEndpoint(endpoint)
-			{
-				Port = endpoint.Port == -1 ? 0 : endpoint.Port,
-				HostName = address.ToString(),
-				Ssl = this.BuildSslOptions(endpoint.Query)
-			};
-		}
-		private SslOption BuildSslOptions(string querystring)
+		private SslOption ToSsl(string querystring)
 		{
 			var parsed = HttpUtility.ParseQueryString(querystring);
 			var certificatePath = parsed[CertificatePathKey];
@@ -115,12 +103,11 @@
 			};
 		}
 
-		public FailoverRabbitConnectionFactory() : this(null, null)
+		public FailoverRabbitConnectionFactory() : this(null)
 		{
 		}
-		public FailoverRabbitConnectionFactory(Func<string, ICollection<IPAddress>> nslookup, CertificateStore certificates)
+		public FailoverRabbitConnectionFactory(CertificateStore certificates)
 		{
-			this.nslookup = nslookup ?? Dns.GetHostAddresses;
 			this.certificates = certificates ?? new CertificateStore();
 		}
 
@@ -135,7 +122,6 @@
 		private static readonly char[] EndpointDelimiter = new[] { '|' };
 		private static readonly char[] AuthenticationDelimiter = ":".ToCharArray();
 		private readonly IList<Uri> brokers = new List<Uri>();
-		private readonly Func<string, ICollection<IPAddress>> nslookup;
 		private readonly CertificateStore certificates;
 	}
 }

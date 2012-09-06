@@ -7,7 +7,6 @@ namespace NanoMessageBus.Channels
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
-	using System.Net;
 	using System.Security.Cryptography.X509Certificates;
 	using Machine.Specifications;
 	using Moq;
@@ -171,7 +170,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			factory = new FailoverFactoryStub(nslookup: DnsLookup);
+			factory = new FailoverFactoryStub();
 			factory.AddEndpoints(Endpoints);
 		};
 
@@ -181,18 +180,9 @@ namespace NanoMessageBus.Channels
 		It should_provide_the_max_redirect_value_to_the_base_class = () =>
 			((FailoverFactoryStub)factory).MaxRedirects.ShouldEqual(42);
 
-		It should_resolve_the_ip_address_for_each_endpoint = () =>
-			resolutionCount.ShouldEqual(4);
-
-		It should_translate_the_endpoint_to_ip_addresses_for_the_base_class = () =>
-			((FailoverFactoryStub)factory).ConnectedEndpoints.ToList()
-				.ForEach(x => x.HostName.ShouldEqual("127.0.0.1"));
-
-		static ICollection<IPAddress> DnsLookup(string hostname)
-		{
-			resolutionCount++;
-			return new[] { IPAddress.Parse("127.0.0.1") };
-		}
+		It should_provide_each_endpoint_to_the_underlying_connection = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.Select(x => x.HostName)
+				.SequenceEqual(Endpoints.Select(x => x.Host)).ShouldBeTrue();
 
 		static readonly IList<Uri> Endpoints = new[]
 		{
@@ -285,7 +275,7 @@ namespace NanoMessageBus.Channels
 				.Setup(x => x.Resolve("my-cert-thumbprint", "My", "CurrentUser"))
 				.Returns(new Mock<X509Certificate>().Object);
 
-			factory = new FailoverFactoryStub(true, null, certificates.Object);
+			factory = new FailoverFactoryStub(true, certificates.Object);
 			factory.AddEndpoint(Endpoint);
 		};
 
@@ -334,11 +324,8 @@ namespace NanoMessageBus.Channels
 			return this.CanConnect ? new Mock<IConnection>().Object : null;
 		}
 
-		public FailoverFactoryStub(
-			bool canConnect = true,
-			Func<string, ICollection<IPAddress>> nslookup = null,
-			CertificateStore certificates = null)
-			: base(nslookup, certificates)
+		public FailoverFactoryStub(bool canConnect = true, CertificateStore certificates = null)
+			: base(certificates)
 		{
 			this.CanConnect = canConnect;
 		}
