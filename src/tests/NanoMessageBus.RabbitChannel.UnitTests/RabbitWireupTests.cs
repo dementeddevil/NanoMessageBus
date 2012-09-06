@@ -6,7 +6,7 @@ namespace NanoMessageBus.Channels
 	using System;
 	using System.Linq;
 	using Machine.Specifications;
-	using RabbitMQ.Client;
+	using Moq;
 	using It = Machine.Specifications.It;
 
 	[Subject(typeof(RabbitWireup))]
@@ -39,25 +39,29 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(RabbitWireup))]
 	public class when_specifying_an_endpoint_address : using_the_wireup
 	{
-		Because of = () =>
-			wireup.AddEndpoint(address).AddChannelGroup(x => x.WithGroupName("my group")).Build();
+		Establish context = () =>
+			factory = new Mock<FailoverRabbitConnectionFactory>();
 
-		It should_contain_the_address_specified = () =>
-			wireup.EndpointAddress.ShouldEqual(address);
+	    Because of = () =>
+	        wireup
+				.WithConnectionFactory(factory.Object)
+				.AddEndpoint(address)
+				.AddChannelGroup(x => x.WithGroupName("my group")).Build();
 
-		It should_use_username_provided_in_the_address = () =>
-			wireup.ConnectionFactory.UserName.ShouldEqual("user");
+		It should_set_the_address_provided_on_the_connection_factory = () =>
+			factory.Verify(x => x.AddEndpoint(address), Times.Once());
 
-		It should_use_password_provided_in_the_address = () =>
-			wireup.ConnectionFactory.Password.ShouldEqual("pass");
+		It should_randomize_the_order_of_the_endpoints = () =>
+			factory.Verify(x => x.RandomizeEndpoints(), Times.Once());
 
-		static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
+	    static readonly Uri address = new Uri("amqp://user:pass@localhost/vhost/");
+		static Mock<FailoverRabbitConnectionFactory> factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
 	public class when_authentication_information_is_already_specified : using_the_wireup
 	{
-		Establish context = () => factory = new ConnectionFactory
+		Establish context = () => factory = new FailoverRabbitConnectionFactory
 		{
 			UserName = "existing",
 			Password = null
@@ -76,7 +80,7 @@ namespace NanoMessageBus.Channels
 			factory.Password.ShouldBeNull();
 
 		static readonly Uri address = new Uri("amqp://user:pass@localhost/");
-		static ConnectionFactory factory;
+		static FailoverRabbitConnectionFactory factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -87,13 +91,6 @@ namespace NanoMessageBus.Channels
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
-	}
-
-	[Subject(typeof(RabbitWireup))]
-	public class when_no_endpoint_address_is_specifieed : using_the_wireup
-	{
-		It connect_to_the_default_address = () =>
-			wireup.EndpointAddress.ShouldBeNull();
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -148,7 +145,7 @@ namespace NanoMessageBus.Channels
 		It should_contain_the_connection_factory_specified = () =>
 			factory.ShouldEqual(wireup.ConnectionFactory);
 
-		static readonly ConnectionFactory factory = new ConnectionFactory();
+		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -156,7 +153,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
-			factory = new ConnectionFactory();
+			factory = new FailoverRabbitConnectionFactory();
 
 			wireup
 				.AddChannelGroup(x => x.WithGroupName("1"))
@@ -168,15 +165,12 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			connector = wireup.Build();
 
-		It should_set_the_address_provided_on_the_connection_factory = () =>
-			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://a-different-host:5672");
-
 		It should_provide_the_channel_groups_to_the_connector = () => wireup.ChannelGroups.ToList()
 			.ForEach(x => connector.ChannelGroups.Any(cg => cg.GroupName == x.GroupName).ShouldBeTrue());
 
 		static readonly Uri address = new Uri("amqp-0-9://a-different-host:5672");
 		static RabbitConnector connector;
-		static ConnectionFactory factory;
+		static FailoverRabbitConnectionFactory factory;
 	}
 
 	[Subject(typeof(RabbitWireup))]
@@ -192,7 +186,7 @@ namespace NanoMessageBus.Channels
 		It should_leave_endpoint_on_the_connection_factory_as_the_default_value = () =>
 			factory.Endpoint.ToString().ShouldEqual("amqp-0-9://localhost:5672");
 
-		static readonly ConnectionFactory factory = new ConnectionFactory();
+		static readonly FailoverRabbitConnectionFactory factory = new FailoverRabbitConnectionFactory();
 	}
 
 	public abstract class using_the_wireup

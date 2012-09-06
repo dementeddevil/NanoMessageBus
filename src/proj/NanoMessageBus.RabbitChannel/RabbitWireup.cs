@@ -3,7 +3,6 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using RabbitMQ.Client;
 
 	public class RabbitWireup
 	{
@@ -11,31 +10,8 @@
 		{
 			get { return this.configurations.ToList(); }
 		}
-		public virtual Uri EndpointAddress { get; private set; }
 		public virtual TimeSpan ShutdownTimeout { get; private set; }
-		public virtual ConnectionFactory ConnectionFactory { get; private set; }
-
-		public virtual RabbitWireup AddEndpoint(Uri address, bool ordered = false)
-		{
-			if (address == null)
-				throw new ArgumentNullException("address");
-
-			this.AppendConnection(address, ordered);
-			this.EndpointAddress = address;
-			return this;
-		}
-		private void AppendConnection(Uri address, bool ordered)
-		{
-			var failover = this.ConnectionFactory as FailoverRabbitConnectionFactory;
-			if (failover == null)
-				return;
-
-			failover.AddEndpoint(address);
-			if (ordered)
-				return;
-
-			failover.RandomizeEndpoints();
-		}
+		public virtual FailoverRabbitConnectionFactory ConnectionFactory { get; private set; }
 
 		public virtual RabbitWireup WithShutdownTimout(TimeSpan timeout)
 		{
@@ -45,12 +21,21 @@
 			this.ShutdownTimeout = timeout;
 			return this;
 		}
-		public virtual RabbitWireup WithConnectionFactory(ConnectionFactory factory)
+		public virtual RabbitWireup WithConnectionFactory(FailoverRabbitConnectionFactory factory)
 		{
 			if (factory == null)
 				throw new ArgumentNullException("factory");
 
 			this.ConnectionFactory = factory;
+			return this;
+		}
+		public virtual RabbitWireup AddEndpoint(Uri address, bool ordered = false)
+		{
+			if (address == null)
+				throw new ArgumentNullException("address");
+
+			this.ConnectionFactory.AddEndpoint(address);
+			this.ConnectionFactory.RandomizeEndpoints();
 			return this;
 		}
 		public virtual RabbitWireup AddChannelGroup(Action<RabbitChannelGroupConfiguration> callback)
@@ -66,29 +51,7 @@
 		}
 		public virtual RabbitConnector Build()
 		{
-			var failover = this.ConnectionFactory as FailoverRabbitConnectionFactory;
-			if (failover != null)
-				this.EndpointAddress = this.EndpointAddress ?? failover.Endpoints.FirstOrDefault();
-
-			this.AssignConnectionAddress();
 			return new RabbitConnector(this.ConnectionFactory, this.ShutdownTimeout, this.configurations);
-		}
-		private void AssignConnectionAddress()
-		{
-			if (this.EndpointAddress == null)
-				return;
-
-			this.ConnectionFactory.Endpoint = new AmqpTcpEndpoint(this.EndpointAddress);
-			this.AssignAuthenticationInformation();
-		}
-		private void AssignAuthenticationInformation()
-		{
-			if (this.ConnectionFactory.UserName != DefaultUserName || this.ConnectionFactory.Password != DefaultPassword)
-				return;
-
-			var authentication = this.EndpointAddress.UserInfo.Split(Delimiter);
-			this.ConnectionFactory.UserName = authentication.Length > 0 ? authentication[UserNameIndex] : null;
-			this.ConnectionFactory.Password = authentication.Length > 1 ? authentication[PasswordIndex] : null;
 		}
 
 		public RabbitWireup()
@@ -100,10 +63,5 @@
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
 		private readonly ICollection<RabbitChannelGroupConfiguration> configurations =
 			new LinkedList<RabbitChannelGroupConfiguration>();
-		private static readonly char[] Delimiter = ":".ToCharArray();
-		private const string DefaultUserName = "guest";
-		private const string DefaultPassword = DefaultUserName;
-		private const int UserNameIndex = 0;
-		private const int PasswordIndex = 1;
 	}
 }

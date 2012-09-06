@@ -8,7 +8,6 @@ namespace NanoMessageBus.Channels
 	using System.Linq;
 	using System.Threading;
 	using Machine.Specifications;
-	using RabbitMQ.Client;
 
 	[Subject(typeof(RabbitChannel))]
 	public class when_connecting_with_bad_credentials : using_the_channel
@@ -211,7 +210,7 @@ namespace NanoMessageBus.Channels
 			receiverChannel = null;
 
 			wireup = new RabbitWireup()
-				.WithConnectionFactory(connectionFactory = new ConnectionFactory())
+				.WithConnectionFactory(connectionFactory = new FailoverRabbitConnectionFactory())
 				.AddEndpoint(connectionUri = new Uri(ConfigurationManager.AppSettings["ConnectionUri"]))
 				.WithShutdownTimout(ShutdownTimeout)
 				.AddChannelGroup(x =>
@@ -301,7 +300,7 @@ namespace NanoMessageBus.Channels
 		protected static readonly TimeSpan DefaultSleepTimeout = TimeSpan.FromMilliseconds(250);
 		static readonly TimeSpan ShutdownTimeout = TimeSpan.FromMilliseconds(100);
 		protected static RabbitWireup wireup;
-		protected static ConnectionFactory connectionFactory;
+		protected static FailoverRabbitConnectionFactory connectionFactory;
 		protected static Uri connectionUri;
 		protected static RabbitChannelGroupConfiguration receiverConfig;
 		protected static RabbitChannelGroupConfiguration senderConfig;

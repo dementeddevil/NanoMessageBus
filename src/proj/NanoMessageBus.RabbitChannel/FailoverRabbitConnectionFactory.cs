@@ -50,7 +50,7 @@
 			return true;
 		}
 
-		public FailoverRabbitConnectionFactory RandomizeEndpoints()
+		public virtual FailoverRabbitConnectionFactory RandomizeEndpoints()
 		{
 			var random = new Random();
 
