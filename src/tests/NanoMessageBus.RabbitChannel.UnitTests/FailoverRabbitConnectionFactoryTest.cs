@@ -8,6 +8,7 @@ namespace NanoMessageBus.Channels
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Net;
+	using System.Security.Cryptography.X509Certificates;
 	using Machine.Specifications;
 	using Moq;
 	using RabbitMQ.Client;
@@ -229,6 +230,78 @@ namespace NanoMessageBus.Channels
 			thrown.ShouldBeOfType<BrokerUnreachableException>();
 	}
 
+	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	public class when_establishing_an_ssl_connection_using_a_certificate_file : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory = new FailoverFactoryStub();
+			factory.AddEndpoint(Endpoint);
+		};
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		It should_indicate_that_ssl_is_enabled = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
+
+		It should_attempt_to_load_the_certificate_from_the_File = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.CertPath.ShouldEqual("c:/mycert.cer");
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=c:/mycert.cer", UriKind.Absolute);
+	}
+
+	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	public class when_establishing_an_ssl_connection_using_a_certificate_file_and_passphrase : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory = new FailoverFactoryStub();
+			factory.AddEndpoint(Endpoint);
+		};
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		It should_indicate_that_ssl_is_enabled = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
+
+		It should_attempt_to_load_the_certificate_from_the_file_specified = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.CertPath.ShouldEqual("c:/mycert.cer");
+
+		It should_use_the_passphrase_specified = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.CertPassphrase.ShouldEqual("1234");
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=c:/mycert.cer&cert-passphrase=1234", UriKind.Absolute);
+	}
+
+	[Subject(typeof(FailoverRabbitConnectionFactory))]
+	public class when_establishing_an_ssl_connection_using_a_certificate_thumbprint : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			certificates = new Mock<CertificateStore>();
+			certificates
+				.Setup(x => x.Resolve("my-cert-thumbprint", "My", "CurrentUser"))
+				.Returns(new Mock<X509Certificate>().Object);
+
+			factory = new FailoverFactoryStub(true, null, certificates.Object);
+			factory.AddEndpoint(Endpoint);
+		};
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		It should_indicate_that_ssl_is_enabled = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
+
+		It should_attempt_to_load_the_certificate_from_the_file_specified = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Certs.Count.ShouldEqual(1);
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-id=my-cert-thumbprint", UriKind.Absolute);
+		static Mock<CertificateStore> certificates;
+	}
+
 	public abstract class using_the_failover_connection_factory
 	{
 		Establish context = () =>
@@ -261,8 +334,11 @@ namespace NanoMessageBus.Channels
 			return this.CanConnect ? new Mock<IConnection>().Object : null;
 		}
 
-		public FailoverFactoryStub(bool canConnect = true, Func<string, ICollection<IPAddress>> nslookup = null)
-			: base(nslookup)
+		public FailoverFactoryStub(
+			bool canConnect = true,
+			Func<string, ICollection<IPAddress>> nslookup = null,
+			CertificateStore certificates = null)
+			: base(nslookup, certificates)
 		{
 			this.CanConnect = canConnect;
 		}

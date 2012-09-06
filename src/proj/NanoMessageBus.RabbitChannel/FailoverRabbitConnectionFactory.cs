@@ -5,6 +5,8 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Net;
+	using System.Security.Cryptography.X509Certificates;
+	using System.Web;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Exceptions;
 
@@ -39,7 +41,6 @@
 
 			return this;
 		}
-
 		public virtual bool AddEndpoint(Uri endpoint)
 		{
 			if (endpoint == null)
@@ -58,7 +59,6 @@
 
 			return true;
 		}
-
 		public virtual FailoverRabbitConnectionFactory RandomizeEndpoints()
 		{
 			var random = new Random();
@@ -89,21 +89,50 @@
 		}
 		private IEnumerable<AmqpTcpEndpoint> ToAmqpEndpoint(Uri endpoint)
 		{
-			// TODO: grab ssl from each endpoint to create the AmqpTcpEndpoint, try/catch bad SSL info and have it
-			// result in a failed connection wrapped in some kind of configuration errors?
-			return this.nslookup(endpoint.Host)
-				.Select(x => new UriBuilder(endpoint.Scheme, x.ToString(), endpoint.Port, endpoint.PathAndQuery, endpoint.Fragment))
-				.Select(x => new AmqpTcpEndpoint(x.Uri));
+			return this.nslookup(endpoint.Host).Select(x => ToAmqpEndpoint(endpoint, x));
+		}
+		private AmqpTcpEndpoint ToAmqpEndpoint(Uri endpoint, IPAddress address)
+		{
+			return new AmqpTcpEndpoint(endpoint)
+			{
+				Port = endpoint.Port == -1 ? 0 : endpoint.Port,
+				HostName = address.ToString(),
+				Ssl = this.BuildSslOptions(endpoint.Query)
+			};
+		}
+		private SslOption BuildSslOptions(string querystring)
+		{
+			var parsed = HttpUtility.ParseQueryString(querystring);
+			var certificatePath = parsed[CertificatePathKey];
+			var certificate = this.certificates.Resolve(parsed[CertificateIdKey]);
+
+			return new SslOption
+			{
+				Enabled = certificate != null || !string.IsNullOrEmpty(certificatePath),
+				CertPath = certificatePath,
+				CertPassphrase = parsed[CertificatePassphraseKey],
+				Certs = certificate == null ? new X509CertificateCollection() : new X509CertificateCollection(new[] { certificate })
+			};
 		}
 
-		public FailoverRabbitConnectionFactory() : this(null)
+		public FailoverRabbitConnectionFactory() : this(null, null)
 		{
 		}
-		public FailoverRabbitConnectionFactory(Func<string, ICollection<IPAddress>> nslookup)
+		public FailoverRabbitConnectionFactory(Func<string, ICollection<IPAddress>> nslookup, CertificateStore certificates)
 		{
+			// TODO: make sure that identity can be establish using the certificate file alone
 			this.nslookup = nslookup ?? Dns.GetHostAddresses;
+			this.certificates = certificates ?? new CertificateStore();
+			this.AuthMechanisms = new AuthMechanismFactory[]
+			{
+				new PlainMechanismFactory(), 
+				new ExternalMechanismFactory()
+			};
 		}
 
+		private const string CertificatePathKey = "cert-path";
+		private const string CertificatePassphraseKey = "cert-passphrase";
+		private const string CertificateIdKey = "cert-id";
 		private const string DefaultUserName = "guest";
 		private const string DefaultPassword = DefaultUserName;
 		private const int UserNameIndex = 0;
@@ -113,5 +142,6 @@
 		private static readonly char[] AuthenticationDelimiter = ":".ToCharArray();
 		private readonly IList<Uri> brokers = new List<Uri>();
 		private readonly Func<string, ICollection<IPAddress>> nslookup;
+		private readonly CertificateStore certificates;
 	}
 }
