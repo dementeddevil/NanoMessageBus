@@ -728,11 +728,29 @@ namespace NanoMessageBus.Channels
 		It should_declare_the_dead_letter_exchange_if_specified = () =>
 			mockChannel.Verify(x => x.ExchangeDeclare("dead-letters", ExchangeType.Fanout, true, false, null));
 
+		It should_declare_the_unhandled_message_exchange_if_specified = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare("unhandled-messages", ExchangeType.Fanout, true, false, null));
+
+		It should_declare_the_unroutable_message_exchange_if_specified = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare("unroutable-messages", ExchangeType.Fanout, true, false, null));
+
 		It should_declare_a_dead_letter_queue_if_specified = () =>
 			mockChannel.Verify(x => x.QueueDeclare("dead-letters", true, false, false, null));
 
+		It should_declare_a_unhandled_message_queue_if_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare("unhandled-messages", true, false, false, null));
+
+		It should_declare_a_unroutable_message_queue_if_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare("unroutable-messages", true, false, false, null));
+
 		It should_bind_dead_letter_exchange_and_queue = () =>
 			mockChannel.Verify(x => x.QueueBind("dead-letters", "dead-letters", string.Empty, null));
+
+		It should_bind_unhandled_message_exchange_and_queue = () =>
+			mockChannel.Verify(x => x.QueueBind("unhandled-messages", "unhandled-messages", string.Empty, null));
+
+		It should_bind_unroutable_message_exchange_and_queue = () =>
+			mockChannel.Verify(x => x.QueueBind("unroutable-messages", "unroutable-messages", string.Empty, null));
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

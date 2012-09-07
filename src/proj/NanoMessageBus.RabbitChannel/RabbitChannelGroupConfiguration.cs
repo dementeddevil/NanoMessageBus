@@ -13,6 +13,8 @@
 		{
 			this.DeclareSystemExchange(channel, this.PoisonMessageExchange);
 			this.DeclareSystemExchange(channel, this.DeadLetterExchange);
+			this.DeclareSystemExchange(channel, this.UnhandledMessageExchange);
+			this.DeclareSystemExchange(channel, this.UnroutableMessageExchange);
 			this.DeclareExchanges(channel);
 			this.DeclareQueue(channel);
 			this.BindQueue(channel);
