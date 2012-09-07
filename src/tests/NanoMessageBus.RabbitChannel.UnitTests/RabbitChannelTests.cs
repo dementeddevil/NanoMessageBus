@@ -356,7 +356,7 @@ namespace NanoMessageBus.Channels
 			};
 
 			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns(address);
-			mockAdapter.Setup(x => x.Build(message)).Throws(new ExpiredMessageException(SystemTime.UtcNow));
+			mockAdapter.Setup(x => x.Build(message)).Throws(new DeadLetterException(SystemTime.UtcNow));
 
 			RequireTransaction(RabbitTransactionType.Full);
 			Initialize();
@@ -399,7 +399,7 @@ namespace NanoMessageBus.Channels
 
 		Because of = () =>
 		{
-			channel.Receive(deliveryContext => { throw new ExpiredMessageException(SystemTime.UtcNow); });
+			channel.Receive(deliveryContext => { throw new DeadLetterException(SystemTime.UtcNow); });
 			Receive(message);
 		};
 
@@ -429,7 +429,7 @@ namespace NanoMessageBus.Channels
 			};
 
 			mockConfiguration.Setup(x => x.DeadLetterExchange).Returns((PublicationAddress)null);
-			mockAdapter.Setup(x => x.Build(message)).Throws(new ExpiredMessageException(SystemTime.UtcNow));
+			mockAdapter.Setup(x => x.Build(message)).Throws(new DeadLetterException(SystemTime.UtcNow));
 
 			Initialize();
 		};

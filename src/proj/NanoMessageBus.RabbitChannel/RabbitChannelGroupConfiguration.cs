@@ -87,7 +87,6 @@
 		public virtual int ChannelBuffer { get; private set; }
 		public virtual PublicationAddress PoisonMessageExchange { get; private set; }
 		public virtual PublicationAddress DeadLetterExchange { get; private set; } // null = drop message
-		public virtual PublicationAddress ExpiredMessageExchange { get; private set; } // null = drop message
 		public virtual PublicationAddress UnhandledMessageExchange { get; private set; } // null = drop message
 		public virtual PublicationAddress UnroutableMessageExchange { get; private set; } // null = drop message
 		public virtual int MaxAttempts { get; private set; }
@@ -258,14 +257,23 @@
 			this.DeadLetterExchange = exchange.ToExchangeAddress();
 			return this;
 		}
-		public virtual RabbitChannelGroupConfiguration WithExpiredMessageExchange(string exchange)
+		public virtual RabbitChannelGroupConfiguration WithUnhandledMessageExchange(string exchange)
 		{
 			if (exchange == null)
 				throw new ArgumentNullException("exchange");
 
-			this.ExpiredMessageExchange = exchange.ToExchangeAddress();
+			this.UnhandledMessageExchange = exchange.ToExchangeAddress();
 			return this;
 		}
+		public virtual RabbitChannelGroupConfiguration WithUnroutableMessageExchange(string exchange)
+		{
+			if (exchange == null)
+				throw new ArgumentNullException("exchange");
+
+			this.UnroutableMessageExchange = exchange.ToExchangeAddress();
+			return this;
+		}
+
 		public virtual RabbitChannelGroupConfiguration WithMaxAttempts(int attempts)
 		{
 			if (attempts <= 0)
@@ -333,8 +341,10 @@
 				ExchangeType.Fanout, DefaultPoisonMessageExchange, string.Empty);
 			this.DeadLetterExchange = new PublicationAddress(
 				ExchangeType.Fanout, DefaultDeadLetterExchange, string.Empty);
-			this.ExpiredMessageExchange = new PublicationAddress(
-				ExchangeType.Fanout, DefaultExpiredMessageExchange, string.Empty);
+			this.UnhandledMessageExchange = new PublicationAddress(
+				ExchangeType.Fanout, DefaultUnhandledMessageExchange, string.Empty);
+			this.UnroutableMessageExchange = new PublicationAddress(
+				ExchangeType.Fanout, DefaultUnroutableMessageExchange, string.Empty);
 
 			this.Serializer = DefaultSerializer;
 			this.MessageAdapter = new RabbitMessageAdapter(this);
@@ -357,7 +367,8 @@
 		private const string ClusteredQueueDeclaration = "x-ha-policy";
 		private const string ReplicateToAllNodes = "all";
 		private const string DefaultDeadLetterExchange = "dead-letters";
-		private const string DefaultExpiredMessageExchange = "expired-messages";
+		private const string DefaultUnhandledMessageExchange = "unhandled-messages";
+		private const string DefaultUnroutableMessageExchange = "unroutable-messages";
 		private const string DefaultAppId = "rabbit-endpoint";
 		private static readonly TimeSpan DefaultReceiveTimeout = TimeSpan.FromMilliseconds(1500);
 		private static readonly ISerializer DefaultSerializer = new BinarySerializer();

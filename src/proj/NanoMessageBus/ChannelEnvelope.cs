@@ -16,14 +16,9 @@
 		public static readonly Uri LoopbackAddress = new Uri("default://loopback/");
 
 		/// <summary>
-		/// Represents a dead-letter address used for dispatching a message to the dead-letter queue
+		/// Represents the address used for dispatching a message to the dead or expired letter queue
 		/// </summary>
 		public static readonly Uri DeadLetterAddress = new Uri("default://dead-letter-queue/");
-
-		/// <summary>
-		/// Represents the address used for dispatching a message to the expired message queue
-		/// </summary>
-		public static readonly Uri ExpiredMessageAddress = new Uri("default://expired-message-queue/");
 
 		/// <summary>
 		/// Represents the address used for dispatching a message to the unhandled message queue

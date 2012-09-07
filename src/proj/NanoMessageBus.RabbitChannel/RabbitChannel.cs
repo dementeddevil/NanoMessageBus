@@ -85,7 +85,7 @@
 				Log.Warn("Wire message {0} on channel {1} could not be deserialized; forwarding to poison message exchange.", messageId, this.identifier);
 				this.ForwardToPoisonMessageExchange(message, e);
 			}
-			catch (ExpiredMessageException e)
+			catch (DeadLetterException e)
 			{
 				var seconds = (SystemTime.UtcNow - e.Expiration).TotalSeconds;
 				Log.Info("Wire message {0} on channel {1} expired on the wire {2:n3} seconds ago; forwarding to expired message exchange.", messageId, this.identifier, seconds);

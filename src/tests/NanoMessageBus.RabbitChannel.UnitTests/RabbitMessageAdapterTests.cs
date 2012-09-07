@@ -139,7 +139,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(() => adapter.Build(message));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ExpiredMessageException>();
+			thrown.ShouldBeOfType<DeadLetterException>();
 
 		It should_not_invoke_the_serializer = () =>
 			mockSerializer.Verify(
