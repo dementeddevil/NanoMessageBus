@@ -270,7 +270,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
-	public class when_sending_a_message_to_dead_letter_address : using_a_channel
+	public class when_sending_a_message_to_the_system_defined_dead_letter_address : using_a_channel
 	{
 		Establish context = () =>
 		{
@@ -302,6 +302,80 @@ namespace NanoMessageBus.Channels
 
 		It should_send_the_message_to_the_configured_dead_letter_exchange = () =>
 			destination.ShouldEqual(mockConfiguration.Object.DeadLetterExchange);
+
+		static PublicationAddress destination;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_to_system_defined_unhandled_message_address : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockConfiguration
+				.Setup(x => x.UnhandledMessageExchange)
+				.Returns(new PublicationAddress("direct", "unhandled-message-here", "some-key"));
+
+			mockAdapter
+				.Setup(x => x.Build(Moq.It.IsAny<ChannelMessage>(), Moq.It.IsAny<IBasicProperties>()))
+				.Returns(EmptyMessage);
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Callback<PublicationAddress, IBasicProperties, byte[]>((x, y, z) => destination = x);
+		};
+
+		Because of = () =>
+		{
+			var message = new ChannelMessage(Guid.Empty, Guid.Empty, null, null, null);
+			var recipients = new[] { ChannelEnvelope.UnhandledMessageAddress };
+			channel.Send(new ChannelEnvelope(message, recipients));
+		};
+
+		It should_append_the_retry_address_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendRetryAddress(Moq.It.IsAny<BasicDeliverEventArgs>()));
+
+		It should_send_the_message_to_the_configured_dead_letter_exchange = () =>
+			destination.ShouldEqual(mockConfiguration.Object.UnhandledMessageExchange);
+
+		static PublicationAddress destination;
+	}
+
+	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_to_system_defined_unroutable_message_address : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockConfiguration
+				.Setup(x => x.UnroutableMessageExchange)
+				.Returns(new PublicationAddress("direct", "unroutable-message-here", "some-key"));
+
+			mockAdapter
+				.Setup(x => x.Build(Moq.It.IsAny<ChannelMessage>(), Moq.It.IsAny<IBasicProperties>()))
+				.Returns(EmptyMessage);
+
+			mockRealChannel
+				.Setup(x => x.BasicPublish(
+					Moq.It.IsAny<PublicationAddress>(),
+					Moq.It.IsAny<IBasicProperties>(),
+					Moq.It.IsAny<byte[]>()))
+				.Callback<PublicationAddress, IBasicProperties, byte[]>((x, y, z) => destination = x);
+		};
+
+		Because of = () =>
+		{
+			var message = new ChannelMessage(Guid.Empty, Guid.Empty, null, null, null);
+			var recipients = new[] { ChannelEnvelope.UnroutableMessageAddress };
+			channel.Send(new ChannelEnvelope(message, recipients));
+		};
+
+		It should_NOT_append_the_retry_address_to_the_message = () =>
+			mockAdapter.Verify(x => x.AppendRetryAddress(Moq.It.IsAny<BasicDeliverEventArgs>()), Times.Never());
+
+		It should_send_the_message_to_the_configured_dead_letter_exchange = () =>
+			destination.ShouldEqual(mockConfiguration.Object.UnroutableMessageExchange);
 
 		static PublicationAddress destination;
 	}

@@ -3,7 +3,7 @@
 	using System;
 
 	/// <summary>
-	/// Represents an exception that occurs when an expired message is received.
+	/// Represents an exception that occurs when an expired (dead on the wire) message is received.
 	/// </summary>
 	[Serializable]
 	public class DeadLetterException : ChannelException
