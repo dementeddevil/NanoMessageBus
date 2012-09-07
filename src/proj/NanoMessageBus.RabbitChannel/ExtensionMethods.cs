@@ -28,6 +28,12 @@
 			if (uri == ChannelEnvelope.DeadLetterAddress)
 				return config.DeadLetterExchange;
 
+			if (uri == ChannelEnvelope.UnhandledMessageAddress)
+				return config.UnhandledMessageExchange;
+
+			if (uri == ChannelEnvelope.UnroutableMessageAddress)
+				return config.UnroutableMessageExchange;
+
 			var address = PublicationAddress.Parse(uri.ToString());
 			return address.ExchangeName.NormalizeName() == "default"
 				? new PublicationAddress(ExchangeType.Direct, string.Empty, address.RoutingKey) : address;

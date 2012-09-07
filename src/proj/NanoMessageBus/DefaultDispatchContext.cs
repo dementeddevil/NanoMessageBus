@@ -134,7 +134,7 @@
 
 			Log.Verbose("Replying to message.");
 			if (incomingReturnAddress == null)
-				Log.Warn("Incoming message '{0}' contains no return address; dead-letter address will be used for reply.", message.MessageId);
+				Log.Warn("Incoming message '{0}' contains no return address; unroutable address will be used for reply.", message.MessageId);
 
 			if (this.correlationIdentifier == Guid.Empty)
 			{
@@ -143,7 +143,7 @@
 				this.correlationIdentifier = this.channel.CurrentMessage.CorrelationId;
 			}
 
-			return this.Dispatch(incomingReturnAddress ?? ChannelEnvelope.DeadLetterAddress);
+			return this.Dispatch(incomingReturnAddress ?? ChannelEnvelope.UnroutableMessageAddress);
 		}
 		protected virtual IChannelTransaction Dispatch(params Uri[] targets)
 		{
@@ -176,7 +176,7 @@
 
 			var type = this.logicalMessages.First().GetType();
 			var discovered = (this.dispatchTable[type] ?? new Uri[0]).Concat(this.recipients).ToArray();
-			return discovered.Length == 0 ? new[] { ChannelEnvelope.DeadLetterAddress } : discovered;
+			return discovered.Length == 0 ? new[] { ChannelEnvelope.UnroutableMessageAddress } : discovered;
 		}
 		protected virtual void ThrowWhenNoMessages()
 		{

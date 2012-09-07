@@ -526,6 +526,86 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_an_unhandled_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithUnhandledMessageExchange("my-exchange");
+
+		It should_contain_the_exchange_specified = () =>
+			config.UnhandledMessageExchange.ExchangeName.ShouldEqual("my-exchange");
+
+		It should_be_a_fanout_exchange = () =>
+			config.UnhandledMessageExchange.ExchangeType.ShouldEqual(ExchangeType.Fanout);
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_unhandled_message_exchange_is_specified : using_channel_config
+	{
+		It should_point_to_the_default_exchange = () =>
+			config.UnhandledMessageExchange.ToString().ShouldEqual("fanout://unhandled-messages/");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_unhandled_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => config.WithUnhandledMessageExchange(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_an_empty_unhandled_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithUnhandledMessageExchange(string.Empty);
+
+		It should_no_longer_point_to_any_Unhandled_message_exchange = () =>
+			config.UnhandledMessageExchange.ShouldBeNull();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_an_unroutable_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithUnroutableMessageExchange("my-exchange");
+
+		It should_contain_the_exchange_specified = () =>
+			config.UnroutableMessageExchange.ExchangeName.ShouldEqual("my-exchange");
+
+		It should_be_a_fanout_exchange = () =>
+			config.UnroutableMessageExchange.ExchangeType.ShouldEqual(ExchangeType.Fanout);
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_no_unroutable_message_exchange_is_specified : using_channel_config
+	{
+		It should_point_to_the_default_exchange = () =>
+			config.UnroutableMessageExchange.ToString().ShouldEqual("fanout://unroutable-messages/");
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_a_null_unroutable_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			thrown = Catch.Exception(() => config.WithUnroutableMessageExchange(null));
+
+		It should_throw_an_exception = () =>
+			thrown.ShouldBeOfType<ArgumentException>();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_an_empty_unroutable_message_exchange_is_specified : using_channel_config
+	{
+		Because of = () =>
+			config.WithUnroutableMessageExchange(string.Empty);
+
+		It should_no_longer_point_to_any_Unroutable_message_exchange = () =>
+			config.UnroutableMessageExchange.ShouldBeNull();
+	}
+
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
 	public class when_specifying_the_maximum_number_of_receive_attempts : using_channel_config
 	{
 		Because of = () =>
@@ -648,11 +728,29 @@ namespace NanoMessageBus.Channels
 		It should_declare_the_dead_letter_exchange_if_specified = () =>
 			mockChannel.Verify(x => x.ExchangeDeclare("dead-letters", ExchangeType.Fanout, true, false, null));
 
+		It should_declare_the_unhandled_message_exchange_if_specified = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare("unhandled-messages", ExchangeType.Fanout, true, false, null));
+
+		It should_declare_the_unroutable_message_exchange_if_specified = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare("unroutable-messages", ExchangeType.Fanout, true, false, null));
+
 		It should_declare_a_dead_letter_queue_if_specified = () =>
 			mockChannel.Verify(x => x.QueueDeclare("dead-letters", true, false, false, null));
 
+		It should_declare_a_unhandled_message_queue_if_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare("unhandled-messages", true, false, false, null));
+
+		It should_declare_a_unroutable_message_queue_if_specified = () =>
+			mockChannel.Verify(x => x.QueueDeclare("unroutable-messages", true, false, false, null));
+
 		It should_bind_dead_letter_exchange_and_queue = () =>
 			mockChannel.Verify(x => x.QueueBind("dead-letters", "dead-letters", string.Empty, null));
+
+		It should_bind_unhandled_message_exchange_and_queue = () =>
+			mockChannel.Verify(x => x.QueueBind("unhandled-messages", "unhandled-messages", string.Empty, null));
+
+		It should_bind_unroutable_message_exchange_and_queue = () =>
+			mockChannel.Verify(x => x.QueueBind("unroutable-messages", "unroutable-messages", string.Empty, null));
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]

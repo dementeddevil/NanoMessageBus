@@ -21,7 +21,7 @@
 				unhandled.Clear();
 
 			if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
-				this.ForwardToDeadLetterAddress(message, unhandled);
+				this.ForwardToUnhandledAddress(message, unhandled);
 		}
 		private int Route(object message, ICollection<object> unhandled)
 		{
@@ -30,7 +30,7 @@
 				unhandled.Add(message);
 			return count;
 		}
-		protected virtual void ForwardToDeadLetterAddress(ChannelMessage message, ICollection<object> messages)
+		protected virtual void ForwardToUnhandledAddress(ChannelMessage message, ICollection<object> messages)
 		{
 			Log.Debug("Channel message '{0}' contained unhandled messages.", message.MessageId);
 
@@ -46,7 +46,7 @@
 
 			this.context.PrepareDispatch()
 				.WithMessage(message)
-				.WithRecipient(ChannelEnvelope.DeadLetterAddress)
+				.WithRecipient(ChannelEnvelope.UnhandledMessageAddress)
 				.Send();
 		}
 

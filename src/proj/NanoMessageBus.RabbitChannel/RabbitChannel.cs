@@ -88,7 +88,7 @@
 			catch (DeadLetterException e)
 			{
 				var seconds = (SystemTime.UtcNow - e.Expiration).TotalSeconds;
-				Log.Info("Wire message {0} on channel {1} expired on the wire {2:n3} seconds ago; forwarding to dead-letter exchange.", messageId, this.identifier, seconds);
+				Log.Info("Wire message {0} on channel {1} expired on the wire {2:n3} seconds ago; forwarding to dead letter exchange.", messageId, this.identifier, seconds);
 				this.ForwardTo(message, this.configuration.DeadLetterExchange);
 			}
 			catch (Exception e)
@@ -184,6 +184,8 @@
 				return;
 
 			if (recipient == this.configuration.DeadLetterExchange)
+				this.adapter.AppendRetryAddress(message);
+			else if (recipient == this.configuration.UnhandledMessageExchange)
 				this.adapter.AppendRetryAddress(message);
 
 			this.EnsureTransaction().Register(() => this.Try(() =>

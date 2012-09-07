@@ -590,7 +590,7 @@ namespace NanoMessageBus
 			dispatchContext.Send();
 
 		It should_send_the_message_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+			recipients[0].ShouldEqual(ChannelEnvelope.UnroutableMessageAddress);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -603,7 +603,7 @@ namespace NanoMessageBus
 			dispatchContext.Publish();
 
 		It should_send_the_message_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+			recipients[0].ShouldEqual(ChannelEnvelope.UnroutableMessageAddress);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -619,7 +619,7 @@ namespace NanoMessageBus
 			dispatchContext.Reply();
 
 		It should_send_the_message_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.DeadLetterAddress);
+			recipients[0].ShouldEqual(ChannelEnvelope.UnroutableMessageAddress);
 	}
 
 	public abstract class with_a_dispatch_context
