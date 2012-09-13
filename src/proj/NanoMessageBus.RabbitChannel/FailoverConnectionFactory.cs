@@ -79,7 +79,7 @@
 		public override IConnection CreateConnection(int maxRedirects)
 		{
 			var endpoints = this.brokers
-				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x.Host, x.Query) })
+				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x) })
 				.ToArray();
 			if (endpoints.Length == 0)
 				endpoints = new[] { new AmqpTcpEndpoint(DefaultEndpoint) };
@@ -91,18 +91,20 @@
 
 			return connection;
 		}
-		private SslOption ToSsl(string hostname, string querystring)
+		private SslOption ToSsl(Uri address)
 		{
-			var parsed = HttpUtility.ParseQueryString(querystring);
+			var parsed = HttpUtility.ParseQueryString(address.Query);
 			var certificatePath = parsed[CertificatePathKey];
 			var certificate = this.certificates.Resolve(parsed[CertificateIdKey]);
+			var secureScheme = SecureScheme.Equals(address.Scheme, StringComparison.InvariantCultureIgnoreCase);
+			var enabled = certificate != null || !string.IsNullOrEmpty(certificatePath) || secureScheme;
 
 			return new SslOption
 			{
 				Version = SslProtocols.Tls,
 				AcceptablePolicyErrors = GetAcceptablePolicyFailures(parsed),
-				ServerName = parsed[RemoteNameKey] ?? hostname,
-				Enabled = certificate != null || !string.IsNullOrEmpty(certificatePath),
+				ServerName = parsed[RemoteNameKey] ?? address.Host,
+				Enabled = enabled,
 				CertPath = certificatePath,
 				CertPassphrase = parsed[CertificatePassphraseKey],
 				Certs = certificate == null ? new X509CertificateCollection() : new X509CertificateCollection(new[] { certificate })
@@ -123,6 +125,7 @@
 			this.certificates = certificates ?? new CertificateStore();
 		}
 
+		private const string SecureScheme = "amqps";
 		private const string CertificatePathKey = "cert-path";
 		private const string RemoteNameKey = "remote-name";
 		private const string AllowRemoteServerNameMatchKey = "remote-name-match";

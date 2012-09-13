@@ -348,6 +348,27 @@ namespace NanoMessageBus.Channels
 		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=/cer.cer&remote-name=test-cert-name", UriKind.Absolute);
 	}
 
+	[Subject(typeof(FailoverConnectionFactory))]
+	public class when_connecting_to_a_secure_endpoint_without_a_client_certificate : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory = new FailoverFactoryStub();
+			factory.AddEndpoint(Endpoint);
+		};
+
+		It should_attempt_to_connecting_a_secure_connection = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.Enabled.ShouldBeTrue();
+
+		It should_contain_the_server_name_from_the_endpoint_hostname = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First().Ssl.ServerName.ShouldEqual("localhost");
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/", UriKind.Absolute);
+	}
+
 	public abstract class using_the_failover_connection_factory
 	{
 		Establish context = () =>
