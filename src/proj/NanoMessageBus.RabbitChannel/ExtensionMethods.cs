@@ -129,7 +129,6 @@
 		}
 
 		private const string AttemptCountHeader = "x-retry-count";
-
 		private static readonly Encoding TextEncoding = Encoding.UTF8;
 	}
 }

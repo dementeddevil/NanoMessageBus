@@ -327,7 +327,7 @@ namespace NanoMessageBus.Channels
 			((FailoverFactoryStub)factory).ConnectedEndpoints
 				.First().Ssl.AcceptablePolicyErrors.ShouldEqual(SslPolicyErrors.RemoteCertificateNameMismatch);
 
-		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=/cer.cer&remote-name-match=false", UriKind.Absolute);
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=/cer.cer&ignore-name=true", UriKind.Absolute);
 	}
 
 	[Subject(typeof(FailoverConnectionFactory))]
@@ -346,6 +346,25 @@ namespace NanoMessageBus.Channels
 			factory.CreateConnection(0);
 
 		static readonly Uri Endpoint = new Uri("amqps://localhost/?cert-path=/cer.cer&remote-name=test-cert-name", UriKind.Absolute);
+	}
+
+	[Subject(typeof(FailoverConnectionFactory))]
+	public class when_the_endpoint_address_ignores_untrusted_certificates : using_the_failover_connection_factory
+	{
+		Establish context = () =>
+		{
+			factory = new FailoverFactoryStub();
+			factory.AddEndpoint(Endpoint);
+		};
+
+		It should_contain_a_policy_of_ignoring_certificate_chain_errors = () =>
+			((FailoverFactoryStub)factory).ConnectedEndpoints.First()
+				.Ssl.AcceptablePolicyErrors.ShouldEqual(SslPolicyErrors.RemoteCertificateChainErrors);
+
+		Because of = () =>
+			factory.CreateConnection(0);
+
+		static readonly Uri Endpoint = new Uri("amqps://localhost/?ignore-issuer=true", UriKind.Absolute);
 	}
 
 	[Subject(typeof(FailoverConnectionFactory))]

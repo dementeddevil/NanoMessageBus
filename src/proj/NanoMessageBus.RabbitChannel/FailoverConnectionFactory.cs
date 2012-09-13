@@ -97,7 +97,7 @@
 			var certificatePath = parsed[CertificatePathKey];
 			var certificate = this.certificates.Resolve(parsed[CertificateIdKey]);
 			var secureScheme = SecureScheme.Equals(address.Scheme, StringComparison.InvariantCultureIgnoreCase);
-			var enabled = certificate != null || !string.IsNullOrEmpty(certificatePath) || secureScheme;
+			var enabled = secureScheme || certificate != null || !string.IsNullOrEmpty(certificatePath);
 
 			return new SslOption
 			{
@@ -112,9 +112,14 @@
 		}
 		private static SslPolicyErrors GetAcceptablePolicyFailures(NameValueCollection values)
 		{
-			var mismatch = (values[AllowRemoteServerNameMatchKey] ?? string.Empty)
-				.Equals(bool.FalseString, StringComparison.InvariantCultureIgnoreCase);
-			return mismatch ? SslPolicyErrors.RemoteCertificateNameMismatch : SslPolicyErrors.None;
+			var errors = SslPolicyErrors.None;
+			if (values.AllKeys.Contains(IgnoreCertificateName))
+				errors = errors | SslPolicyErrors.RemoteCertificateNameMismatch;
+
+			if (values.AllKeys.Contains(IgnoreCertificateIssuer))
+				errors = errors | SslPolicyErrors.RemoteCertificateChainErrors;
+
+			return errors;
 		}
 
 		public FailoverConnectionFactory() : this(null)
@@ -128,8 +133,9 @@
 		private const string SecureScheme = "amqps";
 		private const string CertificatePathKey = "cert-path";
 		private const string RemoteNameKey = "remote-name";
-		private const string AllowRemoteServerNameMatchKey = "remote-name-match";
 		private const string CertificatePassphraseKey = "cert-passphrase";
+		private const string IgnoreCertificateName = "ignore-name";
+		private const string IgnoreCertificateIssuer = "ignore-issuer";
 		private const string CertificateIdKey = "cert-id";
 		private const string DefaultUserName = "guest";
 		private const string DefaultPassword = DefaultUserName;
