@@ -1032,6 +1032,28 @@ namespace NanoMessageBus.Channels
 		static readonly Mock<IDispatchTable> mockTable = new Mock<IDispatchTable>();
 	}
 
+	[Subject(typeof(RabbitChannelGroupConfiguration))]
+	public class when_suppressing_configuration_declarations : using_channel_config
+	{
+		Establish context = () =>
+			config.WithInputQueue("some-queue").WithSuppressDeclarations();
+
+		Because of = () =>
+			Configure();
+
+		It should_indicate_that_declarations_are_being_suppressed = () =>
+			config.SkipDeclarations.ShouldBeTrue();
+
+		It should_NOT_invoke_any_options_on_the_channel = () =>
+			mockChannel.Verify(x => x.ExchangeDeclare(
+				Moq.It.IsAny<string>(),
+				Moq.It.IsAny<string>(),
+				Moq.It.IsAny<bool>(),
+				Moq.It.IsAny<bool>(),
+				Moq.It.IsAny<IDictionary>()),
+				Times.Never());
+	}
+
 	public abstract class using_channel_config
 	{
 		Establish context = () =>

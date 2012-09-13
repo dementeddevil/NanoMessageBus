@@ -11,6 +11,9 @@
 	{
 		public virtual void ConfigureChannel(IModel channel)
 		{
+			if (this.SkipDeclarations)
+				return;
+
 			this.DeclareSystemExchange(channel, this.PoisonMessageExchange);
 			this.DeclareSystemExchange(channel, this.DeadLetterExchange);
 			this.DeclareSystemExchange(channel, this.UnhandledMessageExchange);
@@ -106,6 +109,7 @@
 			get { return this.messageTypes; }
 		}
 		public virtual IDispatchTable DispatchTable { get; private set; }
+		public virtual bool SkipDeclarations { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
@@ -325,6 +329,12 @@
 				throw new ArgumentNullException("table");
 
 			this.DispatchTable = table;
+			return this;
+		}
+
+		public virtual RabbitChannelGroupConfiguration WithSuppressDeclarations()
+		{
+			this.SkipDeclarations = true;
 			return this;
 		}
 
