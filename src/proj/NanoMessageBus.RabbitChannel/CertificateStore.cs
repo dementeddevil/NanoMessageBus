@@ -15,11 +15,11 @@
 			if (!Enum.TryParse(name, true, out parsedName))
 				return null;
 
-			StoreLocation parsedLocatoin;
-			if (!Enum.TryParse(location, true, out parsedLocatoin))
+			StoreLocation parsedLocation;
+			if (!Enum.TryParse(location, true, out parsedLocation))
 				return null;
 
-			var source = new X509Store(parsedName, parsedLocatoin);
+			var source = new X509Store(parsedName, parsedLocation);
 
 			try
 			{
