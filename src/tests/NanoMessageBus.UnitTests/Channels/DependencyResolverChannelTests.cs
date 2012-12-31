@@ -89,7 +89,7 @@ namespace NanoMessageBus.Channels
 			dispatchContext.MessageCount.ShouldEqual(1);
 
 		It should_not_invoke_the_underlying_channel = () =>
-			mockWrappedChannel.Verify(x => x.PrepareDispatch(MyMessage), Times.Never());
+			mockWrappedChannel.Verify(x => x.PrepareDispatch(MyMessage, null), Times.Never());
 
 		const string MyMessage = "My message";
 		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();
@@ -116,10 +116,36 @@ namespace NanoMessageBus.Channels
 			dispatchContext.MessageCount.ShouldEqual(0);
 
 		It should_not_invoke_the_underlying_channel = () =>
-			mockWrappedChannel.Verify(x => x.PrepareDispatch(null), Times.Never());
+			mockWrappedChannel.Verify(x => x.PrepareDispatch(null, null), Times.Never());
 
 		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();
 		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(DependencyResolverChannel))]
+	public class when_preparing_to_dispatch_with_an_alternate_channel : with_the_dependency_resolver_channel
+	{
+		Establish context = () =>
+		{
+			var mockConfig = new Mock<IChannelGroupConfiguration>();
+			mockConfig.Setup(x => x.DispatchTable).Returns(new Mock<IDispatchTable>().Object);
+			mockWrappedChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+			mockAlternateChannel.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
+		};
+
+		Because of = () =>
+			dispatchContext = channel.PrepareDispatch(MyMessage, mockAlternateChannel.Object);
+
+		It should_return_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		It should_invoke_the_underlying_channel_providing_the_alternate_channel = () =>
+			mockWrappedChannel.Verify(x => x.PrepareDispatch(MyMessage, mockAlternateChannel.Object), Times.Once());
+
+		const string MyMessage = "My message";
+		static readonly Mock<IDispatchContext> mockContext = new Mock<IDispatchContext>();
+		static IDispatchContext dispatchContext;
+		static readonly Mock<IMessagingChannel> mockAlternateChannel = new Mock<IMessagingChannel>();
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
@@ -262,6 +288,14 @@ namespace NanoMessageBus.Channels
 		{
 			mockResolver = new Mock<IDependencyResolver>();
 			mockWrappedChannel = new Mock<IMessagingChannel>();
+			mockWrappedChannel
+				.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>(), Moq.It.IsAny<IMessagingChannel>()))
+				.Returns<object, IMessagingChannel>((msg, alt) =>
+				{
+					var ctx = new DefaultDispatchContext(alt);
+					return msg == null ? ctx : ctx.WithMessage(msg);
+				});
+
 			Build();
 		};
 		protected static void Build()

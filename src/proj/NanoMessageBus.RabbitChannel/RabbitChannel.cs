@@ -144,11 +144,11 @@
 			this.CurrentTransaction.Commit();
 		}
 
-		public virtual IDispatchContext PrepareDispatch(object message = null)
+		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
 		{
 			this.EnsureTransaction();
 
-			var context = new DefaultDispatchContext(this);
+			var context = new DefaultDispatchContext(actual ?? this);
 			return message == null ? context : context.WithMessage(message);
 		}
 

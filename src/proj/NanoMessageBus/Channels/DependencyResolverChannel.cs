@@ -30,10 +30,10 @@
 			get { return this.currentContext ?? this.channel; }
 		}
 
-		public virtual IDispatchContext PrepareDispatch(object message = null)
+		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
 		{
 			Log.Debug("Preparing a dispatch");
-
+			return this.CurrentContext.PrepareDispatch(message, actual ?? this);
 			var context = new DefaultDispatchContext(this);
 			return message == null ? context : context.WithMessage(message);
 		}

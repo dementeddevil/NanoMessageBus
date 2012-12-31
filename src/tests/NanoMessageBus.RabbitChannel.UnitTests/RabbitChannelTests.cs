@@ -879,6 +879,28 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_preparing_a_dispatch_with_a_supplied_channel : using_a_channel
+	{
+		Establish context = () =>
+		{
+			mockSuppliedChannel = new Mock<IMessagingChannel>();
+			mockSuppliedChannel.SetupGet(x => x.CurrentConfiguration).Returns(() => channel.CurrentConfiguration);
+		};
+
+		Because of = () =>
+			dispatchContext = (DefaultDispatchContext)channel.PrepareDispatch("some message", mockSuppliedChannel.Object);
+
+		It should_create_a_dispatch_context = () =>
+			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+
+		It should_provide_the_dispatch_context_with_the_supplied_channel = () =>
+			dispatchContext.Channel.ShouldEqual(mockSuppliedChannel.Object);
+
+		static DefaultDispatchContext dispatchContext;
+		static Mock<IMessagingChannel> mockSuppliedChannel;
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_acknowledging_a_message_against_an_acknowledge_only_channel : using_a_channel
 	{
 		Establish context = () =>

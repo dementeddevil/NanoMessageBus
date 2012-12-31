@@ -27,10 +27,10 @@
 		{
 			get { return this.delivery.CurrentResolver; }
 		}
-		public virtual IDispatchContext PrepareDispatch(object message = null)
+		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel channel = null)
 		{
 			this.ThrowWhenDisposed();
-			return this.delivery.PrepareDispatch(message);
+			return this.delivery.PrepareDispatch(message, channel);
 		}
 
 		public virtual bool ContinueHandling

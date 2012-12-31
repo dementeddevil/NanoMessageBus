@@ -40,8 +40,9 @@
 		/// Prepares a dispatch for transmission.
 		/// </summary>
 		/// <param name="message">The optional message to be dispatched; a set of messages can be provided later if necessary.</param>
+		/// <param name="channel">The optional channel to be used for dispatching. If none is specified, the current channel will be used.</param>
 		/// <exception cref="ObjectDisposedException"></exception>
 		/// <returns>A new instance of a dispatch to be prepared for transmission.</returns>
-		IDispatchContext PrepareDispatch(object message = null);
+		IDispatchContext PrepareDispatch(object message = null, IMessagingChannel channel = null);
 	}
 }

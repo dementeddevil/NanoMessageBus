@@ -248,7 +248,7 @@ namespace NanoMessageBus
 			enqueued.ShouldBeTrue();
 
 		It should_prepare_a_dispatch_context_on_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.PrepareDispatch(null), Times.Once());
+			mockChannel.Verify(x => x.PrepareDispatch(null, null), Times.Once());
 
 		It should_invoke_the_callback_method_provided = () =>
 			invocations.ShouldEqual(1);
@@ -286,7 +286,7 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
-			mockChannel.Setup(x => x.PrepareDispatch(null)).Throws(new ChannelConnectionException());
+			mockChannel.Setup(x => x.PrepareDispatch(null, null)).Throws(new ChannelConnectionException());
 			mockWorkers
 				.Setup(x => x.Enqueue(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()))
 				.Callback<Action<IWorkItem<IMessagingChannel>>>(x =>
@@ -302,7 +302,7 @@ namespace NanoMessageBus
 			channelGroup.BeginDispatch(x => { });
 
 		It should_attempt_to_prepare_a_dispatch_context = () =>
-			mockChannel.Verify(x => x.PrepareDispatch(null), Times.Once());
+			mockChannel.Verify(x => x.PrepareDispatch(null, null), Times.Once());
 
 		It should_restart_the_worker_group = () =>
 			mockWorkers.Verify(x => x.Restart(), Times.Once());

@@ -9,6 +9,7 @@
 	{
 		public virtual int MessageCount { get; private set; }
 		public virtual int HeaderCount { get; private set; }
+		public virtual IMessagingChannel Channel { get; private set; }
 
 		public virtual IDispatchContext WithMessage(object message)
 		{
@@ -197,7 +198,7 @@
 
 		public DefaultDispatchContext(IMessagingChannel channel)
 		{
-			this.channel = channel;
+			this.Channel = this.channel = channel;
 			this.dispatchTable = this.channel.CurrentConfiguration.DispatchTable;
 
 			var config = channel.CurrentConfiguration;

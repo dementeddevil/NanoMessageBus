@@ -163,7 +163,7 @@ namespace NanoMessageBus
 				.Returns(() => continueProcessing);
 
 			mockHandlerContext
-				.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>()))
+				.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>(), null))
 				.Returns(mockDispatchContext.Object);
 
 			mockDispatchContext

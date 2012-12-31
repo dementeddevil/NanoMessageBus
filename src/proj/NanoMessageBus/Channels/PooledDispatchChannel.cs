@@ -26,12 +26,10 @@
 			get { return this.channel.CurrentConfiguration; }
 		}
 
-		public virtual IDispatchContext PrepareDispatch(object message = null)
+		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
 		{
 			Log.Debug("Preparing a dispatch");
-
-			var context = new DefaultDispatchContext(this);
-			return message == null ? context : context.WithMessage(message);
+			return this.channel.PrepareDispatch(message, actual ?? this);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{

@@ -52,7 +52,7 @@ namespace NanoMessageBus
 			handlerContext.ContinueHandling.ShouldBeFalse();
 
 		It should_NOT_dispatch_the_message_for_redelivery = () =>
-			mockDelivery.Verify(x => x.PrepareDispatch(Moq.It.IsAny<object>()), Times.Never());
+			mockDelivery.Verify(x => x.PrepareDispatch(Moq.It.IsAny<object>(), null), Times.Never());
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -143,7 +143,7 @@ namespace NanoMessageBus
 			handlerContext.ContinueHandling.ShouldBeTrue();
 
 		It should_send_the_current_message = () =>
-			mockDelivery.Verify(x => x.PrepareDispatch(mockMessage.Object), Times.Once());
+			mockDelivery.Verify(x => x.PrepareDispatch(mockMessage.Object, null), Times.Once());
 
 		It should_send_to_each_recipient_specified = () =>
 			recipients.SequenceEqual(forwardingRecipients).ShouldBeTrue();
@@ -160,18 +160,38 @@ namespace NanoMessageBus
 	public class when_preparing_to_dispatch : with_a_handler_context
 	{
 		Establish context = () => mockDelivery
-			.Setup(x => x.PrepareDispatch("Hello, World!"))
+			.Setup(x => x.PrepareDispatch("Hello, World!", null))
 			.Returns(mockDispatch.Object);
 
 		Because of = () =>
 			dispatchContext = handlerContext.PrepareDispatch("Hello, World!");
 
 		It should_invoke_the_underlying_channel = () =>
-			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!"));
+			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!", null), null);
 
 		It should_return_the_reference_from_the_underlying_channel = () =>
 			dispatchContext.ShouldEqual(mockDispatch.Object);
 
+		static IDispatchContext dispatchContext;
+	}
+
+	[Subject(typeof(DefaultHandlerContext))]
+	public class when_preparing_to_dispatch_with_an_alternate_channel : with_a_handler_context
+	{
+		Establish context = () => mockDelivery
+			.Setup(x => x.PrepareDispatch("Hello, World!", mockAlternate.Object))
+			.Returns(mockDispatch.Object);
+
+		Because of = () =>
+			dispatchContext = handlerContext.PrepareDispatch("Hello, World!", mockAlternate.Object);
+
+		It should_invoke_the_underlying_channel = () =>
+			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!", mockAlternate.Object), Times.Once());
+
+		It should_return_the_reference_from_the_alternate_channel = () =>
+			dispatchContext.ShouldEqual(mockDispatch.Object);
+
+		static readonly Mock<IMessagingChannel> mockAlternate = new Mock<IMessagingChannel>();
 		static IDispatchContext dispatchContext;
 	}
 
@@ -240,7 +260,7 @@ namespace NanoMessageBus
 			mockDelivery.Setup(x => x.CurrentConfiguration).Returns(mockConfig.Object);
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 			mockDelivery.Setup(x => x.CurrentResolver).Returns(mockResolver.Object);
-			mockDelivery.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>())).Returns(mockDispatch.Object);
+			mockDelivery.Setup(x => x.PrepareDispatch(Moq.It.IsAny<object>(), null)).Returns(mockDispatch.Object);
 
 			mockDispatch
 				.Setup(x => x.WithMessage(Moq.It.IsAny<ChannelMessage>()))
