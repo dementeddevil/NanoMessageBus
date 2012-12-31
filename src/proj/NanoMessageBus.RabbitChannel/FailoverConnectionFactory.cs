@@ -87,7 +87,7 @@
 			IDictionary attempts = new Hashtable(), errors = new Hashtable();
 			var connection = this.CreateConnection(maxRedirects, attempts, errors, endpoints);
 			if (connection == null)
-				throw new BrokerUnreachableException(attempts, errors, null);
+				throw new BrokerUnreachableException(attempts, errors);
 
 			return connection;
 		}
