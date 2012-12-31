@@ -1,7 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Dictionary>
-	<Words>
-		<Recognized>
-		</Recognized>
-	</Words>
+  <Words>
+    <Recognized>
+      <Word>json</Word>
+      <Word>unroutable</Word>
+      <Word>gzip</Word>
+      <Word>bzip</Word>
+      <Word>lzma</Word>
+      <Word>aes</Word>
+      <Word>Ayende</Word>
+      <Word>Rahien</Word>
+      <Word>wireup</Word>
+      <Word>aspx</Word>
+    </Recognized>
+  </Words>
 </Dictionary>
