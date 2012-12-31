@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NanoMessageBus.Log4Net2</id>
-    <version>2.0.26</version>
+    <version>2.0.27</version>
     <title>NanoMessageBus Log4Net v1.2.11 (v2.0) Logging Plugin</title>
     <authors>Jonathan Oliver</authors>
     <owners>Jonathan Oliver</owners>
@@ -13,7 +13,7 @@
     <language>es-US</language>
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, logging, log4net</tags>
     <dependencies>
-      <dependency id="NanoMessageBus" version="2.0.26" />
+      <dependency id="NanoMessageBus" version="2.0.27" />
       <dependency id="log4net" version="[1.2.11]" />
     </dependencies>
   </metadata>
