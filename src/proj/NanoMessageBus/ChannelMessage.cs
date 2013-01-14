@@ -92,13 +92,18 @@
 		{
 			if (++this.ActiveIndex >= this.messages.Count)
 			{
-				this.ActiveIndex = Inactive;
-				this.ActiveMessage = null;
+				this.Reset();
 				return false;
 			}
 
 			this.ActiveMessage = this.messages[this.ActiveIndex];
 			return true;
+		}
+		
+		public virtual void Reset()
+		{
+			this.ActiveIndex = Inactive;
+			this.ActiveMessage = null;
 		}
 
 		/// <summary>

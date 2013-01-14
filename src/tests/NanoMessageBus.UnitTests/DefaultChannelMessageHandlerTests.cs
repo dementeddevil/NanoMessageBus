@@ -45,6 +45,25 @@ namespace NanoMessageBus
 			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, 2), Times.Once());
 			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, 3.0), Times.Once());
 		};
+
+		It should_reset_the_current_message_index = () =>
+			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+	}
+
+	[Subject(typeof(DefaultChannelMessageHandler))]
+	public class when_handling_a_message_throws_an_exception : with_a_channel_message_handler
+	{
+		Establish context = () =>
+		{
+			deliveredMessage = BuildMessage(new object[] { "1", 2, 3.0 });
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, "1")).Throws(new Exception());
+		};
+
+		Because of = () =>
+			Try(() => handler.Handle(deliveredMessage));
+
+		It should_reset_the_current_message_index = () =>
+			deliveredMessage.ActiveIndex.ShouldEqual(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -66,6 +85,9 @@ namespace NanoMessageBus
 			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, "1"), Times.Once());
 			mockRoutes.Verify(x => x.Route(mockHandlerContext.Object, 2), Times.Never());
 		};
+
+		It should_reset_the_current_message_index = () =>
+			deliveredMessage.ActiveIndex.ShouldEqual(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -82,6 +104,9 @@ namespace NanoMessageBus
 
 		It should_send_the_envelope_to_the_unhandled_message_address = () =>
 			recipients[0].ShouldEqual(ChannelEnvelope.UnhandledMessageAddress);
+
+		It should_reset_the_current_message_index = () =>
+			deliveredMessage.ActiveIndex.ShouldEqual(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -98,6 +123,9 @@ namespace NanoMessageBus
 
 		It should_NEVER_send_the_incoming_channel_message_to_the_dead_letter_address = () =>
 			sentMessage.ShouldBeNull();
+
+		It should_reset_the_current_message_index = () =>
+			deliveredMessage.ActiveIndex.ShouldEqual(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -136,6 +164,9 @@ namespace NanoMessageBus
 
 		It should_forward_the_channel_envelope_to_the_unhandled_message_address = () =>
 			recipients[0].ShouldEqual(ChannelEnvelope.UnhandledMessageAddress);
+
+		It should_reset_the_current_message_index = () =>
+			deliveredMessage.ActiveIndex.ShouldEqual(-1);
 
 		static readonly Guid messageId = Guid.NewGuid();
 		static readonly Guid correlationId = Guid.NewGuid();

@@ -10,18 +10,25 @@
 		{
 			ICollection<object> unhandled = new List<object>(message.Messages.Count);
 
-			Log.Verbose("Handling channel message '{0}' which contains '{1}' logical messages.",
-				message.MessageId, message.Messages.Count);
+			try
+			{
+				Log.Verbose("Handling channel message '{0}' which contains '{1}' logical messages.",
+					message.MessageId, message.Messages.Count);
 
-			var handled = 0;
-			while (message.MoveNext() && this.context.ContinueHandling)
-				handled += this.Route(message.ActiveMessage, unhandled);
+				var handled = 0;
+				while (message.MoveNext() && this.context.ContinueHandling)
+					handled += this.Route(message.ActiveMessage, unhandled);
 
-			if (handled == 0)
-				unhandled.Clear();
+				if (handled == 0)
+					unhandled.Clear();
 
-			if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
-				this.ForwardToUnhandledAddress(message, unhandled);
+				if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
+					this.ForwardToUnhandledAddress(message, unhandled);
+			}
+			finally
+			{
+				message.Reset();
+			}
 		}
 		private int Route(object message, ICollection<object> unhandled)
 		{
