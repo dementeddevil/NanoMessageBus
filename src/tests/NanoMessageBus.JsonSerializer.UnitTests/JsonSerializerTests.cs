@@ -123,7 +123,6 @@ namespace NanoMessageBus.Serialization
 		Second,
 		Third,
 		Fourth
-		
 	}
 }
 

@@ -34,8 +34,6 @@
 		{
 			Log.Debug("Preparing a dispatch");
 			return this.CurrentContext.PrepareDispatch(message, actual ?? this);
-			var context = new DefaultDispatchContext(this);
-			return message == null ? context : context.WithMessage(message);
 		}
 		public virtual void Send(ChannelEnvelope envelope)
 		{
