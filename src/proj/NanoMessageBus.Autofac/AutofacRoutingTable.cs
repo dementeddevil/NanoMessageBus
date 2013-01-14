@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Reflection;
 	using Autofac;
+	using Autofac.Core;
 	using Logging;
 
 	public class AutofacRoutingTable : IRoutingTable
@@ -50,12 +51,25 @@
 		}
 		private static int DynamicRoute<T>(IHandlerContext context, T message)
 		{
-			var container = context.CurrentResolver.As<ILifetimeScope>();
-			var routes = container.Resolve<IEnumerable<IMessageHandler<T>>>();
-
-			return routes
+			return TryResolve<T>(context)
 				.TakeWhile(x => context.ContinueHandling)
 				.Count(x => TryRoute(x, message));
+		}
+		private static IEnumerable<IMessageHandler<T>> TryResolve<T>(IDeliveryContext context)
+		{
+			var container = context.CurrentResolver.As<ILifetimeScope>();
+
+			try
+			{
+				return container.Resolve<IEnumerable<IMessageHandler<T>>>();
+			}
+			catch (DependencyResolutionException e)
+			{
+				if (IsAutofacException(e))
+					throw;
+
+				throw e.InnerException;
+			}
 		}
 		private static bool TryRoute<T>(IMessageHandler<T> route, T message)
 		{
@@ -67,6 +81,13 @@
 			{
 				Log.Debug("Aborting executing of current handler of type '{0}' because of: {1}", route.GetType(), e.Message);
 			}
+			catch (DependencyResolutionException e)
+			{
+				if (IsAutofacException(e))
+					throw;
+
+				throw e.InnerException;
+			}
 			catch (Exception e)
 			{
 				Log.Debug("Message handler of type '{0}' threw an exception while handling message of type '{1}'.".FormatWith(route.GetType(), message.GetType()), e);
@@ -74,6 +95,10 @@
 			}
 
 			return true;
+		}
+		private static bool IsAutofacException(DependencyResolutionException e)
+		{
+			return e.InnerException == null || e.InnerException.InnerException.GetType().FullName.StartsWith("Autofac");
 		}
 
 		public AutofacRoutingTable(params Assembly[] messageHandlerAssemblies)
