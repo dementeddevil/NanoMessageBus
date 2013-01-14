@@ -67,6 +67,7 @@ namespace NanoMessageBus.Serialization
 			deserialized.Seventh.ShouldEqual(original.Seventh);
 			deserialized.Eighth.ShouldEqual(original.Eighth);
 			deserialized.Ninth.ShouldEqual(original.Ninth);
+			deserialized.Tenth.ShouldEqual(original.Tenth);
 		};
 
 		static MyComplexType deserialized;
@@ -80,7 +81,8 @@ namespace NanoMessageBus.Serialization
 			Sixth = Guid.NewGuid(),
 			Seventh = "7th",
 			Eighth = new Uri("http://domain.com/path/query?#hash", UriKind.Absolute),
-			Ninth = SystemTime.UtcNow
+			Ninth = SystemTime.UtcNow,
+			Tenth = Values.Third
 		};
 	}
 
@@ -112,6 +114,16 @@ namespace NanoMessageBus.Serialization
 		public string Seventh { get; set; }
 		public Uri Eighth { get; set; }
 		public DateTime Ninth { get; set; }
+		public Values Tenth { get; set; }
+	}
+
+	internal enum Values
+	{
+		First,
+		Second,
+		Third,
+		Fourth
+		
 	}
 }
 

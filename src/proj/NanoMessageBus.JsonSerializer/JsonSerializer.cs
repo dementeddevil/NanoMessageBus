@@ -4,6 +4,7 @@
 	using System.Runtime.Serialization.Formatters;
 	using System.Text;
 	using Newtonsoft.Json;
+	using Newtonsoft.Json.Converters;
 	using JsonNetSerializer = Newtonsoft.Json.JsonSerializer;
 
 	public class JsonSerializer : ISerializer
@@ -59,7 +60,8 @@
 			MissingMemberHandling = MissingMemberHandling.Ignore,
 			DateTimeZoneHandling = DateTimeZoneHandling.Utc,
 			DateFormatHandling = DateFormatHandling.IsoDateFormat,
-			DateParseHandling = DateParseHandling.DateTime
+			DateParseHandling = DateParseHandling.DateTime,
+			Converters = { new StringEnumConverter() }
 		};
 	}
 }
