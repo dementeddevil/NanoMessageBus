@@ -23,7 +23,8 @@
 			if (graph == null)
 				return;
 
-			using (var streamWriter = new StreamWriter(output, Encoding.UTF8))
+			var encoding = this.GetEncoding(this.ContentEncoding);
+			using (var streamWriter = new StreamWriter(output, encoding))
 				this.Serialize(new JsonTextWriter(streamWriter), graph);
 		}
 		protected virtual void Serialize(JsonWriter writer, object graph)
@@ -48,9 +49,11 @@
 		}
 		protected virtual Encoding GetEncoding(string contentEncoding)
 		{
-			return Encoding.UTF8; // future: support alternate encodings
+			return DefaultEncoding; // future: support alternate encodings
 		}
 
+		private const bool WriteByteOrderMarks = false;
+		private static readonly Encoding DefaultEncoding = new UTF8Encoding(WriteByteOrderMarks);
 		private readonly JsonNetSerializer serializer = new JsonNetSerializer
 		{
 			TypeNameHandling = TypeNameHandling.All,
