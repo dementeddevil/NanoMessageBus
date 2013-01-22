@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus", "proj\NanoMessageBus\NanoMessageBus.csproj", "{A038133C-7150-4E4F-83D3-174869171C8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NanoMessageBus.RabbitChannel", "proj\NanoMessageBus.RabbitChannel\NanoMessageBus.RabbitChannel.csproj", "{8C6B53A1-C9C9-46EF-A2EF-9B452E4C880F}"
