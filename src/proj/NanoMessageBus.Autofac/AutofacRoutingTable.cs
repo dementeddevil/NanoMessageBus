@@ -98,7 +98,8 @@
 		}
 		private static bool IsAutofacException(DependencyResolutionException e)
 		{
-			return e.InnerException == null || e.InnerException.InnerException.GetType().FullName.StartsWith("Autofac");
+			var inner = e.InnerException;
+			return inner == null || inner.GetType().FullName.StartsWith("Autofac");
 		}
 
 		public AutofacRoutingTable(params Assembly[] messageHandlerAssemblies)
