@@ -54,17 +54,21 @@
 			if (key == null)
 				throw new ArgumentNullException("key");
 
-			if (value == null)
+			var alreadyAdded = this.messageHeaders.ContainsKey(key);
+
+			if (value == null && alreadyAdded)
 			{
 				Log.Verbose("Removing header '{0}' from dispatch.", key);
 				this.messageHeaders.Remove(key);
 				this.HeaderCount--;
 			}
+			else if (value == null)
+				return this; // don't add anything
 			else
 			{
 				Log.Verbose("Adding header '{0}' to dispatch.", key);
 
-				if (!this.messageHeaders.ContainsKey(key))
+				if (!alreadyAdded)
 					this.HeaderCount++;
 
 				this.messageHeaders[key] = value;
