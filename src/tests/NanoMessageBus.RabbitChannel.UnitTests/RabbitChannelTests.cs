@@ -530,7 +530,7 @@ namespace NanoMessageBus.Channels
 
 			thrown = new Exception("Message handling failed");
 
-			mockConfiguration.Setup(x => x.MaxAttempts).Returns(1); // allow one failure
+			mockConfiguration.Setup(x => x.MaxAttempts).Returns(1); // test allow one failure
 			mockRealChannel
 				.Setup(x => x.BasicPublish(Moq.It.IsAny<PublicationAddress>(), Moq.It.IsAny<IBasicProperties>(), message.Body))
 				.Callback<PublicationAddress, IBasicProperties, byte[]>((addr, prop, bytes) =>
@@ -549,6 +549,9 @@ namespace NanoMessageBus.Channels
 			channel.Receive(delivery => { throw thrown; });
 			Receive(message);
 		};
+
+		It should_rollback_any_outstanding_work = () =>
+			mockRealChannel.Verify(x => x.TxRollback(), Times.Once());
 
 		It should_append_the_exception_to_the_message = () =>
 			mockAdapter.Verify(x => x.AppendException(message, thrown, 0));

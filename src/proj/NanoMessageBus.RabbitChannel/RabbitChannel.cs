@@ -93,13 +93,14 @@
 			}
 			catch (Exception e)
 			{
+				this.CurrentTransaction.TryDispose();
 				this.RetryMessage(message, e);
 			}
 		}
 		protected virtual void RetryMessage(BasicDeliverEventArgs message, Exception exception)
 		{
 			var nextAttempt = this.AppendException(message, exception) + 1;
-			Log.Debug("Message '{0}' has been attempted {1} times on channel {2}.", message.MessageId(), nextAttempt, this.identifier);
+			Log.Debug("Message '{0}' has been attempted {1} time(s) on channel {2}.", message.MessageId(), nextAttempt, this.identifier);
 
 			if (nextAttempt > this.configuration.MaxAttempts)
 			{
