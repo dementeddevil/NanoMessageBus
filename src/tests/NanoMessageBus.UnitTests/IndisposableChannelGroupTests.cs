@@ -1,4 +1,4 @@
-﻿#pragma warning disable 169
+﻿#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -117,4 +117,4 @@ namespace NanoMessageBus
 }
 
 // ReSharper enable InconsistentNaming
-#pragma warning restore 169
+#pragma warning restore 169, 414
