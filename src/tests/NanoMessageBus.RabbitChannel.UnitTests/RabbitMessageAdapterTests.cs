@@ -243,7 +243,7 @@ namespace NanoMessageBus.Channels
 			result.BasicProperties.ReplyTo.ShouldEqual(message.ReturnAddress.ToString());
 
 		It should_populate_the_wire_message_with_the_correct_expiration_time = () =>
-			result.BasicProperties.Expiration.ShouldEqual((message.Expiration - message.Dispatched).TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+			result.BasicProperties.Expiration.ShouldEqual(((int)(message.Expiration - message.Dispatched).TotalMilliseconds).ToString(CultureInfo.InvariantCulture));
 
 		It should_populate_the_wire_message_with_the_correct_message_type = () =>
 			result.BasicProperties.Type.ShouldEqual(message.Messages.First().GetType().FullName);
