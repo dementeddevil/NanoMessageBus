@@ -59,7 +59,7 @@
     </Reference>
     <Reference Include="Machine.Specifications">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Machine.Specifications-Signed.0.5.11\lib\net40\Machine.Specifications.dll</HintPath>
+      <HintPath>..\..\packages\Machine.Specifications-Signed.0.5.12\lib\net40\Machine.Specifications.dll</HintPath>
     </Reference>
     <Reference Include="RabbitMQ.Client">
       <SpecificVersion>False</SpecificVersion>
