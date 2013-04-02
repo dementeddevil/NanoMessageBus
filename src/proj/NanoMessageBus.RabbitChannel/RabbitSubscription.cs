@@ -96,6 +96,11 @@
 			{
 				Log.Debug("Unable to cleanly dispose subscription; operation interrupted.");
 			}
+			catch (NotSupportedException)
+			{
+				Log.Debug("Unable to cleanly dispose subscription; multi-threaded shutdown.");
+			}
+
 			catch (Exception e)
 			{
 				Log.Error("Unable to cleanly dispose subscription.", e);
