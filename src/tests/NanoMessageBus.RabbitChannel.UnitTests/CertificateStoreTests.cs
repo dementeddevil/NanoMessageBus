@@ -74,7 +74,7 @@ namespace NanoMessageBus.Channels
 			resolved = null;
 		};
 
-		protected const string KnownFingerprint = "‎de28f4a4ffe5b92fa3c503d1a349a7f9962a8212";
+		protected const string KnownFingerprint = "DE28F4A4FFE5B92FA3C503D1A349A7F9962A8212";
 		protected static CertificateStore store;
 		protected static X509Certificate resolved;
 	}
