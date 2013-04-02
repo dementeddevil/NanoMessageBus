@@ -207,7 +207,8 @@ namespace NanoMessageBus.Channels
 			message.Headers["a"] = "b";
 			message.Headers["c"] = "d";
 			message.Persistent = true;
-			message.Expiration = DateTime.Parse("2010-07-01 12:34:56");
+			message.Expiration = SystemTime.UtcNow.AddDays(1);
+			message.Dispatched = SystemTime.UtcNow;
 
 			mockSerializer.Setup(x => x.ContentEncoding).Returns(DefaultContentEncoding);
 			mockConfiguration.Setup(x => x.ApplicationId).Returns(DefaultAppId);
@@ -280,6 +281,38 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_the_expiration_is_in_the_past : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("direct://MyExchange/RoutingKey"),
+				new Dictionary<string, string>(),
+				new object[] { "1" })
+			{
+				Expiration = SystemTime.UtcNow.AddDays(-1),
+				Dispatched = SystemTime.UtcNow
+			};
+
+			mockSerializer
+				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
+				.Callback<Stream, object>((stream, graph) => stream.Write(body, 0, body.Length));
+		};
+
+		Because of = () =>
+			result = adapter.Build(message, new BasicProperties());
+
+		It should_not_set_the_expiration = () =>
+			result.BasicProperties.Expiration.ShouldBeNull();
+
+		static readonly byte[] body = new byte[0];
+		static ChannelMessage message;
+		static BasicDeliverEventArgs result;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_no_expiration_or_content_encoding_is_specified_during_wire_message_creation : using_a_message_adapter
 	{
 		Establish context = () =>
@@ -299,10 +332,10 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			result = adapter.Build(message, new BasicProperties());
 
-		It should_provide_an_empty_expiration = () =>
-			result.BasicProperties.Expiration.ShouldBeEmpty();
+		It should_not_set_the_expiration = () =>
+			result.BasicProperties.Expiration.ShouldBeNull();
 
-		It should_provide_an_content_encoding = () =>
+		It should_provide_a_content_encoding = () =>
 			result.BasicProperties.ContentEncoding.ShouldBeEmpty();
 
 		static readonly byte[] body = new byte[0];

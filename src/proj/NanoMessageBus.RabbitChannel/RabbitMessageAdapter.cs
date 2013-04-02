@@ -124,11 +124,8 @@
 			properties.SetPersistent(message.Persistent);
 
 			var expiration = message.Expiration;
-			var ttl = (expiration == DateTime.MinValue || expiration == DateTime.MaxValue)
-				? int.MaxValue : (int)(expiration - message.Dispatched).TotalMilliseconds;
-			properties.Expiration = ttl.ToString(CultureInfo.InvariantCulture);
-
-			// TODO: if expiration < message.Dispatched
+			if (expiration != DateTime.MinValue && expiration != DateTime.MinValue && message.Expiration > message.Dispatched)
+				properties.Expiration = ((int)(expiration - message.Dispatched).TotalMilliseconds).ToString(CultureInfo.InvariantCulture);
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();
