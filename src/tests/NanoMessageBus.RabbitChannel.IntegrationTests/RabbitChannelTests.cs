@@ -117,8 +117,10 @@ namespace NanoMessageBus.Channels
 				delivery.CurrentTransaction.Commit();
 				receiverChannel.Dispose(); // shut down current channel
 				OpenReceiver(Receive); // open a new channel on a different thread
+				Thread.Sleep(25);
 				return ExitCurrentThread;
 			});
+
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
 		};
 
@@ -144,6 +146,7 @@ namespace NanoMessageBus.Channels
 				delivery.CurrentTransaction.Commit();
 				receiverChannel.Dispose(); // shut down current channel
 				OpenReceiver(Receive); // open a new channel on a different thread
+				Thread.Sleep(25);
 				return ExitCurrentThread;
 			});
 			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
