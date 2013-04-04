@@ -71,6 +71,13 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(AuditChannel))]
 	public class when_disposing_the_audit_channel : using_the_audit_channel
 	{
+		Establish context = () =>
+		{
+			mockAuditors.Clear();
+			mockAuditors.Add(new Mock<IMessageAuditor>());
+			channel = new AuditChannel(mockChannel.Object, mockAuditors.Select(x => x.Object).ToArray());
+		};
+
 		Because of = () =>
 			channel.Dispose();
 
