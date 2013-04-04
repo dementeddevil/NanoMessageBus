@@ -1,5 +1,6 @@
 ﻿namespace NanoMessageBus.Serialization
 {
+	using System;
 	using System.IO;
 	using System.Runtime.Serialization.Formatters;
 	using System.Text;
@@ -33,15 +34,15 @@
 				this.serializer.Serialize(writer, graph);
 		}
 
-		public virtual T Deserialize<T>(Stream input, string format, string contentEncoding = "utf8")
+		public virtual object Deserialize(Stream input, Type type, string format, string contentEncoding = "utf8")
 		{
 			using (var streamReader = new StreamReader(input, this.GetEncoding(contentEncoding)))
-				return this.Deserialize<T>(new JsonTextReader(streamReader));
+				return this.Deserialize(new JsonTextReader(streamReader), type);
 		}
-		protected virtual T Deserialize<T>(JsonReader reader)
+		protected virtual object Deserialize(JsonReader reader, Type type)
 		{
 			using (reader)
-				return (T)this.serializer.Deserialize(reader, typeof(T));
+				return this.serializer.Deserialize(reader, type);
 		}
 		protected virtual Encoding GetEncoding(string contentEncoding)
 		{

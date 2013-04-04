@@ -67,7 +67,7 @@
 		}
 		private IEnumerable<object> Deserialize(byte[] body, string format, string encoding)
 		{
-			var deserialized = this.configuration.Serializer.Deserialize<object>(body, format, encoding);
+			var deserialized = this.configuration.Serializer.Deserialize(body, typeof(object), format, encoding);
 			var collection = deserialized as object[];
 			return collection ?? new[] { deserialized };
 		}

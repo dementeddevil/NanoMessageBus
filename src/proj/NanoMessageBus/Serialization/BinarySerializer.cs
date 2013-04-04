@@ -1,5 +1,6 @@
 ﻿namespace NanoMessageBus.Serialization
 {
+	using System;
 	using System.IO;
 	using System.Runtime.Serialization;
 	using System.Runtime.Serialization.Formatters.Binary;
@@ -22,9 +23,9 @@
 
 			this.formatter.Serialize(destination, graph);
 		}
-		public virtual T Deserialize<T>(Stream source, string format, string contentEncoding = "")
+		public virtual object Deserialize(Stream source, Type type, string format, string contentEncoding = "")
 		{
-			return (T)this.formatter.Deserialize(source);
+			return this.formatter.Deserialize(source);
 		}
 
 		private readonly IFormatter formatter = new BinaryFormatter();

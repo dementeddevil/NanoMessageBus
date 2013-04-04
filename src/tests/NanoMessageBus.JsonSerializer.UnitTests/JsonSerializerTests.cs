@@ -41,7 +41,7 @@ namespace NanoMessageBus.Serialization
 	public class when_deserializing_a_null_stream : using_the_json_serializer
 	{
 		Because of = () =>
-			Try(() => serializer.Deserialize<string>(null, string.Empty, string.Empty));
+			Try(() => serializer.Deserialize(null, typeof(string), string.Empty, string.Empty));
 
 		It should_throw_an_exception = () =>
 			thrown.ShouldBeOfType<ArgumentNullException>();
@@ -54,7 +54,7 @@ namespace NanoMessageBus.Serialization
 			serializer.Serialize(stream, original);
 
 		Because of = () =>
-			deserialized = serializer.Deserialize<MyComplexType>(stream.ToArray(), string.Empty);
+			deserialized = (MyComplexType)serializer.Deserialize(stream.ToArray(), typeof(MyComplexType), string.Empty);
 
 		It should_be_able_to_deserialize_it = () =>
 		{

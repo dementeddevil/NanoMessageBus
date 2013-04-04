@@ -1,5 +1,6 @@
 ﻿namespace NanoMessageBus.Serialization
 {
+	using System;
 	using System.IO;
 
 	public static class SerializationExtensions
@@ -12,11 +13,10 @@
 				return destination.ToArray();
 			}
 		}
-		public static T Deserialize<T>(
-			this ISerializer serializer, byte[] source, string format, string encoding = "")
+		public static object Deserialize(this ISerializer serializer, byte[] source, Type type, string format, string encoding = "")
 		{
 			using (var stream = new MemoryStream(source))
-				return serializer.Deserialize<T>(stream, format, encoding);
+				return serializer.Deserialize(stream, type, format, encoding);
 		}
 	}
 }

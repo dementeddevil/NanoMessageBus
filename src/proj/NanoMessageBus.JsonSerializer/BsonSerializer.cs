@@ -25,10 +25,10 @@
 			var writer = new BsonWriter(output) { DateTimeKindHandling = DateTimeKind.Utc };
 			this.Serialize(writer, graph);
 		}
-		public override T Deserialize<T>(Stream input, string format, string contentEncoding = "utf8")
+		public override object Deserialize(Stream input, Type type, string format, string contentEncoding = "utf8")
 		{
-			var reader = new BsonReader(input, IsArray(typeof(T)), DateTimeKind.Utc);
-			return this.Deserialize<T>(reader);
+			var reader = new BsonReader(input, IsArray(type), DateTimeKind.Utc);
+			return this.Deserialize(reader, type);
 		}
 		private static bool IsArray(Type type)
 		{

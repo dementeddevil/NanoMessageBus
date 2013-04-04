@@ -57,7 +57,7 @@ namespace NanoMessageBus.Channels
 			message.BasicProperties.Headers["IntHeader"] = 42;
 
 			mockSerializer
-				.Setup(x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
+				.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), typeof(object), DefaultContentFormat, message.BasicProperties.ContentEncoding))
 				.Returns(deserialized);
 		};
 
@@ -66,7 +66,7 @@ namespace NanoMessageBus.Channels
 
 		It should_deserialize_the_payload = () =>
 			mockSerializer.Verify(x =>
-				x.Deserialize<object>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding),
+				x.Deserialize(Moq.It.IsAny<Stream>(), typeof(object), DefaultContentFormat, message.BasicProperties.ContentEncoding),
 				Times.Once());
 
 		It should_return_a_ChannelMessage = () =>
@@ -153,7 +153,7 @@ namespace NanoMessageBus.Channels
 			message.BasicProperties.Headers["IntHeader"] = 42;
 
 			mockSerializer
-				.Setup(x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
+				.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), typeof(object), DefaultContentFormat, message.BasicProperties.ContentEncoding))
 				.Returns(deserialized);
 		};
 
@@ -188,7 +188,7 @@ namespace NanoMessageBus.Channels
 
 		It should_not_invoke_the_serializer = () =>
 			mockSerializer.Verify(
-				x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()),
+				x => x.Deserialize(Moq.It.IsAny<Stream>(), Moq.It.IsAny<Type>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()),
 				Times.Never());
 
 		static BasicDeliverEventArgs message;
@@ -198,7 +198,7 @@ namespace NanoMessageBus.Channels
 	public class when_unable_to_deserialize_a_wire_message_body : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
-			.Setup(x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
+			.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), Moq.It.IsAny<Type>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
 			.Throws(new SerializationException());
 
 		Because of = () =>
