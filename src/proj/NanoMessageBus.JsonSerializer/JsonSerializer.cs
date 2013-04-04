@@ -29,10 +29,6 @@
 		}
 		protected virtual void Serialize(JsonWriter writer, object graph)
 		{
-#if DEBUG
-			writer.Formatting = Formatting.Indented;
-#endif
-
 			using (writer)
 				this.serializer.Serialize(writer, graph);
 		}
@@ -56,6 +52,9 @@
 		private static readonly Encoding DefaultEncoding = new UTF8Encoding(WriteByteOrderMarks);
 		private readonly JsonNetSerializer serializer = new JsonNetSerializer
 		{
+#if DEBUG
+			Formatting = Formatting.Indented,
+#endif
 			TypeNameHandling = TypeNameHandling.All,
 			TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
 			DefaultValueHandling = DefaultValueHandling.Ignore,
