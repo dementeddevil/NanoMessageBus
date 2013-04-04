@@ -5,6 +5,7 @@ namespace NanoMessageBus.Serialization
 {
 	using System;
 	using System.IO;
+	using System.Text;
 	using Machine.Specifications;
 
 	[Subject(typeof(JsonSerializer))]
@@ -84,6 +85,30 @@ namespace NanoMessageBus.Serialization
 			Ninth = SystemTime.UtcNow,
 			Tenth = Values.Third
 		};
+	}
+
+	[Subject(typeof(JsonSerializer))]
+	public class when_serializing_a_single_object
+	{
+		Because of = () =>
+			serialized = new JsonSerializer().Serialize(new MyComplexType());
+
+		It should_not_embed_the_the_type_into_the_payload = () =>
+			Encoding.UTF8.GetString(serialized).Contains("MyComplexType").ShouldBeFalse();
+
+		static byte[] serialized;
+	}
+
+	[Subject(typeof(JsonSerializer))]
+	public class when_serializing_a_multiple_objects
+	{
+		Because of = () =>
+			serialized = new JsonSerializer().Serialize(new[] { new MyComplexType(), new MyComplexType() });
+
+		It should_embed_the_the_type_into_the_payload = () =>
+			Encoding.UTF8.GetString(serialized).Contains("MyComplexType").ShouldBeTrue();
+
+		static byte[] serialized;
 	}
 
 	[Subject(typeof(JsonSerializer))]
