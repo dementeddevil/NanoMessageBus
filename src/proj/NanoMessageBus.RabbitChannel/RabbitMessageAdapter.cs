@@ -137,8 +137,7 @@
 				properties.ReplyTo = message.ReturnAddress.ToString();
 
 			var messages = (message.Messages ?? new object[0]).ToArray();
-			var payload = serializer.Serialize(messages);
-
+			var payload = messages.Length > 1 ? serializer.Serialize(messages) : serializer.Serialize(messages[0]);
 			properties.Headers = new Hashtable((IDictionary)message.Headers);
 
 			var type = messages[0].GetType();

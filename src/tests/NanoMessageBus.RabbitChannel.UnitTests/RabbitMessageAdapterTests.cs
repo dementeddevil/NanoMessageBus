@@ -390,6 +390,54 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_a_single_application_message_is_contained_in_an_envelope : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("direct://MyExchange/RoutingKey"),
+				new Dictionary<string, string>(),
+				new object[] { "1" });
+
+			mockSerializer.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages[0]));
+		};
+
+		Because of = () =>
+			adapter.Build(message, new BasicProperties());
+
+		It should_only_serialize_the_individual_application_message = () =>
+			mockSerializer.Verify(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages[0]), Times.Once());
+
+		static ChannelMessage message;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_multiple_application_messages_are_contained_in_an_envelope : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("direct://MyExchange/RoutingKey"),
+				new Dictionary<string, string>(),
+				new object[] { "1", "2", "3" });
+
+			mockSerializer.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages));
+		};
+
+		Because of = () =>
+			adapter.Build(message, new BasicProperties());
+
+		It should_serialize_all_of_the_messages = () =>
+			mockSerializer.Verify(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages), Times.Once());
+
+		static ChannelMessage message;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_unable_to_serialize_a_ChannelMessage_payload : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
