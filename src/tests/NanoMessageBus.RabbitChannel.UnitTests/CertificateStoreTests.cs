@@ -1,4 +1,4 @@
-﻿#pragma warning disable 169
+﻿#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -13,7 +13,7 @@ namespace NanoMessageBus.Channels
 			resolved = store.Resolve(KnownFingerprint, "Root");
 
 		It should_return_the_desired_certificate = () =>
-			resolved.Subject.ShouldEqual("CN=Microsoft Root Authority, OU=Microsoft Corporation, OU=Copyright (c) 1997 Microsoft Corp.");
+			resolved.Subject.ShouldEqual("CN=GeoTrust Global CA, O=GeoTrust Inc., C=US");
 	}
 
 	[Subject(typeof(CertificateStore))]
@@ -23,7 +23,7 @@ namespace NanoMessageBus.Channels
 			resolved = store.Resolve(KnownFingerprint, "Root");
 
 		It should_return_the_desired_certificate = () =>
-			resolved.Subject.ShouldEqual("CN=Microsoft Root Authority, OU=Microsoft Corporation, OU=Copyright (c) 1997 Microsoft Corp.");
+			resolved.Subject.ShouldEqual("CN=GeoTrust Global CA, O=GeoTrust Inc., C=US");
 	}
 
 	[Subject(typeof(CertificateStore))]
@@ -74,11 +74,11 @@ namespace NanoMessageBus.Channels
 			resolved = null;
 		};
 
-		protected const string KnownFingerprint = "A43489159A520F0D93D032CCAF37E7FE20A8B419";
+		protected const string KnownFingerprint = "DE28F4A4FFE5B92FA3C503D1A349A7F9962A8212";
 		protected static CertificateStore store;
 		protected static X509Certificate resolved;
 	}
 }
 
 // ReSharper enable InconsistentNaming
-#pragma warning restore 169
+#pragma warning restore 169, 414

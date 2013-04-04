@@ -43,7 +43,9 @@
 		protected virtual ChannelMessage Translate(BasicDeliverEventArgs message)
 		{
 			var properties = message.BasicProperties;
-			var expiration = properties.Expiration.ToDateTime();
+
+			var dispatched = properties.Timestamp.UnixTime.ToDateTime();
+			var expiration = properties.Expiration.ToDateTime(dispatched);
 			expiration = expiration == DateTime.MinValue ? DateTime.MaxValue : expiration;
 
 			if (expiration <= SystemTime.UtcNow)
@@ -60,7 +62,7 @@
 				payload)
 			{
 				Dispatched = properties.Timestamp.UnixTime.ToDateTime(),
-				Expiration = properties.Expiration.ToDateTime(),
+				Expiration = expiration,
 				Persistent = properties.DeliveryMode == Persistent
 			};
 		}
@@ -122,8 +124,8 @@
 			properties.SetPersistent(message.Persistent);
 
 			var expiration = message.Expiration;
-			properties.Expiration = (expiration == DateTime.MinValue || expiration == DateTime.MaxValue)
-				? string.Empty : expiration.ToEpochTime().ToString(CultureInfo.InvariantCulture);
+			if (expiration != DateTime.MinValue && expiration != DateTime.MinValue && message.Expiration > message.Dispatched)
+				properties.Expiration = ((int)(expiration - message.Dispatched).TotalMilliseconds).ToString(CultureInfo.InvariantCulture);
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();

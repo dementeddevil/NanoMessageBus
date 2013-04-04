@@ -1,4 +1,4 @@
-﻿#pragma warning disable 169
+﻿#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -71,6 +71,13 @@ namespace NanoMessageBus.Channels
 	[Subject(typeof(AuditChannel))]
 	public class when_disposing_the_audit_channel : using_the_audit_channel
 	{
+		Establish context = () =>
+		{
+			mockAuditors.Clear();
+			mockAuditors.Add(new Mock<IMessageAuditor>());
+			channel = new AuditChannel(mockChannel.Object, mockAuditors.Select(x => x.Object).ToArray());
+		};
+
 		Because of = () =>
 			channel.Dispose();
 
@@ -331,4 +338,4 @@ namespace NanoMessageBus.Channels
 }
 
 // ReSharper enable InconsistentNaming
-#pragma warning restore 169
+#pragma warning restore 169, 414

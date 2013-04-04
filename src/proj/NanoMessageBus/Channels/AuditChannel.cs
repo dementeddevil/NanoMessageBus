@@ -113,7 +113,7 @@
 				throw new ArgumentException("At least one auditor must be provided.", "auditors");
 
 			this.channel = channel;
-			this.auditors = auditors;
+			this.auditors = new List<IMessageAuditor>(auditors);
 		}
 		~AuditChannel()
 		{
@@ -127,7 +127,7 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing)
+			if (!disposing || this.disposed)
 				return;
 
 			this.disposed = true;
@@ -137,6 +137,8 @@
 				Log.Verbose("Disposing auditor of type '{0}'.", auditor.GetType());
 				auditor.TryDispose();
 			}
+
+			this.auditors.Clear();
 
 			Log.Verbose("Disposing the underlying channel.");
 			this.channel.TryDispose();

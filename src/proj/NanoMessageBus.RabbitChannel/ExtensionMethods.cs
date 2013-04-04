@@ -86,15 +86,15 @@
 			Guid.TryParse(value ?? string.Empty, out parsed);
 			return parsed;
 		}
-		public static DateTime ToDateTime(this string value)
+		public static DateTime ToDateTime(this string value, DateTime dispatched)
 		{
-			long epoch;
-			if (long.TryParse(value, out epoch))
-				return epoch.ToDateTime();
-
 			DateTime parsed;
 			if (DateTime.TryParse(value, out parsed))
 				return parsed;
+
+			long ttl;
+			if (long.TryParse(value, out ttl))
+				return dispatched + TimeSpan.FromMilliseconds(ttl);
 
 			return parsed;
 		}
