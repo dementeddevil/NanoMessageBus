@@ -51,7 +51,7 @@
 			if (expiration <= SystemTime.UtcNow)
 				throw new DeadLetterException(expiration);
 
-			var payload = this.Deserialize(message.Body, properties.ContentFormat(), properties.ContentEncoding);
+			var payload = this.Deserialize(message.Body, properties.Type, properties.ContentFormat(), properties.ContentEncoding);
 
 			return new ChannelMessage(
 				properties.MessageId.ToGuid(),
@@ -65,9 +65,10 @@
 				Persistent = properties.DeliveryMode == Persistent
 			};
 		}
-		private IEnumerable<object> Deserialize(byte[] body, string format, string encoding)
+		private IEnumerable<object> Deserialize(byte[] body, string type, string format, string encoding)
 		{
-			var deserialized = this.configuration.Serializer.Deserialize(body, typeof(object), format, encoding);
+			var parsedType = Type.GetType(type, false, true) ?? typeof(object);
+			var deserialized = this.configuration.Serializer.Deserialize(body, parsedType, format, encoding);
 			var collection = deserialized as object[];
 			return collection ?? new[] { deserialized };
 		}
@@ -139,7 +140,9 @@
 			var payload = serializer.Serialize(messages);
 
 			properties.Headers = new Hashtable((IDictionary)message.Headers);
-			properties.Type = messages[0].GetType().FullName;
+
+			var type = messages[0].GetType();
+			properties.Type = MessageTypeFormat.FormatWith(type.FullName, type.Assembly.GetName().Name);
 			properties.Timestamp = new AmqpTimestamp(SystemTime.UtcNow.ToEpochTime());
 
 			return new BasicDeliverEventArgs
@@ -208,6 +211,7 @@
 
 		private const byte Persistent = 2;
 		private const string ContentType = "application/vnd.nmb.rabbit-msg";
+		private const string MessageTypeFormat = "{0}, {1}";
 		private const string RabbitHeaderFormat = "x-rabbit-{0}";
 		private const string ExceptionHeaderFormat = "x-exception{0}.{1}-{2}";
 		private const string RetryAddressHeaderKey = "retry-address";

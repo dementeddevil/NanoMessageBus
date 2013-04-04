@@ -46,7 +46,7 @@ namespace NanoMessageBus.Channels
 				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToEpochTime().ToString(CultureInfo.InvariantCulture),
 				Headers = new Hashtable(),
 				MessageId = Guid.NewGuid().ToString(),
-				Type = "message type",
+				Type = "System.Byte[]",
 				UserId = "userId",
 				Priority = 5,
 				ReplyTo = "rabbitmq://localhost/ReplyTo",
@@ -57,7 +57,7 @@ namespace NanoMessageBus.Channels
 			message.BasicProperties.Headers["IntHeader"] = 42;
 
 			mockSerializer
-				.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), typeof(object), DefaultContentFormat, message.BasicProperties.ContentEncoding))
+				.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), typeof(byte[]), DefaultContentFormat, message.BasicProperties.ContentEncoding))
 				.Returns(deserialized);
 		};
 
@@ -66,7 +66,7 @@ namespace NanoMessageBus.Channels
 
 		It should_deserialize_the_payload = () =>
 			mockSerializer.Verify(x =>
-				x.Deserialize(Moq.It.IsAny<Stream>(), typeof(object), DefaultContentFormat, message.BasicProperties.ContentEncoding),
+				x.Deserialize(Moq.It.IsAny<Stream>(), typeof(byte[]), DefaultContentFormat, message.BasicProperties.ContentEncoding),
 				Times.Once());
 
 		It should_return_a_ChannelMessage = () =>
@@ -142,7 +142,7 @@ namespace NanoMessageBus.Channels
 				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToEpochTime().ToString(CultureInfo.InvariantCulture),
 				Headers = new Hashtable(),
 				MessageId = Guid.NewGuid().ToString(),
-				Type = "message type",
+				Type = "System.Int32[]",
 				UserId = "userId",
 				Priority = 5,
 				ReplyTo = "rabbitmq://localhost/ReplyTo",
@@ -153,7 +153,7 @@ namespace NanoMessageBus.Channels
 			message.BasicProperties.Headers["IntHeader"] = 42;
 
 			mockSerializer
-				.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), typeof(object), DefaultContentFormat, message.BasicProperties.ContentEncoding))
+				.Setup(x => x.Deserialize(Moq.It.IsAny<Stream>(), typeof(int[]), DefaultContentFormat, message.BasicProperties.ContentEncoding))
 				.Returns(deserialized);
 		};
 
@@ -291,7 +291,7 @@ namespace NanoMessageBus.Channels
 			result.BasicProperties.Expiration.ShouldEqual(((int)(message.Expiration - message.Dispatched).TotalMilliseconds).ToString(CultureInfo.InvariantCulture));
 
 		It should_populate_the_wire_message_with_the_correct_message_type = () =>
-			result.BasicProperties.Type.ShouldEqual(message.Messages.First().GetType().FullName);
+			result.BasicProperties.Type.ShouldEqual("System.String, mscorlib");
 
 		It should_populate_the_wire_message_with_the_correct_content_encoding = () =>
 			result.BasicProperties.ContentEncoding.ShouldEqual(DefaultContentEncoding);
