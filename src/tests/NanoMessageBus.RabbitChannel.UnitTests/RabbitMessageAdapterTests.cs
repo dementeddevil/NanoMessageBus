@@ -57,7 +57,7 @@ namespace NanoMessageBus.Channels
 			message.BasicProperties.Headers["IntHeader"] = 42;
 
 			mockSerializer
-				.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
+				.Setup(x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
 				.Returns(deserialized);
 		};
 
@@ -66,7 +66,7 @@ namespace NanoMessageBus.Channels
 
 		It should_deserialize_the_payload = () =>
 			mockSerializer.Verify(x =>
-				x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding),
+				x.Deserialize<object>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding),
 				Times.Once());
 
 		It should_return_a_ChannelMessage = () =>
@@ -126,6 +126,51 @@ namespace NanoMessageBus.Channels
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 	}
 
+	public class when_only_a_single_item_arrives_within_an_envelope : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			message.Body = new byte[] { 1, 2, 3, 4 };
+			message.BasicProperties = new BasicProperties
+			{
+				AppId = "appId",
+				ClusterId = "clusterId",
+				ContentType = "content type+" + DefaultContentFormat,
+				ContentEncoding = "content encoding",
+				CorrelationId = Guid.NewGuid().ToString(),
+				DeliveryMode = 2, // persistent
+				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToEpochTime().ToString(CultureInfo.InvariantCulture),
+				Headers = new Hashtable(),
+				MessageId = Guid.NewGuid().ToString(),
+				Type = "message type",
+				UserId = "userId",
+				Priority = 5,
+				ReplyTo = "rabbitmq://localhost/ReplyTo",
+				Timestamp = new AmqpTimestamp(0)
+			};
+
+			message.BasicProperties.Headers["StringHeader"] = Encoding.UTF8.GetBytes("MyValue");
+			message.BasicProperties.Headers["IntHeader"] = 42;
+
+			mockSerializer
+				.Setup(x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), DefaultContentFormat, message.BasicProperties.ContentEncoding))
+				.Returns(deserialized);
+		};
+
+		Because of = () =>
+			result = adapter.Build(message);
+
+		It should_have_an_envelope_containing_exactly_one_item = () =>
+			result.Messages.Count.ShouldEqual(1);
+
+		It should_add_the_deserialized_message_to_the_envelope = () =>
+			result.Messages[0].ShouldEqual(deserialized);
+
+		static ChannelMessage result;
+		static readonly object deserialized = "only message";
+		static readonly BasicDeliverEventArgs message = EmptyMessage();
+	}
+
 	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_the_wire_message_is_expired : using_a_message_adapter
 	{
@@ -143,7 +188,7 @@ namespace NanoMessageBus.Channels
 
 		It should_not_invoke_the_serializer = () =>
 			mockSerializer.Verify(
-				x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()),
+				x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()),
 				Times.Never());
 
 		static BasicDeliverEventArgs message;
@@ -153,7 +198,7 @@ namespace NanoMessageBus.Channels
 	public class when_unable_to_deserialize_a_wire_message_body : using_a_message_adapter
 	{
 		Establish context = () => mockSerializer
-			.Setup(x => x.Deserialize<object[]>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
+			.Setup(x => x.Deserialize<object>(Moq.It.IsAny<Stream>(), Moq.It.IsAny<string>(), Moq.It.IsAny<string>()))
 			.Throws(new SerializationException());
 
 		Because of = () =>
@@ -285,12 +330,13 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
+			var messages = new object[] { "1" };
 			message = new ChannelMessage(
 				Guid.NewGuid(),
 				Guid.NewGuid(),
 				new Uri("direct://MyExchange/RoutingKey"),
 				new Dictionary<string, string>(),
-				new object[] { "1" })
+				messages)
 			{
 				Expiration = SystemTime.UtcNow.AddDays(-1),
 				Dispatched = SystemTime.UtcNow

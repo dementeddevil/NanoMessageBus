@@ -51,8 +51,7 @@
 			if (expiration <= SystemTime.UtcNow)
 				throw new DeadLetterException(expiration);
 
-			var payload = this.configuration.Serializer.Deserialize<object[]>(
-				message.Body, properties.ContentFormat(), properties.ContentEncoding);
+			var payload = this.Deserialize(message.Body, properties.ContentFormat(), properties.ContentEncoding);
 
 			return new ChannelMessage(
 				properties.MessageId.ToGuid(),
@@ -65,6 +64,12 @@
 				Expiration = expiration,
 				Persistent = properties.DeliveryMode == Persistent
 			};
+		}
+		private IEnumerable<object> Deserialize(byte[] body, string format, string encoding)
+		{
+			var deserialized = this.configuration.Serializer.Deserialize<object>(body, format, encoding);
+			var collection = deserialized as object[];
+			return collection ?? new[] { deserialized };
 		}
 		protected virtual void AppendHeaders(ChannelMessage message, IBasicProperties properties)
 		{
