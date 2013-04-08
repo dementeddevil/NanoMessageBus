@@ -359,6 +359,74 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_the_expiration_is_DateTime_MaxValue : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			var messages = new object[] { "1" };
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("direct://MyExchange/RoutingKey"),
+				new Dictionary<string, string>(),
+				messages)
+			{
+				Expiration = DateTime.MaxValue,
+				Dispatched = SystemTime.UtcNow
+			};
+
+			mockSerializer
+				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
+				.Callback<Stream, object>((stream, graph) => stream.Write(body, 0, body.Length));
+		};
+
+		Because of = () =>
+			result = adapter.Build(message, new BasicProperties());
+
+		It should_not_set_the_expiration = () =>
+			result.BasicProperties.Expiration.ShouldBeNull();
+
+		static readonly byte[] body = new byte[0];
+		static ChannelMessage message;
+		static BasicDeliverEventArgs result;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
+	public class when_the_expiration_value_overflows_an_integer : using_a_message_adapter
+	{
+		Establish context = () =>
+		{
+			var dispatched = SystemTime.UtcNow;
+			var expiration = dispatched.AddMilliseconds((long)int.MaxValue + 1);
+			var messages = new object[] { "1" };
+			message = new ChannelMessage(
+				Guid.NewGuid(),
+				Guid.NewGuid(),
+				new Uri("direct://MyExchange/RoutingKey"),
+				new Dictionary<string, string>(),
+				messages)
+			{
+				Expiration = expiration,
+				Dispatched = dispatched
+			};
+
+			mockSerializer
+				.Setup(x => x.Serialize(Moq.It.IsAny<Stream>(), message.Messages))
+				.Callback<Stream, object>((stream, graph) => stream.Write(body, 0, body.Length));
+		};
+
+		Because of = () =>
+			result = adapter.Build(message, new BasicProperties());
+
+		It should_not_set_the_expiration = () =>
+			result.BasicProperties.Expiration.ShouldBeNull();
+
+		static readonly byte[] body = new byte[0];
+		static ChannelMessage message;
+		static BasicDeliverEventArgs result;
+	}
+
+	[Subject(typeof(RabbitMessageAdapter))]
 	public class when_no_expiration_or_content_encoding_is_specified_during_wire_message_creation : using_a_message_adapter
 	{
 		Establish context = () =>
