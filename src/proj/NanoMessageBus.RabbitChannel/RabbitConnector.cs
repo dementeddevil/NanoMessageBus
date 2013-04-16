@@ -87,8 +87,10 @@
 					Log.Warn("Attempting to redefine existing queue/exchange with different parameters; manual intervention may be required.");
 				else if (shutdownCode == ResourceLocked)
 					Log.Warn("Attempting to access a queue locked exclusively by another consumer; manual intervention may be required.");
+				else if (shutdownCode == 404)
+					Log.Warn("The desired queue or exchange specified could not be found.", e);
 				else
-					Log.Info("Connection attempt interrupted; socked closed.");
+					Log.Info("Connection attempt interrupted; socked closed.", e);
 
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
