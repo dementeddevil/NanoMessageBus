@@ -66,7 +66,8 @@
 			DateTimeZoneHandling = DateTimeZoneHandling.Utc,
 			DateFormatHandling = DateFormatHandling.IsoDateFormat,
 			DateParseHandling = DateParseHandling.DateTime,
-			Converters = { new StringEnumConverter() }
+			ContractResolver = new UnderscoreContractResolver(),
+			Converters = { new UnderscoreEnumConverter(), new StringEnumConverter() }
 		};
 		private readonly JsonNetSerializer untypedSerializer = new JsonNetSerializer
 		{
@@ -81,7 +82,8 @@
 			DateTimeZoneHandling = DateTimeZoneHandling.Utc,
 			DateFormatHandling = DateFormatHandling.IsoDateFormat,
 			DateParseHandling = DateParseHandling.DateTime,
-			Converters = { new StringEnumConverter() }
+			ContractResolver = new UnderscoreContractResolver(),
+			Converters = { new UnderscoreEnumConverter(), new StringEnumConverter() }
 		};
 	}
 }

@@ -47,6 +47,10 @@
     <Compile Include="BsonSerializer.cs" />
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnderscoreContractResolver.cs" />
+    <Compile Include="UnderscoreEnumConverter.cs" />
+    <Compile Include="UnderscoreExtensions.cs" />
+    <Compile Include="UnderscoreNormalizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\CustomDictionary.xml">
@@ -64,6 +68,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.4\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
