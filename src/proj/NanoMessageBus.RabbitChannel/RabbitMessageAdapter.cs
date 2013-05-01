@@ -128,10 +128,7 @@
 				? ContentType : ContentType + "+" + serializer.ContentFormat;
 
 			properties.SetPersistent(message.Persistent);
-
-			var ttl = (int)(message.Expiration - message.Dispatched).TotalMilliseconds;
-			if (ttl > 0)
-				properties.Expiration = ttl.ToString(CultureInfo.InvariantCulture);
+			SetExpiration(properties, message);
 
 			if (message.ReturnAddress != null)
 				properties.ReplyTo = message.ReturnAddress.ToString();
@@ -150,6 +147,22 @@
 				RoutingKey = this.configuration.LookupRoutingKey(message),
 				BasicProperties = properties
 			};
+		}
+		private static void SetExpiration(IBasicProperties properties, ChannelMessage message)
+		{
+			var expiration = message.Expiration;
+			if (expiration <= DateTime.MinValue || expiration >= DateTime.MaxValue)
+				return;
+
+			var dispatch = message.Dispatched > DateTime.MinValue ? message.Dispatched : SystemTime.UtcNow;
+			var ttl = (long)(expiration - dispatch).TotalMilliseconds;
+			if (ttl > int.MaxValue)
+				return;
+
+			if (ttl < 0)
+				ttl = 0;
+
+			properties.Expiration = ttl.ToString(CultureInfo.InvariantCulture);
 		}
 
 		public virtual void AppendRetryAddress(BasicDeliverEventArgs message)

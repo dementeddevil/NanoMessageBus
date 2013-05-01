@@ -350,8 +350,8 @@ namespace NanoMessageBus.Channels
 		Because of = () =>
 			result = adapter.Build(message, new BasicProperties());
 
-		It should_not_set_the_expiration = () =>
-			result.BasicProperties.Expiration.ShouldBeNull();
+		It should_set_an_immediate_expiration = () =>
+			result.BasicProperties.Expiration.ShouldEqual("0");
 
 		static readonly byte[] body = new byte[0];
 		static ChannelMessage message;

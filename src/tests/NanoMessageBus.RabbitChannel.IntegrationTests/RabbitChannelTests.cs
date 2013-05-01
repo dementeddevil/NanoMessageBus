@@ -55,6 +55,30 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_sending_a_message_with_zero_ttl : using_the_channel
+	{
+		Establish context = () =>
+		{
+			receiverConfig.WithCleanQueue();
+			senderConfig.WithTransaction(RabbitTransactionType.None);
+		};
+
+		Because of = () =>
+		{
+			OpenReceiver(Receive);
+
+			var envelope = BuildEnvelope("0 TTL");
+			envelope.Message.Expiration = SystemTime.UtcNow;
+
+			OpenSender().Send(envelope);
+			WaitUntil(() => messagesReceived > 0, DefaultSleepTimeout);
+		};
+
+		It should_not_receive_a_message = () =>
+			currentMessage.ShouldBeNull();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_the_transaction_to_dispatch_a_message_is_not_committed : using_the_channel
 	{
 		Establish context = () =>
