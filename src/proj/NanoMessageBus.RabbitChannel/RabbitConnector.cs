@@ -96,7 +96,7 @@
 			}
 			catch (IOException e)
 			{
-				Log.Info("Connection attempt failed; socket aborted.");
+				Log.Info("Connection attempt failed; socket aborted.", e);
 				this.Close(channel, ConnectionState.Disconnected, e);
 			}
 			catch (Exception e)
