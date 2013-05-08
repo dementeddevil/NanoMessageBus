@@ -35,12 +35,10 @@ namespace NanoMessageBus
 			this.State = state;
 			this.token = token;
 			this.minWorkers = minWorkers;
-			this.maxWorkers = maxWorkers;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(TaskWorker<>));
 		private readonly CancellationToken token;
 		private readonly int minWorkers;
-		private readonly int maxWorkers; // FUTURE
 	}
 }
