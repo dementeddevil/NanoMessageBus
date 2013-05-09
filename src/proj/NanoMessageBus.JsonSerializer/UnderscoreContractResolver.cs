@@ -5,7 +5,7 @@
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Serialization;
 
-	internal class UnderscoreContractResolver : DefaultContractResolver
+	public class UnderscoreContractResolver : DefaultContractResolver
 	{
 		public override JsonContract ResolveContract(Type type)
 		{

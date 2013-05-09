@@ -4,7 +4,7 @@
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Converters;
 
-	internal class UnderscoreEnumConverter : JsonConverter
+	public class UnderscoreEnumConverter : JsonConverter
 	{
 		public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
 		{

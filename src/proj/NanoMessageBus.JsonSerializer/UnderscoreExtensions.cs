@@ -5,7 +5,7 @@
 	using System.Reflection;
 	using System.Runtime.Serialization;
 
-	internal static class UnderscoreExtensions
+	public static class UnderscoreExtensions
 	{
 		public static bool HasJsonUnderscoreAttribute(this Type type)
 		{
