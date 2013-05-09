@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NanoMessageBus.RabbitMQ</id>
-    <version>2.0.35</version>
+    <version>2.0.36</version>
     <title>NanoMessageBus RabbitMQ Messaging Plugin</title>
     <authors>Jonathan Oliver</authors>
     <owners>Jonathan Oliver</owners>
@@ -13,7 +13,7 @@
     <language>es-US</language>
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, amqp, rabbit, rabbitmq</tags>
     <dependencies>
-      <dependency id="NanoMessageBus" version="2.0.35" />
+      <dependency id="NanoMessageBus" version="2.0.36" />
       <dependency id="RabbitMQ.Client" version="[3.0.4]" />
     </dependencies>
   </metadata>
