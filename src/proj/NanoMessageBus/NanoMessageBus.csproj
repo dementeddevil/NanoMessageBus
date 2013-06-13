@@ -60,6 +60,8 @@
     <Compile Include="Channels\HttpRequestAuditor.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ChannelShutdownException.cs" />
+    <Compile Include="AsynchronousMessenger.cs" />
+    <Compile Include="IMessenger.cs" />
     <Compile Include="PoisonMessageException.cs" />
     <Compile Include="DeadLetterException.cs" />
     <Compile Include="DefaultChannelGroup.cs" />
@@ -107,6 +109,7 @@
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\SerializationExtensions.cs" />
     <Compile Include="SynchronousChannelGroup.cs" />
+    <Compile Include="SynchronousMessenger.cs" />
     <Compile Include="SystemTime.cs" />
     <Compile Include="TaskWorker.cs" />
     <Compile Include="TaskWorkerGroup.cs" />
