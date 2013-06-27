@@ -78,6 +78,8 @@
 
 		public override IConnection CreateConnection(int maxRedirects)
 		{
+			this.RequestedHeartbeat = RequestedHeartbeatInSeconds;
+
 			var endpoints = this.brokers
 				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x) })
 				.ToArray();
@@ -141,6 +143,7 @@
 		private const string DefaultPassword = DefaultUserName;
 		private const int UserNameIndex = 0;
 		private const int PasswordIndex = 1;
+		private const int RequestedHeartbeatInSeconds = 30;
 		private static readonly Uri DefaultEndpoint = new Uri("amqp://guest:guest@localhost:5672/");
 		private static readonly char[] EndpointDelimiter = new[] { '|' };
 		private static readonly char[] AuthenticationDelimiter = ":".ToCharArray();
