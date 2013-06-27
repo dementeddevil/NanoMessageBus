@@ -1,6 +1,8 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
+	using System.Diagnostics;
+	using System.Globalization;
 
 	public class PointOfOriginAuditor : IMessageAuditor
 	{
@@ -27,9 +29,12 @@
 			if (message == envelope.State)
 				return;
 
+			var process = Process.GetCurrentProcess();
 			var headers = message.Headers;
-			headers[OriginHost] = Environment.MachineName.ToLowerInvariant();
 			headers[DispatchStamp] = SystemTime.UtcNow.ToIsoString();
+			headers[OriginHost] = Environment.MachineName.ToLowerInvariant();
+			headers[ProcessName] = process.ProcessName;
+			headers[ProcessId] = process.Id.ToString(CultureInfo.InvariantCulture);
 		}
 
 		public PointOfOriginAuditor()
@@ -53,5 +58,7 @@
 		private const string HeaderFormat = "x-audit-{0}";
 		private static readonly string OriginHost = HeaderFormat.FormatWith("origin-host");
 		private static readonly string DispatchStamp = HeaderFormat.FormatWith("dispatched");
+		private static readonly string ProcessId = HeaderFormat.FormatWith("origin-process-id");
+		private static readonly string ProcessName = HeaderFormat.FormatWith("origin-process-name");
 	}
 }

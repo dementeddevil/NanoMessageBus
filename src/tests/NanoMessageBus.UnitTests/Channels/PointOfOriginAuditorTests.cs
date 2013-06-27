@@ -5,6 +5,8 @@ namespace NanoMessageBus.Channels
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Diagnostics;
+	using System.Globalization;
 	using Machine.Specifications;
 	using Moq;
 	using It = Machine.Specifications.It;
@@ -69,6 +71,13 @@ namespace NanoMessageBus.Channels
 
 		It should_append_the_current_time_to_the_headers = () =>
 			messageHeaders["x-audit-dispatched"].ShouldEqual(SystemTime.UtcNow.ToString("o"));
+
+		It should_append_the_originating_process_id_to_the_headers = () =>
+			messageHeaders["x-audit-origin-process-id"].ShouldEqual(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
+
+		It should_append_the_originating_process_name_to_the_headers = () =>
+			messageHeaders["x-audit-origin-process-name"].ShouldEqual(Process.GetCurrentProcess().ProcessName);
+
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
@@ -79,6 +88,8 @@ namespace NanoMessageBus.Channels
 			mockEnvelope.Setup(x => x.State).Returns(mockMessage.Object);
 			messageHeaders["x-audit-origin-host"] = "a";
 			messageHeaders["x-audit-dispatched"] = "b";
+			messageHeaders["x-audit-origin-process-id"] = "c";
+			messageHeaders["x-audit-origin-process-name"] = "d";
 		};
 
 		Because of = () =>
@@ -89,6 +100,12 @@ namespace NanoMessageBus.Channels
 
 		It should_NOT_modify_the_originating_dispatch_stamp = () =>
 			messageHeaders["x-audit-dispatched"].ShouldEqual("b");
+
+		It should_NOT_modify_the_originating_process_id = () =>
+			messageHeaders["x-audit-origin-process-id"].ShouldEqual("c");
+
+		It should_NOT_modify_the_originating_process_name = () =>
+			messageHeaders["x-audit-origin-process-name"].ShouldEqual("d");
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
