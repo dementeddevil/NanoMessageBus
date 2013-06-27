@@ -6,6 +6,7 @@ namespace NanoMessageBus.Channels
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Diagnostics;
 	using System.Globalization;
 	using System.IO;
 	using System.Linq;
@@ -598,6 +599,18 @@ namespace NanoMessageBus.Channels
 		It should_append_the_exception_stacktrace_as_a_string = () =>
 			message.GetHeader("x-exception0.0-stacktrace").ShouldBeOfType<string>();
 
+		It should_append_the_exception_origin_host = () =>
+			message.GetHeader("x-exception0.0-origin-host").ShouldEqual(Environment.MachineName.ToLowerInvariant());
+
+		It should_append_the_exception_origin_process_name = () =>
+			message.GetHeader("x-exception0.0-process-name").ShouldEqual(Process.GetCurrentProcess().ProcessName);
+
+		It should_append_the_exception_origin_process_id = () =>
+			message.GetHeader("x-exception0.0-process-id").ShouldEqual(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
+
+		It should_append_the_exception_timestamp = () =>
+			message.GetHeader("x-exception0.0-timestamp").ShouldEqual(SystemTime.UtcNow.ToIsoString());
+
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception simple = new Exception();
 	}
@@ -620,6 +633,18 @@ namespace NanoMessageBus.Channels
 		It should_NOT_append_the_exception_stack_trace = () =>
 			message.GetHeader("x-exception1.0-stacktrace").AsString().ShouldBeNull();
 
+		It should_NOT_append_the_hostname = () =>
+			message.GetHeader("x-exception1.0-origin-host").ShouldBeNull();
+
+		It should_NOT_append_the_process_name = () =>
+			message.GetHeader("x-exception1.0-process-name").ShouldBeNull();
+
+		It should_NOT_append_the_process_id = () =>
+			message.GetHeader("x-exception1.0-process-id").ShouldBeNull();
+
+		It should_NOT_append_the_timestamp = () =>
+			message.GetHeader("x-exception1.0-timestamp").ShouldBeNull();
+
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception simple = new Exception();
 	}
@@ -638,6 +663,18 @@ namespace NanoMessageBus.Channels
 
 		It should_append_the_inner_exception_stack_trace = () =>
 			message.GetHeader("x-exception0.1-stacktrace").ShouldNotBeNull();
+
+		It should_NOT_append_the_hostname = () =>
+			message.GetHeader("x-exception0.1-origin-host").ShouldBeNull();
+
+		It should_NOT_append_the_process_name = () =>
+			message.GetHeader("x-exception0.1-process-name").ShouldBeNull();
+
+		It should_NOT_append_the_process_id = () =>
+			message.GetHeader("x-exception0.1-process-id").ShouldBeNull();
+
+		It should_NOT_append_the_timestamp = () =>
+			message.GetHeader("x-exception0.1-timestamp").ShouldBeNull();
 
 		static readonly BasicDeliverEventArgs message = EmptyMessage();
 		static readonly Exception nested = new Exception("outer", new Exception("inner"));
@@ -682,7 +719,13 @@ namespace NanoMessageBus.Channels
 			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
 			mockConfiguration.Setup(x => x.Serializer).Returns(mockSerializer.Object);
 			adapter = new RabbitMessageAdapter(mockConfiguration.Object);
+
+			var now = DateTime.UtcNow;
+			SystemTime.TimeResolver = () => now;
 		};
+
+		Cleanup after = () =>
+			SystemTime.TimeResolver = null;
 
 		protected static BasicDeliverEventArgs EmptyMessage()
 		{

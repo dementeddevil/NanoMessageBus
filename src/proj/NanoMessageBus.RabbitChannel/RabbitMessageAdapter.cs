@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Diagnostics;
 	using System.Globalization;
 	using System.Linq;
 	using System.Runtime.Serialization;
@@ -194,7 +195,16 @@
 			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "type"), exception.GetType().ToString());
 			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "message"), exception.Message);
 			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "stacktrace"), exception.StackTrace ?? string.Empty);
-			this.AppendException(message, exception.InnerException, attempt, depth + 1);	
+			this.AppendException(message, exception.InnerException, attempt, depth + 1);
+
+			if (depth > 0)
+				return;
+
+			var process = Process.GetCurrentProcess();
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "process-name"), process.ProcessName);
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "process-id"), process.Id.ToString(CultureInfo.InvariantCulture));
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "origin-host"), Environment.MachineName.ToLowerInvariant());
+			message.SetHeader(ExceptionHeaderFormat.FormatWith(attempt, depth, "timestamp"), SystemTime.UtcNow.ToIsoString());
 		}
 		protected virtual bool CanAppendException(BasicDeliverEventArgs message, Exception exception, int attempt, int depth)
 		{

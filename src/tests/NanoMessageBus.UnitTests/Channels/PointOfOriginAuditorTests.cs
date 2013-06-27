@@ -77,7 +77,6 @@ namespace NanoMessageBus.Channels
 
 		It should_append_the_originating_process_name_to_the_headers = () =>
 			messageHeaders["x-audit-origin-process-name"].ShouldEqual(Process.GetCurrentProcess().ProcessName);
-
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
