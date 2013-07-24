@@ -191,7 +191,7 @@
 
 			this.EnsureTransaction().Register(() => this.Try(() =>
 			{
-				Log.Info("Dispatching wire message '{0}' on channel {1} to messaging infrastructure for recipient '{2}'.",
+				Log.Debug("Dispatching wire message '{0}' on channel {1} to messaging infrastructure for recipient '{2}'.",
 					message.MessageId(), this.identifier, recipient);
 				this.channel.BasicPublish(recipient, message.BasicProperties, message.Body);
 			}));
