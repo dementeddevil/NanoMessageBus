@@ -14,7 +14,7 @@
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, ioc, inversion of control, dependecy injection, Autofac</tags>
     <dependencies>
       <dependency id="NanoMessageBus" version="2.0.39" />
-      <dependency id="Autofac" version="[2.6.1.841]" />
+      <dependency id="Autofac" version="[3.1.1]" />
     </dependencies>
   </metadata>
   <files>
