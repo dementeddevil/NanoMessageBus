@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NanoMessageBus.Json.NET</id>
-    <version>2.0.39</version>
+    <version>2.0.40</version>
     <title>NanoMessageBus Newtonsoft Json.NET Serialization Plugin</title>
     <authors>Jonathan Oliver</authors>
     <owners>Jonathan Oliver</owners>
@@ -13,7 +13,7 @@
     <language>es-US</language>
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, newtonsoft, json, serialization, serializer</tags>
     <dependencies>
-      <dependency id="NanoMessageBus" version="2.0.39" />
+      <dependency id="NanoMessageBus" version="2.0.40" />
     </dependencies>
   </metadata>
   <files>
