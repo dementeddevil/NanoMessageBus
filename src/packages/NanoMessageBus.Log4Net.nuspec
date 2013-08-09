@@ -14,7 +14,7 @@
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, logging, log4net</tags>
     <dependencies>
       <dependency id="NanoMessageBus" version="2.0.39" />
-      <dependency id="log4net" version="[1.2.10]" />
+      <dependency id="log4net" version="[1.2.11]" />
     </dependencies>
   </metadata>
   <files>
