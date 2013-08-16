@@ -38,7 +38,8 @@
 
 		public virtual object Deserialize(Stream input, Type type, string format, string contentEncoding = "utf8")
 		{
-			using (var streamReader = new StreamReader(input, this.GetEncoding(contentEncoding)))
+			var encoding = this.GetEncoding(contentEncoding);
+			using (var streamReader = new StreamReader(input, encoding))
 			using (var jsonReader = new JsonTextReader(streamReader))
 				return this.Deserialize(jsonReader, type);
 		}
