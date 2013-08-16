@@ -219,15 +219,15 @@
 			this.TransactionType = transaction;
 			return this;
 		}
-		public virtual RabbitChannelGroupConfiguration WithChannelBuffer(int maxMessageBufer)
+		public virtual RabbitChannelGroupConfiguration WithChannelBuffer(int maxMessageBuffer)
 		{
-			if (maxMessageBufer < 0)
-				throw new ArgumentException("A non-negative buffer size is required.", "maxMessageBufer");
+			if (maxMessageBuffer < 0)
+				throw new ArgumentException("A non-negative buffer size is required.", "maxMessageBuffer");
 
-			if (maxMessageBufer > ushort.MaxValue)
-				maxMessageBufer = ushort.MaxValue;
+			if (maxMessageBuffer > ushort.MaxValue)
+				maxMessageBuffer = ushort.MaxValue;
 
-			this.ChannelBuffer = maxMessageBufer;
+			this.ChannelBuffer = maxMessageBuffer;
 			return this;
 		}
 		public virtual RabbitChannelGroupConfiguration WithChannelMessageBuilder(IChannelMessageBuilder builder)
