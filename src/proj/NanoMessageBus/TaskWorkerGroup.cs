@@ -251,7 +251,7 @@
 				throw new ArgumentException("The minimum number of workers is 1.", "minWorkers");
 
 			if (maxWorkers < minWorkers)
-				throw new ArgumentException("The maximum number of workers must be greater than the minimum number of workers.", "maxWorkers");
+				throw new ArgumentException("The maximum number of workers must be at least equal to the minimum number of workers.", "maxWorkers");
 
 			this.minWorkers = minWorkers;
 			this.maxWorkers = maxWorkers;
