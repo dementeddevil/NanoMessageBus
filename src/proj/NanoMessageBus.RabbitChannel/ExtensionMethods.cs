@@ -1,7 +1,7 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
+	using System.Collections.Generic;
 	using System.Text;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
@@ -48,7 +48,7 @@
 		{
 			message.EnsureMessage();
 
-			if (message.BasicProperties.Headers.Contains(AttemptCountHeader))
+			if (message.BasicProperties.Headers.ContainsKey(AttemptCountHeader))
 				return (int)message.BasicProperties.Headers[AttemptCountHeader];
 
 			return 0;
@@ -62,7 +62,7 @@
 		public static object GetHeader(this BasicDeliverEventArgs message, string key)
 		{
 			message.EnsureMessage();
-			return message.BasicProperties.Headers.Contains(key) ? message.BasicProperties.Headers[key] : null;
+			return message.BasicProperties.Headers.ContainsKey(key) ? message.BasicProperties.Headers[key] : null;
 		}
 		public static void SetHeader<T>(this BasicDeliverEventArgs message, string key, T value)
 		{
@@ -77,7 +77,7 @@
 		private static void EnsureMessage(this BasicDeliverEventArgs message)
 		{
 			message.BasicProperties = message.BasicProperties ?? new BasicProperties();
-			message.BasicProperties.Headers = message.BasicProperties.Headers ?? new Hashtable();
+			message.BasicProperties.Headers = message.BasicProperties.Headers ?? new Dictionary<string, object>();
 		}
 
 		public static Guid ToGuid(this string value)

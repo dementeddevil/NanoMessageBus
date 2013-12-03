@@ -4,7 +4,6 @@
 namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Diagnostics;
 	using System.Globalization;
@@ -45,7 +44,7 @@ namespace NanoMessageBus.Channels
 				CorrelationId = Guid.NewGuid().ToString(),
 				DeliveryMode = 2, // persistent
 				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToEpochTime().ToString(CultureInfo.InvariantCulture),
-				Headers = new Hashtable(),
+				Headers = new Dictionary<string, object>(),
 				MessageId = Guid.NewGuid().ToString(),
 				Type = "System.Byte[]",
 				UserId = "userId",
@@ -111,8 +110,8 @@ namespace NanoMessageBus.Channels
 
 		It should_populate_the_ChannelMessage_headers_with_all_the_headers_from_the_wire_message = () =>
 		{
-			var headers = (Hashtable)message.BasicProperties.Headers;
-			foreach (string key in headers.Keys)
+			var headers = message.BasicProperties.Headers;
+			foreach (var key in headers.Keys)
 			{
 				int value;
 				if (int.TryParse(result.Headers[key], out value))
@@ -141,7 +140,7 @@ namespace NanoMessageBus.Channels
 				CorrelationId = Guid.NewGuid().ToString(),
 				DeliveryMode = 2, // persistent
 				Expiration = DateTime.Parse("2150-01-02 03:04:05").ToEpochTime().ToString(CultureInfo.InvariantCulture),
-				Headers = new Hashtable(),
+				Headers = new Dictionary<string, object>(),
 				MessageId = Guid.NewGuid().ToString(),
 				Type = "System.Int32[]",
 				UserId = "userId",
@@ -732,7 +731,7 @@ namespace NanoMessageBus.Channels
 			return new BasicDeliverEventArgs
 			{
 				Body = new byte[0],
-				BasicProperties = new BasicProperties { Headers = new Hashtable() }
+				BasicProperties = new BasicProperties { Headers = new Dictionary<string, object>() }
 			};
 		}
 

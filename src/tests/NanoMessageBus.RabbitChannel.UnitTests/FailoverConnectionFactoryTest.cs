@@ -4,7 +4,6 @@
 namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Net.Security;
@@ -411,8 +410,8 @@ namespace NanoMessageBus.Channels
 
 		protected override IConnection CreateConnection(
 			int maxRedirects,
-			IDictionary connectionAttempts,
-			IDictionary connectionErrors,
+			IDictionary<AmqpTcpEndpoint, int> connectionAttempts,
+			IDictionary<AmqpTcpEndpoint, Exception> connectionErrors,
 			params AmqpTcpEndpoint[] endpoints)
 		{
 			this.MaxRedirects = maxRedirects;

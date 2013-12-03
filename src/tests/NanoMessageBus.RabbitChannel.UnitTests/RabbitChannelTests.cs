@@ -4,7 +4,7 @@
 namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
+	using System.Collections.Generic;
 	using System.Globalization;
 	using System.IO;
 	using Machine.Specifications;
@@ -1441,7 +1441,7 @@ namespace NanoMessageBus.Channels
 			return new BasicDeliverEventArgs
 			{
 				Body = new byte[0],
-				BasicProperties = new BasicProperties { Headers = new Hashtable() }
+				BasicProperties = new BasicProperties { Headers = new Dictionary<string, object>() }
 			};
 		}
 		protected static ChannelEnvelope SimpleEnvelope(Uri recipient)

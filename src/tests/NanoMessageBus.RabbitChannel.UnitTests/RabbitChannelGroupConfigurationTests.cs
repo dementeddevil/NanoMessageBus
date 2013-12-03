@@ -4,7 +4,6 @@
 namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using Machine.Specifications;
@@ -108,8 +107,8 @@ namespace NanoMessageBus.Channels
 					Moq.It.IsAny<bool>(),
 					Moq.It.IsAny<bool>(),
 					Moq.It.IsAny<bool>(),
-					Moq.It.IsAny<IDictionary>()))
-				.Callback<string, bool, bool, bool, IDictionary>((a, b, c, e, values) =>
+					Moq.It.IsAny<IDictionary<string, object>>()))
+				.Callback<string, bool, bool, bool, IDictionary<string, object>>((a, b, c, e, values) =>
 				{
 					parameters = values;
 				});
@@ -122,7 +121,7 @@ namespace NanoMessageBus.Channels
 		It should_provide_the_parameter_to_the_queue_declaration = () =>
 			parameters["x-ha-policy"].ShouldEqual("all");
 
-		static IDictionary parameters;
+		static IDictionary<string, object> parameters;
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -242,7 +241,7 @@ namespace NanoMessageBus.Channels
 			var declaration = new QueueDeclareOk("random-queue", 0, 0);
 
 			mockChannel
-				.Setup(x => x.QueueDeclare(string.Empty, true, false, AutoDelete, Moq.It.IsAny<IDictionary>()))
+				.Setup(x => x.QueueDeclare(string.Empty, true, false, AutoDelete, Moq.It.IsAny<IDictionary<string, object>>()))
 				.Returns(declaration);
 
 			config.WithRandomInputQueue();
@@ -777,7 +776,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_named_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare("some-queue", true, true, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare("some-queue", true, true, true, Moq.It.IsAny<IDictionary<string, object>>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -789,7 +788,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_randomly_named_exclusive_queue = () =>
-			mockChannel.Verify(x => x.QueueDeclare(string.Empty, true, true, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(string.Empty, true, true, true, Moq.It.IsAny<IDictionary<string, object>>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -801,7 +800,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare("some-queue", false, false, false, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare("some-queue", false, false, false, Moq.It.IsAny<IDictionary<string, object>>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -813,7 +812,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_exclusive_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(string.Empty, false, false, false, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(string.Empty, false, false, false, Moq.It.IsAny<IDictionary<string, object>>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -825,7 +824,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_autodelete_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare("some-queue", true, false, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare("some-queue", true, false, true, Moq.It.IsAny<IDictionary<string, object>>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -837,7 +836,7 @@ namespace NanoMessageBus.Channels
 		Because of = () => Configure();
 
 		It should_build_the_channel_with_the_autodelete_value_specified = () =>
-			mockChannel.Verify(x => x.QueueDeclare(string.Empty, true, false, true, Moq.It.IsAny<IDictionary>()), Times.Once());
+			mockChannel.Verify(x => x.QueueDeclare(string.Empty, true, false, true, Moq.It.IsAny<IDictionary<string, object>>()), Times.Once());
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -863,8 +862,8 @@ namespace NanoMessageBus.Channels
 					Moq.It.IsAny<bool>(),
 					Moq.It.IsAny<bool>(),
 					Moq.It.IsAny<bool>(),
-					Moq.It.IsAny<IDictionary>()))
-				.Callback<string, bool, bool, bool, IDictionary>((a, b, c, e, values) =>
+					Moq.It.IsAny<IDictionary<string, object>>()))
+				.Callback<string, bool, bool, bool, IDictionary<string, object>>((a, b, c, e, values) =>
 				{
 					parameters = values;
 				});
@@ -877,7 +876,7 @@ namespace NanoMessageBus.Channels
 		It should_provide_the_parameter_to_the_queue_declaration = () =>
 			parameters["x-dead-letter-exchange"].ShouldEqual("my-dead-letter-exchange");
 
-		static IDictionary parameters;
+		static IDictionary<string, object> parameters;
 	}
 
 	[Subject(typeof(RabbitChannelGroupConfiguration))]
@@ -1050,7 +1049,7 @@ namespace NanoMessageBus.Channels
 				Moq.It.IsAny<string>(),
 				Moq.It.IsAny<bool>(),
 				Moq.It.IsAny<bool>(),
-				Moq.It.IsAny<IDictionary>()),
+				Moq.It.IsAny<IDictionary<string, object>>()),
 				Times.Never());
 	}
 

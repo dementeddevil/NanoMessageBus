@@ -1,7 +1,6 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Diagnostics;
 	using System.Globalization;
@@ -83,7 +82,7 @@
 			headers[RabbitHeaderFormat.FormatWith("priority")] = properties.Priority.ToString(CultureInfo.InvariantCulture);
 
 			var encoding = Encoding.UTF8;
-			foreach (var key in properties.Headers.Keys.Cast<string>())
+			foreach (var key in properties.Headers.Keys)
 			{
 				var value = properties.Headers[key];
 				if (value is int)
@@ -136,7 +135,9 @@
 
 			var messages = (message.Messages ?? new object[0]).ToArray();
 			var payload = messages.Length > 1 ? serializer.Serialize(messages) : serializer.Serialize(messages[0]);
-			properties.Headers = new Hashtable((IDictionary)message.Headers);
+			properties.Headers = new Dictionary<string, object>(message.Headers.Count);
+			foreach (var item in message.Headers)
+				properties.Headers[item.Key] = item.Value;
 
 			var type = messages[0].GetType();
 			properties.Type = MessageTypeFormat.FormatWith(type.FullName, type.Assembly.GetName().Name);

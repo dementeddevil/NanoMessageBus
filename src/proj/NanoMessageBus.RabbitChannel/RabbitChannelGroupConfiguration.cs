@@ -1,7 +1,6 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
 	using RabbitMQ.Client;
@@ -41,7 +40,7 @@
 			if (this.DispatchOnly)
 				return;
 
-			var declarationArgs = new Hashtable();
+			var declarationArgs = new Dictionary<string, object>();
 			if (this.DeadLetterExchange != null)
 				declarationArgs[DeadLetterExchangeDeclaration] = this.DeadLetterExchange.ExchangeName;
 

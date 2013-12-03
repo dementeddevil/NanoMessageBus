@@ -1,7 +1,6 @@
 ﻿namespace NanoMessageBus.Channels
 {
 	using System;
-	using System.Collections;
 	using System.Collections.Generic;
 	using System.Collections.Specialized;
 	using System.Linq;
@@ -86,7 +85,8 @@
 			if (endpoints.Length == 0)
 				endpoints = new[] { new AmqpTcpEndpoint(DefaultEndpoint) };
 
-			IDictionary attempts = new Hashtable(), errors = new Hashtable();
+			var attempts = new Dictionary<AmqpTcpEndpoint, int>();
+			var errors = new Dictionary<AmqpTcpEndpoint, Exception>();
 			var connection = this.CreateConnection(maxRedirects, attempts, errors, endpoints);
 			if (connection == null)
 				throw new BrokerUnreachableException(attempts, errors, null);
