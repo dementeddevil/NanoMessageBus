@@ -167,7 +167,7 @@ namespace NanoMessageBus
 			dispatchContext = handlerContext.PrepareDispatch("Hello, World!");
 
 		It should_invoke_the_underlying_channel = () =>
-			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!", null), null);
+			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!", null), Times.Exactly(1));
 
 		It should_return_the_reference_from_the_underlying_channel = () =>
 			dispatchContext.ShouldEqual(mockDispatch.Object);
