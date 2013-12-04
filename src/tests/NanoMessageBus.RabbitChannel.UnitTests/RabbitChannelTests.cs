@@ -1379,6 +1379,16 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitChannel))]
+	public class when_the_underlying_channel_closure_reason_is_populated : using_a_channel
+	{
+		Establish context = () =>
+			mockRealChannel.Setup(x => x.CloseReason).Returns(new ShutdownEventArgs(ShutdownInitiator.Library, 0, string.Empty));
+
+		It should_mark_the_channel_as_not_active = () =>
+			channel.Active.ShouldBeFalse();
+	}
+
+	[Subject(typeof(RabbitChannel))]
 	public class when_attempting_to_send_on_a_send_only_channel_that_is_shutting_down : using_a_channel
 	{
 		Establish context = () =>

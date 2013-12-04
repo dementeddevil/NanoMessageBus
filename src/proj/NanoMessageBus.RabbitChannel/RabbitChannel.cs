@@ -13,7 +13,7 @@
 	{
 		public virtual bool Active
 		{
-			get { return !this.disposed && !this.shutdown && this.connector.CurrentState == ConnectionState.Open; }
+			get { return !this.disposed && !this.shutdown && this.connector.CurrentState == ConnectionState.Open && this.channel.CloseReason == null; }
 		}
 		public virtual ChannelMessage CurrentMessage { get; private set; }
 		public virtual IDependencyResolver CurrentResolver { get; private set; }
