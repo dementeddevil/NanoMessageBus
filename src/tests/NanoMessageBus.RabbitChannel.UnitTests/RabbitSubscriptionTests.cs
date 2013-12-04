@@ -141,7 +141,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(RabbitSubscription))]
-	public class when_receiving_a_message_throws_an_ChannelConnectionException : using_a_subscription
+	public class when_receiving_a_message_throws_a_ChannelConnectionException : using_a_subscription
 	{
 		Establish context = () => mockRealSubscription
 			.Setup(x => x.BeginReceive(DefaultTimeout))
