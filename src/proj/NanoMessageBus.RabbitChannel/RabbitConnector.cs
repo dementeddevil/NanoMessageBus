@@ -45,6 +45,8 @@
 			this.ThrowWhenDisposed();
 
 			var channel = this.EstablishChannel();
+
+			// TODO: BUG: this performs various TCP-level tasks and CAN/WILL throw if the connection isn't available.
 			return new RabbitChannel(
 				channel,
 				this,
