@@ -46,7 +46,7 @@
 
 			var channel = this.EstablishChannel();
 
-			// TODO: BUG: this performs various TCP-level tasks and CAN/WILL throw if the connection isn't available.
+			// TODO: BUG: this performs various TCP-level tasks and CAN/WILL throw if the connection isn't available anymore.
 			return new RabbitChannel(
 				channel,
 				this,
