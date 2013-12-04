@@ -39,7 +39,7 @@ namespace NanoMessageBus.Channels
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
-	public class when_an_pooled_dispatch_channel_is_constructed : using_the_pooled_dispatch_channel
+	public class when_a_pooled_dispatch_channel_is_constructed : using_the_pooled_dispatch_channel
 	{
 		Establish context = () =>
 		{
