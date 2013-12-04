@@ -42,7 +42,7 @@
 			IMessagingChannel channel;
 			if (!items.TryTake(out channel))
 			{
-				Log.Debug("No available channel group in the pool for '{0}', establishing a new channel.", channelGroup);
+				Log.Debug("No available channel in the pool for '{0}', establishing a new channel.", channelGroup);
 				channel = this.connector.Connect(channelGroup);
 			}
 
