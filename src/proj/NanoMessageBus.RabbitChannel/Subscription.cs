@@ -3,11 +3,14 @@
 	using System;
 	using RabbitMQ.Client;
 	using RabbitMQ.Client.Events;
+	using RabbitMQ.Client.Exceptions;
 
 	public class Subscription : IDisposable
 	{
 		public virtual BasicDeliverEventArgs BeginReceive(TimeSpan timeout)
 		{
+			this.ThrowWhenClosed();
+
 			BasicDeliverEventArgs delivery;
 			this.subscription.Next((int)timeout.TotalMilliseconds, out delivery);
 			return delivery;
@@ -17,6 +20,13 @@
 			var delivery = this.subscription.LatestEvent;
 			var tag = delivery == null ? 0 : delivery.DeliveryTag;
 			this.channel.BasicAck(tag, true);
+		}
+
+		protected virtual void ThrowWhenClosed()
+		{
+			var reason = this.channel.CloseReason;
+			if (reason != null)
+				throw new OperationInterruptedException(reason);
 		}
 
 		public Subscription(IModel channel, RabbitChannelGroupConfiguration config) : this()
