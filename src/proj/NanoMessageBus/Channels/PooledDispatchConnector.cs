@@ -30,7 +30,7 @@
 
 			while (true)
 			{
-				var channel = this.TryConnect(channelGroup, items); // throws if unable to connect
+				var channel = this.TryConnect(channelGroup, items); // throws if underlying connection isn't available
 				if (channel.Active)
 					return channel;
 
