@@ -1,8 +1,8 @@
 echo off
-:: run this when 2.0.43 is obsolete
-src\.nuget\NuGet.exe delete NanoMessageBus 2.0.43 -NonInteractive
-src\.nuget\NuGet.exe delete NanoMessageBus.RabbitMQ 2.0.43 -NonInteractive
-src\.nuget\NuGet.exe delete NanoMessageBus.Autofac 2.0.43 -NonInteractive
-src\.nuget\NuGet.exe delete NanoMessageBus.Json.NET 2.0.43 -NonInteractive
-src\.nuget\NuGet.exe delete NanoMessageBus.Log4Net 2.0.43 -NonInteractive
-src\.nuget\NuGet.exe delete NanoMessageBus.NLog 2.0.43 -NonInteractive
+:: run this when 2.0.44 is obsolete
+src\.nuget\NuGet.exe delete NanoMessageBus 2.0.44 -NonInteractive
+src\.nuget\NuGet.exe delete NanoMessageBus.RabbitMQ 2.0.44 -NonInteractive
+src\.nuget\NuGet.exe delete NanoMessageBus.Autofac 2.0.44 -NonInteractive
+src\.nuget\NuGet.exe delete NanoMessageBus.Json.NET 2.0.44 -NonInteractive
+src\.nuget\NuGet.exe delete NanoMessageBus.Log4Net 2.0.44 -NonInteractive
+src\.nuget\NuGet.exe delete NanoMessageBus.NLog 2.0.44 -NonInteractive
