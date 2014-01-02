@@ -124,6 +124,7 @@ namespace NanoMessageBus.Channels
 
 			channel = new RabbitChannel(
 				mockRealChannel.Object,
+				mockRealConnection.Object,
 				mockConnector.Object,
 				mockConfiguration.Object,
 				() =>
@@ -1407,6 +1408,7 @@ namespace NanoMessageBus.Channels
 		{
 			mockRealChannel = new Mock<IModel>();
 			mockConnector = new Mock<IChannelConnector>();
+			mockRealConnection = new Mock<IConnection>();
 			mockAdapter = new Mock<RabbitMessageAdapter>();
 			mockConfiguration = new Mock<RabbitChannelGroupConfiguration>();
 			mockSubscription = new Mock<RabbitSubscription>();
@@ -1438,6 +1440,7 @@ namespace NanoMessageBus.Channels
 		{
 			channel = new RabbitChannel(
 				mockRealChannel.Object,
+				mockRealConnection.Object,
 				mockConnector.Object,
 				mockConfiguration.Object,
 				() => mockSubscription.Object);
@@ -1468,6 +1471,7 @@ namespace NanoMessageBus.Channels
 		protected const string DefaultChannelGroup = "some group name";
 		protected const string InputQueueName = "input-queue";
 		protected static Mock<IModel> mockRealChannel;
+		protected static Mock<IConnection> mockRealConnection;
 		protected static Mock<IChannelConnector> mockConnector;
 		protected static Mock<RabbitMessageAdapter> mockAdapter;
 		protected static Mock<RabbitChannelGroupConfiguration> mockConfiguration;

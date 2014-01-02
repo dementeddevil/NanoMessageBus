@@ -318,16 +318,27 @@
 			Log.Info(message, this.identifier);
 			this.suppressOperations = true;
 			this.Dispose();
+
+			try
+			{
+				this.connection.Abort(1000);
+			}
+			catch
+			{
+			}
+
 			throw new ChannelConnectionException(e.Message, e);
 		}
 
 		public RabbitChannel(
 			IModel channel,
+			IConnection connection,
 			IChannelConnector connector,
 			RabbitChannelGroupConfiguration configuration,
 			Func<RabbitSubscription> subscriptionFactory) : this()
 		{
 			this.channel = channel;
+			this.connection = connection;
 			this.connector = connector;
 			this.CurrentConfiguration = this.configuration = configuration;
 			this.adapter = configuration.MessageAdapter;
@@ -391,6 +402,7 @@
 		private static readonly ILog Log = LogFactory.Build(typeof(RabbitChannel));
 		private static int counter;
 		private readonly IModel channel;
+		private readonly IConnection connection;
 		private readonly IChannelConnector connector;
 		private readonly RabbitMessageAdapter adapter;
 		private readonly RabbitChannelGroupConfiguration configuration;

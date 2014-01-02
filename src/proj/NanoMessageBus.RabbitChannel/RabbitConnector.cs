@@ -46,12 +46,21 @@
 
 			var channel = this.EstablishChannel();
 
-			// TODO: BUG: this performs various TCP-level tasks and CAN/WILL throw if the connection isn't available anymore.
-			return new RabbitChannel(
-				channel,
-				this,
-				config,
-				() => new RabbitSubscription(new Subscription(channel, config)));
+			try
+			{
+				return new RabbitChannel(
+					channel,
+					this.connection,
+					this,
+					config,
+					() => new RabbitSubscription(new Subscription(channel, config)));
+			}
+			catch (Exception e)
+			{
+				// the RabbitChannel instance performs a few TCP-level operations, e.g. TxSelect, BasicQos, etc.
+				this.Close(channel, ConnectionState.Closed, e);
+				return null;
+			}
 		}
 		protected virtual IModel EstablishChannel()
 		{
@@ -203,12 +212,12 @@
 
 			try
 			{
-				// calling connection.Dispose() can throw exceptions while connection.Abort() closes without throwing
+				// calling connection.Dispose() can throw various exceptions while connection.Abort() closes without throwing
 				currentConnection.Abort(this.shutdownTimeout);
 			}
 			catch (NotSupportedException)
 			{
-				// well, okay, Abort throws has thrown this exception.
+				// well, okay, Abort has thrown this exception.
 			}
 		}
 
