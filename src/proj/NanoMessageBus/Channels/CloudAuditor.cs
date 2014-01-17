@@ -24,16 +24,18 @@
 				return;
 
 			var headers = message.Headers;
+			headers[ProviderNameHeader] = ProviderName;
 			headers[FacilityNameHeader] = FacilityName;
 			headers[MachineIdHeader] = MachineId;
 		}
 
 		public CloudAuditor()
 		{
-			this.cloud = !string.IsNullOrEmpty(FacilityName) && !string.IsNullOrEmpty(MachineId);
+			this.cloud = FacilityName.Length > 0 && MachineId.Length > 0;
 		}
 		~CloudAuditor()
 		{
+			this.Dispose(false);
 		}
 		public void Dispose()
 		{
@@ -45,10 +47,12 @@
 			// no op
 		}
 
+		private const string ProviderNameHeader = "x-cloud-provider";
+		private const string ProviderName = "aws";
 		private const string FacilityNameHeader = "x-cloud-facility";
-		private const string MachineIdHeader = "x-cloud-machine";
-		private static readonly string FacilityName = CloudDetection.DetectFacility() ?? string.Empty;
-		private static readonly string MachineId = CloudDetection.DetectMachineId() ?? string.Empty;
+		private const string MachineIdHeader = "x-cloud-machine-id";
+		private static readonly string FacilityName = CloudDetection.DetectFacility();
+		private static readonly string MachineId = CloudDetection.DetectMachineId();
 		private readonly bool cloud;
 	}
 }

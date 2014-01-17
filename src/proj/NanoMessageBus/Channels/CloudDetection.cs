@@ -21,7 +21,7 @@
 			}
 			catch
 			{
-				return null;
+				return string.Empty;
 			}
 		}
 	}
