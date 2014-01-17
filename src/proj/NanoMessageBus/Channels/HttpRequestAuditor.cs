@@ -40,15 +40,15 @@
 		}
 		private static string GetUserAddress(HttpRequestBase request)
 		{
-			var forwarded = request.Headers[ProxiedClient];
-			if (string.IsNullOrEmpty(forwarded))
+			var previousAddresses = request.Headers[ProxiedClient];
+			if (string.IsNullOrEmpty(previousAddresses))
 				return request.UserHostAddress;
 
-			var address = request.UserHostAddress ?? string.Empty;
-			if (forwarded.StartsWith(address, StringComparison.InvariantCultureIgnoreCase))
-				return forwarded;
+			var currentAddress = request.UserHostAddress ?? string.Empty;
+			if (previousAddresses.StartsWith(currentAddress, StringComparison.InvariantCultureIgnoreCase))
+				return previousAddresses;
 
-			return UserAddressFormat.FormatWith(address, forwarded);
+			return UserAddressFormat.FormatWith(previousAddresses, currentAddress);
 		}
 		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
 		{

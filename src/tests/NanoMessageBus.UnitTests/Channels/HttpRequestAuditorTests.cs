@@ -148,7 +148,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_all_client_ip_address_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3");
+			messageHeaders["x-audit-client-ip"].ShouldEqual("1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
