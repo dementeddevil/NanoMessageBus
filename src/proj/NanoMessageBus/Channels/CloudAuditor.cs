@@ -47,10 +47,10 @@
 			// no op
 		}
 
-		private const string ProviderNameHeader = "x-cloud-provider";
+		private const string ProviderNameHeader = "x-audit-cloud-provider";
 		private const string ProviderName = "aws";
-		private const string FacilityNameHeader = "x-cloud-facility";
-		private const string MachineIdHeader = "x-cloud-machine-id";
+		private const string FacilityNameHeader = "x-audit-cloud-facility";
+		private const string MachineIdHeader = "x-audit-cloud-machine-id";
 		private static readonly string FacilityName = CloudDetection.DetectFacility();
 		private static readonly string MachineId = CloudDetection.DetectMachineId();
 		private readonly bool cloud;
