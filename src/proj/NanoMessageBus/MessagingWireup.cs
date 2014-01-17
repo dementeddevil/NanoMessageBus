@@ -62,6 +62,7 @@
 		protected virtual IEnumerable<IMessageAuditor> AppendAuditors()
 		{
 			yield return new PointOfOriginAuditor();
+			yield return new CloudAuditor();
 
 			var context = HttpContext.Current;
 			if (context == null)
