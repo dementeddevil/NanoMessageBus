@@ -50,6 +50,7 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
+			serverVariables["LOCAL_ADDR"] = "192.168.0.1";
 			mockRequest.Setup(x => x.UserAgent).Returns("MyBrowser");
 			mockRequest.Setup(x => x.UserHostAddress).Returns("127.0.0.1");
 			mockRequest.Setup(x => x.RawUrl).Returns("/raw-url/?#");
@@ -67,6 +68,9 @@ namespace NanoMessageBus.Channels
 
 		It should_append_the_client_ip_address_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1");
+
+		It should_append_the_server_ip_address_to_the_outgoing_headers = () =>
+			messageHeaders["x-audit-server-ip"].ShouldEqual("192.168.0.1");
 
 		It should_append_the_raw_url_to_the_outgoing_headers = () =>
 			messageHeaders["x-audit-raw-url"].ShouldEqual("/raw-url/?#");
@@ -181,11 +185,13 @@ namespace NanoMessageBus.Channels
 	{
 		Establish context = () =>
 		{
+			serverVariables = new NameValueCollection();
 			mockRequest = new Mock<HttpRequestBase>();
 			mockContext = new Mock<HttpContextBase>();
 			requestHeaders = new NameValueCollection();
 			mockContext.Setup(x => x.Request).Returns(mockRequest.Object);
 			mockRequest.Setup(x => x.Headers).Returns(requestHeaders);
+			mockRequest.Setup(x => x.ServerVariables).Returns(serverVariables);
 
 			mockEnvelope = new Mock<ChannelEnvelope>();
 			mockMessage = new Mock<ChannelMessage>();
@@ -203,6 +209,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(callback);
 		}
 
+		protected static NameValueCollection serverVariables;
 		protected static HttpRequestAuditor auditor;
 		protected static Mock<HttpContextBase> mockContext;
 		protected static Mock<HttpRequestBase> mockRequest;

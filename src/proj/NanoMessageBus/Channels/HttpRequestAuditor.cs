@@ -21,6 +21,7 @@
 
 			AppendHeader(headers, "useragent", request.UserAgent);
 			AppendHeader(headers, "client-ip", GetUserAddress(request));
+			AppendHeader(headers, "server-ip", GetServerAddress(request));
 			AppendHeader(headers, "raw-url", request.RawUrl);
 			AppendHeader(headers, "hostname", (request.Url ?? EmptyUrl).Host);
 			AppendHeader(headers, "http-method", request.HttpMethod);
@@ -50,6 +51,10 @@
 
 			return UserAddressFormat.FormatWith(previousAddresses, currentAddress);
 		}
+		private static string GetServerAddress(HttpRequestBase request)
+		{
+			return request.ServerVariables[ServerRequestAddress] ?? string.Empty;
+		}
 		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
 		{
 			if (!string.IsNullOrEmpty(value))
@@ -78,6 +83,7 @@
 		{
 		}
 
+		private const string ServerRequestAddress = "LOCAL_ADDR";
 		private const string HeaderFormat = "x-audit-{0}";
 		private const string ProxiedClient = "X-Forwarded-For";
 		private const string UserAddressFormat = "{0}, {1}";
