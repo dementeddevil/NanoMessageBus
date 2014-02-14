@@ -78,6 +78,7 @@
 		public override IConnection CreateConnection(int maxRedirects)
 		{
 			this.RequestedHeartbeat = RequestedHeartbeatInSeconds;
+			this.RequestedConnectionTimeout = 10 * 1000; // 10 seconds
 
 			var endpoints = this.brokers
 				.Select(x => new AmqpTcpEndpoint(x) { Ssl = this.ToSsl(x) })
