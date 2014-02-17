@@ -47,8 +47,12 @@
 			if (this.Clustered)
 				declarationArgs[ClusteredQueueDeclaration] = ReplicateToAllNodes;
 
+			var inputQueue = this.InputQueue;
+			if (this.RandomInputQueue)
+				inputQueue = string.Empty;
+
 			var declaration = channel.QueueDeclare(
-				this.InputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs);
+				inputQueue, this.DurableQueue, this.ExclusiveQueue, this.AutoDelete, declarationArgs);
 
 			if (declaration != null)
 				this.InputQueue = declaration.QueueName;
@@ -109,6 +113,7 @@
 		}
 		public virtual IDispatchTable DispatchTable { get; private set; }
 		public virtual bool SkipDeclarations { get; private set; }
+		public virtual bool RandomInputQueue { get; private set; }
 
 		public virtual RabbitChannelGroupConfiguration WithGroupName(string name)
 		{
@@ -151,7 +156,7 @@
 				this.ReturnAddress = new Uri(DefaultReturnAddressFormat.FormatWith(name));
 
 			this.InputQueue = name;
-			this.AutoDelete = this.InputQueue.Length == 0;
+			this.AutoDelete = this.AutoDelete || this.InputQueue.Length == 0;
 			this.DispatchOnly = false;
 			this.GroupName = this.GroupName == DefaultGroupName ? name : this.GroupName;
 			this.Clustered = clustered;
@@ -160,6 +165,7 @@
 		}
 		public virtual RabbitChannelGroupConfiguration WithRandomInputQueue()
 		{
+			this.RandomInputQueue = true;
 			return this.WithInputQueue(string.Empty); // string.Empty = have RabbitMQ auto-generate the queue name
 		}
 		public virtual RabbitChannelGroupConfiguration WithExclusiveReceive()

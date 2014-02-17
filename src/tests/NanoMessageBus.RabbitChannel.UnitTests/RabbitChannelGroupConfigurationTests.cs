@@ -245,10 +245,14 @@ namespace NanoMessageBus.Channels
 				.Returns(declaration);
 
 			config.WithRandomInputQueue();
+			config.WithInputQueue("name-should-not-be-changed-by-this"); // won't affect configuration
 		};
 
 		Because of = () =>
 			Configure();
+
+		It should_indicate_the_queue_name_is_random = () =>
+			config.RandomInputQueue.ShouldBeTrue();
 
 		It should_append_a_random_name_to_the_configuration = () =>
 			config.InputQueue.ShouldEqual("random-queue");
