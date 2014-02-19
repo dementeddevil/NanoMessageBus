@@ -48,7 +48,7 @@
 			}
 			catch (Exception e)
 			{
-				Log.Error("Disposing resource of type '{0}' threw an exception.".FormatWith(resource.GetType()), e);
+				Log.Warn("Disposing resource of type '{0}' threw an exception.".FormatWith(resource.GetType()), e);
 				if (rethrow)
 					throw;
 			}
