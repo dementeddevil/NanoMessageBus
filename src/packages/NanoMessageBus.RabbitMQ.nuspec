@@ -14,7 +14,7 @@
     <tags>messaging, service bus, servicebus, nano message bus, nanomessagebus, nmb, messages, message bus, amqp, rabbit, rabbitmq</tags>
     <dependencies>
       <dependency id="NanoMessageBus" version="2.0.48" />
-      <dependency id="RabbitMQ.Client" version="[3.2.1]" />
+      <dependency id="RabbitMQ.Client" version="[3.3.2]" />
     </dependencies>
   </metadata>
   <files>
