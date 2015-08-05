@@ -81,6 +81,9 @@
 			headers[RabbitHeaderFormat.FormatWith("type")] = properties.Type;
 			headers[RabbitHeaderFormat.FormatWith("priority")] = properties.Priority.ToString(CultureInfo.InvariantCulture);
 
+			if (properties.Headers == null)
+				return;
+
 			var encoding = Encoding.UTF8;
 			foreach (var key in properties.Headers.Keys)
 			{

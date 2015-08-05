@@ -18,5 +18,5 @@ using System.Reflection;
 //------------------------------------------------------------------------------
 
 [assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.49.0")]
-[assembly: AssemblyInformationalVersion("2.0 Release Build 49 (2014-07-31)")]
+[assembly: AssemblyFileVersion("2.0.50.0")]
+[assembly: AssemblyInformationalVersion("2.0 Release Build 50 (2015-08-05)")]
