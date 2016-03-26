@@ -12,7 +12,7 @@
 
 		public DeadLetterException(DateTime expiration)
 		{
-			this.Expiration = expiration;
+			Expiration = expiration;
 		}
 	}
 }

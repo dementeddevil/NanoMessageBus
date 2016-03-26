@@ -7,35 +7,41 @@
 	{
 		public virtual void Dispatch(object message, IDictionary<string, string> headers = null, object state = null)
 		{
-			var dispatch = this._channel.PrepareDispatch(message);
+			var dispatch = _channel.PrepareDispatch(message);
 
 			if (headers != null)
-				dispatch = dispatch.WithHeaders(headers);
+			{
+			    dispatch = dispatch.WithHeaders(headers);
+			}
 
-			if (state != null)
-				dispatch = dispatch.WithState(state);
+		    if (state != null)
+		    {
+		        dispatch = dispatch.WithState(state);
+		    }
 
-			dispatch.Send();
+		    dispatch.Send();
 		}
 		public virtual void Commit()
 		{
-			this._channel.CurrentTransaction.Commit();
+			_channel.CurrentTransaction.Commit();
 		}
 
 		public SynchronousMessenger(IMessagingChannel channel)
 		{
-			this._channel = channel;
+			_channel = channel;
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				this._channel.Dispose();
+			{
+			    _channel.Dispose();
+			}
 		}
 
 		private readonly IMessagingChannel _channel;

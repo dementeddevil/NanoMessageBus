@@ -196,7 +196,7 @@ namespace NanoMessageBus.Channels
 		{
 			mockChannels.Add(new Mock<IMessagingChannel>());
 			mockChannels.Add(new Mock<IMessagingChannel>());
-			mockChannels[0].Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
+			mockChannels[0].Setup(x => x.SendAsync(envelope)).Throws(new ChannelConnectionException());
 			mockChannels[0].Setup(x => x.Active).Returns(true);
 			mockChannels[1].Setup(x => x.Active).Returns(true);
 
@@ -207,7 +207,7 @@ namespace NanoMessageBus.Channels
 
 			try
 			{
-				channel1.Send(envelope); // tears down connection
+				channel1.SendAsync(envelope); // tears down connection
 			}
 			catch (ChannelConnectionException)
 			{

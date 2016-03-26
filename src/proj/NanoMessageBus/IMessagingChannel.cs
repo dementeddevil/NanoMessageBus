@@ -1,14 +1,15 @@
-﻿namespace NanoMessageBus
-{
-	using System;
+﻿using System;
+using System.Threading.Tasks;
 
-	/// <summary>
-	/// Represents partition used to separate activities over a single connection to messaging infrastructure.
-	/// </summary>
-	/// <remarks>
-	/// Instances of this class are single threaded and should not be shared between threads.
-	/// </remarks>
-	public interface IMessagingChannel : IDeliveryContext, IDisposable
+namespace NanoMessageBus
+{
+    /// <summary>
+    /// Represents partition used to separate activities over a single connection to messaging infrastructure.
+    /// </summary>
+    /// <remarks>
+    /// Instances of this class are single threaded and should not be shared between threads.
+    /// </remarks>
+    public interface IMessagingChannel : IDeliveryContext, IDisposable
 	{
 		/// <summary>
 		/// Initiates the process shutting down the channel to prevent additional sends and/or receives
@@ -17,7 +18,7 @@
 		/// <remarks>
 		/// This is the only thread-safe method that can be invoked on the channel.
 		/// </remarks>
-		void BeginShutdown();
+		Task ShutdownAsync();
 
 		/// <summary>
 		/// Begins receiving messages from the channel and dispatches them to the callback provided.
@@ -28,7 +29,7 @@
 		/// <remarks>
 		/// The timeout, if any, has been specified as part of the channel configuration.
 		/// </remarks>
-		void Receive(Action<IDeliveryContext> callback);
+		Task ReceiveAsync(Func<IDeliveryContext, Task> callback);
 
 		/// <summary>
 		/// Sends the message specified to the destinations provided.
@@ -37,6 +38,6 @@
 		/// <exception cref="ChannelConnectionException"></exception>
 		/// <exception cref="ChannelShutdownException"></exception>
 		/// <param name="envelope">The envelope which contains the message and set of intended recipients.</param>
-		void Send(ChannelEnvelope envelope);
+		Task SendAsync(ChannelEnvelope envelope);
 	}
 }

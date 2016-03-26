@@ -11,37 +11,45 @@ namespace NanoMessageBus
         public virtual void Add<T>(IMessageHandler<T> handler, int sequence = int.MaxValue)
         {
             if (handler == null)
+            {
                 throw new ArgumentNullException(nameof(handler));
+            }
 
             Log.Debug("Registering handle of type '{0}' for messages of type '{1}' at sequence {2}.",
                 handler.GetType(), typeof(T), sequence);
 
-            this.Add<T>(new SimpleHandler<T>(handler, sequence), handler.GetType());
+            Add<T>(new SimpleHandler<T>(handler, sequence), handler.GetType());
         }
 
         public virtual void Add<T>(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence = int.MaxValue, Type handlerType = null)
         {
             if (callback == null)
+            {
                 throw new ArgumentNullException(nameof(callback));
+            }
 
             Log.Debug("Registering callback of type '{0}' for messages of type '{1}' at sequence {2}.",
                 handlerType, typeof(T), sequence);
 
-            this.Add<T>(new CallbackHandler<T>(callback, sequence, handlerType), handlerType);
+            Add<T>(new CallbackHandler<T>(callback, sequence, handlerType), handlerType);
         }
 
         public virtual async Task<int> Route(IHandlerContext context, object message)
         {
             if (context == null)
+            {
                 throw new ArgumentNullException(nameof(context));
+            }
 
             if (message == null)
+            {
                 throw new ArgumentNullException(nameof(message));
+            }
 
             Log.Verbose("Attempting to route message of type '{0}' to registered handlers.", message.GetType());
 
             List<ISequencedHandler> routes;
-            if (!this._registeredRoutes.TryGetValue(message.GetType(), out routes))
+            if (!_registeredRoutes.TryGetValue(message.GetType(), out routes))
             {
                 Log.Debug("No registered handlers for message of type '{0}'.", message.GetType());
                 return 0;
@@ -56,8 +64,10 @@ namespace NanoMessageBus
                     break;
                 }
 
-                await TryRoute(route, context, message).ConfigureAwait(false);
-                ++count;
+                if (await TryRoute(route, context, message).ConfigureAwait(false))
+                {
+                    ++count;
+                }
             }
             return count;
         }
@@ -65,10 +75,12 @@ namespace NanoMessageBus
         private void Add<T>(ISequencedHandler handler, Type handlerType)
         {
             List<ISequencedHandler> routes;
-            if (!this._registeredRoutes.TryGetValue(typeof(T), out routes))
+            if (!_registeredRoutes.TryGetValue(typeof(T), out routes))
+            {
                 routes = new List<ISequencedHandler>();
+            }
 
-            if (this._registeredHandlers.Contains(handlerType))
+            if (_registeredHandlers.Contains(handlerType))
             {
                 var index = routes.FindIndex(x => x.HandlerType == handlerType);
                 if (index >= 0)
@@ -78,26 +90,30 @@ namespace NanoMessageBus
                 }
             }
             else
+            {
                 routes.Add(handler);
+            }
 
             if (handlerType != null)
-                this._registeredHandlers.Add(handlerType);
+            {
+                _registeredHandlers.Add(handlerType);
+            }
 
-            this._registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
+            _registeredRoutes[typeof(T)] = routes.OrderBy(x => x.Sequence).ToList();
         }
 
-        private static Task<bool> TryRoute(ISequencedHandler route, IHandlerContext context, object message)
+        private static async Task<bool> TryRoute(ISequencedHandler route, IHandlerContext context, object message)
         {
             try
             {
-                return route.Handle(context, message);
+                return await route.Handle(context, message).ConfigureAwait(false);
             }
             catch (AbortCurrentHandlerException e)
             {
                 Log.Debug("Aborting executing of current handler of type '{0}' because of: {1}",
                     route.HandlerType, e.Message);
 
-                return Task.FromResult(true);
+                return true;
             }
         }
 
@@ -159,9 +175,9 @@ namespace NanoMessageBus
 
             public CallbackHandler(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence, Type handlerType)
             {
-                this._callback = callback;
-                this.HandlerType = handlerType;
-                this.Sequence = sequence;
+                _callback = callback;
+                HandlerType = handlerType;
+                Sequence = sequence;
             }
 
             public int Sequence { get; private set; }
@@ -174,7 +190,7 @@ namespace NanoMessageBus
                 if (handler == null)
                 {
                     Log.Debug("Unable to resolve a handler from the callback registered for handler of type '{0}' and message of type '{1}'.",
-                        this.HandlerType, typeof(T));
+                        HandlerType, typeof(T));
                     return false;
                 }
 

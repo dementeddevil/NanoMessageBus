@@ -1,91 +1,86 @@
-﻿namespace NanoMessageBus.Channels
+﻿using System;
+using System.Collections.Generic;
+using NanoMessageBus.Logging;
+using System.Threading.Tasks;
+
+namespace NanoMessageBus.Channels
 {
-	using System;
-	using System.Collections.Generic;
-	using Logging;
-
-	public class AuditChannel : IMessagingChannel
+    public class AuditChannel : IMessagingChannel
 	{
-		public virtual bool Active
-		{
-			get { return this.CurrentContext.Active; }
-		}
-		public virtual ChannelMessage CurrentMessage
-		{
-			get { return this.CurrentContext.CurrentMessage; }
-		}
-		public virtual IChannelTransaction CurrentTransaction
-		{
-			get { return this.CurrentContext.CurrentTransaction; }
-		}
-		public virtual IChannelGroupConfiguration CurrentConfiguration
-		{
-			get { return this.CurrentContext.CurrentConfiguration; }
-		}
-		public virtual IDependencyResolver CurrentResolver
-		{
-			get { return this.CurrentContext.CurrentResolver; }
-		}
-		protected virtual IDeliveryContext CurrentContext
-		{
-			get { return this._currentContext ?? this._channel; }
-		}
+		public virtual bool Active => CurrentContext.Active;
 
-		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
+	    public virtual ChannelMessage CurrentMessage => CurrentContext.CurrentMessage;
+
+	    public virtual IChannelTransaction CurrentTransaction => CurrentContext.CurrentTransaction;
+
+	    public virtual IChannelGroupConfiguration CurrentConfiguration => CurrentContext.CurrentConfiguration;
+
+	    public virtual IDependencyResolver CurrentResolver => CurrentContext.CurrentResolver;
+
+	    protected virtual IDeliveryContext CurrentContext => _currentContext ?? _channel;
+
+	    public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
 		{
 			Log.Debug("Preparing a dispatch");
-			return this.CurrentContext.PrepareDispatch(message, actual ?? this);
+			return CurrentContext.PrepareDispatch(message, actual ?? this);
 		}
-		public virtual void Send(ChannelEnvelope envelope)
+
+		public virtual Task SendAsync(ChannelEnvelope envelope)
 		{
 			if (envelope == null)
-				throw new ArgumentNullException(nameof(envelope));
+			{
+			    throw new ArgumentNullException(nameof(envelope));
+			}
 
-			this.ThrowWhenDisposed();
+		    ThrowWhenDisposed();
 
-			this.CurrentTransaction.Register(() => this.AuditSend(envelope));
+			CurrentTransaction.Register(() => AuditSend(envelope));
 
 			Log.Verbose("Sending envelope through the underlying channel.", envelope.MessageId());
-			this._channel.Send(envelope);
+			return _channel.SendAsync(envelope);
 		}
+
 		private void AuditSend(ChannelEnvelope envelope)
 		{
 			var messageId = envelope.MessageId();
-			foreach (var auditor in this._auditors)
+			foreach (var auditor in _auditors)
 			{
 				Log.Debug("Providing envelope '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
 				auditor.AuditSend(envelope, this);
 			}
 		}
 
-		public virtual void BeginShutdown()
+		public virtual Task ShutdownAsync()
 		{
-			this._channel.BeginShutdown();
+			return _channel.ShutdownAsync();
 		}
-		public virtual void Receive(Action<IDeliveryContext> callback)
+
+		public virtual Task ReceiveAsync(Func<IDeliveryContext, Task> callback)
 		{
-			this._channel.Receive(context => this.Receive(context, callback));
+			return _channel.ReceiveAsync(context => ReceiveAsync(context, callback));
 		}
-		protected virtual void Receive(IDeliveryContext context, Action<IDeliveryContext> callback)
+
+		protected virtual async Task ReceiveAsync(IDeliveryContext context, Func<IDeliveryContext, Task> callback)
 		{
 			try
 			{
-				this.AuditReceive(context);
+				AuditReceive(context);
 
 				Log.Verbose("Routing delivery to configured callback.");
-				this._currentContext = context;
-				callback(this);
+				_currentContext = context;
+				await callback(this).ConfigureAwait(false);
 			}
 			finally
 			{
-				this._currentContext = null;
+				_currentContext = null;
 			}
 		}
+
 		private void AuditReceive(IDeliveryContext context)
 		{
 			var messageId = context.CurrentMessage.MessageId;
 
-			foreach (var auditor in this._auditors)
+			foreach (var auditor in _auditors)
 			{
 				Log.Debug("Routing delivery for message '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
 				auditor.AuditReceive(context);
@@ -94,54 +89,64 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this._disposed)
-				return;
+			if (!_disposed)
+			{
+			    return;
+			}
 
-			Log.Warn("The channel has been disposed.");
+		    Log.Warn("The channel has been disposed.");
 			throw new ObjectDisposedException(typeof(AuditChannel).Name);
 		}
 
 		public AuditChannel(IMessagingChannel channel, ICollection<IMessageAuditor> auditors)
 		{
 			if (channel == null)
-				throw new ArgumentNullException(nameof(channel));
+			{
+			    throw new ArgumentNullException(nameof(channel));
+			}
 
-			if (auditors == null)
-				throw new ArgumentNullException(nameof(auditors));
+		    if (auditors == null)
+		    {
+		        throw new ArgumentNullException(nameof(auditors));
+		    }
 
-			if (auditors.Count == 0)
-				throw new ArgumentException("At least one auditor must be provided.", nameof(auditors));
+		    if (auditors.Count == 0)
+		    {
+		        throw new ArgumentException("At least one auditor must be provided.", nameof(auditors));
+		    }
 
-			this._channel = channel;
-			this._auditors = new List<IMessageAuditor>(auditors);
+		    _channel = channel;
+			_auditors = new List<IMessageAuditor>(auditors);
 		}
 		~AuditChannel()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing || this._disposed)
-				return;
+			if (!disposing || _disposed)
+			{
+			    return;
+			}
 
-			this._disposed = true;
+		    _disposed = true;
 
-			foreach (var auditor in this._auditors)
+			foreach (var auditor in _auditors)
 			{
 				Log.Verbose("Disposing auditor of type '{0}'.", auditor.GetType());
 				auditor.TryDispose();
 			}
 
-			this._auditors.Clear();
+			_auditors.Clear();
 
 			Log.Verbose("Disposing the underlying channel.");
-			this._channel.TryDispose();
+			_channel.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel));

@@ -210,7 +210,7 @@ namespace NanoMessageBus
 			mockChannel.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 
 			mockChannel
-				.Setup(x => x.Send(Moq.It.IsAny<ChannelEnvelope>()))
+				.Setup(x => x.SendAsync(Moq.It.IsAny<ChannelEnvelope>()))
 				.Callback<ChannelEnvelope>(x => envelope = x);
 
 			Build(mockChannel.Object, message);

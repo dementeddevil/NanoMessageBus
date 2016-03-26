@@ -25,7 +25,7 @@ namespace NanoMessageBus
 
 		    using (var context = new DefaultHandlerContext(delivery))
 		    {
-		        await this._routingTable.Route(context, delivery.CurrentMessage).ConfigureAwait(false);
+		        await _routingTable.Route(context, delivery.CurrentMessage).ConfigureAwait(false);
 		    }
 
 			Log.Verbose("Channel message payload successfully delivered to all configured recipients.");

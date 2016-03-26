@@ -18,9 +18,9 @@ namespace NanoMessageBus
 					message.MessageId, message.Messages.Count);
 
 				var handled = 0;
-			    while (message.MoveNext() && this._context.ContinueHandling)
+			    while (message.MoveNext() && _context.ContinueHandling)
 			    {
-			        handled += await this.Route(message.ActiveMessage, unhandled).ConfigureAwait(false);
+			        handled += await Route(message.ActiveMessage, unhandled).ConfigureAwait(false);
 			    }
 
 			    if (handled == 0)
@@ -28,9 +28,9 @@ namespace NanoMessageBus
 			        unhandled.Clear();
 			    }
 
-			    if (this._context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
+			    if (_context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
 			    {
-			        await this.ForwardToUnhandledAddress(message, unhandled).ConfigureAwait(false);
+			        await ForwardToUnhandledAddress(message, unhandled).ConfigureAwait(false);
 			    }
 			}
 			finally
@@ -44,16 +44,20 @@ namespace NanoMessageBus
 			Log.Debug("Channel message '{0}' contained unhandled messages.", message.MessageId);
 
 			if (messages.Count == 0)
-				Log.Debug("Forwarding entire channel message '{0}' to dead-letter address.", message.MessageId);
+			{
+			    Log.Debug("Forwarding entire channel message '{0}' to dead-letter address.", message.MessageId);
+			}
 			else
-				message = new ChannelMessage(
-					Guid.NewGuid(),
-					message.CorrelationId,
-					message.ReturnAddress,
-					message.Headers,
-					messages);
+			{
+			    message = new ChannelMessage(
+			        Guid.NewGuid(),
+			        message.CorrelationId,
+			        message.ReturnAddress,
+			        message.Headers,
+			        messages);
+			}
 
-			this._context.PrepareDispatch()
+		    _context.PrepareDispatch()
 				.WithMessage(message)
 				.WithRecipient(ChannelEnvelope.UnhandledMessageAddress)
 				.Send();
@@ -63,7 +67,7 @@ namespace NanoMessageBus
 
 		private async Task<int> Route(object message, ICollection<object> unhandled)
 		{
-			var count = await this._routes.Route(this._context, message).ConfigureAwait(false);
+			var count = await _routes.Route(_context, message).ConfigureAwait(false);
 		    if (count == 0)
 		    {
 		        unhandled.Add(message);
@@ -74,13 +78,17 @@ namespace NanoMessageBus
 		public DefaultChannelMessageHandler(IHandlerContext context, IRoutingTable routes)
 		{
 			if (context == null)
-				throw new ArgumentNullException(nameof(context));
+			{
+			    throw new ArgumentNullException(nameof(context));
+			}
 
-			if (routes == null)
-				throw new ArgumentNullException(nameof(routes));
+		    if (routes == null)
+		    {
+		        throw new ArgumentNullException(nameof(routes));
+		    }
 
-			this._context = context;
-			this._routes = routes;
+		    _context = context;
+			_routes = routes;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelMessageHandler));

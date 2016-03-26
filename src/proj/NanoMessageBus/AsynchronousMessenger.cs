@@ -7,17 +7,21 @@
 	{
 		public virtual void Dispatch(object message, IDictionary<string, string> headers = null, object state = null)
 		{
-			this._channelGroup.BeginDispatch(x =>
+			_channelGroup.BeginDispatch(x =>
 			{
 				var dispatch = x.WithMessage(message);
 
 				if (headers != null)
-					dispatch = dispatch.WithHeaders(headers);
+				{
+				    dispatch = dispatch.WithHeaders(headers);
+				}
 
-				if (state != null)
-					dispatch = dispatch.WithState(state);
+			    if (state != null)
+			    {
+			        dispatch = dispatch.WithState(state);
+			    }
 
-				dispatch
+			    dispatch
 					.Send()
 					.Commit();
 			});
@@ -29,12 +33,12 @@
 
 		public AsynchronousMessenger(IChannelGroup channelGroup)
 		{
-			this._channelGroup = channelGroup;
+			_channelGroup = channelGroup;
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)

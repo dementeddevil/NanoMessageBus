@@ -24,16 +24,20 @@ namespace NanoMessageBus.Logging
 		private static string FormatException(string message, object[] values)
 		{
 			if (values.Length == 1 && values[0] is Exception)
-				message = message + (values[0] as Exception).FormatException();
+			{
+			    message = message + (values[0] as Exception).FormatException();
+			}
 
-			return message;
+		    return message;
 		}
 		private static string FormatException(this Exception exception)
 		{
 			if (exception == null)
-				return string.Empty;
+			{
+			    return string.Empty;
+			}
 
-			var message = ExceptionFormat.FormatWith(exception.GetType(), exception.Message, exception.StackTrace);
+		    var message = ExceptionFormat.FormatWith(exception.GetType(), exception.Message, exception.StackTrace);
 			return message + exception.InnerException.FormatException();
 		}
 		private static string GetName(this Thread thread)

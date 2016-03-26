@@ -495,12 +495,13 @@ namespace NanoMessageBus
 			while (invocations >= 0)
 				worker.PerformOperation(Increment);
 		}
-		private static void Increment()
+		private static Task Increment()
 		{
 			if (restarted > 0)
 				Interlocked.Increment(ref activityNotCanceled);
 
 			Interlocked.Increment(ref invocations);
+		    return Task.FromResult(true);
 		}
 
 		Because of = () =>

@@ -10,20 +10,28 @@
 		}
 		public void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
-			if (!this._cloud)
-				return;
+			if (!_cloud)
+			{
+			    return;
+			}
 
-			if (envelope == null)
-				throw new ArgumentNullException(nameof(envelope));
+		    if (envelope == null)
+		    {
+		        throw new ArgumentNullException(nameof(envelope));
+		    }
 
-			if (delivery != null && delivery.CurrentMessage == envelope.Message)
-				return;
+		    if (delivery != null && delivery.CurrentMessage == envelope.Message)
+		    {
+		        return;
+		    }
 
-			var message = envelope.Message;
+		    var message = envelope.Message;
 			if (message == envelope.State)
-				return;
+			{
+			    return;
+			}
 
-			var headers = message.Headers;
+		    var headers = message.Headers;
 			headers[ProviderNameHeader] = ProviderName;
 			headers[FacilityNameHeader] = FacilityName;
 			headers[MachineIdHeader] = MachineId;
@@ -31,15 +39,15 @@
 
 		public CloudAuditor()
 		{
-			this._cloud = FacilityName.Length > 0 && MachineId.Length > 0;
+			_cloud = FacilityName.Length > 0 && MachineId.Length > 0;
 		}
 		~CloudAuditor()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)

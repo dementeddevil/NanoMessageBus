@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 #pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
@@ -28,7 +29,8 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockHandler = new Mock<IDeliveryHandler>();
-			mockHandler.Setup(x => x.HandleAsync(Delivery));
+			mockHandler.Setup(x => x.HandleAsync(Delivery))
+                .Returns(Task.FromResult(true));
 
 			handler = new TransactionScopeDeliveryHandler(mockHandler.Object);
 		};

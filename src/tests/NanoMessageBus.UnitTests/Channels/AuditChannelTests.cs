@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 #pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
@@ -173,7 +174,7 @@ namespace NanoMessageBus.Channels
 	public class when_attempting_to_send_with_a_null_envelope : using_the_audit_channel
 	{
 		Because of = () =>
-			Try(() => channel.Send(null));
+			Try(() => channel.SendAsync(null));
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ArgumentNullException>();
@@ -186,7 +187,7 @@ namespace NanoMessageBus.Channels
 			channel.Dispose();
 
 		Because of = () =>
-			Try(() => channel.Send(new Mock<ChannelEnvelope>().Object));
+			Try(() => channel.SendAsync(new Mock<ChannelEnvelope>().Object));
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ObjectDisposedException>();
@@ -207,7 +208,7 @@ namespace NanoMessageBus.Channels
 		};
 
 		Because of = () =>
-			channel.Send(envelope);
+			channel.SendAsync(envelope);
 
 		It should_register_the_audit_to_be_run_with_the_ambient_transaction = () =>
 			registered.Should().BeTrue();
@@ -216,7 +217,7 @@ namespace NanoMessageBus.Channels
 			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope, channel), Times.Once()));
 
 		It should_pass_the_envelope_to_the_underlying_channel_for_delivery = () =>
-			mockChannel.Verify(x => x.Send(envelope), Times.Once());
+			mockChannel.Verify(x => x.SendAsync(envelope), Times.Once());
 
 		static bool registered;
 		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
@@ -226,25 +227,25 @@ namespace NanoMessageBus.Channels
 	public class when_initiating_shutdown_on_the_audit_channel : using_the_audit_channel
 	{
 		Because of = () =>
-			channel.BeginShutdown();
+			channel.ShutdownAsync().Await();
 
 		It should_call_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.BeginShutdown());
+			mockChannel.Verify(x => x.ShutdownAsync());
 	}
 
 	[Subject(typeof(AuditChannel))]
 	public class when_calling_receive_on_the_audit_channel : using_the_audit_channel
 	{
 		Because of = () =>
-			channel.Receive(callback);
+			channel.ReceiveAsync(callback).Await();
 
 		It should_provide_a_delegate_to_the_underlying_channel = () =>
-			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
+			mockChannel.Verify(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()), Times.Once());
 
 		It should_NOT_provide_the_exact_same_delegate_to_the_channel_without_wrapping_it = () =>
-			mockChannel.Verify(x => x.Receive(callback), Times.Never());
+			mockChannel.Verify(x => x.ReceiveAsync(callback), Times.Never());
 
-		static readonly Action<IDeliveryContext> callback = context => { };
+		static readonly Func<IDeliveryContext, Task> callback = context => { return Task.FromResult(true); };
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -257,18 +258,21 @@ namespace NanoMessageBus.Channels
 			mockOriginal.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 
 			mockChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Callback<Action<IDeliveryContext>>(x => x(mockOriginal.Object)); // it may not always be the underlying channel
+				.Setup(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()))
+				.Callback<Func<IDeliveryContext, Task>>(x => x(mockOriginal.Object))
+                .Returns(Task.FromResult(1)); // it may not always be the underlying channel
 		};
 
-		Because of = () => channel.Receive(context =>
-		{
-			delivery = context;
-			contextMessage = context.CurrentMessage;
-			contextTransaction = context.CurrentTransaction;
-			contextConfiguration = context.CurrentConfiguration;
-			contextResolver = context.CurrentResolver;
-		});
+		Because of = () => channel.ReceiveAsync(
+            context =>
+		    {
+			    delivery = context;
+			    contextMessage = context.CurrentMessage;
+			    contextTransaction = context.CurrentTransaction;
+			    contextConfiguration = context.CurrentConfiguration;
+			    contextResolver = context.CurrentResolver;
+                return Task.FromResult(true);
+		    }).Await();
 
 		It should_provide_the_original_unwrapped_delivery_context_to_each_of_the_configured_auditors = () =>
 			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditReceive(mockOriginal.Object), Times.Once()));

@@ -383,7 +383,7 @@ namespace NanoMessageBus
 			mockWorkers.Verify(x => x.StartActivity(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()), Times.Once());
 
 		It should_have_the_worker_attempt_to_receive_a_message_on_the_channel_using_the_callback_provided = () =>
-			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
+			mockChannel.Verify(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -393,11 +393,11 @@ namespace NanoMessageBus
 		{
 			mockWorkers.Setup(x => x.Restart());
 			mockChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Callback<Action<IDeliveryContext>>(callback => callback(null));
+				.Setup(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()))
+				.Callback<Func<IDeliveryContext, Task>>(callback => callback(null));
 			mockWorker
-				.Setup(x => x.PerformOperation(Moq.It.IsAny<Action>()))
-				.Callback<Action>(x => x());
+				.Setup(x => x.PerformOperation(Moq.It.IsAny<Func<Task>>()))
+				.Callback<Func<Task>>(x => x());
 
 			channelGroup.Initialize();
 		};
@@ -487,7 +487,7 @@ namespace NanoMessageBus
 		private Establish context = () =>
 		{
 			mockChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
+				.Setup(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()))
 				.Throws(new ObjectDisposedException("disposed"));
 
 			channelGroup.Initialize();
@@ -497,7 +497,7 @@ namespace NanoMessageBus
 			channelGroup.BeginReceive(x => { return Task.FromResult(true); });
 
 		It should_consume_the_exception = () =>
-			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
+			mockChannel.Verify(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()), Times.Once());
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -509,7 +509,7 @@ namespace NanoMessageBus
 				.Setup(x => x.Restart())
 				.Throws(new ObjectDisposedException("disposed"));
 			mockChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
+				.Setup(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()))
 				.Throws(new ChannelConnectionException());
 
 			channelGroup.Initialize();

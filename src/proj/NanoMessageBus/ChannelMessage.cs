@@ -17,44 +17,29 @@
 		/// <summary>
 		/// Gets the value which uniquely identifies the message.
 		/// </summary>
-		public virtual Guid MessageId
-		{
-			get { return this._messageId; }
-		}
+		public virtual Guid MessageId => _messageId;
 
-		/// <summary>
+	    /// <summary>
 		/// Gets the value which attaches the message to a larger conversation.
 		/// </summary>
-		public virtual Guid CorrelationId
-		{
-			get { return this._correlationId; }
-		}
+		public virtual Guid CorrelationId => _correlationId;
 
-		/// <summary>
+	    /// <summary>
 		/// Gets the address to which all replies should be directed.
 		/// </summary>
-		public virtual Uri ReturnAddress
-		{
-			get { return this._returnAddress; }
-		}
+		public virtual Uri ReturnAddress => _returnAddress;
 
-		/// <summary>
+	    /// <summary>
 		/// Gets the message headers which contain additional metadata about the contained messages.
 		/// </summary>
-		public virtual IDictionary<string, string> Headers
-		{
-			get { return this._headers; }
-		}
+		public virtual IDictionary<string, string> Headers => _headers;
 
-		/// <summary>
+	    /// <summary>
 		/// Gets the collection of contained messages.
 		/// </summary>
-		public virtual IList<object> Messages
-		{
-			get { return this._immutable; }
-		}
+		public virtual IList<object> Messages => _immutable;
 
-		/// <summary>
+	    /// <summary>
 		/// Gets or sets a reference to the active logical message currently being handled.
 		/// </summary>
 		[IgnoreDataMember, XmlIgnore, SoapIgnore]
@@ -90,20 +75,20 @@
 		/// <returns>If successful, returns true; otherwise false.</returns>
 		public virtual bool MoveNext()
 		{
-			if (++this.ActiveIndex >= this._messages.Count)
+			if (++ActiveIndex >= _messages.Count)
 			{
-				this.Reset();
+				Reset();
 				return false;
 			}
 
-			this.ActiveMessage = this._messages[this.ActiveIndex];
+			ActiveMessage = _messages[ActiveIndex];
 			return true;
 		}
 		
 		public virtual void Reset()
 		{
-			this.ActiveIndex = Inactive;
-			this.ActiveMessage = null;
+			ActiveIndex = Inactive;
+			ActiveMessage = null;
 		}
 
 		/// <summary>
@@ -121,14 +106,14 @@
 			IDictionary<string, string> headers,
 			IEnumerable<object> messages)
 		{
-			this._messageId = messageId;
-			this._correlationId = correlationId;
-			this._returnAddress = returnAddress;
-			this._headers = headers ?? new Dictionary<string, string>();
-			this._messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
-			this._immutable = new ReadOnlyCollection<object>(this._messages);
+			_messageId = messageId;
+			_correlationId = correlationId;
+			_returnAddress = returnAddress;
+			_headers = headers ?? new Dictionary<string, string>();
+			_messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
+			_immutable = new ReadOnlyCollection<object>(_messages);
 
-			this.ActiveIndex = Inactive;
+			ActiveIndex = Inactive;
 		}
 
 		/// <summary>

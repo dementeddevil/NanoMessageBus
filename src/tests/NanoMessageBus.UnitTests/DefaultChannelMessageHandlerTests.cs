@@ -77,7 +77,8 @@ namespace NanoMessageBus
 			deliveredMessage = BuildMessage(new object[] { "1", 2 });
 			mockRoutes
 				.Setup(x => x.Route(mockHandlerContext.Object, "1"))
-				.Callback<IHandlerContext, object>((ctx, msg) => continueProcessing = false);
+				.Callback<IHandlerContext, object>((ctx, msg) => continueProcessing = false)
+                .ReturnsAsync(2);
 		};
 
 		Because of = () =>
@@ -143,8 +144,8 @@ namespace NanoMessageBus
 				new Dictionary<string, string>(),
 				new object[] { 1, "2", 3.0, 4.0M });
 
-			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 1)).Returns(Task.FromResult(1)); // message is handled
-			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 3.0)).Returns(Task.FromResult(1)); // message is handled
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 1)).ReturnsAsync(1); // message is handled
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 3.0)).ReturnsAsync(1); // message is handled
 		};
 
 		Because of = () =>

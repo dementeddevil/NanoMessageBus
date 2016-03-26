@@ -21,7 +21,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new DefaultMessagingHost(null, EmptyFactory));
 
 		It should_throw_an_exception = () =>
-			thrown.Should().BeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]

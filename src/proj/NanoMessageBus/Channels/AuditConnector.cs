@@ -7,19 +7,14 @@
 
 	public class AuditConnector : IChannelConnector
 	{
-		public virtual ConnectionState CurrentState
-		{
-			get { return this._connector.CurrentState; }
-		}
-		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
-		{
-			get { return this._connector.ChannelGroups; }
-		}
-		public virtual IMessagingChannel Connect(string channelGroup)
+		public virtual ConnectionState CurrentState => _connector.CurrentState;
+	    public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups => _connector.ChannelGroups;
+
+	    public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			Log.Debug("Attempting to open a channel for group '{0}'.", channelGroup);
-			var channel = this._connector.Connect(channelGroup);
-			var auditors = this.ResolveAuditors(channel);
+			var channel = _connector.Connect(channelGroup);
+			var auditors = ResolveAuditors(channel);
 
 			if (auditors.Count > 0)
 			{
@@ -28,45 +23,53 @@
 			}
 
 			Log.Info("No auditors have been configured, no further attempts to audit will occur.");
-			this._emptyFactory = true;
+			_emptyFactory = true;
 			return channel;
 		}
 		protected virtual ICollection<IMessageAuditor> ResolveAuditors(IMessagingChannel channel)
 		{
-			if (this._emptyFactory)
-				return new IMessageAuditor[0];
+			if (_emptyFactory)
+			{
+			    return new IMessageAuditor[0];
+			}
 
-			return this._auditorFactory(channel).Where(x => x != null).ToArray();
+		    return _auditorFactory(channel).Where(x => x != null).ToArray();
 		}
 
 		public AuditConnector(IChannelConnector connector, Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory)
 		{
 			if (connector == null)
-				throw new ArgumentNullException(nameof(connector));
+			{
+			    throw new ArgumentNullException(nameof(connector));
+			}
 
-			if (auditorFactory == null)
-				throw new ArgumentNullException(nameof(auditorFactory));
+		    if (auditorFactory == null)
+		    {
+		        throw new ArgumentNullException(nameof(auditorFactory));
+		    }
 
-			this._connector = connector;
-			this._auditorFactory = auditorFactory;
+		    _connector = connector;
+			_auditorFactory = auditorFactory;
 		}
 		~AuditConnector()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposing)
-				return;
+			{
+			    return;
+			}
 
-			Log.Debug("Disposing the underlying connection.");
-			this._connector.TryDispose();
+		    Log.Debug("Disposing the underlying connection.");
+			_connector.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector));

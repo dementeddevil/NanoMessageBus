@@ -8,12 +8,16 @@
 		public virtual IChannelGroup Build(IChannelConnector connector, IChannelGroupConfiguration configuration)
 		{
 			if (connector == null)
-				throw new ArgumentNullException(nameof(connector));
+			{
+			    throw new ArgumentNullException(nameof(connector));
+			}
 
-			if (configuration == null)
-				throw new ArgumentNullException(nameof(configuration));
+		    if (configuration == null)
+		    {
+		        throw new ArgumentNullException(nameof(configuration));
+		    }
 
-			if (configuration.Synchronous)
+		    if (configuration.Synchronous)
 			{
 				Log.Debug("Building a synchronous channel group named '{0}'.", configuration.GroupName);
 				return new SynchronousChannelGroup(connector, configuration);

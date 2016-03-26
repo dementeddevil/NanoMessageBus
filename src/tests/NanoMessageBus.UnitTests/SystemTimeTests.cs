@@ -70,9 +70,9 @@ namespace NanoMessageBus
 			Sleep.Sleep();
 
 		It should_let_the_current_thread_sleep = () =>
-			SystemTime.UtcNow.Should().BeCloseTo(Now + Sleep + TimeSpan.FromMilliseconds(200));
+			SystemTime.UtcNow.Should().BeCloseTo(Now + Sleep, 500);
 
-		static readonly TimeSpan Sleep = TimeSpan.FromMilliseconds(250);
+		static readonly TimeSpan Sleep = TimeSpan.FromMilliseconds(500);
 		static readonly DateTime Now = SystemTime.UtcNow;
 	}
 }

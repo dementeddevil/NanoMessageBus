@@ -28,7 +28,7 @@ namespace NanoMessageBus
 		    }
 
 			Log.Debug("Channel message delivery received, routing to inner delivery handler.");
-			await this._inner.HandleAsync(delivery).ConfigureAwait(false);
+			await _inner.HandleAsync(delivery).ConfigureAwait(false);
 
 			Log.Debug("Committing transaction associated with delivery.");
 			delivery.CurrentTransaction.Commit();

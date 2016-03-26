@@ -112,7 +112,7 @@ namespace NanoMessageBus
 			built = builder.Build(Guid.Empty, null, null, messages);
 
 		It should_correctly_set_the_channel_message_expiration = () =>
-			built.Expiration.Should().BeCloseTo(SystemTime.UtcNow + timeToLive + TimeSpan.FromSeconds(1));
+			built.Expiration.Should().BeCloseTo(SystemTime.UtcNow + timeToLive, 1000);
 
 		static readonly TimeSpan timeToLive = TimeSpan.FromDays(1);
 		static readonly object[] messages = new object[] { string.Empty };

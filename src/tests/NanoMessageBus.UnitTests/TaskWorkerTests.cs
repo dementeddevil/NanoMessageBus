@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using FluentAssertions;
 
 #pragma warning disable 169, 414
@@ -41,7 +42,7 @@ namespace NanoMessageBus
 	public class when_performing_a_null_operation : with_a_worker
 	{
 		Because of = () =>
-			Try(() => worker.PerformOperation(null));
+			Try(() => worker.PerformOperation(null).Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ArgumentNullException>();
@@ -51,7 +52,7 @@ namespace NanoMessageBus
 	public class when_performing_an_operation : with_a_worker
 	{
 		Because of = () =>
-			worker.PerformOperation(IncrementCallCount);
+			worker.PerformOperation(IncrementCallCount).Await();
 
 		It should_invoke_the_operation_provided = () =>
 			callCount.Should().Be(1);
@@ -61,7 +62,7 @@ namespace NanoMessageBus
 	public class when_the_operation_performed_throws_an_exception : with_a_worker
 	{
 		Because of = () =>
-			Try(() => worker.PerformOperation(() => { throw exception; }));
+			Try(() => worker.PerformOperation(() => { throw exception; }).Await());
 
 		It should_bubble_up_the_exception = () =>
 			thrown.Should().Be(exception);
@@ -76,7 +77,7 @@ namespace NanoMessageBus
 			tokenSource.Cancel();
 
 		Because of = () =>
-			worker.PerformOperation(IncrementCallCount);
+			worker.PerformOperation(IncrementCallCount).Await();
 
 		It should_not_invoke_the_operation = () =>
 			callCount.Should().Be(0);
@@ -105,9 +106,10 @@ namespace NanoMessageBus
 		{
 			thrown = Catch.Exception(callback);
 		}
-		protected static void IncrementCallCount()
+		protected static Task IncrementCallCount()
 		{
 			callCount++;
+            return Task.FromResult(true);
 		}
 
 		protected static CancellationTokenSource tokenSource;

@@ -27,7 +27,7 @@ namespace NanoMessageBus
 	public class when_a_null_delivery_is_provided_to_the_delivery_handler
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => handler.HandleAsync(null));
+			thrown = Catch.Exception(() => handler.HandleAsync(null).Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ArgumentNullException>();

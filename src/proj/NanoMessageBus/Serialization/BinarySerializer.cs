@@ -7,25 +7,21 @@
 
 	public class BinarySerializer : ISerializer
 	{
-		public virtual string ContentEncoding
-		{
-			get { return string.Empty; }
-		}
-		public virtual string ContentFormat
-		{
-			get { return "binary"; }
-		}
+		public virtual string ContentEncoding => string.Empty;
+	    public virtual string ContentFormat => "binary";
 
-		public virtual void Serialize(Stream destination, object graph)
+	    public virtual void Serialize(Stream destination, object graph)
 		{
 			if (graph == null)
-				return;
+			{
+			    return;
+			}
 
-			this._formatter.Serialize(destination, graph);
+	        _formatter.Serialize(destination, graph);
 		}
 		public virtual object Deserialize(Stream source, Type type, string format, string contentEncoding = "")
 		{
-			return this._formatter.Deserialize(source);
+			return _formatter.Deserialize(source);
 		}
 
 		private readonly IFormatter _formatter = new BinaryFormatter();

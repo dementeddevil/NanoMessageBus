@@ -20,16 +20,20 @@
 		public static TValue TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> values, TKey key)
 		{
 			if (values == null)
-				throw new ArgumentNullException(nameof(values));
+			{
+			    throw new ArgumentNullException(nameof(values));
+			}
 
-			TValue value;
+		    TValue value;
 			return values.TryGetValue(key, out value) ? value : default(TValue);
 		}
 
 		public static void TrySetValue<TKey, TValue>(this IDictionary<TKey, TValue> values, TKey key, TValue value)
 		{
 			if (values != null && !values.ContainsKey(key))
-				values[key] = value;
+			{
+			    values[key] = value;
+			}
 		}
 
 		internal static Guid MessageId(this ChannelEnvelope envelope)
@@ -40,9 +44,11 @@
 		public static void TryDispose(this IDisposable resource, bool rethrow = false)
 		{
 			if (resource == null)
-				return;
+			{
+			    return;
+			}
 
-			try
+		    try
 			{
 				resource.Dispose();
 			}
@@ -50,7 +56,9 @@
 			{
 				Log.Warn("Disposing resource of type '{0}' threw an exception.".FormatWith(resource.GetType()), e);
 				if (rethrow)
-					throw;
+				{
+				    throw;
+				}
 			}
 		}
 

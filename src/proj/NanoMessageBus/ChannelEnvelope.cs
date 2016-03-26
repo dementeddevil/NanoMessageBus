@@ -55,20 +55,26 @@
 			: this()
 		{
 			if (message == null)
-				throw new ArgumentNullException(nameof(message));
+			{
+			    throw new ArgumentNullException(nameof(message));
+			}
 
-			if (recipients == null)
-				throw new ArgumentNullException(nameof(recipients));
+		    if (recipients == null)
+		    {
+		        throw new ArgumentNullException(nameof(recipients));
+		    }
 
-			this.Message = message;
+		    Message = message;
 
 			var immutable = new ReadOnlyCollection<Uri>(recipients.Where(x => x != null).ToArray());
-			this.Recipients = immutable;
+			Recipients = immutable;
 
 			if (immutable.Count == 0)
-				throw new ArgumentException("No recipients were provided.", nameof(recipients));
+			{
+			    throw new ArgumentException("No recipients were provided.", nameof(recipients));
+			}
 
-			this.State = state;
+		    State = state;
 		}
 
 		/// <summary>

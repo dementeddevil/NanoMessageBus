@@ -6,15 +6,10 @@
 
 	public class DefaultChannelMessageDispatchContext : IDispatchContext
 	{
-		public virtual int MessageCount
-		{
-			get { return this._dispatched ? 0 : 1; }
-		}
-		public virtual int HeaderCount
-		{
-			get { return 0; }
-		}
-		public virtual IDispatchContext WithMessage(object message)
+		public virtual int MessageCount => _dispatched ? 0 : 1;
+	    public virtual int HeaderCount => 0;
+
+	    public virtual IDispatchContext WithMessage(object message)
 		{
 			throw new NotSupportedException("The message collection cannot be modified.");
 		}
@@ -37,9 +32,11 @@
 		public virtual IDispatchContext WithRecipient(Uri recipient)
 		{
 			if (recipient == null)
-				throw new ArgumentNullException(nameof(recipient));
+			{
+			    throw new ArgumentNullException(nameof(recipient));
+			}
 
-			this._recipients.Add(recipient);
+		    _recipients.Add(recipient);
 			return this;
 		}
 		public virtual IDispatchContext WithState(object state)
@@ -49,11 +46,11 @@
 
 		public virtual IChannelTransaction Send(params object[] messages)
 		{
-			this.ThrowWhenDispatched();
-			this._dispatched = true;
+			ThrowWhenDispatched();
+			_dispatched = true;
 
-			this._channel.Send(new ChannelEnvelope(this._channelMessage, this._recipients, this._channelMessage));
-			return this._channel.CurrentTransaction;
+			_channel.SendAsync(new ChannelEnvelope(_channelMessage, _recipients, _channelMessage));
+			return _channel.CurrentTransaction;
 		}
 		public virtual IChannelTransaction Publish(params object[] messages)
 		{
@@ -66,23 +63,29 @@
 
 		protected virtual void ThrowWhenDispatched()
 		{
-			if (!this._dispatched)
-				return;
+			if (!_dispatched)
+			{
+			    return;
+			}
 
-			Log.Warn("The set of messages has already been dispatched.");
+		    Log.Warn("The set of messages has already been dispatched.");
 			throw new InvalidOperationException("The set of messages has already been dispatched.");
 		}
 
 		public DefaultChannelMessageDispatchContext(IMessagingChannel channel, ChannelMessage channelMessage)
 		{
 			if (channel == null)
-				throw new ArgumentNullException(nameof(channel));
+			{
+			    throw new ArgumentNullException(nameof(channel));
+			}
 
-			if (channelMessage == null)
-				throw new ArgumentNullException(nameof(channelMessage));
+		    if (channelMessage == null)
+		    {
+		        throw new ArgumentNullException(nameof(channelMessage));
+		    }
 
-			this._channel = channel;
-			this._channelMessage = channelMessage;
+		    _channel = channel;
+			_channelMessage = channelMessage;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelMessageDispatchContext));

@@ -26,7 +26,7 @@ namespace NanoMessageBus
 	public class when_a_null_delivery_is_provided
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => handler.HandleAsync(null));
+			thrown = Catch.Exception(() => handler.HandleAsync(null).Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ArgumentNullException>();
@@ -43,7 +43,9 @@ namespace NanoMessageBus
 			mockMessage = new Mock<ChannelMessage>();
 
 			mockRoutingTable = new Mock<IRoutingTable>();
-			mockRoutingTable.Setup(x => x.Route(Moq.It.IsAny<DefaultHandlerContext>(), mockMessage.Object));
+			mockRoutingTable
+                .Setup(x => x.Route(Moq.It.IsAny<DefaultHandlerContext>(), mockMessage.Object))
+                .ReturnsAsync(1);
 
 			mockDelivery = new Mock<IDeliveryContext>();
 			mockDelivery.Setup(x => x.CurrentMessage).Returns(mockMessage.Object);

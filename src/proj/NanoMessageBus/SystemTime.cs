@@ -27,12 +27,9 @@
 		/// Method invocation is not thread safe if the resolver is being changed by multiple threads. The intended design
 		/// is for testing where it can be set, any tests run, and then the value cleared.
 		/// </remarks>
-		public static DateTime UtcNow
-		{
-			get { return TimeResolver == null ? DateTime.UtcNow : TimeResolver(); }
-		}
+		public static DateTime UtcNow => TimeResolver == null ? DateTime.UtcNow : TimeResolver();
 
-		/// <summary>
+	    /// <summary>
 		/// Gets the number of milliseconds that have elapsed between the instant and Unix Epoch Time (12:00 AM January 1, 1970).
 		/// </summary>
 		/// <param name="instant">The instant from which epoch time will be computed.</param>

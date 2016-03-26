@@ -25,17 +25,19 @@ namespace NanoMessageBus
 			IDeliveryHandler inner, TransactionScopeOption scopeOption, TransactionOptions transactionOptions)
 		{
 			if (inner == null)
-				throw new ArgumentNullException(nameof(inner));
+			{
+			    throw new ArgumentNullException(nameof(inner));
+			}
 
-			this._inner = inner;
-			this._scopeOption = scopeOption;
-			this._transactionOptions = transactionOptions;
+            _inner = inner;
+			_scopeOption = scopeOption;
+			_transactionOptions = transactionOptions;
 		}
 
 		public virtual async Task HandleAsync(IDeliveryContext delivery)
 		{
 			Log.Debug("Creating new transaction scope associated for delivery.");
-			using (var scope = new TransactionScope(this._scopeOption, this._transactionOptions))
+			using (var scope = new TransactionScope(_scopeOption, _transactionOptions))
 			{
 				await _inner.HandleAsync(delivery).ConfigureAwait(false);
 

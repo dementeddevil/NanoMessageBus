@@ -19,7 +19,7 @@ namespace NanoMessageBus
 			envelope = new ChannelEnvelope(message, recipients, state);
 
 		It should_contain_a_reference_to_the_message_provided = () =>
-			envelope.Message.Should().ShouldBeEquivalentTo(message);
+			envelope.Message.Should().Be(message);
 
 		It should_contain_all_non_null_recipients_specified = () =>
 			envelope.Recipients.Count.Should().Be(recipients.Count(x => x != null));

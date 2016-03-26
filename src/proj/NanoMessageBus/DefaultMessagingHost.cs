@@ -13,30 +13,34 @@ namespace NanoMessageBus
 		public virtual IChannelGroup Initialize()
 		{
 			Log.Info("Initializing host.");
-			lock (this._sync)
+			lock (_sync)
 			{
 				Log.Verbose("Entering critical section (Initialize).");
-				this.ThrowWhenDisposed();
+				ThrowWhenDisposed();
 
-				if (!this._initialized)
-					this.InitializeChannelGroups();
+				if (!_initialized)
+				{
+				    InitializeChannelGroups();
+				}
 
-				this._initialized = true;
+			    _initialized = true;
 				Log.Verbose("Exiting critical section (Initialize).");
 			}
 
 			Log.Info("Host initialized.");
 
-			return new IndisposableChannelGroup(this._groups.Values.First());
+			return new IndisposableChannelGroup(_groups.Values.First());
 		}
 		protected virtual void InitializeChannelGroups()
 		{
 			Log.Info("Initializing each channel group on each connector.");
-			foreach (var connector in this._connectors)
+			foreach (var connector in _connectors)
 				foreach (var config in connector.ChannelGroups)
-					this.AddChannelGroup(config.GroupName, this._factory(connector, config));
+				{
+				    AddChannelGroup(config.GroupName, _factory(connector, config));
+				}
 
-			if (this._groups.Count == 0)
+		    if (_groups.Count == 0)
 			{
 				Log.Warn("No channel groups have been configured.");
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
@@ -48,7 +52,7 @@ namespace NanoMessageBus
 				"Adding dispatch-only channel group '{0}'." : "Adding full-duplex channel group '{0}'", name);
 
 			group.Initialize();
-			this._groups[name] = group;
+			_groups[name] = group;
 		}
 
 		public virtual IChannelGroup this[string channelGroup]
@@ -56,19 +60,21 @@ namespace NanoMessageBus
 			get
 			{
 				if (channelGroup == null)
-					throw new ArgumentNullException(nameof(channelGroup));
+				{
+				    throw new ArgumentNullException(nameof(channelGroup));
+				}
 
-				Log.Debug("Reference to dispatch-only channel group '{0}' requested.", channelGroup);
+			    Log.Debug("Reference to dispatch-only channel group '{0}' requested.", channelGroup);
 
-				lock (this._sync)
+				lock (_sync)
 				{
 					Log.Verbose("Entering critical section (GetOutboundChannel).");
 
-					this.ThrowWhenDisposed();
-					this.ThrowWhenUninitialized();
+					ThrowWhenDisposed();
+					ThrowWhenUninitialized();
 
 					IChannelGroup group;
-					if (this._groups.TryGetValue(channelGroup, out group))
+					if (_groups.TryGetValue(channelGroup, out group))
 					{
 						Log.Verbose("Exiting critical section (GetOutboundChannel)--group found.");
 						return new IndisposableChannelGroup(group);
@@ -83,19 +89,21 @@ namespace NanoMessageBus
 		public virtual void BeginReceive(Func<IDeliveryContext, Task> callback)
 		{
 			if (callback == null)
-				throw new ArgumentNullException(nameof(callback));
+			{
+			    throw new ArgumentNullException(nameof(callback));
+			}
 
-			Log.Info("Attempting to begin receive operations.");
+		    Log.Info("Attempting to begin receive operations.");
 
-			lock (this._sync)
+			lock (_sync)
 			{
 				Log.Verbose("Entering critical section (BeginReceive).");
-				this.ThrowWhenDisposed();
-				this.ThrowWhenUninitialized();
-				this.ThrowWhenReceiving();
-				this._receiving = true;
+				ThrowWhenDisposed();
+				ThrowWhenUninitialized();
+				ThrowWhenReceiving();
+				_receiving = true;
 
-				var activated = this._groups.Values.Where(x => !x.DispatchOnly).Count(x =>
+				var activated = _groups.Values.Where(x => !x.DispatchOnly).Count(x =>
 				{
 					x.BeginReceive(callback);
 					return true;
@@ -108,78 +116,98 @@ namespace NanoMessageBus
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this._disposed)
-				return;
-		
-			Log.Warn("The messaging host has been disposed.");
+			if (!_disposed)
+			{
+			    return;
+			}
+
+		    Log.Warn("The messaging host has been disposed.");
 			throw new ObjectDisposedException(typeof(DefaultMessagingHost).Name);
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (this._initialized)
-				return;
+			if (_initialized)
+			{
+			    return;
+			}
 
-			Log.Warn("The messaging host has not been initialized.");
+		    Log.Warn("The messaging host has not been initialized.");
 			throw new InvalidOperationException("The host has not been initialized.");
 		}
 		protected virtual void ThrowWhenReceiving()
 		{
-			if (!this._receiving)
-				return;
+			if (!_receiving)
+			{
+			    return;
+			}
 
-			Log.Warn("Already receiving--a callback has been provided.");
+		    Log.Warn("Already receiving--a callback has been provided.");
 			throw new InvalidOperationException("A callback has already been provided.");
 		}
 
 		public DefaultMessagingHost(IEnumerable<IChannelConnector> connectors, ChannelGroupFactory factory)
 		{
 			if (connectors == null)
-				throw new ArgumentNullException(nameof(connectors));
+			{
+			    throw new ArgumentNullException(nameof(connectors));
+			}
 
-			if (factory == null)
-				throw new ArgumentNullException(nameof(factory));
+		    if (factory == null)
+		    {
+		        throw new ArgumentNullException(nameof(factory));
+		    }
 
-			this._connectors = connectors.Where(x => x != null).ToArray();
-			if (this._connectors.Count == 0)
-				throw new ArgumentException("No connectors provided.", nameof(connectors));
+		    _connectors = connectors.Where(x => x != null).ToArray();
+			if (_connectors.Count == 0)
+			{
+			    throw new ArgumentException("No connectors provided.", nameof(connectors));
+			}
 
-			this._factory = factory;
+		    _factory = factory;
 		}
 		~DefaultMessagingHost()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposing)
-				return;
+			{
+			    return;
+			}
 
-			Log.Info("Disposing host.");
+		    Log.Info("Disposing host.");
 
-			lock (this._sync)
+			lock (_sync)
 			{
 				Log.Verbose("Entering critical section (Dispose).");
-				if (this._disposed)
-					return;
+				if (_disposed)
+				{
+				    return;
+				}
 
-				this._disposed = true;
+			    _disposed = true;
 
-				foreach (var group in this._groups.Values)
-					group.TryDispose();
+				foreach (var group in _groups.Values)
+				{
+				    @group.TryDispose();
+				}
 
-				Log.Info("Disposing {0} messaging infrastructure connectors and their respective connections, if any.",
-					this._connectors.Count);
+			    Log.Info("Disposing {0} messaging infrastructure connectors and their respective connections, if any.",
+					_connectors.Count);
 
-				foreach (var connector in this._connectors)
-					connector.TryDispose();
+				foreach (var connector in _connectors)
+				{
+				    connector.TryDispose();
+				}
 
-				Log.Verbose("Exiting critical section (Dispose).");
+			    Log.Verbose("Exiting critical section (Dispose).");
 			}
 
 			Log.Info("Host disposed.");

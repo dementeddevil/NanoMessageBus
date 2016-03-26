@@ -6,17 +6,13 @@
 
 	public class DependencyResolverConnector : IChannelConnector
 	{
-		public virtual ConnectionState CurrentState
+		public virtual ConnectionState CurrentState => _connector.CurrentState;
+
+	    public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups => _connector.ChannelGroups;
+
+	    public virtual IMessagingChannel Connect(string channelGroup)
 		{
-			get { return this._connector.CurrentState; }
-		}
-		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
-		{
-			get { return this._connector.ChannelGroups; }
-		}
-		public virtual IMessagingChannel Connect(string channelGroup)
-		{
-			var channel = this._connector.Connect(channelGroup);
+			var channel = _connector.Connect(channelGroup);
 			var resolver = channel.CurrentConfiguration.DependencyResolver;
 			if (resolver == null)
 			{
@@ -39,24 +35,28 @@
 		public DependencyResolverConnector(IChannelConnector connector)
 		{
 			if (connector == null)
-				throw new ArgumentNullException(nameof(connector));
+			{
+			    throw new ArgumentNullException(nameof(connector));
+			}
 
-			this._connector = connector;
+		    _connector = connector;
 		}
 		~DependencyResolverConnector()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				this._connector.TryDispose();
+			{
+			    _connector.TryDispose();
+			}
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverConnector));

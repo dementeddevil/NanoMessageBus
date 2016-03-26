@@ -9,27 +9,37 @@
 		public virtual void AuditReceive(IDeliveryContext delivery)
 		{
 			if (delivery == null)
-				throw new ArgumentNullException(nameof(delivery));
+			{
+			    throw new ArgumentNullException(nameof(delivery));
+			}
 
-			var header = delivery.CurrentMessage.Headers.TryGetValue(DispatchStamp);
+		    var header = delivery.CurrentMessage.Headers.TryGetValue(DispatchStamp);
 
 			DateTime dispatched;
 			if (DateTime.TryParse(header, out dispatched))
-				delivery.CurrentMessage.Dispatched = dispatched.ToUniversalTime();
+			{
+			    delivery.CurrentMessage.Dispatched = dispatched.ToUniversalTime();
+			}
 		}
 		public virtual void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
 			if (envelope == null)
-				throw new ArgumentNullException(nameof(envelope));
+			{
+			    throw new ArgumentNullException(nameof(envelope));
+			}
 
-			if (delivery != null && delivery.CurrentMessage == envelope.Message)
-				return;
+		    if (delivery != null && delivery.CurrentMessage == envelope.Message)
+		    {
+		        return;
+		    }
 
-			var message = envelope.Message;
+		    var message = envelope.Message;
 			if (message == envelope.State)
-				return;
+			{
+			    return;
+			}
 
-			var process = Process.GetCurrentProcess();
+		    var process = Process.GetCurrentProcess();
 			var headers = message.Headers;
 			headers[DispatchStamp] = SystemTime.UtcNow.ToIsoString();
 			headers[OriginHost] = Environment.MachineName.ToLowerInvariant();
@@ -42,12 +52,12 @@
 		}
 		~PointOfOriginAuditor()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)

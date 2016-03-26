@@ -12,11 +12,13 @@
 		}
 		public virtual void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
-			var current = this.GetCurrentContext(envelope);
+			var current = GetCurrentContext(envelope);
 			if (current == null)
-				return;
+			{
+			    return;
+			}
 
-			var headers = envelope.Message.Headers;
+		    var headers = envelope.Message.Headers;
 			var request = current.Request;
 
 			AppendHeader(headers, "useragent", request.UserAgent);
@@ -30,26 +32,34 @@
 		}
 		private HttpContextBase GetCurrentContext(ChannelEnvelope envelope)
 		{
-			if (this._httpContext != null)
-				return this._httpContext;
+			if (_httpContext != null)
+			{
+			    return _httpContext;
+			}
 
-			if (envelope.State == null)
-				return null;
+		    if (envelope.State == null)
+		    {
+		        return null;
+		    }
 
-			var context = envelope.State as HttpContext;
+		    var context = envelope.State as HttpContext;
 			return context == null ? envelope.State as HttpContextBase : new HttpContextWrapper(context);
 		}
 		private static string GetUserAddress(HttpRequestBase request)
 		{
 			var previousAddresses = request.Headers[ProxiedClient];
 			if (string.IsNullOrEmpty(previousAddresses))
-				return request.UserHostAddress;
+			{
+			    return request.UserHostAddress;
+			}
 
-			var currentAddress = request.UserHostAddress ?? string.Empty;
+		    var currentAddress = request.UserHostAddress ?? string.Empty;
 			if (previousAddresses.StartsWith(currentAddress, StringComparison.InvariantCultureIgnoreCase))
-				return previousAddresses;
+			{
+			    return previousAddresses;
+			}
 
-			return UserAddressFormat.FormatWith(previousAddresses, currentAddress);
+		    return UserAddressFormat.FormatWith(previousAddresses, currentAddress);
 		}
 		private static string GetServerAddress(HttpRequestBase request)
 		{
@@ -58,7 +68,9 @@
 		private static void AppendHeader(IDictionary<string, string> headers, string key, string value)
 		{
 			if (!string.IsNullOrEmpty(value))
-				headers.TrySetValue(HeaderFormat.FormatWith(key), value);
+			{
+			    headers.TrySetValue(HeaderFormat.FormatWith(key), value);
+			}
 		}
 		private static string AsString(object value)
 		{
@@ -67,16 +79,16 @@
 
 		public HttpRequestAuditor(HttpContextBase httpContext)
 		{
-			this._httpContext = httpContext;
+			_httpContext = httpContext;
 		}
 		~HttpRequestAuditor()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)

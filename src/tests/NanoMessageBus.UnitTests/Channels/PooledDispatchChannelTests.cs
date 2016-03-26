@@ -180,7 +180,7 @@ namespace NanoMessageBus.Channels
 	public class when_trying_to_send_with_a_null_envelope : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>
-			Try(() => channel.Send(null));
+			Try(() => channel.SendAsync(null).Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ArgumentNullException>();
@@ -193,7 +193,7 @@ namespace NanoMessageBus.Channels
 			channel.Dispose();
 
 		Because of = () =>
-			Try(() => channel.Send(new Mock<ChannelEnvelope>().Object));
+			Try(() => channel.SendAsync(new Mock<ChannelEnvelope>().Object).Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<ObjectDisposedException>();
@@ -203,10 +203,10 @@ namespace NanoMessageBus.Channels
 	public class when_sending_an_envelope_on_the_pooled_dispatch_channel : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>
-			channel.Send(envelope);
+			channel.SendAsync(envelope).Await();
 
 		It should_pass_the_envelope_to_the_underlying_channel_for_delivery = () =>
-			mockChannel.Verify(x => x.Send(envelope), Times.Once());
+			mockChannel.Verify(x => x.SendAsync(envelope), Times.Once());
 
 		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
 	}
@@ -215,10 +215,10 @@ namespace NanoMessageBus.Channels
 	public class when_sending_an_envelope_results_in_a_ChannelConnectionException : using_the_pooled_dispatch_channel
 	{
 		Establish context = () =>
-			mockChannel.Setup(x => x.Send(envelope)).Throws(new ChannelConnectionException());
+			mockChannel.Setup(x => x.SendAsync(envelope)).Throws(new ChannelConnectionException());
 
 		Because of = () =>
-			Try(() => channel.Send(envelope));
+			Try(() => channel.SendAsync(envelope).Await());
 
 		It should_tear_down_the_channel = () =>
 			mockConnector.Verify(x => x.Teardown(mockChannel.Object, ReleaseToken), Times.Once());
@@ -233,7 +233,7 @@ namespace NanoMessageBus.Channels
 	public class when_initiating_shutdown_on_the_pooled_dispatch_channel : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>
-			Try(() => channel.BeginShutdown());
+			Try(() => channel.ShutdownAsync().Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<NotSupportedException>();
@@ -243,7 +243,7 @@ namespace NanoMessageBus.Channels
 	public class when_calling_receive_on_the_pooled_dispatch_channel : using_the_pooled_dispatch_channel
 	{
 		Because of = () =>
-			Try(() => channel.Receive(null));
+			Try(() => channel.ReceiveAsync(null).Await());
 
 		It should_throw_an_exception = () =>
 			thrown.Should().BeOfType<NotSupportedException>();

@@ -7,103 +7,100 @@
 
 	public class DefaultHandlerContext : IHandlerContext
 	{
-		public virtual bool Active
+		public virtual bool Active => _delivery.Active;
+	    public virtual ChannelMessage CurrentMessage => _delivery.CurrentMessage;
+	    public virtual IChannelTransaction CurrentTransaction => _delivery.CurrentTransaction;
+
+	    public virtual IChannelGroupConfiguration CurrentConfiguration => _delivery.CurrentConfiguration;
+	    public virtual IDependencyResolver CurrentResolver => _delivery.CurrentResolver;
+
+	    public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel channel = null)
 		{
-			get { return this._delivery.Active; }
-		}
-		public virtual ChannelMessage CurrentMessage
-		{
-			get { return this._delivery.CurrentMessage; }
-		}
-		public virtual IChannelTransaction CurrentTransaction
-		{
-			get { return this._delivery.CurrentTransaction; }
-		}
-		public virtual IChannelGroupConfiguration CurrentConfiguration
-		{
-			get { return this._delivery.CurrentConfiguration; }
-		}
-		public virtual IDependencyResolver CurrentResolver
-		{
-			get { return this._delivery.CurrentResolver; }
-		}
-		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel channel = null)
-		{
-			this.ThrowWhenDisposed();
-			return this._delivery.PrepareDispatch(message, channel);
+			ThrowWhenDisposed();
+			return _delivery.PrepareDispatch(message, channel);
 		}
 
-		public virtual bool ContinueHandling
+		public virtual bool ContinueHandling => _continueHandling && Active;
+
+	    public virtual void DropMessage()
 		{
-			get { return this._continueHandling && this.Active; }
-		}
-		public virtual void DropMessage()
-		{
-			this.ThrowWhenDisposed();
-			this._continueHandling = false;
+			ThrowWhenDisposed();
+			_continueHandling = false;
 		}
 		public virtual void DeferMessage()
 		{
-			if (this._deferred)
-				return;
+			if (_deferred)
+			{
+			    return;
+			}
 
-			this._deferred = true;
-			this.DropMessage();
+		    _deferred = true;
+			DropMessage();
 
-			this._delivery.PrepareDispatch()
-				.WithMessage(this._delivery.CurrentMessage)
+			_delivery.PrepareDispatch()
+				.WithMessage(_delivery.CurrentMessage)
 				.WithRecipient(ChannelEnvelope.LoopbackAddress)
 				.Send();
 		}
 		public virtual void ForwardMessage(IEnumerable<Uri> recipients)
 		{
-			this.ThrowWhenDisposed();
+			ThrowWhenDisposed();
 
 			if (recipients == null)
-				throw new ArgumentNullException(nameof(recipients));
+			{
+			    throw new ArgumentNullException(nameof(recipients));
+			}
 
-			var parsed = recipients.Where(x => x != null).ToArray();
+		    var parsed = recipients.Where(x => x != null).ToArray();
 			if (parsed.Length == 0)
-				throw new ArgumentException("No recipients specified.", nameof(recipients));
+			{
+			    throw new ArgumentException("No recipients specified.", nameof(recipients));
+			}
 
-			var dispatch = this._delivery.PrepareDispatch(this._delivery.CurrentMessage);
+		    var dispatch = _delivery.PrepareDispatch(_delivery.CurrentMessage);
 			foreach (var recipient in parsed)
-				dispatch = dispatch.WithRecipient(recipient);
+			{
+			    dispatch = dispatch.WithRecipient(recipient);
+			}
 
-			dispatch.Send();
+		    dispatch.Send();
 		}
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this._disposed)
-				return;
+			if (!_disposed)
+			{
+			    return;
+			}
 
-			Log.Warn("The handler context has already been disposed.");
+		    Log.Warn("The handler context has already been disposed.");
 			throw new ObjectDisposedException(typeof(DefaultHandlerContext).Name);
 		}
 
 		public DefaultHandlerContext(IDeliveryContext delivery)
 		{
 			if (delivery == null)
-				throw new ArgumentNullException(nameof(delivery));
+			{
+			    throw new ArgumentNullException(nameof(delivery));
+			}
 
-			this._delivery = delivery;
-			this._continueHandling = true;
+		    _delivery = delivery;
+			_continueHandling = true;
 		}
 		~DefaultHandlerContext()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			this._disposed = true;
-			this._continueHandling = false;
+			_disposed = true;
+			_continueHandling = false;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultHandlerContext));

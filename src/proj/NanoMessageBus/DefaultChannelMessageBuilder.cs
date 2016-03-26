@@ -9,19 +9,25 @@
 		public virtual void MarkAsTransient(Type messageType)
 		{
 			if (messageType == null)
-				throw new ArgumentNullException(nameof(messageType));
+			{
+			    throw new ArgumentNullException(nameof(messageType));
+			}
 
-			this._transient.Add(messageType);
+		    _transient.Add(messageType);
 		}
 		public virtual void MarkAsExpiring(Type messageType, TimeSpan timeToLive)
 		{
 			if (messageType == null)
-				throw new ArgumentNullException(nameof(messageType));
+			{
+			    throw new ArgumentNullException(nameof(messageType));
+			}
 
-			if (timeToLive <= TimeSpan.Zero)
-				throw new ArgumentException("The value must be positive", nameof(timeToLive));
+		    if (timeToLive <= TimeSpan.Zero)
+		    {
+		        throw new ArgumentException("The value must be positive", nameof(timeToLive));
+		    }
 
-			this._expirations[messageType] = timeToLive;
+		    _expirations[messageType] = timeToLive;
 		}
 
 		public virtual ChannelMessage Build(
@@ -38,15 +44,19 @@
 
 			var primaryType = message.Messages.Count > 0 ? message.Messages.First().GetType() : null;
 			if (primaryType == null)
-				return message;
+			{
+			    return message;
+			}
 
-			message.Persistent = !this._transient.Contains(primaryType);
+		    message.Persistent = !_transient.Contains(primaryType);
 
 			TimeSpan timeToLive;
-			if (this._expirations.TryGetValue(primaryType, out timeToLive))
-				message.Expiration = SystemTime.UtcNow + timeToLive;
+			if (_expirations.TryGetValue(primaryType, out timeToLive))
+			{
+			    message.Expiration = SystemTime.UtcNow + timeToLive;
+			}
 
-			return message;
+		    return message;
 		}
 
 		private readonly IDictionary<Type, TimeSpan> _expirations = new Dictionary<Type, TimeSpan>();

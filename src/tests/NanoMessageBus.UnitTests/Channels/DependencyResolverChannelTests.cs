@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 
 #pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
@@ -63,10 +64,10 @@ namespace NanoMessageBus.Channels
 	public class when_invoking_send_on_the_channel : with_the_dependency_resolver_channel
 	{
 		Because of = () =>
-			channel.Send(envelope);
+			channel.SendAsync(envelope).Await();
 
 		It should_directly_invoke_the_underlying_channel_using_the_envelope_provided = () =>
-			mockWrappedChannel.Verify(x => x.Send(envelope), Times.Once());
+			mockWrappedChannel.Verify(x => x.SendAsync(envelope), Times.Once());
 
 		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
 	}
@@ -154,25 +155,25 @@ namespace NanoMessageBus.Channels
 	public class when_initiating_shutdown_on_the_channel : with_the_dependency_resolver_channel
 	{
 		Because of = () =>
-			channel.BeginShutdown();
+			channel.ShutdownAsync().Await();
 
 		It should_directly_invoke_the_underlying_channel = () =>
-			mockWrappedChannel.Verify(x => x.BeginShutdown(), Times.Once());
+			mockWrappedChannel.Verify(x => x.ShutdownAsync(), Times.Once());
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
 	public class when_calling_receive_on_the_resolver_channel : with_the_dependency_resolver_channel
 	{
 		Because of = () =>
-			channel.Receive(callback);
+			channel.ReceiveAsync(callback).Await();
 
 		It should_provide_a_delegate_to_the_underlying_channel = () =>
-			mockWrappedChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
+			mockWrappedChannel.Verify(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()), Times.Once());
 
 		It should_NOT_provide_the_exact_same_delegate_to_the_channel_without_wrapping_it = () =>
-			mockWrappedChannel.Verify(x => x.Receive(callback), Times.Never());
+			mockWrappedChannel.Verify(x => x.ReceiveAsync(callback), Times.Never());
 
-		static readonly Action<IDeliveryContext> callback = context => { };
+		static readonly Func<IDeliveryContext, Task> callback = context => Task.FromResult(true);
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
@@ -187,18 +188,20 @@ namespace NanoMessageBus.Channels
 			mockOriginal.Setup(x => x.CurrentConfiguration).Returns(new Mock<IChannelGroupConfiguration>().Object);
 
 			mockWrappedChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Callback<Action<IDeliveryContext>>(x => x(mockOriginal.Object)); // it may not always be the underlying channel
+				.Setup(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()))
+				.Callback<Func<IDeliveryContext, Task>>(x => x(mockOriginal.Object)); // it may not always be the underlying channel
 		};
 
-		Because of = () => channel.Receive(context =>
-		{
-			delivery = context;
-			contextMessage = context.CurrentMessage;
-			contextTransaction = context.CurrentTransaction;
-			contextConfiguration = context.CurrentConfiguration;
-			contextResolver = context.CurrentResolver;
-		});
+		Because of = () => channel.ReceiveAsync(
+            context =>
+		    {
+			    delivery = context;
+			    contextMessage = context.CurrentMessage;
+			    contextTransaction = context.CurrentTransaction;
+			    contextConfiguration = context.CurrentConfiguration;
+			    contextResolver = context.CurrentResolver;
+		        return Task.FromResult(true);
+		    });
 
 		It should_create_a_nested_resolver = () =>
 			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
@@ -250,14 +253,14 @@ namespace NanoMessageBus.Channels
 		{
 			mockResolver.Setup(x => x.CreateNestedResolver()).Returns(mockNested.Object);
 			mockWrappedChannel
-				.Setup(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()))
-				.Callback<Action<IDeliveryContext>>(x => x(mockWrappedChannel.Object));
+				.Setup(x => x.ReceiveAsync(Moq.It.IsAny<Func<IDeliveryContext, Task>>()))
+				.Callback<Func<IDeliveryContext, Task>>(x => x(mockWrappedChannel.Object));
 		};
 
-		Because of = () => Try(() => channel.Receive(context =>
+		Because of = () => Try(() => channel.ReceiveAsync(context =>
 		{
 			throw new Exception();
-		}));
+		}).Await());
 
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());

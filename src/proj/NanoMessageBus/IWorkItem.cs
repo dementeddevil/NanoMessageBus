@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace NanoMessageBus
 {
 	using System;
@@ -23,6 +25,6 @@ namespace NanoMessageBus
 		/// Instructs the worker to perform the operation indicated.
 		/// </summary>
 		/// <param name="operation">The operation to be performed by the worker.</param>
-		void PerformOperation(Action operation);
+		Task PerformOperation(Func<Task> operation);
 	}
 }

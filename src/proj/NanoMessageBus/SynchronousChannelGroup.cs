@@ -15,46 +15,47 @@ namespace NanoMessageBus
 		public SynchronousChannelGroup(IChannelConnector connector, IChannelGroupConfiguration configuration)
 		{
 			if (connector == null)
-				throw new ArgumentNullException(nameof(connector));
+			{
+			    throw new ArgumentNullException(nameof(connector));
+			}
 
-			if (configuration == null)
-				throw new ArgumentNullException(nameof(configuration));
+		    if (configuration == null)
+		    {
+		        throw new ArgumentNullException(nameof(configuration));
+		    }
 
-			this._connector = connector;
-			this._configuration = configuration;
+		    _connector = connector;
+			_configuration = configuration;
 		}
 
         ~SynchronousChannelGroup()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
-		public virtual bool DispatchOnly
-		{
-			get { return this._configuration.DispatchOnly; }
-		}
+		public virtual bool DispatchOnly => _configuration.DispatchOnly;
 
-		public virtual void Initialize()
+        public virtual void Initialize()
 		{
-			this.ThrowWhenDisposed();
+			ThrowWhenDisposed();
 
-			Log.Info("Initializing channel group '{0}'.", this._configuration.GroupName);
-			this._initialized = true;
+			Log.Info("Initializing channel group '{0}'.", _configuration.GroupName);
+			_initialized = true;
 		}
 
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         public virtual IMessagingChannel OpenChannel()
 		{
-			this.ThrowWhenDisposed();
-			this.ThrowWhenUninitialized();
+			ThrowWhenDisposed();
+			ThrowWhenUninitialized();
 
-			Log.Debug("Opening a caller-owned channel for group '{0}'.", this._configuration.GroupName);
-			return this._connector.Connect(this._configuration.GroupName);
+			Log.Debug("Opening a caller-owned channel for group '{0}'.", _configuration.GroupName);
+			return _connector.Connect(_configuration.GroupName);
 		}
 
 		public virtual void BeginReceive(Func<IDeliveryContext, Task> callback)
@@ -69,29 +70,35 @@ namespace NanoMessageBus
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this._disposed)
-				return;
+			if (!_disposed)
+			{
+			    return;
+			}
 
-			Log.Warn("The channel group has been disposed.");
+		    Log.Warn("The channel group has been disposed.");
 			throw new ObjectDisposedException(typeof(DefaultChannelGroup).Name);
 		}
 
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (this._initialized)
-				return;
+			if (_initialized)
+			{
+			    return;
+			}
 
-			Log.Warn("The channel group has not been initialized.");
+		    Log.Warn("The channel group has not been initialized.");
 			throw new InvalidOperationException("The channel group has not been initialized.");
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing || this._disposed)
-				return;
+			if (!disposing || _disposed)
+			{
+			    return;
+			}
 
-			Log.Info("Channel group disposed.");
-			this._disposed = true;
+		    Log.Info("Channel group disposed.");
+			_disposed = true;
 		}
 	}
 }

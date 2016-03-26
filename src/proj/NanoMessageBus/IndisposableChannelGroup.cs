@@ -6,47 +6,44 @@ namespace NanoMessageBus
 
 	public class IndisposableChannelGroup : IChannelGroup
 	{
-		public virtual IChannelGroup Inner
-		{
-			get { return this._inner; }
-		}
-		public virtual bool DispatchOnly
-		{
-			get { return this._inner.DispatchOnly; }
-		}
+		public virtual IChannelGroup Inner => _inner;
 
-		public virtual void Initialize()
+	    public virtual bool DispatchOnly => _inner.DispatchOnly;
+
+	    public virtual void Initialize()
 		{
-			this._inner.Initialize();
+			_inner.Initialize();
 		}
 		public virtual IMessagingChannel OpenChannel()
 		{
-			return this._inner.OpenChannel();
+			return _inner.OpenChannel();
 		}
 		public virtual void BeginReceive(Func<IDeliveryContext, Task> callback)
 		{
-			this._inner.BeginReceive(callback);
+			_inner.BeginReceive(callback);
 		}
 		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
 		{
-			return this._inner.BeginDispatch(callback);
+			return _inner.BeginDispatch(callback);
 		}
 		
 		public IndisposableChannelGroup(IChannelGroup inner)
 		{
 			if (inner == null)
-				throw new ArgumentNullException(nameof(inner));
+			{
+			    throw new ArgumentNullException(nameof(inner));
+			}
 
-			this._inner = inner;
+		    _inner = inner;
 		}
 		~IndisposableChannelGroup()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		protected virtual void Dispose(bool disposing)
