@@ -3,24 +3,25 @@
 
 namespace NanoMessageBus
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using Machine.Specifications;
-	using Moq;
-	using It = Machine.Specifications.It;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Machine.Specifications;
+    using Moq;
+    using It = Machine.Specifications.It;
+    using FluentAssertions;
 
-	[Subject(typeof(DefaultDispatchContext))]
+    [Subject(typeof(DefaultDispatchContext))]
 	public class when_a_null_message_is_provided : with_a_dispatch_context
 	{
 		Because of = () =>
 			Try(() => dispatchContext.WithMessage(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		It should_NOT_increment_the_message_count = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -30,10 +31,10 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithMessages(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		It should_NOT_increment_the_message_count = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -43,10 +44,10 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithMessages());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 
 		It should_NOT_increment_the_message_count = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -56,10 +57,10 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithHeader(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		It should_NOT_increment_the_header_count = () =>
-			dispatchContext.HeaderCount.ShouldEqual(0);
+			dispatchContext.HeaderCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -69,10 +70,10 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithHeaders(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		It should_NOT_increment_the_header_count = () =>
-			dispatchContext.HeaderCount.ShouldEqual(0);
+			dispatchContext.HeaderCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -82,7 +83,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithRecipient(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -92,10 +93,10 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithMessage(0);
 
 		It should_return_an_instance_of_itself = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 
 		It should_increment_the_message_count = () =>
-			returnedContext.MessageCount.ShouldEqual(1);
+			returnedContext.MessageCount.Should().Be(1);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -108,13 +109,13 @@ namespace NanoMessageBus
 			dispatchContext.Send();
 
 		It should_add_the_message_provided_to_to_the_dispatched_message = () =>
-			messages[0].ShouldEqual("Hello, World!");
+			messages[0].Should().Be("Hello, World!");
 
 		It should_default_to_a_persistent_channel_message = () =>
-			message.Persistent.ShouldBeTrue();
+			message.Persistent.Should().BeTrue();
 
 		It should_reset_the_message_count_to_zero = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -124,10 +125,10 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithMessages(1, 2, 3, 4);
 
 		It should_return_an_instance_of_itself = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 
 		It should_increment_message_count_by_the_number_of_added_messages = () =>
-			returnedContext.MessageCount.ShouldEqual(4);
+			returnedContext.MessageCount.Should().Be(4);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -137,7 +138,7 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithMessage(new Mock<ChannelMessage>().Object);
 
 		It should_return_an_instance_of_the_channel_message_dispatch_context = () =>
-			returnedContext.ShouldBeOfType<DefaultChannelMessageDispatchContext>();
+			returnedContext.Should().BeOfType<DefaultChannelMessageDispatchContext>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -151,15 +152,15 @@ namespace NanoMessageBus
 
 		It should_add_each_message_provided_to_the_dispatched_message = () =>
 		{
-			messages[0].ShouldEqual("Hello, World!");
-			messages[1].ShouldEqual(42);
+			messages[0].Should().Be("Hello, World!");
+			messages[1].Should().Be(42);
 		};
 
 		It should_not_add_any_null_messages_to_the_dispatched_message = () =>
-			messages.Length.ShouldEqual(2);
+			messages.Length.Should().Be(2);
 
 		It should_reset_the_message_count_to_zero = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -169,7 +170,7 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithCorrelationId(Guid.Empty);
 
 		It should_return_an_instance_of_itself = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -182,7 +183,7 @@ namespace NanoMessageBus
 			dispatchContext.Send();
 
 		It should_add_correlation_identifier_dispatched_message = () =>
-			message.CorrelationId.ShouldEqual(correlationId);
+			message.CorrelationId.Should().Be(correlationId);
 
 		static readonly Guid correlationId = Guid.NewGuid();
 	}
@@ -194,10 +195,10 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithHeader(string.Empty, "value");
 
 		It should_return_an_instance_of_itself = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 
 		It should_increment_the_header_count = () =>
-			dispatchContext.HeaderCount.ShouldEqual(1);
+			dispatchContext.HeaderCount.Should().Be(1);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -207,10 +208,10 @@ namespace NanoMessageBus
 			dispatchContext.WithMessage(0).WithHeader("my-key", "Hello, World!").Send();
 
 		It should_append_the_header_to_the_set_of_headers_on_the_dispatched_message = () =>
-			headers["my-key"].ShouldEqual("Hello, World!");
+			headers["my-key"].Should().Be("Hello, World!");
 
 		It should_reset_the_header_count = () =>
-			dispatchContext.HeaderCount.ShouldEqual(0);
+			dispatchContext.HeaderCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -223,7 +224,7 @@ namespace NanoMessageBus
 			dispatchContext.WithHeader("my-key").Send();
 
 		It should_remove_the_header_from_the_set_of_headers_on_the_dispatched_message = () =>
-			headers.ContainsKey("my-key").ShouldBeFalse();
+			headers.ContainsKey("my-key").Should().BeFalse();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -233,10 +234,10 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithHeaders(added);
 
 		It should_return_an_instance_of_itself = () =>
-			returnedContext.HeaderCount.ShouldEqual(3);
+			returnedContext.HeaderCount.Should().Be(3);
 
 		It should_increment_the_header_count_by_the_number_of_headers_added = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 
 		static readonly IDictionary<string, string> added = new Dictionary<string, string>
 		{
@@ -263,12 +264,12 @@ namespace NanoMessageBus
 
 		It should_append_the_header_to_the_set_of_headers_on_the_dispatched_message = () =>
 		{
-			headers["a"].ShouldEqual("1");
-			headers["b"].ShouldEqual("2");
+			headers["a"].Should().Be("1");
+			headers["b"].Should().Be("2");
 		};
 
 		It should_reset_the_header_count_to_zero = () =>
-			dispatchContext.HeaderCount.ShouldEqual(0);
+			dispatchContext.HeaderCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -281,7 +282,7 @@ namespace NanoMessageBus
 			dispatchContext.WithHeader("key", "last").Send();
 
 		It should_overwrite_any_existing_value_on_the_headers_for_the_same_key_on_the_dispatched_message = () =>
-			headers["key"].ShouldEqual("last");
+			headers["key"].Should().Be("last");
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -291,7 +292,7 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithRecipient(ChannelEnvelope.LoopbackAddress);
 
 		It should_return_an_instance_of_itself = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -307,8 +308,8 @@ namespace NanoMessageBus
 
 		It should_dispatch_the_message_to_each_recipient = () =>
 		{
-			recipients[0].ShouldEqual(new Uri("http://www.google.com/"));
-			recipients[1].ShouldEqual(new Uri("http://www.yahoo.com/"));
+			recipients[0].Should().Be(new Uri("http://www.google.com/"));
+			recipients[1].Should().Be(new Uri("http://www.yahoo.com/"));
 		};
 	}
 
@@ -319,7 +320,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithState(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -329,7 +330,7 @@ namespace NanoMessageBus
 			dispatchContext.WithMessage(0).WithState("Hello, World!").Send();
 
 		It should_append_the_state_to_the_dispatched_envelope = () =>
-			envelope.State.ShouldEqual("Hello, World!");
+			envelope.State.Should().Be("Hello, World!");
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -339,7 +340,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Send());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -349,7 +350,7 @@ namespace NanoMessageBus
 			dispatchContext.WithMessage(string.Empty).Send();
 
 		It should_append_the_incoming_message_to_the_dispatch_envelope_state = () =>
-			envelope.State.ShouldEqual(mockMessage.Object);
+			envelope.State.Should().Be(mockMessage.Object);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -374,19 +375,19 @@ namespace NanoMessageBus
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Once());
 
 		It should_send_the_dispatched_message_to_the_recipients_on_the_dispatch_table = () =>
-			recipients[0].ShouldEqual(new Uri("http://recipient"));
+			recipients[0].Should().Be(new Uri("http://recipient"));
 
 		It should_also_send_the_dispatched_message_to_any_added_recipients = () =>
-			recipients[1].ShouldEqual(new Uri("http://added"));
+			recipients[1].Should().Be(new Uri("http://added"));
 
 		It should_set_the_return_address_to_the_configured_value = () =>
-			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+			message.ReturnAddress.Should().Be(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
 
 		It should_append_the_state_to_the_dispatched_envelope = () =>
-			envelope.State.ShouldEqual(state);
+			envelope.State.Should().Be(state);
 
 		It should_return_the_current_transaction = () =>
-			transaction.ShouldEqual(mockTransaction.Object);
+			transaction.Should().Be(mockTransaction.Object);
 
 		static readonly Guid state = Guid.NewGuid();
 	}
@@ -398,7 +399,7 @@ namespace NanoMessageBus
 			dispatchContext.Send(0, 1, 2, 3);
 
 		It should_append_each_message_to_the_dispatched_envelope = () =>
-			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).ShouldBeTrue();
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).Should().BeTrue();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -408,7 +409,7 @@ namespace NanoMessageBus
 			dispatchContext.Publish(0, 1, 2, 3);
 
 		It should_append_each_message_to_the_dispatched_envelope = () =>
-			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).ShouldBeTrue();
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).Should().BeTrue();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -418,7 +419,7 @@ namespace NanoMessageBus
 			dispatchContext.Reply(0, 1, 2, 3);
 
 		It should_append_each_message_to_the_dispatched_envelope = () =>
-			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).ShouldBeTrue();
+			envelope.Message.Messages.SequenceEqual(new object[] { 0, 1, 2, 3 }).Should().BeTrue();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -431,7 +432,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Send());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -453,16 +454,16 @@ namespace NanoMessageBus
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Once());
 
 		It should_publish_the_dispatched_message_to_the_recipients_on_the_dispatch_table = () =>
-			recipients[0].ShouldEqual(new Uri("http://recipient"));
+			recipients[0].Should().Be(new Uri("http://recipient"));
 
 		It should_also_publish_the_dispatched_message_to_any_added_recipients = () =>
-			recipients[1].ShouldEqual(new Uri("http://added"));
+			recipients[1].Should().Be(new Uri("http://added"));
 
 		It should_set_the_return_address_to_the_configured_value = () =>
-			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+			message.ReturnAddress.Should().Be(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
 
 		It should_return_the_current_transaction = () =>
-			transaction.ShouldEqual(mockTransaction.Object);
+			transaction.Should().Be(mockTransaction.Object);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -475,7 +476,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Publish());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -495,16 +496,16 @@ namespace NanoMessageBus
 			mockDispatchTable.Verify(x => x[typeof(int)], Times.Never());
 
 		It should_set_the_return_address_to_the_configured_value = () =>
-			message.ReturnAddress.ShouldEqual(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
+			message.ReturnAddress.Should().Be(mockDelivery.Object.CurrentConfiguration.ReturnAddress);
 
 		It should_send_the_reply_message_to_incoming_message_return_address = () =>
-			recipients[0].ShouldEqual(IncomingReturnAddress);
+			recipients[0].Should().Be(IncomingReturnAddress);
 
 		It should_use_the_correlation_identifier_from_the_incoming_message = () =>
-			message.CorrelationId.ShouldEqual(incomingCorrelationId);
+			message.CorrelationId.Should().Be(incomingCorrelationId);
 
 		It should_return_the_current_transaction = () =>
-			transaction.ShouldEqual(mockTransaction.Object);
+			transaction.Should().Be(mockTransaction.Object);
 
 		static readonly Guid incomingCorrelationId = Guid.NewGuid();
 	}
@@ -519,7 +520,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Reply());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -532,7 +533,7 @@ namespace NanoMessageBus
 			dispatchContext.Reply();
 
 		It should_use_the_correlation_identifier_specified = () =>
-			message.CorrelationId.ShouldEqual(specifiedCorrelationId);
+			message.CorrelationId.Should().Be(specifiedCorrelationId);
 
 		static readonly Guid specifiedCorrelationId = Guid.NewGuid();
 	}
@@ -547,7 +548,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Reply());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -557,7 +558,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Send());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -567,7 +568,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Publish());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -577,7 +578,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Reply());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -590,7 +591,7 @@ namespace NanoMessageBus
 			dispatchContext.Send();
 
 		It should_send_the_message_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.UnroutableMessageAddress);
+			recipients[0].Should().Be(ChannelEnvelope.UnroutableMessageAddress);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -603,7 +604,7 @@ namespace NanoMessageBus
 			dispatchContext.Publish();
 
 		It should_send_the_message_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.UnroutableMessageAddress);
+			recipients[0].Should().Be(ChannelEnvelope.UnroutableMessageAddress);
 	}
 
 	[Subject(typeof(DefaultDispatchContext))]
@@ -619,7 +620,7 @@ namespace NanoMessageBus
 			dispatchContext.Reply();
 
 		It should_send_the_message_to_the_dead_letter_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.UnroutableMessageAddress);
+			recipients[0].Should().Be(ChannelEnvelope.UnroutableMessageAddress);
 	}
 
 	public abstract class with_a_dispatch_context

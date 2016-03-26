@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -15,7 +17,7 @@ namespace NanoMessageBus
 			Try(() => Build(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]
@@ -25,7 +27,7 @@ namespace NanoMessageBus
 			Build(mockRootContainer.Object);
 
 		It should_expose_the_actual_container_provided = () =>
-			rootResolver.As<IDisposable>().ShouldEqual(mockRootContainer.Object);
+			rootResolver.As<IDisposable>().Should().Be(mockRootContainer.Object);
 	}
 
 	[Subject(typeof(DefaultDependencyResolver<IDisposable>))]
@@ -68,13 +70,13 @@ namespace NanoMessageBus
 			nestedResolver = rootResolver.CreateNestedResolver();
 
 		It should_provide_the_parent_container_to_the_callback_as_a_parameter = () =>
-			parentContainerProvided.ShouldEqual(mockRootContainer.Object);
+			parentContainerProvided.Should().Be(mockRootContainer.Object);
 
 		It should_provide_the_name_provided_to_the_callback_as_a_parameter = () =>
-			depthProvided.ShouldEqual(1);
+			depthProvided.Should().Be(1);
 
 		It should_return_a_reference_to_the_nested_container = () =>
-			nestedResolver.As<IDisposable>().ShouldEqual(mockNestedContainer.Object);
+			nestedResolver.As<IDisposable>().Should().Be(mockNestedContainer.Object);
 
 		static IDisposable parentContainerProvided;
 		static int depthProvided;

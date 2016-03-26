@@ -21,13 +21,13 @@
 			if (graph == null)
 				return;
 
-			this.formatter.Serialize(destination, graph);
+			this._formatter.Serialize(destination, graph);
 		}
 		public virtual object Deserialize(Stream source, Type type, string format, string contentEncoding = "")
 		{
-			return this.formatter.Deserialize(source);
+			return this._formatter.Deserialize(source);
 		}
 
-		private readonly IFormatter formatter = new BinaryFormatter();
+		private readonly IFormatter _formatter = new BinaryFormatter();
 	}
 }

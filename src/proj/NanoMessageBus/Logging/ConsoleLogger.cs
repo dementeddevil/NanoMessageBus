@@ -60,27 +60,27 @@ namespace NanoMessageBus.Logging
 
 		protected virtual void Log(ConsoleColor color, Threshold severity, string message, params object[] values)
 		{
-			if (severity < this.threshold)
+			if (severity < this._threshold)
 				return;
 
 			lock (Sync)
 			{
 				Console.ForegroundColor = color;
 
-				Console.WriteLine(message.FormatMessage(this.typeToLog, values));
-				Console.ForegroundColor = this.originalColor;
+				Console.WriteLine(message.FormatMessage(this._typeToLog, values));
+				Console.ForegroundColor = this._originalColor;
 			}
 		}
 
 		public ConsoleLogger(Type typeToLog, Threshold threshold = Threshold.Info)
 		{
-			this.typeToLog = typeToLog;
-			this.threshold = threshold;
+			this._typeToLog = typeToLog;
+			this._threshold = threshold;
 		}
 
 		private static readonly object Sync = new object();
-		private readonly ConsoleColor originalColor = Console.ForegroundColor;
-		private readonly Type typeToLog;
-		private readonly Threshold threshold;
+		private readonly ConsoleColor _originalColor = Console.ForegroundColor;
+		private readonly Type _typeToLog;
+		private readonly Threshold _threshold;
 	}
 }

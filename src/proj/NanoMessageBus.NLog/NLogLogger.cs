@@ -14,7 +14,7 @@ namespace NanoMessageBus.Logging
 		public void Verbose(string message, Exception exception)
 		{
 			if (this.trace)
-				this.log.TraceException(message, exception);
+				this.log.Trace(exception, message);
 		}
 
 		public virtual void Debug(string message, params object[] values)
@@ -25,7 +25,7 @@ namespace NanoMessageBus.Logging
 		public void Debug(string message, Exception exception)
 		{
 			if (this.debug)
-				this.log.DebugException(message, exception);
+				this.log.Debug(exception, message);
 		}
 
 		public virtual void Info(string message, params object[] values)
@@ -34,7 +34,7 @@ namespace NanoMessageBus.Logging
 		}
 		public void Info(string message, Exception exception)
 		{
-			this.log.InfoException(message, exception);
+			this.log.Info(exception, message);
 		}
 
 		public virtual void Warn(string message, params object[] values)
@@ -43,7 +43,7 @@ namespace NanoMessageBus.Logging
 		}
 		public void Warn(string message, Exception exception)
 		{
-			this.log.WarnException(message, exception);
+			this.log.Warn(exception, message);
 		}
 
 		public virtual void Error(string message, params object[] values)
@@ -52,7 +52,7 @@ namespace NanoMessageBus.Logging
 		}
 		public void Error(string message, Exception exception)
 		{
-			this.log.ErrorException(message, exception);
+			this.log.Error(exception, message);
 		}
 
 		public virtual void Fatal(string message, params object[] values)
@@ -61,7 +61,7 @@ namespace NanoMessageBus.Logging
 		}
 		public void Fatal(string message, Exception exception)
 		{
-			this.log.FatalException(message, exception);
+			this.log.Fatal(exception, message);
 		}
 
 		public NLogLogger(Type typeToLog)

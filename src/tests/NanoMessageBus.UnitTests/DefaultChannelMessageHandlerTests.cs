@@ -1,4 +1,7 @@
-﻿#pragma warning disable 169, 414
+﻿using System.Threading.Tasks;
+using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -17,7 +20,7 @@ namespace NanoMessageBus
 			TryBuild(null, mockRoutes.Object);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -27,7 +30,7 @@ namespace NanoMessageBus
 			TryBuild(mockHandlerContext.Object, null);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -37,7 +40,7 @@ namespace NanoMessageBus
 			deliveredMessage = BuildMessage(new object[] { "1", 2, 3.0 });
 
 		Because of = () =>
-			handler.Handle(deliveredMessage);
+			handler.HandleAsync(deliveredMessage).Await();
 
 		It should_route_each_logical_message_back_to_the_underlying_routing_table = () =>
 		{
@@ -47,7 +50,7 @@ namespace NanoMessageBus
 		};
 
 		It should_reset_the_current_message_index = () =>
-			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+			deliveredMessage.ActiveIndex.Should().Be(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -60,10 +63,10 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			Try(() => handler.Handle(deliveredMessage));
+			Try(() => handler.HandleAsync(deliveredMessage).Await());
 
 		It should_reset_the_current_message_index = () =>
-			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+			deliveredMessage.ActiveIndex.Should().Be(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -78,7 +81,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handler.Handle(deliveredMessage);
+			handler.HandleAsync(deliveredMessage).Await();
 
 		It should_route_each_logical_message_back_to_the_underlying_routing_table = () =>
 		{
@@ -87,7 +90,7 @@ namespace NanoMessageBus
 		};
 
 		It should_reset_the_current_message_index = () =>
-			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+			deliveredMessage.ActiveIndex.Should().Be(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -97,16 +100,16 @@ namespace NanoMessageBus
 			deliveredMessage = BuildMessage(new object[] { 0 });
 
 		Because of = () =>
-			handler.Handle(deliveredMessage);
+			handler.HandleAsync(deliveredMessage).Await();
 
 		It should_put_the_incoming_channel_message_into_a_channel_envelope = () =>
-			sentMessage.ShouldEqual(deliveredMessage);
+			sentMessage.Should().Be(deliveredMessage);
 
 		It should_send_the_envelope_to_the_unhandled_message_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.UnhandledMessageAddress);
+			recipients[0].Should().Be(ChannelEnvelope.UnhandledMessageAddress);
 
 		It should_reset_the_current_message_index = () =>
-			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+			deliveredMessage.ActiveIndex.Should().Be(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -119,13 +122,13 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handler.Handle(deliveredMessage);
+			handler.HandleAsync(deliveredMessage).Await();
 
 		It should_NEVER_send_the_incoming_channel_message_to_the_dead_letter_address = () =>
-			sentMessage.ShouldBeNull();
+			sentMessage.Should().BeNull();
 
 		It should_reset_the_current_message_index = () =>
-			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+			deliveredMessage.ActiveIndex.Should().Be(-1);
 	}
 
 	[Subject(typeof(DefaultChannelMessageHandler))]
@@ -140,33 +143,33 @@ namespace NanoMessageBus
 				new Dictionary<string, string>(),
 				new object[] { 1, "2", 3.0, 4.0M });
 
-			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 1)).Returns(1); // message is handled
-			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 3.0)).Returns(1); // message is handled
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 1)).Returns(Task.FromResult(1)); // message is handled
+			mockRoutes.Setup(x => x.Route(mockHandlerContext.Object, 3.0)).Returns(Task.FromResult(1)); // message is handled
 		};
 
 		Because of = () =>
-			handler.Handle(deliveredMessage);
+			handler.HandleAsync(deliveredMessage).Await();
 
 		It should_put_the_ignored_messages_into_a_channel_message = () =>
-			sentMessage.Messages.SequenceEqual(new object[] { "2", 4.0M }).ShouldBeTrue();
+			sentMessage.Messages.SequenceEqual(new object[] { "2", 4.0M }).Should().BeTrue();
 
 		It should_add_a_unique_message_identifier_to_the_outgoing_channel_message = () =>
-			sentMessage.MessageId.ShouldNotEqual(deliveredMessage.MessageId);
+			sentMessage.MessageId.Should().NotBe(deliveredMessage.MessageId);
 
 		It should_add_the_incoming_correlation_identifier_to_the_outgoing_channel_message = () =>
-			sentMessage.CorrelationId.ShouldEqual(deliveredMessage.CorrelationId);
+			sentMessage.CorrelationId.Should().Be(deliveredMessage.CorrelationId);
 
 		It should_add_the_incoming_return_address_to_the_outgoing_channel_message = () =>
-			sentMessage.ReturnAddress.ShouldEqual(deliveredMessage.ReturnAddress);
+			sentMessage.ReturnAddress.Should().Be(deliveredMessage.ReturnAddress);
 
 		It should_add_the_incoming_message_headers_to_the_outgoing_channel_message = () =>
-			ReferenceEquals(sentMessage.Headers, deliveredMessage.Headers).ShouldBeTrue();
+			ReferenceEquals(sentMessage.Headers, deliveredMessage.Headers).Should().BeTrue();
 
 		It should_forward_the_channel_envelope_to_the_unhandled_message_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.UnhandledMessageAddress);
+			recipients[0].Should().Be(ChannelEnvelope.UnhandledMessageAddress);
 
 		It should_reset_the_current_message_index = () =>
-			deliveredMessage.ActiveIndex.ShouldEqual(-1);
+			deliveredMessage.ActiveIndex.Should().Be(-1);
 
 		static readonly Guid messageId = Guid.NewGuid();
 		static readonly Guid correlationId = Guid.NewGuid();

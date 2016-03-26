@@ -30,8 +30,8 @@
 		}
 		private HttpContextBase GetCurrentContext(ChannelEnvelope envelope)
 		{
-			if (this.httpContext != null)
-				return this.httpContext;
+			if (this._httpContext != null)
+				return this._httpContext;
 
 			if (envelope.State == null)
 				return null;
@@ -67,7 +67,7 @@
 
 		public HttpRequestAuditor(HttpContextBase httpContext)
 		{
-			this.httpContext = httpContext;
+			this._httpContext = httpContext;
 		}
 		~HttpRequestAuditor()
 		{
@@ -88,6 +88,6 @@
 		private const string ProxiedClient = "X-Forwarded-For";
 		private const string UserAddressFormat = "{0}, {1}";
 		private static readonly Uri EmptyUrl = new Uri("http://localhost", UriKind.Absolute);
-		private readonly HttpContextBase httpContext;
+		private readonly HttpContextBase _httpContext;
 	}
 }

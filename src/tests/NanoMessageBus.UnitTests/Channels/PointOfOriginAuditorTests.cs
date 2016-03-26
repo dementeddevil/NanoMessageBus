@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -18,7 +20,7 @@ namespace NanoMessageBus.Channels
 			Try(() => auditor.AuditReceive(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
@@ -37,7 +39,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditReceive(mockDelivery.Object);
 
 		It should_correct_the_origin_dispatch_date_of_the_message = () =>
-			message.Dispatched.ShouldEqual(Dispatched);
+			message.Dispatched.Should().Be(Dispatched);
 
 		static Mock<IDeliveryContext> mockDelivery;
 		static ChannelMessage message;
@@ -51,7 +53,7 @@ namespace NanoMessageBus.Channels
 			Try(() => auditor.AuditSend(null, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
@@ -67,16 +69,16 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_the_originating_machine_name_to_the_headers = () =>
-			messageHeaders["x-audit-origin-host"].ShouldEqual(Environment.MachineName.ToLowerInvariant());
+			messageHeaders["x-audit-origin-host"].Should().Be(Environment.MachineName.ToLowerInvariant());
 
 		It should_append_the_current_time_to_the_headers = () =>
-			messageHeaders["x-audit-dispatched"].ShouldEqual(SystemTime.UtcNow.ToString("o"));
+			messageHeaders["x-audit-dispatched"].Should().Be(SystemTime.UtcNow.ToString("o"));
 
 		It should_append_the_originating_process_id_to_the_headers = () =>
-			messageHeaders["x-audit-origin-process-id"].ShouldEqual(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
+			messageHeaders["x-audit-origin-process-id"].Should().Be(Process.GetCurrentProcess().Id.ToString(CultureInfo.InvariantCulture));
 
 		It should_append_the_originating_process_name_to_the_headers = () =>
-			messageHeaders["x-audit-origin-process-name"].ShouldEqual(Process.GetCurrentProcess().ProcessName);
+			messageHeaders["x-audit-origin-process-name"].Should().Be(Process.GetCurrentProcess().ProcessName);
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
@@ -95,16 +97,16 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_NOT_modify_the_originating_machine_header = () =>
-			messageHeaders["x-audit-origin-host"].ShouldEqual("a");
+			messageHeaders["x-audit-origin-host"].Should().Be("a");
 
 		It should_NOT_modify_the_originating_dispatch_stamp = () =>
-			messageHeaders["x-audit-dispatched"].ShouldEqual("b");
+			messageHeaders["x-audit-dispatched"].Should().Be("b");
 
 		It should_NOT_modify_the_originating_process_id = () =>
-			messageHeaders["x-audit-origin-process-id"].ShouldEqual("c");
+			messageHeaders["x-audit-origin-process-id"].Should().Be("c");
 
 		It should_NOT_modify_the_originating_process_name = () =>
-			messageHeaders["x-audit-origin-process-name"].ShouldEqual("d");
+			messageHeaders["x-audit-origin-process-name"].Should().Be("d");
 	}
 
 	[Subject(typeof(PointOfOriginAuditor))]
@@ -120,10 +122,10 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, mockDelivery.Object);
 
 		It should_NOT_modify_the_incoming_machine_header = () =>
-			messageHeaders.ContainsKey("x-audit-origin-host").ShouldBeFalse();
+			messageHeaders.ContainsKey("x-audit-origin-host").Should().BeFalse();
 
 		It should_NOT_modify_the_incoming_dispatch_stamp = () =>
-			messageHeaders.ContainsKey("x-audit-dispatched").ShouldBeFalse();
+			messageHeaders.ContainsKey("x-audit-dispatched").Should().BeFalse();
 
 		static Mock<IDeliveryContext> mockDelivery;
 	}
@@ -135,7 +137,7 @@ namespace NanoMessageBus.Channels
 			Try(auditor.Dispose);
 
 		It should_do_nothing = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	public abstract class using_the_point_of_origin_auditor

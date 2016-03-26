@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -15,7 +17,7 @@ namespace NanoMessageBus
 			Try(() => Factory.Build(null, mockConfig.Object));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroupFactory))]
@@ -25,7 +27,7 @@ namespace NanoMessageBus
 			Try(() => Factory.Build(Connector, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroupFactory))]
@@ -35,7 +37,7 @@ namespace NanoMessageBus
 			group = Factory.Build(Connector, mockConfig.Object);
 
 		It should_create_a_channel_group = () =>
-			group.ShouldBeOfType<DefaultChannelGroup>();
+			group.Should().BeOfType<DefaultChannelGroup>();
 
 		static IChannelGroup group;
 	}
@@ -50,7 +52,7 @@ namespace NanoMessageBus
 			group = Factory.Build(Connector, mockConfig.Object);
 
 		It should_create_a_channel_group = () =>
-			group.ShouldBeOfType<SynchronousChannelGroup>();
+			group.Should().BeOfType<SynchronousChannelGroup>();
 
 		static IChannelGroup group;
 	}

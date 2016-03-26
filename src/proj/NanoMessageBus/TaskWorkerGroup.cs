@@ -13,22 +13,22 @@
 		public virtual void Initialize(Func<T> state, Func<bool> restart)
 		{
 			if (state == null)
-				throw new ArgumentNullException("state");
+				throw new ArgumentNullException(nameof(state));
 
 			if (restart == null)
-				throw new ArgumentNullException("restart");
+				throw new ArgumentNullException(nameof(restart));
 
 			Log.Debug("Initializing.");
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Initialize).");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenInitialized();
 
-				this.initialized = true;
-				this.stateCallback = state;
-				this.restartCallback = restart;
+				this._initialized = true;
+				this._stateCallback = state;
+				this._restartCallback = restart;
 				Log.Verbose("Exiting critical section (Initialize).");
 			}
 		}
@@ -36,7 +36,7 @@
 		public virtual void StartActivity(Action<IWorkItem<T>> activity)
 		{
 			if (activity == null)
-				throw new ArgumentNullException("activity");
+				throw new ArgumentNullException(nameof(activity));
 
 			Log.Debug("Starting worker activity.");
 			this.TryStartWorkers((worker, token) => activity(worker));
@@ -45,23 +45,23 @@
 		{
 			Log.Debug("Attempting to start workers.");
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (TryStartWorkers).");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenAlreadyStarted();
 
-				this.started = true;
-				this.tokenSource = new CancellationTokenSource();
-				this.activityCallback = activity;
-				this.workers.Clear();
+				this._started = true;
+				this._tokenSource = new CancellationTokenSource();
+				this._activityCallback = activity;
+				this._workers.Clear();
 
-				var token = this.tokenSource.Token; // copy on the stack
+				var token = this._tokenSource.Token; // copy on the stack
 
-				Log.Debug("Creating {0} workers.", this.minWorkers);
-				for (var i = 0; i < this.minWorkers; i++)
-					this.workers.Add(this.StartWorker(() => this.RunActivity(token, activity)));
+				Log.Debug("Creating {0} workers.", this._minWorkers);
+				for (var i = 0; i < this._minWorkers; i++)
+					this._workers.Add(this.StartWorker(() => this.RunActivity(token, activity)));
 
 				Log.Verbose("Exiting critical section (TryStartWorkers).");
 			}
@@ -73,7 +73,7 @@
 		}
 		protected virtual void RunActivity(CancellationToken token, Action<IWorkItem<T>, CancellationToken> activity)
 		{
-			using (var state = this.stateCallback())
+			using (var state = this._stateCallback())
 			{
 				if (state == null)
 				{
@@ -82,7 +82,7 @@
 				}
 
 				Log.Verbose("Creating worker.");
-				var worker = new TaskWorker<T>(state, token, this.minWorkers, this.maxWorkers);
+				var worker = new TaskWorker<T>(state, token, this._minWorkers, this._maxWorkers);
 
 				Log.Verbose("Starting activity.");
 				activity(worker, token);
@@ -92,14 +92,14 @@
 		public virtual bool Enqueue(Action<IWorkItem<T>> workItem)
 		{
 			if (workItem == null)
-				throw new ArgumentNullException("workItem");
+				throw new ArgumentNullException(nameof(workItem));
 
 			try
 			{
 				this.DiscardItem();
 
 				Log.Verbose("Adding new work item.");
-				this.workItems.Add(workItem);
+				this._workItems.Add(workItem);
 				return true;
 			}
 			catch (InvalidOperationException)
@@ -110,14 +110,14 @@
 		}
 		protected virtual void DiscardItem()
 		{
-			if (this.workItems.Count < this.maxQueueSize)
+			if (this._workItems.Count < this._maxQueueSize)
 				return;
 
 			Log.Debug("Work item buffer capacity of {0} items reached, discarding earliest work item.",
-				this.maxQueueSize);
+				this._maxQueueSize);
 
 			Action<IWorkItem<T>> overflow;
-			this.workItems.TryTake(out overflow);
+			this._workItems.TryTake(out overflow);
 		}
 
 		public virtual void StartQueue()
@@ -129,7 +129,7 @@
 		{
 			try
 			{
-				foreach (var item in this.workItems.GetConsumingEnumerable(token))
+				foreach (var item in this._workItems.GetConsumingEnumerable(token))
 					item(worker);
 			}
 			catch (OperationCanceledException)
@@ -142,29 +142,29 @@
 		{
 			Log.Info("Attempting to restart worker group.");
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Restart).");
 
-				if (this.restarting)
+				if (this._restarting)
 				{
 					Log.Verbose("Exiting critical section (Restart)--already restarting.");
 					return;
 				}
 
-				this.restarting = true;
+				this._restarting = true;
 
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenNotStarted();
 
 				Log.Verbose("Canceling active workers.");
-				this.tokenSource.Cancel(); // GC will perform dispose
-				this.tokenSource = new CancellationTokenSource();
-				var token = this.tokenSource.Token;
+				this._tokenSource.Cancel(); // GC will perform dispose
+				this._tokenSource = new CancellationTokenSource();
+				var token = this._tokenSource.Token;
 
-				this.workers.Clear();
-				this.workers.Add(this.StartWorker(() => this.Restart(token)));
+				this._workers.Clear();
+				this._workers.Add(this.StartWorker(() => this.Restart(token)));
 
 				Log.Verbose("Exiting critical section (Restart).");
 			}
@@ -172,19 +172,19 @@
 		protected virtual void Restart(CancellationToken token)
 		{
 			Log.Verbose("Starting single restart worker via the circuit-breaker pattern.");
-			while (!token.IsCancellationRequested && !this.restartCallback())
+			while (!token.IsCancellationRequested && !this._restartCallback())
 			{
 				// FUTURE: sleep for 500ms at a time to check if token has been cancelled
 				// as part of that polling, we also check (but at increasing intervals) to
 				// determine the activity can be restarted
 				Log.Debug("Restart attempt failed, sleeping...");
-				this.retrySleepTimeout.Sleep();
+				this._retrySleepTimeout.Sleep();
 			}
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Restart+CancellationToken).");
-				if (this.disposed)
+				if (this._disposed)
 				{
 					Log.Debug("Unable to resume activity, worker group has been disposed.");
 					Log.Verbose("Exiting critical section (Restart+CancellationToken)--already disposed.");
@@ -192,8 +192,8 @@
 				}
 
 				Log.Info("Restart attempt succeeded, shutting down single worker and resuming previous activity.");
-				this.started = this.restarting = false;
-				this.TryStartWorkers(this.activityCallback);
+				this._started = this._restarting = false;
+				this.TryStartWorkers(this._activityCallback);
 
 				Log.Verbose("Exiting critical section (Restart+CancellationToken).");
 			}
@@ -201,7 +201,7 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this.disposed)
+			if (!this._disposed)
 				return;
 
 			Log.Warn("The work group has been disposed.");
@@ -209,7 +209,7 @@
 		}
 		protected virtual void ThrowWhenInitialized()
 		{
-			if (!this.initialized)
+			if (!this._initialized)
 				return;
 
 			Log.Warn("The worker group has already been initialized.");
@@ -217,7 +217,7 @@
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (this.initialized)
+			if (this._initialized)
 				return;
 
 			Log.Warn("The worker group has not been initialized.");
@@ -225,7 +225,7 @@
 		}
 		protected virtual void ThrowWhenAlreadyStarted()
 		{
-			if (!this.started)
+			if (!this._started)
 				return;
 
 			Log.Warn("The worker group has already been started.");
@@ -233,7 +233,7 @@
 		}
 		protected virtual void ThrowWhenNotStarted()
 		{
-			if (this.started)
+			if (this._started)
 				return;
 
 			Log.Warn("The worker group has not yet been started.");
@@ -242,20 +242,20 @@
 
 		public virtual IEnumerable<Task> Workers
 		{
-			get { return this.workers; } // for test purposes only
+			get { return this._workers; } // for test purposes only
 		}
 
 		public TaskWorkerGroup(int minWorkers, int maxWorkers, int maxQueueSize)
 		{
 			if (minWorkers <= 0)
-				throw new ArgumentException("The minimum number of workers is 1.", "minWorkers");
+				throw new ArgumentException("The minimum number of workers is 1.", nameof(minWorkers));
 
 			if (maxWorkers < minWorkers)
-				throw new ArgumentException("The maximum number of workers must be at least equal to the minimum number of workers.", "maxWorkers");
+				throw new ArgumentException("The maximum number of workers must be at least equal to the minimum number of workers.", nameof(maxWorkers));
 
-			this.minWorkers = minWorkers;
-			this.maxWorkers = maxWorkers;
-			this.maxQueueSize = maxQueueSize;
+			this._minWorkers = minWorkers;
+			this._maxWorkers = maxWorkers;
+			this._maxQueueSize = maxQueueSize;
 		}
 		~TaskWorkerGroup()
 		{
@@ -273,20 +273,20 @@
 				return;
 
 			Log.Verbose("Disposing worker group.");
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Dispose).");
-				if (this.disposed)
+				if (this._disposed)
 				{
 					Log.Verbose("Exiting critical section (Dispose)--already disposed.");
 					return;
 				}
 
-				this.disposed = true;
+				this._disposed = true;
 
-				this.workItems.CompleteAdding();
+				this._workItems.CompleteAdding();
 
-				if (this.tokenSource == null)
+				if (this._tokenSource == null)
 				{
 					Log.Verbose("No active token to be canceled.");
 					Log.Verbose("Exiting critical section (Dispose)--no token to dispose.");
@@ -294,8 +294,8 @@
 				}
 
 				Log.Verbose("Canceling active token.");
-				this.tokenSource.Cancel();
-				this.workers.Clear();
+				this._tokenSource.Cancel();
+				this._workers.Clear();
 
 				Log.Debug("Worker group disposed.");
 				Log.Verbose("Exiting critical section (Dispose).");
@@ -305,20 +305,20 @@
 // ReSharper disable StaticFieldInGenericType
 		private static readonly ILog Log = LogFactory.Build(typeof(TaskWorkerGroup<>));
 // ReSharper restore StaticFieldInGenericType
-		private readonly TimeSpan retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
-		private readonly object sync = new object();
-		private readonly BlockingCollection<Action<IWorkItem<T>>> workItems = new BlockingCollection<Action<IWorkItem<T>>>();
-		private readonly ICollection<Task> workers = new LinkedList<Task>();
-		private readonly int minWorkers;
-		private readonly int maxWorkers;
-		private readonly int maxQueueSize;
-		private CancellationTokenSource tokenSource;
-		private Action<IWorkItem<T>, CancellationToken> activityCallback;
-		private Func<T> stateCallback;
-		private Func<bool> restartCallback;
-		private bool initialized;
-		private bool started;
-		private bool disposed;
-		private bool restarting;
+		private readonly TimeSpan _retrySleepTimeout = TimeSpan.FromMilliseconds(2500); // 2.5 seconds
+		private readonly object _sync = new object();
+		private readonly BlockingCollection<Action<IWorkItem<T>>> _workItems = new BlockingCollection<Action<IWorkItem<T>>>();
+		private readonly ICollection<Task> _workers = new LinkedList<Task>();
+		private readonly int _minWorkers;
+		private readonly int _maxWorkers;
+		private readonly int _maxQueueSize;
+		private CancellationTokenSource _tokenSource;
+		private Action<IWorkItem<T>, CancellationToken> _activityCallback;
+		private Func<T> _stateCallback;
+		private Func<bool> _restartCallback;
+		private bool _initialized;
+		private bool _started;
+		private bool _disposed;
+		private bool _restarting;
 	}
 }

@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -15,7 +17,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new PooledDispatchChannel(null, mockChannel.Object, 1));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -25,7 +27,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new PooledDispatchChannel(mockConnector.Object, null, 1));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -35,7 +37,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new PooledDispatchChannel(mockConnector.Object, mockChannel.Object, -1));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -51,19 +53,19 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_ALWAYS_return_null = () =>
-			channel.CurrentMessage.ShouldBeNull();
+			channel.CurrentMessage.Should().BeNull();
 
 		It should_expose_the_active_state_from_the_underlying_channel = () =>
-			channel.Active.ShouldEqual(mockChannel.Object.Active);
+			channel.Active.Should().Be(mockChannel.Object.Active);
 
 		It should_expose_the_current_resolver_from_the_underlying_channel = () =>
-			channel.CurrentResolver.ShouldEqual(mockChannel.Object.CurrentResolver);
+			channel.CurrentResolver.Should().Be(mockChannel.Object.CurrentResolver);
 
 		It should_expose_the_current_transaction_from_the_underlying_channel = () =>
-			channel.CurrentTransaction.ShouldEqual(mockChannel.Object.CurrentTransaction);
+			channel.CurrentTransaction.Should().Be(mockChannel.Object.CurrentTransaction);
 
 		It should_expose_the_current_configuration_from_the_underlying_channel = () =>
-			channel.CurrentConfiguration.ShouldEqual(mockChannel.Object.CurrentConfiguration);
+			channel.CurrentConfiguration.Should().Be(mockChannel.Object.CurrentConfiguration);
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -109,10 +111,10 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch(MyMessage);
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_contain_the_message_specified = () =>
-			dispatchContext.MessageCount.ShouldEqual(1);
+			dispatchContext.MessageCount.Should().Be(1);
 
 		It should_not_invoke_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(MyMessage, null), Times.Never());
@@ -136,10 +138,10 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch();
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_not_contain_any_messages = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 
 		It should_not_invoke_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(null, null), Times.Never());
@@ -163,7 +165,7 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch(MyMessage, mockAlternateChannel.Object);
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_invoke_the_underlying_channel_providing_the_alternate_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(MyMessage, mockAlternateChannel.Object), Times.Once());
@@ -181,7 +183,7 @@ namespace NanoMessageBus.Channels
 			Try(() => channel.Send(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -194,7 +196,7 @@ namespace NanoMessageBus.Channels
 			Try(() => channel.Send(new Mock<ChannelEnvelope>().Object));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -222,7 +224,7 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Teardown(mockChannel.Object, ReleaseToken), Times.Once());
 
 		It should_rethrow_the_exception = () =>
-			thrown.ShouldBeOfType<ChannelConnectionException>();
+			thrown.Should().BeOfType<ChannelConnectionException>();
 
 		static readonly ChannelEnvelope envelope = new Mock<ChannelEnvelope>().Object;
 	}
@@ -234,7 +236,7 @@ namespace NanoMessageBus.Channels
 			Try(() => channel.BeginShutdown());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(PooledDispatchChannel))]
@@ -244,7 +246,7 @@ namespace NanoMessageBus.Channels
 			Try(() => channel.Receive(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	public abstract class using_the_pooled_dispatch_channel

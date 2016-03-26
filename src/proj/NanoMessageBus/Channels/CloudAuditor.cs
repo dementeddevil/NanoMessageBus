@@ -10,11 +10,11 @@
 		}
 		public void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
-			if (!this.cloud)
+			if (!this._cloud)
 				return;
 
 			if (envelope == null)
-				throw new ArgumentNullException("envelope");
+				throw new ArgumentNullException(nameof(envelope));
 
 			if (delivery != null && delivery.CurrentMessage == envelope.Message)
 				return;
@@ -31,7 +31,7 @@
 
 		public CloudAuditor()
 		{
-			this.cloud = FacilityName.Length > 0 && MachineId.Length > 0;
+			this._cloud = FacilityName.Length > 0 && MachineId.Length > 0;
 		}
 		~CloudAuditor()
 		{
@@ -53,6 +53,6 @@
 		private const string MachineIdHeader = "x-audit-cloud-machine-id";
 		private static readonly string FacilityName = CloudDetection.DetectFacility();
 		private static readonly string MachineId = CloudDetection.DetectMachineId();
-		private readonly bool cloud;
+		private readonly bool _cloud;
 	}
 }

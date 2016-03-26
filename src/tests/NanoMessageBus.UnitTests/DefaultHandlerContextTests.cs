@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -17,29 +19,29 @@ namespace NanoMessageBus
 			TryBuild(null);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
 	public class when_constructing_a_new_handler_context : with_a_handler_context
 	{
 		It should_expose_the_active_state_from_the_underlying_channel = () =>
-			handlerContext.Active.ShouldEqual(mockDelivery.Object.Active);
+			handlerContext.Active.Should().Be(mockDelivery.Object.Active);
 
 		It should_expose_the_underlying_delivery_message = () =>
-			handlerContext.CurrentMessage.ShouldEqual(mockMessage.Object);
+			handlerContext.CurrentMessage.Should().Be(mockMessage.Object);
 
 		It should_expose_the_underlying_delivery_transaction = () =>
-			handlerContext.CurrentTransaction.ShouldEqual(mockTransaction.Object);
+			handlerContext.CurrentTransaction.Should().Be(mockTransaction.Object);
 
 		It should_expose_the_underlying_delivery_configuration = () =>
-			handlerContext.CurrentConfiguration.ShouldEqual(mockConfig.Object);
+			handlerContext.CurrentConfiguration.Should().Be(mockConfig.Object);
 
 		It should_expose_the_underlying_delivery_dependency_resolver = () =>
-			handlerContext.CurrentResolver.ShouldEqual(mockResolver.Object);
+			handlerContext.CurrentResolver.Should().Be(mockResolver.Object);
 
 		It should_indicate_the_ability_to_continue_handling = () =>
-			handlerContext.ContinueHandling.ShouldBeTrue();
+			handlerContext.ContinueHandling.Should().BeTrue();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -49,7 +51,7 @@ namespace NanoMessageBus
 			handlerContext.DropMessage();
 
 		It should_indicate_that_handling_should_be_discontinued = () =>
-			handlerContext.ContinueHandling.ShouldBeFalse();
+			handlerContext.ContinueHandling.Should().BeFalse();
 
 		It should_NOT_dispatch_the_message_for_redelivery = () =>
 			mockDelivery.Verify(x => x.PrepareDispatch(Moq.It.IsAny<object>(), null), Times.Never());
@@ -62,7 +64,7 @@ namespace NanoMessageBus
 			mockDelivery.Setup(x => x.Active).Returns(false);
 
 		It should_indicate_that_handling_should_be_discontinued = () =>
-			handlerContext.ContinueHandling.ShouldBeFalse();
+			handlerContext.ContinueHandling.Should().BeFalse();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -72,19 +74,19 @@ namespace NanoMessageBus
 			handlerContext.DeferMessage();
 
 		It should_indicate_that_handling_should_be_discontinued = () =>
-			handlerContext.ContinueHandling.ShouldBeFalse();
+			handlerContext.ContinueHandling.Should().BeFalse();
 
 		It should_send_the_same_message_that_was_delivered = () =>
-			sent.ShouldEqual(mockDelivery.Object.CurrentMessage);
+			sent.Should().Be(mockDelivery.Object.CurrentMessage);
 
 		It should_send_the_message_the_loopback_address = () =>
-			recipients[0].ShouldEqual(ChannelEnvelope.LoopbackAddress);
+			recipients[0].Should().Be(ChannelEnvelope.LoopbackAddress);
 
 		It should_not_send_the_message_to_any_other_recipients = () =>
-			recipients.Length.ShouldEqual(1);
+			recipients.Length.Should().Be(1);
 
 		It should_only_invoke_the_behavior_once = () =>
-			deliveryCount.ShouldEqual(1);
+			deliveryCount.Should().Be(1);
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -97,7 +99,7 @@ namespace NanoMessageBus
 			handlerContext.DeferMessage();
 
 		It should_only_invoke_the_behavior_once = () =>
-			deliveryCount.ShouldEqual(1);
+			deliveryCount.Should().Be(1);
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -107,7 +109,7 @@ namespace NanoMessageBus
 			Try(() => handlerContext.ForwardMessage(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -117,7 +119,7 @@ namespace NanoMessageBus
 			Try(() => handlerContext.ForwardMessage(new Uri[] { null, null }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -130,7 +132,7 @@ namespace NanoMessageBus
 			Try(() => handlerContext.ForwardMessage(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -140,13 +142,13 @@ namespace NanoMessageBus
 			handlerContext.ForwardMessage(forwardingRecipients);
 
 		It should_continue_handling_the_current_message = () =>
-			handlerContext.ContinueHandling.ShouldBeTrue();
+			handlerContext.ContinueHandling.Should().BeTrue();
 
 		It should_send_the_current_message = () =>
 			mockDelivery.Verify(x => x.PrepareDispatch(mockMessage.Object, null), Times.Once());
 
 		It should_send_to_each_recipient_specified = () =>
-			recipients.SequenceEqual(forwardingRecipients).ShouldBeTrue();
+			recipients.SequenceEqual(forwardingRecipients).Should().BeTrue();
 
 		static readonly Uri[] forwardingRecipients = new[]
 		{
@@ -170,7 +172,7 @@ namespace NanoMessageBus
 			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!", null), Times.Exactly(1));
 
 		It should_return_the_reference_from_the_underlying_channel = () =>
-			dispatchContext.ShouldEqual(mockDispatch.Object);
+			dispatchContext.Should().Be(mockDispatch.Object);
 
 		static IDispatchContext dispatchContext;
 	}
@@ -189,7 +191,7 @@ namespace NanoMessageBus
 			mockDelivery.Verify(x => x.PrepareDispatch("Hello, World!", mockAlternate.Object), Times.Once());
 
 		It should_return_the_reference_from_the_alternate_channel = () =>
-			dispatchContext.ShouldEqual(mockDispatch.Object);
+			dispatchContext.Should().Be(mockDispatch.Object);
 
 		static readonly Mock<IMessagingChannel> mockAlternate = new Mock<IMessagingChannel>();
 		static IDispatchContext dispatchContext;
@@ -202,7 +204,7 @@ namespace NanoMessageBus
 			handlerContext.Dispose();
 
 		It should_indicate_that_handling_should_be_discontinued = () =>
-			handlerContext.ContinueHandling.ShouldBeFalse();
+			handlerContext.ContinueHandling.Should().BeFalse();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -215,7 +217,7 @@ namespace NanoMessageBus
 			Try(() => handlerContext.PrepareDispatch());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -228,7 +230,7 @@ namespace NanoMessageBus
 			Try(() => handlerContext.DropMessage());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultHandlerContext))]
@@ -241,7 +243,7 @@ namespace NanoMessageBus
 			Try(() => handlerContext.DeferMessage());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	public abstract class with_a_handler_context

@@ -1,31 +1,37 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 	using Logging;
 
 	public class TransactionalDeliveryHandler : IDeliveryHandler
 	{
-		public virtual void Handle(IDeliveryContext delivery)
+		private static readonly ILog Log = LogFactory.Build(typeof(TransactionalDeliveryHandler));
+		private readonly IDeliveryHandler _inner;
+
+        public TransactionalDeliveryHandler(IDeliveryHandler inner)
 		{
-			if (delivery == null)
-				throw new ArgumentNullException("delivery");
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
+			_inner = inner;
+		}
+
+		public virtual async Task HandleAsync(IDeliveryContext delivery)
+		{
+		    if (delivery == null)
+		    {
+		        throw new ArgumentNullException(nameof(delivery));
+		    }
 
 			Log.Debug("Channel message delivery received, routing to inner delivery handler.");
-			this.inner.Handle(delivery);
+			await this._inner.HandleAsync(delivery).ConfigureAwait(false);
 
 			Log.Debug("Committing transaction associated with delivery.");
 			delivery.CurrentTransaction.Commit();
 		}
-
-		public TransactionalDeliveryHandler(IDeliveryHandler inner)
-		{
-			if (inner == null)
-				throw new ArgumentNullException("inner");
-
-			this.inner = inner;
-		}
-
-		private static readonly ILog Log = LogFactory.Build(typeof(TransactionalDeliveryHandler));
-		private readonly IDeliveryHandler inner;
 	}
 }

@@ -8,15 +8,15 @@
 	{
 		public virtual ConnectionState CurrentState
 		{
-			get { return this.connector.CurrentState; }
+			get { return this._connector.CurrentState; }
 		}
 		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
-			get { return this.connector.ChannelGroups; }
+			get { return this._connector.ChannelGroups; }
 		}
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
-			var channel = this.connector.Connect(channelGroup);
+			var channel = this._connector.Connect(channelGroup);
 			var resolver = channel.CurrentConfiguration.DependencyResolver;
 			if (resolver == null)
 			{
@@ -39,9 +39,9 @@
 		public DependencyResolverConnector(IChannelConnector connector)
 		{
 			if (connector == null)
-				throw new ArgumentNullException("connector");
+				throw new ArgumentNullException(nameof(connector));
 
-			this.connector = connector;
+			this._connector = connector;
 		}
 		~DependencyResolverConnector()
 		{
@@ -56,10 +56,10 @@
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				this.connector.TryDispose();
+				this._connector.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverConnector));
-		private readonly IChannelConnector connector;
+		private readonly IChannelConnector _connector;
 	}
 }

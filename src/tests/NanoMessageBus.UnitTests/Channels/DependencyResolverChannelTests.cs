@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -15,7 +17,7 @@ namespace NanoMessageBus.Channels
 			Try(() => Build(null, mockResolver.Object));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
@@ -25,7 +27,7 @@ namespace NanoMessageBus.Channels
 			Try(() => Build(mockWrappedChannel.Object, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DependencyResolverChannel))]
@@ -40,19 +42,19 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_expose_the_active_state_from_the_underlying_channel = () =>
-			channel.Active.ShouldEqual(mockWrappedChannel.Object.Active);
+			channel.Active.Should().Be(mockWrappedChannel.Object.Active);
 
 		It should_expose_the_current_message_from_the_underlying_channel = () =>
-			channel.CurrentMessage.ShouldEqual(mockWrappedChannel.Object.CurrentMessage);
+			channel.CurrentMessage.Should().Be(mockWrappedChannel.Object.CurrentMessage);
 
 		It should_expose_the_current_transaction_from_the_underlying_channel = () =>
-			channel.CurrentTransaction.ShouldEqual(mockWrappedChannel.Object.CurrentTransaction);
+			channel.CurrentTransaction.Should().Be(mockWrappedChannel.Object.CurrentTransaction);
 
 		It should_expose_the_current_configuration_from_the_underlying_channel = () =>
-			channel.CurrentConfiguration.ShouldEqual(mockWrappedChannel.Object.CurrentConfiguration);
+			channel.CurrentConfiguration.Should().Be(mockWrappedChannel.Object.CurrentConfiguration);
 
 		It should_expose_the_resolver_provided_during_construction = () =>
-			channel.CurrentResolver.ShouldEqual(mockResolver.Object);
+			channel.CurrentResolver.Should().Be(mockResolver.Object);
 
 		private const string GroupName = "My Group Name";
 	}
@@ -83,10 +85,10 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch(MyMessage);
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_contain_the_message_specified = () =>
-			dispatchContext.MessageCount.ShouldEqual(1);
+			dispatchContext.MessageCount.Should().Be(1);
 
 		It should_not_invoke_the_underlying_channel = () =>
 			mockWrappedChannel.Verify(x => x.PrepareDispatch(MyMessage, null), Times.Never());
@@ -110,10 +112,10 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch();
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_not_contain_any_messages = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 
 		It should_not_invoke_the_underlying_channel = () =>
 			mockWrappedChannel.Verify(x => x.PrepareDispatch(null, null), Times.Never());
@@ -137,7 +139,7 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch(MyMessage, mockAlternateChannel.Object);
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_invoke_the_underlying_channel_providing_the_alternate_channel = () =>
 			mockWrappedChannel.Verify(x => x.PrepareDispatch(MyMessage, mockAlternateChannel.Object), Times.Once());
@@ -202,34 +204,34 @@ namespace NanoMessageBus.Channels
 			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
 
 		It should_invoke_the_callback_specified_providing_itself_as_a_parameter = () =>
-			delivery.ShouldEqual(channel);
+			delivery.Should().Be(channel);
 
 		It should_temporarily_expose_the_nested_resolver_on_the_channel = () =>
-			contextResolver.ShouldEqual(mockNested.Object);
+			contextResolver.Should().Be(mockNested.Object);
 
 		It should_expose_the_original_context_CurrentMessage = () => 
-			contextMessage.ShouldEqual(mockOriginal.Object.CurrentMessage);
+			contextMessage.Should().Be(mockOriginal.Object.CurrentMessage);
 
 		It should_expose_the_original_context_CurrentTransaction = () =>
-			contextTransaction.ShouldEqual(mockOriginal.Object.CurrentTransaction);
+			contextTransaction.Should().Be(mockOriginal.Object.CurrentTransaction);
 
 		It should_expose_the_original_context_CurrentConfiguration = () =>
-			contextConfiguration.ShouldEqual(mockOriginal.Object.CurrentConfiguration);
+			contextConfiguration.Should().Be(mockOriginal.Object.CurrentConfiguration);
 		
 		It should_dispose_the_nested_resolver = () =>
 			mockNested.Verify(x => x.Dispose());
 
 		It should_revert_the_nested_resolver_back_to_the_constructed_resolver_upon_completion = () =>
-			channel.CurrentResolver.ShouldEqual(mockResolver.Object);
+			channel.CurrentResolver.Should().Be(mockResolver.Object);
 
 		It should_revert_the_CurrentMessage_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentMessage.ShouldEqual(mockWrappedChannel.Object.CurrentMessage);
+			channel.CurrentMessage.Should().Be(mockWrappedChannel.Object.CurrentMessage);
 
 		It should_revert_the_CurrentTransaction_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentTransaction.ShouldEqual(mockWrappedChannel.Object.CurrentTransaction);
+			channel.CurrentTransaction.Should().Be(mockWrappedChannel.Object.CurrentTransaction);
 
 		It should_revert_the_CurrentConfiguration_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentConfiguration.ShouldEqual(mockWrappedChannel.Object.CurrentConfiguration);
+			channel.CurrentConfiguration.Should().Be(mockWrappedChannel.Object.CurrentConfiguration);
 
 		static IDeliveryContext delivery;
 		static IDependencyResolver contextResolver;
@@ -261,10 +263,10 @@ namespace NanoMessageBus.Channels
 			mockNested.Verify(x => x.Dispose());
 
 		It should_revert_the_nested_resolver_back_to_the_constructed_resolver_upon_completion = () =>
-			channel.CurrentResolver.ShouldEqual(mockResolver.Object);
+			channel.CurrentResolver.Should().Be(mockResolver.Object);
 
 		It should_raise_the_exception = () =>
-			thrown.ShouldNotBeNull();
+			thrown.Should().NotBeNull();
 
 		static readonly Mock<IDependencyResolver> mockNested = new Mock<IDependencyResolver>();
 	}

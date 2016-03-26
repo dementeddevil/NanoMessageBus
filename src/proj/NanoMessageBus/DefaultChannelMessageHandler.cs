@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,7 +8,7 @@
 
 	public class DefaultChannelMessageHandler : IMessageHandler<ChannelMessage>
 	{
-		public virtual void Handle(ChannelMessage message)
+		public virtual async Task HandleAsync(ChannelMessage message)
 		{
 			ICollection<object> unhandled = new List<object>(message.Messages.Count);
 
@@ -16,28 +18,28 @@
 					message.MessageId, message.Messages.Count);
 
 				var handled = 0;
-				while (message.MoveNext() && this.context.ContinueHandling)
-					handled += this.Route(message.ActiveMessage, unhandled);
+			    while (message.MoveNext() && this._context.ContinueHandling)
+			    {
+			        handled += await this.Route(message.ActiveMessage, unhandled).ConfigureAwait(false);
+			    }
 
-				if (handled == 0)
-					unhandled.Clear();
+			    if (handled == 0)
+			    {
+			        unhandled.Clear();
+			    }
 
-				if (this.context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
-					this.ForwardToUnhandledAddress(message, unhandled);
+			    if (this._context.ContinueHandling && (handled == 0 || unhandled.Count > 0))
+			    {
+			        await this.ForwardToUnhandledAddress(message, unhandled).ConfigureAwait(false);
+			    }
 			}
 			finally
 			{
 				message.Reset();
 			}
 		}
-		private int Route(object message, ICollection<object> unhandled)
-		{
-			var count = this.routes.Route(this.context, message);
-			if (count == 0)
-				unhandled.Add(message);
-			return count;
-		}
-		protected virtual void ForwardToUnhandledAddress(ChannelMessage message, ICollection<object> messages)
+
+		protected virtual Task ForwardToUnhandledAddress(ChannelMessage message, ICollection<object> messages)
 		{
 			Log.Debug("Channel message '{0}' contained unhandled messages.", message.MessageId);
 
@@ -51,26 +53,38 @@
 					message.Headers,
 					messages);
 
-			this.context.PrepareDispatch()
+			this._context.PrepareDispatch()
 				.WithMessage(message)
 				.WithRecipient(ChannelEnvelope.UnhandledMessageAddress)
 				.Send();
+
+		    return Task.FromResult(true);
+		}
+
+		private async Task<int> Route(object message, ICollection<object> unhandled)
+		{
+			var count = await this._routes.Route(this._context, message).ConfigureAwait(false);
+		    if (count == 0)
+		    {
+		        unhandled.Add(message);
+		    }
+			return count;
 		}
 
 		public DefaultChannelMessageHandler(IHandlerContext context, IRoutingTable routes)
 		{
 			if (context == null)
-				throw new ArgumentNullException("context");
+				throw new ArgumentNullException(nameof(context));
 
 			if (routes == null)
-				throw new ArgumentNullException("routes");
+				throw new ArgumentNullException(nameof(routes));
 
-			this.context = context;
-			this.routes = routes;
+			this._context = context;
+			this._routes = routes;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelMessageHandler));
-		private readonly IHandlerContext context;
-		private readonly IRoutingTable routes;
+		private readonly IHandlerContext _context;
+		private readonly IRoutingTable _routes;
 	}
 }

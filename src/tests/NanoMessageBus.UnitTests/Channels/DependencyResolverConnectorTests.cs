@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -15,7 +17,7 @@ namespace NanoMessageBus.Channels
 			Try(() => Build(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DependencyResolverConnector))]
@@ -28,10 +30,10 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_expose_the_underlying_connection_state_of_the_wrapped_connector = () =>
-			connector.CurrentState.ShouldEqual(mockWrappedConnector.Object.CurrentState);
+			connector.CurrentState.Should().Be(mockWrappedConnector.Object.CurrentState);
 
 		It should_expose_the_underlying_set_of_channel_group_configuration_of_the_wrapped_connector = () =>
-			connector.ChannelGroups.ShouldEqual(mockWrappedConnector.Object.ChannelGroups);
+			connector.ChannelGroups.Should().BeSameAs(mockWrappedConnector.Object.ChannelGroups);
 	}
 
 	[Subject(typeof(DependencyResolverConnector))]
@@ -52,10 +54,10 @@ namespace NanoMessageBus.Channels
 			mockResolver.Verify(x => x.CreateNestedResolver(), Times.Once());
 
 		It should_expose_the_new_resolver_on_the_messaging_channel = () =>
-			connected.CurrentResolver.ShouldEqual(mockNestedResolver.Object);
+			connected.CurrentResolver.Should().Be(mockNestedResolver.Object);
 
 		It should_return_a_reference_to_a_DependencyResolverChannel = () =>
-			connected.ShouldBeOfType<DependencyResolverChannel>();
+			connected.Should().BeOfType<DependencyResolverChannel>();
 
 		static IMessagingChannel connected;
 		static readonly Mock<IDependencyResolver> mockNestedResolver = new Mock<IDependencyResolver>();
@@ -74,7 +76,7 @@ namespace NanoMessageBus.Channels
 			mockWrappedChannel.Verify(x => x.Dispose(), Times.Once());
 
 		It should_rethrow_the_exception = () =>
-			thrown.ShouldEqual(toThrow);
+			thrown.Should().Be(toThrow);
 
 		static readonly Exception toThrow = new Exception("some exception");
 	}
@@ -89,7 +91,7 @@ namespace NanoMessageBus.Channels
 			channel = connector.Connect("some key");
 
 		It should_not_wrap_the_channel_in_a_resolver_channel = () =>
-			channel.ShouldEqual(mockWrappedChannel.Object);
+			channel.Should().Be(mockWrappedChannel.Object);
 
 		static IMessagingChannel channel;
 	}

@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -17,7 +19,7 @@ namespace NanoMessageBus
 			Try(() => Build(null, message));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -27,17 +29,17 @@ namespace NanoMessageBus
 			Try(() => Build(mockChannel.Object, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
 	public class when_the_dispatch_context_is_constructed : using_a_channel_message_dispatch_context
 	{
 		It should_indicate_a_single_message = () =>
-			dispatchContext.MessageCount.ShouldEqual(1);
+			dispatchContext.MessageCount.Should().Be(1);
 
 		It should_indicate_zero_headers = () =>
-			dispatchContext.HeaderCount.ShouldEqual(0);
+			dispatchContext.HeaderCount.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -47,7 +49,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithMessage(0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -57,7 +59,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithMessages(0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -67,7 +69,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithCorrelationId(Guid.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -77,7 +79,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithHeader(string.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -87,7 +89,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithHeaders(new Dictionary<string, string>()));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -97,7 +99,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithRecipient(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -107,10 +109,10 @@ namespace NanoMessageBus
 			returnedContext = dispatchContext.WithRecipient(ChannelEnvelope.LoopbackAddress);
 
 		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		It should_return_reference_to_itself = () =>
-			returnedContext.ShouldEqual(dispatchContext);
+			returnedContext.Should().Be(dispatchContext);
 
 		static IDispatchContext returnedContext;
 	}
@@ -122,7 +124,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithState(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -132,7 +134,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.WithState(string.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -142,7 +144,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Publish());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -152,7 +154,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Reply());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageDispatchContext))]
@@ -165,19 +167,19 @@ namespace NanoMessageBus
 			transaction = dispatchContext.Send();
 
 		It should_send_the_message_through_the_underlying_channel = () =>
-			envelope.Message.ShouldEqual(message);
+			envelope.Message.Should().Be(message);
 
 		It should_send_append_the_recipients_to_the_envelope = () =>
-			envelope.Recipients.SequenceEqual(recipients).ShouldBeTrue();
+			envelope.Recipients.SequenceEqual(recipients).Should().BeTrue();
 
 		It should_set_the_current_message_as_the_envelope_state = () =>
-			envelope.State.ShouldEqual(message);
+			envelope.State.Should().Be(message);
 
 		It should_return_a_reference_to_the_underlying_transaction = () =>
-			transaction.ShouldEqual(mockTransaction.Object);
+			transaction.Should().Be(mockTransaction.Object);
 
 		It should_report_the_number_of_messages_as_zero = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 
 		static IChannelTransaction transaction;
 		static readonly Uri[] recipients = new[] { new Uri("http://first"), new Uri("http://second") };
@@ -193,7 +195,7 @@ namespace NanoMessageBus
 			Try(() => dispatchContext.Send());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	public abstract class using_a_channel_message_dispatch_context

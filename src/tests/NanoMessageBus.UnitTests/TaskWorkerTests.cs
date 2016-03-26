@@ -1,3 +1,5 @@
+using FluentAssertions;
+
 #pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
@@ -16,7 +18,7 @@ namespace NanoMessageBus
 			Try(() => new TaskWorker<IMessagingChannel>(null, tokenSource.Token, 1, 1));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(TaskWorker<IMessagingChannel>))]
@@ -29,10 +31,10 @@ namespace NanoMessageBus
 		};
 
 		It should_make_the_state_visible = () =>
-			worker.State.ShouldEqual(mockChannel.Object);
+			worker.State.Should().Be(mockChannel.Object);
 
 		It should_have_the_correct_number_of_active_workers = () =>
-			worker.ActiveWorkers.ShouldEqual(minWorkers);
+			worker.ActiveWorkers.Should().Be(minWorkers);
 	}
 
 	[Subject(typeof(TaskWorker<IMessagingChannel>))]
@@ -42,7 +44,7 @@ namespace NanoMessageBus
 			Try(() => worker.PerformOperation(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(TaskWorker<IMessagingChannel>))]
@@ -52,7 +54,7 @@ namespace NanoMessageBus
 			worker.PerformOperation(IncrementCallCount);
 
 		It should_invoke_the_operation_provided = () =>
-			callCount.ShouldEqual(1);
+			callCount.Should().Be(1);
 	}
 
 	[Subject(typeof(TaskWorker<IMessagingChannel>))]
@@ -62,7 +64,7 @@ namespace NanoMessageBus
 			Try(() => worker.PerformOperation(() => { throw exception; }));
 
 		It should_bubble_up_the_exception = () =>
-			thrown.ShouldEqual(exception);
+			thrown.Should().Be(exception);
 
 		static readonly Exception exception = new Exception("custom");
 	}
@@ -77,7 +79,7 @@ namespace NanoMessageBus
 			worker.PerformOperation(IncrementCallCount);
 
 		It should_not_invoke_the_operation = () =>
-			callCount.ShouldEqual(0);
+			callCount.Should().Be(0);
 
 		It should_dispose_of_the_state = () =>
 			mockChannel.Verify(x => x.Dispose(), Times.Once());

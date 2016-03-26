@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -16,7 +18,7 @@ namespace NanoMessageBus
 			Try(() => new SynchronousChannelGroup(null, mockConfiguration.Object));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -26,7 +28,7 @@ namespace NanoMessageBus
 			Try(() => new SynchronousChannelGroup(mockConnector.Object, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -36,7 +38,7 @@ namespace NanoMessageBus
 			mockConfiguration.Setup(x => x.DispatchOnly).Returns(true);
 
 		It should_expose_the_dispatch_only_status_from_the_underlying_configuration = () =>
-			channelGroup.DispatchOnly.ShouldEqual(mockConfiguration.Object.DispatchOnly);
+			channelGroup.DispatchOnly.Should().Be(mockConfiguration.Object.DispatchOnly);
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -46,7 +48,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		It should_not_do_anything = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -56,7 +58,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -69,7 +71,7 @@ namespace NanoMessageBus
 			Try(() => channelGroup.Initialize());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -79,7 +81,7 @@ namespace NanoMessageBus
 			Try(() => channelGroup.BeginReceive(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -89,7 +91,7 @@ namespace NanoMessageBus
 			Try(() => channelGroup.BeginDispatch(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -99,7 +101,7 @@ namespace NanoMessageBus
 			Try(() => channelGroup.OpenChannel());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -112,7 +114,7 @@ namespace NanoMessageBus
 			Try(() => channelGroup.OpenChannel());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(SynchronousChannelGroup))]
@@ -133,7 +135,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName));
 
 		It should_return_a_reference_to_the_opened_channel = () =>
-			opened.ShouldEqual(mockChannel.Object);
+			opened.Should().Be(mockChannel.Object);
 
 		static Mock<IMessagingChannel> mockChannel;
 		static IMessagingChannel opened;
@@ -152,7 +154,7 @@ namespace NanoMessageBus
 			Try(() => channelGroup.OpenChannel());
 
 		It should_not_catch_the_exception = () =>
-			thrown.ShouldBeOfType<ConfigurationErrorsException>();
+			thrown.Should().BeOfType<ConfigurationErrorsException>();
 	}
 
 	public abstract class using_a_synchronous_channel_group

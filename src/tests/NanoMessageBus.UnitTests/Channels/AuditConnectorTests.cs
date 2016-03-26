@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -17,7 +19,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new AuditConnector(null, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(AuditConnector))]
@@ -27,7 +29,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new AuditConnector(mockConnector.Object, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(AuditConnector))]
@@ -50,7 +52,7 @@ namespace NanoMessageBus.Channels
 			connectionState = connector.CurrentState;
 
 		It should_invoke_the_underlying_connector = () =>
-			connectionState.ShouldEqual(ConnectionState.Unauthorized);
+			connectionState.Should().Be(ConnectionState.Unauthorized);
 
 		static ConnectionState connectionState;
 	}
@@ -68,7 +70,7 @@ namespace NanoMessageBus.Channels
 			configs = connector.ChannelGroups.ToArray();
 
 		It should_invoke_the_underlying_connector = () =>
-			configs.SequenceEqual(mockConnector.Object.ChannelGroups).ShouldBeTrue();
+			configs.SequenceEqual(mockConnector.Object.ChannelGroups).Should().BeTrue();
 
 		static IChannelGroupConfiguration[] configs;
 	}
@@ -86,13 +88,13 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Connect(ChannelGroupName));
 
 		It should_resolve_the_set_of_auditors = () =>
-			calls.ShouldEqual(1);
+			calls.Should().Be(1);
 
 		It should_provide_the_resolved_channel_to_the_auditor_callback = () =>
-			callbackChannel.ShouldEqual(mockChannel.Object);
+			callbackChannel.Should().Be(mockChannel.Object);
 
 		It should_wrap_over_the_channel = () =>
-			connectedChannel.ShouldBeOfType<AuditChannel>();
+			connectedChannel.Should().BeOfType<AuditChannel>();
 
 		static IMessagingChannel connectedChannel;
 	}
@@ -107,13 +109,13 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Connect(ChannelGroupName));
 
 		It should_resolve_the_set_of_auditors = () =>
-			calls.ShouldEqual(1);
+			calls.Should().Be(1);
 
 		It should_provide_the_resolved_channel_to_the_auditor_callback = () =>
-			callbackChannel.ShouldEqual(mockChannel.Object);
+			callbackChannel.Should().Be(mockChannel.Object);
 
 		It should_return_the_undecorated_channel = () =>
-			connectedChannel.ShouldEqual(mockChannel.Object);
+			connectedChannel.Should().Be(mockChannel.Object);
 
 		static IMessagingChannel connectedChannel;
 	}
@@ -128,10 +130,10 @@ namespace NanoMessageBus.Channels
 			connectedChannel = connector.Connect(ChannelGroupName); // shouldn't invoke callback
 
 		It should_return_the_undecorated_channel = () =>
-			connectedChannel.ShouldEqual(mockChannel.Object);
+			connectedChannel.Should().Be(mockChannel.Object);
 
 		It should_never_again_invoke_the_auditor_callback = () =>
-			calls.ShouldEqual(1);
+			calls.Should().Be(1);
 
 		static IMessagingChannel connectedChannel;
 	}

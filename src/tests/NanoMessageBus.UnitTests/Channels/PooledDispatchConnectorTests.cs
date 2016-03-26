@@ -1,4 +1,8 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+using FluentAssertions.Execution;
+using FluentAssertions.Primitives;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -17,7 +21,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new PooledDispatchConnector(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -40,7 +44,7 @@ namespace NanoMessageBus.Channels
 			connectionState = connector.CurrentState;
 
 		It should_invoke_the_underlying_connector = () =>
-			connectionState.ShouldEqual(ConnectionState.Unauthorized);
+			connectionState.Should().Be(ConnectionState.Unauthorized);
 
 		static ConnectionState connectionState;
 	}
@@ -52,7 +56,7 @@ namespace NanoMessageBus.Channels
 			configs = connector.ChannelGroups.ToArray();
 
 		It should_return_the_set_of_configurations_from_the_underlying_connector = () =>
-			configs.SequenceEqual(mockConnector.Object.ChannelGroups).ShouldBeTrue();
+			configs.SequenceEqual(mockConnector.Object.ChannelGroups).Should().BeTrue();
 
 		static IChannelGroupConfiguration[] configs;
 	}
@@ -90,7 +94,7 @@ namespace NanoMessageBus.Channels
 			Try(() => connector.Connect(PooledGroupName));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -103,7 +107,7 @@ namespace NanoMessageBus.Channels
 			Try(() => connector.Connect(IgnoredGroupName));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -116,10 +120,21 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Connect(IgnoredGroupName), Times.Once());
 
 		It should_NOT_wrap_the_channel = () =>
-			connectedChannel.ShouldNotBeOfType(typeof(PooledDispatchChannel));
+			connectedChannel.Should().NotBeOfType(typeof(PooledDispatchChannel));
 
 		static IMessagingChannel connectedChannel;
 	}
+
+    public static class ObjectExtensions
+    {
+        public static ObjectAssertions NotBeOfType(this ObjectAssertions current, Type type)
+        {
+            Execute.Assertion
+                .ForCondition(!type.IsInstanceOfType(current.Subject))
+                .FailWith($"Expected not to be of type {type.FullName}");
+            return current;
+        }
+    }
 
 	[Subject(typeof(PooledDispatchConnector))]
 	public class when_no_pooled_channels_are_available : using_the_pooled_dispatch_connector
@@ -131,7 +146,7 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Connect(PooledGroupName), Times.Once());
 
 		It should_wrap_the_channel = () =>
-			connectedChannel.ShouldBeOfType<PooledDispatchChannel>();
+			connectedChannel.Should().BeOfType<PooledDispatchChannel>();
 
 		static IMessagingChannel connectedChannel;
 	}
@@ -143,7 +158,7 @@ namespace NanoMessageBus.Channels
 			Try(() => connector.Release(null, 0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -153,7 +168,7 @@ namespace NanoMessageBus.Channels
 			Try(() => connector.Release(Create(Config(PooledGroupName, true, true).Object).Object, 0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -234,7 +249,7 @@ namespace NanoMessageBus.Channels
 			mockChannels[0].Verify(x => x.Dispose());
 
 		It should_return_the_active_channel = () =>
-			channel.Active.ShouldBeTrue();
+			channel.Active.Should().BeTrue();
 
 		static int counter;
 		static IMessagingChannel channel;
@@ -275,7 +290,7 @@ namespace NanoMessageBus.Channels
 			mockConnector.Verify(x => x.Connect(PooledGroupName), Times.Once());
 
 		It should_wrap_the_channel = () =>
-			connectedChannel.ShouldBeOfType<PooledDispatchChannel>();
+			connectedChannel.Should().BeOfType<PooledDispatchChannel>();
 
 		static IMessagingChannel connectedChannel;
 	}
@@ -287,7 +302,7 @@ namespace NanoMessageBus.Channels
 			Try(() => connector.Teardown(null, 0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]
@@ -297,7 +312,7 @@ namespace NanoMessageBus.Channels
 			Try(() => connector.Teardown(Create(Config(PooledGroupName, true, true).Object).Object, 0));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(PooledDispatchConnector))]

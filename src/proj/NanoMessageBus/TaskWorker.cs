@@ -9,16 +9,16 @@ namespace NanoMessageBus
 	{
 		public virtual int ActiveWorkers
 		{
-			get { return this.minWorkers; }
+			get { return this._minWorkers; }
 		}
 		public virtual T State { get; private set; }
 		public virtual void PerformOperation(Action operation)
 		{
 			if (operation == null)
-				throw new ArgumentNullException("operation");
+				throw new ArgumentNullException(nameof(operation));
 
 			// FUTURE: watch number of operations and dynamically increase/decrease the number of workers
-			if (this.token.IsCancellationRequested)
+			if (this._token.IsCancellationRequested)
 			{
 				Log.Debug("Token cancellation has been requested.");
 				this.State.TryDispose();
@@ -30,15 +30,15 @@ namespace NanoMessageBus
 		public TaskWorker(T state, CancellationToken token, int minWorkers, int maxWorkers)
 		{
 			if (state == null)
-				throw new ArgumentNullException("state");
+				throw new ArgumentNullException(nameof(state));
 
 			this.State = state;
-			this.token = token;
-			this.minWorkers = minWorkers;
+			this._token = token;
+			this._minWorkers = minWorkers;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(TaskWorker<>));
-		private readonly CancellationToken token;
-		private readonly int minWorkers;
+		private readonly CancellationToken _token;
+		private readonly int _minWorkers;
 	}
 }

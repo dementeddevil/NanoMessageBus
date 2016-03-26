@@ -32,7 +32,7 @@
 		private AutofacDependencyResolver(ILifetimeScope container, int depth, Action<int, ContainerBuilder> register)
 		{
 			if (container == null)
-				throw new ArgumentNullException("container");
+				throw new ArgumentNullException(nameof(container));
 
 			this.container = container;
 			this.register = register;

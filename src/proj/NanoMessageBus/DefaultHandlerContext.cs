@@ -9,49 +9,49 @@
 	{
 		public virtual bool Active
 		{
-			get { return this.delivery.Active; }
+			get { return this._delivery.Active; }
 		}
 		public virtual ChannelMessage CurrentMessage
 		{
-			get { return this.delivery.CurrentMessage; }
+			get { return this._delivery.CurrentMessage; }
 		}
 		public virtual IChannelTransaction CurrentTransaction
 		{
-			get { return this.delivery.CurrentTransaction; }
+			get { return this._delivery.CurrentTransaction; }
 		}
 		public virtual IChannelGroupConfiguration CurrentConfiguration
 		{
-			get { return this.delivery.CurrentConfiguration; }
+			get { return this._delivery.CurrentConfiguration; }
 		}
 		public virtual IDependencyResolver CurrentResolver
 		{
-			get { return this.delivery.CurrentResolver; }
+			get { return this._delivery.CurrentResolver; }
 		}
 		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel channel = null)
 		{
 			this.ThrowWhenDisposed();
-			return this.delivery.PrepareDispatch(message, channel);
+			return this._delivery.PrepareDispatch(message, channel);
 		}
 
 		public virtual bool ContinueHandling
 		{
-			get { return this.continueHandling && this.Active; }
+			get { return this._continueHandling && this.Active; }
 		}
 		public virtual void DropMessage()
 		{
 			this.ThrowWhenDisposed();
-			this.continueHandling = false;
+			this._continueHandling = false;
 		}
 		public virtual void DeferMessage()
 		{
-			if (this.deferred)
+			if (this._deferred)
 				return;
 
-			this.deferred = true;
+			this._deferred = true;
 			this.DropMessage();
 
-			this.delivery.PrepareDispatch()
-				.WithMessage(this.delivery.CurrentMessage)
+			this._delivery.PrepareDispatch()
+				.WithMessage(this._delivery.CurrentMessage)
 				.WithRecipient(ChannelEnvelope.LoopbackAddress)
 				.Send();
 		}
@@ -60,13 +60,13 @@
 			this.ThrowWhenDisposed();
 
 			if (recipients == null)
-				throw new ArgumentNullException("recipients");
+				throw new ArgumentNullException(nameof(recipients));
 
 			var parsed = recipients.Where(x => x != null).ToArray();
 			if (parsed.Length == 0)
-				throw new ArgumentException("No recipients specified.", "recipients");
+				throw new ArgumentException("No recipients specified.", nameof(recipients));
 
-			var dispatch = this.delivery.PrepareDispatch(this.delivery.CurrentMessage);
+			var dispatch = this._delivery.PrepareDispatch(this._delivery.CurrentMessage);
 			foreach (var recipient in parsed)
 				dispatch = dispatch.WithRecipient(recipient);
 
@@ -75,7 +75,7 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this.disposed)
+			if (!this._disposed)
 				return;
 
 			Log.Warn("The handler context has already been disposed.");
@@ -85,10 +85,10 @@
 		public DefaultHandlerContext(IDeliveryContext delivery)
 		{
 			if (delivery == null)
-				throw new ArgumentNullException("delivery");
+				throw new ArgumentNullException(nameof(delivery));
 
-			this.delivery = delivery;
-			this.continueHandling = true;
+			this._delivery = delivery;
+			this._continueHandling = true;
 		}
 		~DefaultHandlerContext()
 		{
@@ -102,14 +102,14 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			this.disposed = true;
-			this.continueHandling = false;
+			this._disposed = true;
+			this._continueHandling = false;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultHandlerContext));
-		private readonly IDeliveryContext delivery;
-		private bool continueHandling;
-		private bool disposed;
-		private bool deferred;
+		private readonly IDeliveryContext _delivery;
+		private bool _continueHandling;
+		private bool _disposed;
+		private bool _deferred;
 	}
 }

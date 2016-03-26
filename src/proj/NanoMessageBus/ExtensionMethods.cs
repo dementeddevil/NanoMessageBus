@@ -20,7 +20,7 @@
 		public static TValue TryGetValue<TKey, TValue>(this IDictionary<TKey, TValue> values, TKey key)
 		{
 			if (values == null)
-				throw new ArgumentNullException("values");
+				throw new ArgumentNullException(nameof(values));
 
 			TValue value;
 			return values.TryGetValue(key, out value) ? value : default(TValue);

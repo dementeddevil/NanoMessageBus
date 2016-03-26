@@ -23,11 +23,11 @@
 		}
 		public virtual IDependencyResolver CurrentResolver
 		{
-			get { return this.currentResolver ?? this.resolver; }
+			get { return this._currentResolver ?? this._resolver; }
 		}
 		protected virtual IDeliveryContext CurrentContext
 		{
-			get { return this.currentContext ?? this.channel; }
+			get { return this._currentContext ?? this._channel; }
 		}
 
 		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
@@ -38,45 +38,45 @@
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			Log.Verbose("Sending envelope '{0}' through the underlying channel.", envelope.MessageId());
-			this.channel.Send(envelope);
+			this._channel.Send(envelope);
 		}
 
 		public virtual void BeginShutdown()
 		{
-			this.channel.BeginShutdown();
+			this._channel.BeginShutdown();
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			this.channel.Receive(context => this.Receive(context, callback));
+			this._channel.Receive(context => this.Receive(context, callback));
 		}
 		protected virtual void Receive(IDeliveryContext context, Action<IDeliveryContext> callback)
 		{
 			try
 			{
 				Log.Verbose("Delivery received, attempting to create nested resolver.");
-				this.currentContext = context;
-				this.currentResolver = this.resolver.CreateNestedResolver();
+				this._currentContext = context;
+				this._currentResolver = this._resolver.CreateNestedResolver();
 				callback(this);
 			}
 			finally
 			{
 				Log.Verbose("Delivery completed, disposing nested resolver.");
-				this.currentResolver.TryDispose();
-				this.currentResolver = null;
-				this.currentContext = null;
+				this._currentResolver.TryDispose();
+				this._currentResolver = null;
+				this._currentContext = null;
 			}
 		}
 
 		public DependencyResolverChannel(IMessagingChannel channel, IDependencyResolver resolver)
 		{
 			if (channel == null)
-				throw new ArgumentNullException("channel");
+				throw new ArgumentNullException(nameof(channel));
 
 			if (resolver == null)
-				throw new ArgumentNullException("resolver");
+				throw new ArgumentNullException(nameof(resolver));
 
-			this.channel = channel;
-			this.resolver = resolver;
+			this._channel = channel;
+			this._resolver = resolver;
 		}
 		~DependencyResolverChannel()
 		{
@@ -94,14 +94,14 @@
 				return;
 
 			Log.Verbose("Disposing the underlying channel and resolver.");
-			this.channel.TryDispose();
-			this.resolver.TryDispose();
+			this._channel.TryDispose();
+			this._resolver.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DependencyResolverChannel));
-		private readonly IMessagingChannel channel;
-		private readonly IDependencyResolver resolver;
-		private IDependencyResolver currentResolver;
-		private IDeliveryContext currentContext;
+		private readonly IMessagingChannel _channel;
+		private readonly IDependencyResolver _resolver;
+		private IDependencyResolver _currentResolver;
+		private IDeliveryContext _currentContext;
 	}
 }

@@ -18,7 +18,7 @@
 		public virtual MessagingWireup AddConnector(IChannelConnector channelConnector)
 		{
 			if (channelConnector == null)
-				throw new ArgumentNullException("channelConnector");
+				throw new ArgumentNullException(nameof(channelConnector));
 
 			Log.Debug("Adding channel connector of type '{0}'.", channelConnector.GetType());
 
@@ -28,7 +28,7 @@
 			if (channelConnector.GetType() != typeof(DependencyResolverConnector))
 				channelConnector = new DependencyResolverConnector(channelConnector);
 
-			this.connectors.Add(channelConnector);
+			this._connectors.Add(channelConnector);
 			return this;
 		}
 		public virtual MessagingWireup AddConnectors(IEnumerable<IChannelConnector> channelConnectors)
@@ -48,7 +48,7 @@
 			if (auditors == null)
 				throw new ArgumentNullException();
 
-			this.auditorFactory = x => auditors(x).Concat(this.AppendAuditors());
+			this._auditorFactory = x => auditors(x).Concat(this.AppendAuditors());
 			return this;
 		}
 		public virtual MessagingWireup WithAuditing<TResolver>(Func<TResolver, IEnumerable<IMessageAuditor>> auditors) where TResolver : class
@@ -75,12 +75,12 @@
 		{
 			Log.Info("Alternate delivery handler provided.");
 
-			this.handlerCallback = callback;
+			this._handlerCallback = callback;
 			return this;
 		}
 		public virtual MessagingWireup WithTransactionScope()
 		{
-			this.transactionScope = true;
+			this._transactionScope = true;
 			return this;
 		}
 
@@ -89,24 +89,34 @@
 			Log.Info("Starting host in dispatch-only mode; duplex mode can be started later, if configured.");
 			return this.StartHost();
 		}
-		public virtual IMessagingHost StartWithReceive(IRoutingTable table, Func<IHandlerContext, IMessageHandler<ChannelMessage>> handler = null)
+		public virtual IMessagingHost StartWithReceive(
+            IRoutingTable table,
+            Func<IHandlerContext, IMessageHandler<ChannelMessage>> handler = null)
 		{
 			Log.Info("Starting host in full-duplex mode.");
 
-			table.Add(handler ?? (context => new DefaultChannelMessageHandler(context, table)), 0, typeof(DefaultChannelMessageHandler));
+		    if (handler != null)
+		    {
+                table.Add(handler, 0, typeof(DefaultChannelMessageHandler));
+		    }
+		    else
+		    {
+		        table.Add(context => new DefaultChannelMessageHandler(context, table), 0, typeof(DefaultChannelMessageHandler));
+		    }
 
 			var host = this.StartHost();
-			host.BeginReceive(this.BuildDeliveryChain(table).Handle);
+			host.BeginReceive(this.BuildDeliveryChain(table).HandleAsync);
 			return host;
 		}
+
 		protected virtual IDeliveryHandler BuildDeliveryChain(IRoutingTable table)
 		{
 			IDeliveryHandler handler = new DefaultDeliveryHandler(table);
 
-			if (this.handlerCallback != null)
-				handler = this.handlerCallback(handler) ?? handler;
+			if (this._handlerCallback != null)
+				handler = this._handlerCallback(handler) ?? handler;
 
-			if (this.transactionScope)
+			if (this._transactionScope)
 				handler = new TransactionScopeDeliveryHandler(handler);
 
 			return new TransactionalDeliveryHandler(handler);
@@ -116,24 +126,24 @@
 		{
 			this.AuditConnection();
 
-			var host = new DefaultMessagingHost(this.connectors, new DefaultChannelGroupFactory().Build);
+			var host = new DefaultMessagingHost(this._connectors, new DefaultChannelGroupFactory().Build);
 			host.Initialize();
 			return host;
 		}
 		protected virtual void AuditConnection()
 		{
-			if (this.auditorFactory == null)
+			if (this._auditorFactory == null)
 				return;
 
 			// AuditConnector -> DependencyResolverConnector -> PooledConnector -> RabbitConnector
-			for (var i = 0; i < this.connectors.Count; i++)
-				this.connectors[i] = new AuditConnector(this.connectors[i], this.auditorFactory);
+			for (var i = 0; i < this._connectors.Count; i++)
+				this._connectors[i] = new AuditConnector(this._connectors[i], this._auditorFactory);
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(MessagingWireup));
-		private readonly IList<IChannelConnector> connectors = new List<IChannelConnector>();
-		private Func<IDeliveryHandler, IDeliveryHandler> handlerCallback;
-		private Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory;
-		private bool transactionScope;
+		private readonly IList<IChannelConnector> _connectors = new List<IChannelConnector>();
+		private Func<IDeliveryHandler, IDeliveryHandler> _handlerCallback;
+		private Func<IMessagingChannel, IEnumerable<IMessageAuditor>> _auditorFactory;
+		private bool _transactionScope;
 	}
 }

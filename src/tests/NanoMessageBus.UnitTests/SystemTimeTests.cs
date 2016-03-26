@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -11,7 +13,7 @@ namespace NanoMessageBus
 	public class when_resolving_the_system_time
 	{
 		It should_be_the_current_time = () =>
-			SystemTime.UtcNow.ShouldBeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(10));
+			SystemTime.UtcNow.Should().BeCloseTo(DateTime.UtcNow + TimeSpan.FromMilliseconds(10));
 	}
 
 	[Subject(typeof(SystemTime))]
@@ -21,12 +23,12 @@ namespace NanoMessageBus
 			SystemTime.TimeResolver = () => Instant;
 
 		It should_be_the_time_specified = () =>
-			SystemTime.UtcNow.ShouldEqual(Instant);
+			SystemTime.UtcNow.Should().Be(Instant);
 
 		It should_remain_the_time_specified = () =>
 		{
 			Thread.Sleep(1);
-			SystemTime.UtcNow.ShouldEqual(Instant);
+			SystemTime.UtcNow.Should().Be(Instant);
 		};
 
 		Cleanup after = () =>
@@ -48,10 +50,10 @@ namespace NanoMessageBus
 		};
 
 		It should_yield_the_number_of_seconds_since_Unix_epoch_time_1970 = () =>
-			milliseconds.ShouldEqual(946684800000);
+			milliseconds.Should().Be(946684800000);
 
 		It should_be_able_to_convert_epoch_time_back_to_a_regular_DateTime = () =>
-			converted.ShouldEqual(Instant);
+			converted.Should().Be(Instant);
 
 		Cleanup after = () =>
 			SystemTime.TimeResolver = null;
@@ -68,7 +70,7 @@ namespace NanoMessageBus
 			Sleep.Sleep();
 
 		It should_let_the_current_thread_sleep = () =>
-			SystemTime.UtcNow.ShouldBeCloseTo(Now + Sleep, TimeSpan.FromMilliseconds(200));
+			SystemTime.UtcNow.Should().BeCloseTo(Now + Sleep + TimeSpan.FromMilliseconds(200));
 
 		static readonly TimeSpan Sleep = TimeSpan.FromMilliseconds(250);
 		static readonly DateTime Now = SystemTime.UtcNow;

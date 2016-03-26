@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 	using Logging;
@@ -7,27 +9,27 @@
 	{
 		public virtual bool DispatchOnly
 		{
-			get { return this.configuration.DispatchOnly; }
+			get { return this._configuration.DispatchOnly; }
 		}
 
 		public virtual void Initialize()
 		{
-			Log.Info("Initializing channel group '{0}'.", this.configuration.GroupName);
+			Log.Info("Initializing channel group '{0}'.", this._configuration.GroupName);
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Initialize).");
-				if (this.initialized)
+				if (this._initialized)
 				{
 					Log.Verbose("Exiting critical section (Initialize)--already initialized.");
 					return;
 				}
 
-				this.initialized = true;
+				this._initialized = true;
 				this.ThrowWhenDisposed();
 
-				Log.Debug("Initializing workers for channel group '{0}'.", this.configuration.GroupName);
-				this.workers.Initialize(this.TryConnect, this.CanConnect);
+				Log.Debug("Initializing workers for channel group '{0}'.", this._configuration.GroupName);
+				this._workers.Initialize(this.TryConnect, this.CanConnect);
 
 				if (!this.DispatchOnly)
 				{
@@ -35,8 +37,8 @@
 					return;
 				}
 
-				Log.Info("Starting dispatch-only worker queue for channel group '{0}'.", this.configuration.GroupName);
-				this.workers.StartQueue();
+				Log.Info("Starting dispatch-only worker queue for channel group '{0}'.", this._configuration.GroupName);
+				this._workers.StartQueue();
 				this.TryOperation(() => { using (this.Connect()) { } });
 				Log.Verbose("Exiting critical section (Initialize).");
 			}
@@ -48,7 +50,7 @@
 		}
 		protected virtual IMessagingChannel TryConnect()
 		{
-			Log.Debug("Attempting to establish a channel within channel group '{0}'.", this.configuration.GroupName);
+			Log.Debug("Attempting to establish a channel within channel group '{0}'.", this._configuration.GroupName);
 
 			try
 			{
@@ -56,11 +58,11 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				Log.Debug("The messaging infrastructure for channel group '{0}' is unavailable.", this.configuration.GroupName);
+				Log.Debug("The messaging infrastructure for channel group '{0}' is unavailable.", this._configuration.GroupName);
 			}
 			catch (ObjectDisposedException)
 			{
-				Log.Debug("Unable to establish a connection for channel group '{0}'; an underlying object has already been disposed.", this.configuration.GroupName);
+				Log.Debug("Unable to establish a connection for channel group '{0}'; an underlying object has already been disposed.", this._configuration.GroupName);
 			}
 
 			return null;
@@ -70,24 +72,24 @@
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenDisposed();
 
-			return this.connector.Connect(this.configuration.GroupName); // thus causing cancellation and retry
+			return this._connector.Connect(this._configuration.GroupName); // thus causing cancellation and retry
 		}
 
 		public virtual IMessagingChannel OpenChannel()
 		{
-			Log.Debug("Opening a caller-owned channel for group '{0}'.", this.configuration.GroupName);
+			Log.Debug("Opening a caller-owned channel for group '{0}'.", this._configuration.GroupName);
 			return this.Connect();
 		}
 
 		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
 		{
 			if (callback == null)
-				throw new ArgumentNullException("callback");
+				throw new ArgumentNullException(nameof(callback));
 
 			this.ThrowWhenUninitialized();
 			this.ThrowWhenFullDuplex();
 
-			return this.workers.Enqueue(worker => this.TryBeginDispatch(worker, callback));
+			return this._workers.Enqueue(worker => this.TryBeginDispatch(worker, callback));
 		}
 		protected virtual void TryBeginDispatch(IWorkItem<IMessagingChannel> worker, Action<IDispatchContext> callback)
 		{
@@ -106,14 +108,14 @@
 			});
 		}
 
-		public virtual void BeginReceive(Action<IDeliveryContext> callback)
+		public virtual void BeginReceive(Func<IDeliveryContext, Task> callback)
 		{
 			if (callback == null)
-				throw new ArgumentNullException("callback");
+				throw new ArgumentNullException(nameof(callback));
 
-			Log.Info("Beginning receive operation for channel group '{0}'.", this.configuration.GroupName);
+			Log.Info("Beginning receive operation for channel group '{0}'.", this._configuration.GroupName);
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (BeginReceive).");
 				this.ThrowWhenDisposed();
@@ -121,8 +123,8 @@
 				this.ThrowWhenAlreadyReceiving();
 				this.ThrowWhenDispatchOnly();
 
-				this.receiving = true;
-				this.workers.StartActivity(worker => this.TryOperation(() =>
+				this._receiving = true;
+				this._workers.StartActivity(worker => this.TryOperation(() =>
 					worker.State.Receive(context => worker.PerformOperation(() => callback(context)))));
 				Log.Verbose("Exiting critical section (BeginReceive).");
 			}
@@ -135,8 +137,8 @@
 			}
 			catch (ChannelConnectionException)
 			{
-				Log.Debug("Unable to perform operation on channel group '{0}', the connection is unavailable.", this.configuration.GroupName);
-				this.TryOperation(this.workers.Restart); // may already be disposed
+				Log.Debug("Unable to perform operation on channel group '{0}', the connection is unavailable.", this._configuration.GroupName);
+				this.TryOperation(this._workers.Restart); // may already be disposed
 			}
 			catch (ObjectDisposedException)
 			{
@@ -146,7 +148,7 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this.disposed)
+			if (!this._disposed)
 				return;
 
 			Log.Warn("The channel group has been disposed.");
@@ -154,7 +156,7 @@
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (this.initialized)
+			if (this._initialized)
 				return;
 
 			Log.Warn("The channel group has not been initialized.");
@@ -162,7 +164,7 @@
 		}
 		protected virtual void ThrowWhenFullDuplex()
 		{
-			if (this.configuration.DispatchOnly)
+			if (this._configuration.DispatchOnly)
 				return;
 
 			Log.Warn("Dispatch can only be performed using a dispatch-only channel group.");
@@ -170,7 +172,7 @@
 		}
 		protected virtual void ThrowWhenDispatchOnly()
 		{
-			if (!this.configuration.DispatchOnly)
+			if (!this._configuration.DispatchOnly)
 				return;
 
 			Log.Warn("Dispatch-only channel groups cannot receive messages.");
@@ -178,7 +180,7 @@
 		}
 		protected virtual void ThrowWhenAlreadyReceiving()
 		{
-			if (!this.receiving)
+			if (!this._receiving)
 				return;
 
 			Log.Warn("A callback has already been provided.");
@@ -188,9 +190,9 @@
 		public DefaultChannelGroup(
 			IChannelConnector connector, IChannelGroupConfiguration configuration, IWorkerGroup<IMessagingChannel> workers)
 		{
-			this.connector = connector;
-			this.configuration = configuration;
-			this.workers = workers;
+			this._connector = connector;
+			this._configuration = configuration;
+			this._workers = workers;
 		}
 		~DefaultChannelGroup()
 		{
@@ -208,17 +210,17 @@
 				return;
 
 			Log.Verbose("Disposing channel group.");
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Dispose).");
-				if (this.disposed)
+				if (this._disposed)
 				{
 					Log.Verbose("Exiting critical section (Dispose)--already disposed.");
 					return;
 				}
 
-				this.disposed = true;
-				this.workers.TryDispose();
+				this._disposed = true;
+				this._workers.TryDispose();
 
 				Log.Info("Channel group disposed.");
 				Log.Verbose("Exiting critical section (Dispose).");
@@ -226,12 +228,12 @@
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelGroup));
-		private readonly object sync = new object();
-		private readonly IChannelConnector connector;
-		private readonly IChannelGroupConfiguration configuration;
-		private readonly IWorkerGroup<IMessagingChannel> workers;
-		private bool receiving;
-		private bool initialized;
-		private bool disposed;
+		private readonly object _sync = new object();
+		private readonly IChannelConnector _connector;
+		private readonly IChannelGroupConfiguration _configuration;
+		private readonly IWorkerGroup<IMessagingChannel> _workers;
+		private bool _receiving;
+		private bool _initialized;
+		private bool _disposed;
 	}
 }

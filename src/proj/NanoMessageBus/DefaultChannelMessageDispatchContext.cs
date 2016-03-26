@@ -8,7 +8,7 @@
 	{
 		public virtual int MessageCount
 		{
-			get { return this.dispatched ? 0 : 1; }
+			get { return this._dispatched ? 0 : 1; }
 		}
 		public virtual int HeaderCount
 		{
@@ -37,9 +37,9 @@
 		public virtual IDispatchContext WithRecipient(Uri recipient)
 		{
 			if (recipient == null)
-				throw new ArgumentNullException("recipient");
+				throw new ArgumentNullException(nameof(recipient));
 
-			this.recipients.Add(recipient);
+			this._recipients.Add(recipient);
 			return this;
 		}
 		public virtual IDispatchContext WithState(object state)
@@ -50,10 +50,10 @@
 		public virtual IChannelTransaction Send(params object[] messages)
 		{
 			this.ThrowWhenDispatched();
-			this.dispatched = true;
+			this._dispatched = true;
 
-			this.channel.Send(new ChannelEnvelope(this.channelMessage, this.recipients, this.channelMessage));
-			return this.channel.CurrentTransaction;
+			this._channel.Send(new ChannelEnvelope(this._channelMessage, this._recipients, this._channelMessage));
+			return this._channel.CurrentTransaction;
 		}
 		public virtual IChannelTransaction Publish(params object[] messages)
 		{
@@ -66,7 +66,7 @@
 
 		protected virtual void ThrowWhenDispatched()
 		{
-			if (!this.dispatched)
+			if (!this._dispatched)
 				return;
 
 			Log.Warn("The set of messages has already been dispatched.");
@@ -76,19 +76,19 @@
 		public DefaultChannelMessageDispatchContext(IMessagingChannel channel, ChannelMessage channelMessage)
 		{
 			if (channel == null)
-				throw new ArgumentNullException("channel");
+				throw new ArgumentNullException(nameof(channel));
 
 			if (channelMessage == null)
-				throw new ArgumentNullException("channelMessage");
+				throw new ArgumentNullException(nameof(channelMessage));
 
-			this.channel = channel;
-			this.channelMessage = channelMessage;
+			this._channel = channel;
+			this._channelMessage = channelMessage;
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultChannelMessageDispatchContext));
-		private readonly ICollection<Uri> recipients = new LinkedList<Uri>();
-		private readonly IMessagingChannel channel;
-		private readonly ChannelMessage channelMessage;
-		private bool dispatched;
+		private readonly ICollection<Uri> _recipients = new LinkedList<Uri>();
+		private readonly IMessagingChannel _channel;
+		private readonly ChannelMessage _channelMessage;
+		private bool _dispatched;
 	}
 }

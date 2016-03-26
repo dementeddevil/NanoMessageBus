@@ -9,16 +9,16 @@
 	{
 		public virtual ConnectionState CurrentState
 		{
-			get { return this.connector.CurrentState; }
+			get { return this._connector.CurrentState; }
 		}
 		public virtual IEnumerable<IChannelGroupConfiguration> ChannelGroups
 		{
-			get { return this.connector.ChannelGroups; }
+			get { return this._connector.ChannelGroups; }
 		}
 		public virtual IMessagingChannel Connect(string channelGroup)
 		{
 			Log.Debug("Attempting to open a channel for group '{0}'.", channelGroup);
-			var channel = this.connector.Connect(channelGroup);
+			var channel = this._connector.Connect(channelGroup);
 			var auditors = this.ResolveAuditors(channel);
 
 			if (auditors.Count > 0)
@@ -28,27 +28,27 @@
 			}
 
 			Log.Info("No auditors have been configured, no further attempts to audit will occur.");
-			this.emptyFactory = true;
+			this._emptyFactory = true;
 			return channel;
 		}
 		protected virtual ICollection<IMessageAuditor> ResolveAuditors(IMessagingChannel channel)
 		{
-			if (this.emptyFactory)
+			if (this._emptyFactory)
 				return new IMessageAuditor[0];
 
-			return this.auditorFactory(channel).Where(x => x != null).ToArray();
+			return this._auditorFactory(channel).Where(x => x != null).ToArray();
 		}
 
 		public AuditConnector(IChannelConnector connector, Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory)
 		{
 			if (connector == null)
-				throw new ArgumentNullException("connector");
+				throw new ArgumentNullException(nameof(connector));
 
 			if (auditorFactory == null)
-				throw new ArgumentNullException("auditorFactory");
+				throw new ArgumentNullException(nameof(auditorFactory));
 
-			this.connector = connector;
-			this.auditorFactory = auditorFactory;
+			this._connector = connector;
+			this._auditorFactory = auditorFactory;
 		}
 		~AuditConnector()
 		{
@@ -66,12 +66,12 @@
 				return;
 
 			Log.Debug("Disposing the underlying connection.");
-			this.connector.TryDispose();
+			this._connector.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditConnector));
-		private readonly IChannelConnector connector;
-		private readonly Func<IMessagingChannel, IEnumerable<IMessageAuditor>> auditorFactory;
-		private bool emptyFactory;
+		private readonly IChannelConnector _connector;
+		private readonly Func<IMessagingChannel, IEnumerable<IMessageAuditor>> _auditorFactory;
+		private bool _emptyFactory;
 	}
 }

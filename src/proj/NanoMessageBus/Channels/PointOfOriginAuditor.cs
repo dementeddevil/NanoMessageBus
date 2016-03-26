@@ -9,7 +9,7 @@
 		public virtual void AuditReceive(IDeliveryContext delivery)
 		{
 			if (delivery == null)
-				throw new ArgumentNullException("delivery");
+				throw new ArgumentNullException(nameof(delivery));
 
 			var header = delivery.CurrentMessage.Headers.TryGetValue(DispatchStamp);
 
@@ -20,7 +20,7 @@
 		public virtual void AuditSend(ChannelEnvelope envelope, IDeliveryContext delivery)
 		{
 			if (envelope == null)
-				throw new ArgumentNullException("envelope");
+				throw new ArgumentNullException(nameof(envelope));
 
 			if (delivery != null && delivery.CurrentMessage == envelope.Message)
 				return;

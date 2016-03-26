@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -15,7 +17,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new TransactionScopeDeliveryHandler(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static Exception thrown;
 	}
@@ -26,16 +28,16 @@ namespace NanoMessageBus
 		Establish context = () =>
 		{
 			mockHandler = new Mock<IDeliveryHandler>();
-			mockHandler.Setup(x => x.Handle(Delivery));
+			mockHandler.Setup(x => x.HandleAsync(Delivery));
 
 			handler = new TransactionScopeDeliveryHandler(mockHandler.Object);
 		};
 
 		Because of = () =>
-			handler.Handle(Delivery);
+			handler.HandleAsync(Delivery).Await();
 
 		It should_invoke_the_underlying_handle_method = () =>
-			mockHandler.Verify(x => x.Handle(Delivery), Times.Once());
+			mockHandler.Verify(x => x.HandleAsync(Delivery), Times.Once());
 
 		static TransactionScopeDeliveryHandler handler;
 		static Mock<IDeliveryHandler> mockHandler;

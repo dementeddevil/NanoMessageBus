@@ -9,12 +9,13 @@ namespace NanoMessageBus.Serialization
 	using System.Runtime.Serialization;
 	using System.Text;
 	using Machine.Specifications;
+    using FluentAssertions;
 
 	[Subject(typeof(JsonSerializer))]
 	public class when_serializing_an_undecorated_structure
 	{
 		It should_retain_pascal_casing = () =>
-			new Plain(42).ToJson().ShouldEqual("{'PascalCase':42}".Quote());
+			new Plain(42).ToJson().Should("{'PascalCase':42}".Quote());
 	}
 	internal class Plain
 	{
@@ -30,7 +31,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_a_decorated_structure
 	{
 		It should_serialize_according_to_the_datacontract = () =>
-			new Decorated(42).ToJson().ShouldEqual("{'PascalCase':42,'lowercase':42}".Quote());
+			new Decorated(42).ToJson().Should("{'PascalCase':42,'lowercase':42}".Quote());
 	}
 	[DataContract]
 	internal class Decorated
@@ -55,7 +56,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_underscore_decorated_structure
 	{
 		It should_serialize_with_underscore = () =>
-			new UnderscorePlain(42).ToJson().ShouldEqual("{'underscore_casing':42}".Quote());
+			new UnderscorePlain(42).ToJson().Should("{'underscore_casing':42}".Quote());
 	}
 	[Description("json:underscore")]
 	internal class UnderscorePlain
@@ -72,7 +73,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_underscore_and_datacontract_decorated_structure
 	{
 		It should_serialize_with_underscore_and_according_to_the_contract = () =>
-			new UnderscoreDecorated(42).ToJson().ShouldEqual("{'underscore_casing':42,'MyCasing':42}".Quote());
+			new UnderscoreDecorated(42).ToJson().Should("{'underscore_casing':42,'MyCasing':42}".Quote());
 	}
 	[DataContract]
 	[Description("json:underscore")]
@@ -98,7 +99,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_undecorated_outer_and_inner_structure
 	{
 		It should_serialize_both_with_pascal_casing = () =>
-			new PlainOuter().ToJson().ShouldEqual("{'InnerPlain':{'PascalCase':42}}".Quote());
+			new PlainOuter().ToJson().Should("{'InnerPlain':{'PascalCase':42}}".Quote());
 	}
 	internal class PlainOuter
 	{
@@ -114,7 +115,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_undecorated_outer_but_underscore_decorated_inner_structure
 	{
 		It should_serialize_the_outer_with_pascal_and_inner_with_underscores = () =>
-			new PlainOuter2().ToJson().ShouldEqual("{'UnderscoreInner':{'underscore_casing':42}}".Quote());
+			new PlainOuter2().ToJson().Should("{'UnderscoreInner':{'underscore_casing':42}}".Quote());
 	}
 	internal class PlainOuter2
 	{
@@ -130,7 +131,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_underscore_decorated_outer_but_undecorated_inner_structure
 	{
 		It should_serialize_the_outer_with_underscores_and_inner_with_pascal_case = () =>
-			new UnderscoreOuter().ToJson().ShouldEqual("{'plain_inner':{'PascalCase':42}}".Quote());
+			new UnderscoreOuter().ToJson().Should("{'plain_inner':{'PascalCase':42}}".Quote());
 	}
 	[Description("json:underscore")]
 	internal class UnderscoreOuter
@@ -147,7 +148,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_underscore_decorated_outer_and_inner_structure
 	{
 		It should_serialize_the_everything_with_inner_with_underscores = () =>
-			new UnderscoreComplex().ToJson().ShouldEqual("{'underscore_inner':{'underscore_casing':42},'keys':{'Hello':'World!'}}".Quote());
+			new UnderscoreComplex().ToJson().Should("{'underscore_inner':{'underscore_casing':42},'keys':{'Hello':'World!'}}".Quote());
 	}
 	[Description("json:underscore")]
 	internal class UnderscoreComplex
@@ -167,7 +168,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_undecorated_structure_and_enum
 	{
 		It should_serialize_to_pascal_case = () =>
-			new UndecoratedEnumWrapper().ToJson().ShouldEqual("{'PlainEnum':'PascalCase'}".Quote());
+			new UndecoratedEnumWrapper().ToJson().Should("{'PlainEnum':'PascalCase'}".Quote());
 	}
 	public class UndecoratedEnumWrapper
 	{
@@ -188,7 +189,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_undecorated_structure_but_underscore_decorated_enum
 	{
 		It should_serialize_the_outer_with_pascal_and_inner_with_underscores = () =>
-			new UndecoratedUnderscoreEnumWrapper().ToJson().ShouldEqual("{'DecoratedEnum':'underscore_casing'}".Quote());
+			new UndecoratedUnderscoreEnumWrapper().ToJson().Should("{'DecoratedEnum':'underscore_casing'}".Quote());
 	}
 	public class UndecoratedUnderscoreEnumWrapper
 	{
@@ -211,7 +212,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_underscore_decorated_structure_but_plain_enum
 	{
 		It should_serialize_the_outer_with_underscores_and_inner_with_pascal = () =>
-			new UnderscoreWrapper().ToJson().ShouldEqual("{'underscore_casing':'PascalCase'}".Quote());
+			new UnderscoreWrapper().ToJson().Should("{'underscore_casing':'PascalCase'}".Quote());
 	}
 	[Description("json:underscore")]
 	public class UnderscoreWrapper
@@ -228,7 +229,7 @@ namespace NanoMessageBus.Serialization
 	public class when_serializing_an_underscore_decorated_structure_with_underscore_enum
 	{
 		It should_serialize_both_with_underscores = () =>
-			new UnderscoreWrapper2().ToJson().ShouldEqual("{'underscore_casing':'underscore_casing'}".Quote());
+			new UnderscoreWrapper2().ToJson().Should("{'underscore_casing':'underscore_casing'}".Quote());
 	}
 	[Description("json:underscore")]
 	public class UnderscoreWrapper2
@@ -245,7 +246,7 @@ namespace NanoMessageBus.Serialization
 	public class when_deserializing_an_underscore_decorated_structure_with_underscore_enum
 	{
 		It should_deserialize_both_from_underscores = () =>
-			"{'underscore_casing':'another_option'}".Quote().ToObject<UnderscoreWrapper2>().UnderscoreCasing.ShouldEqual(UnderscoreEnum.AnotherOption);
+			"{'underscore_casing':'another_option'}".Quote().ToObject<UnderscoreWrapper2>().UnderscoreCasing.Should(UnderscoreEnum.AnotherOption);
 
 		static UnderscoreWrapper2 value;
 	}

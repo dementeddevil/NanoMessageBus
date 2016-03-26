@@ -1,4 +1,7 @@
-﻿#pragma warning disable 169, 414
+﻿using System.Threading.Tasks;
+using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -18,7 +21,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new DefaultMessagingHost(null, EmptyFactory));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -32,7 +35,7 @@ namespace NanoMessageBus
 				new DefaultMessagingHost(Connectors, EmptyFactory));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -45,7 +48,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new DefaultMessagingHost(Connectors, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -85,10 +88,10 @@ namespace NanoMessageBus
 			mockGroup.Verify(x => x.Initialize(), Times.Exactly(3)); // tests provide the same group 3 times
 
 		It should_return_the_primary_channel_group = () =>
-			((IndisposableChannelGroup)primaryGroup).Inner.ShouldEqual(mockGroup.Object);  // need improve test because same group is returned
+			((IndisposableChannelGroup)primaryGroup).Inner.Should().Be(mockGroup.Object);  // need improve test because same group is returned
 
 		It should_wrap_the_primary_channel_group_so_it_cannot_be_accidentally_disposed = () =>
-			primaryGroup.ShouldBeOfType<IndisposableChannelGroup>();
+			primaryGroup.Should().BeOfType<IndisposableChannelGroup>();
 
 		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
 		static readonly Mock<IChannelGroupConfiguration> config1 = new Mock<IChannelGroupConfiguration>();
@@ -123,7 +126,7 @@ namespace NanoMessageBus
 			mockFactory.Verify(x => x.Build(Connectors[0], config0.Object), Times.Once());
 
 		It should_return_the_primary_group_each_time = () =>
-			groups.ForEach(x => x.ShouldEqual(groups.First()));
+			groups.ForEach(x => x.Should().Be(groups.First()));
 
 		static readonly Mock<IChannelGroupConfiguration> config0 = new Mock<IChannelGroupConfiguration>();
 		static readonly List<IChannelGroup> groups = new List<IChannelGroup>();
@@ -139,7 +142,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => host.Initialize());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	public class when_initializing_does_not_create_any_channel_groups : with_the_messaging_host
@@ -151,7 +154,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => host.Initialize());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ConfigurationErrorsException>();
+			thrown.Should().BeOfType<ConfigurationErrorsException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -181,7 +184,7 @@ namespace NanoMessageBus
 			otherGroup.Verify(x => x.BeginReceive(callback), Times.Never());
 
 		static readonly Mock<IChannelGroup> otherGroup = new Mock<IChannelGroup>();
-		static readonly Action<IDeliveryContext> callback = channel => { };
+		static readonly Func<IDeliveryContext, Task> callback = channel => { return Task.FromResult(true); };
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -198,29 +201,29 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => host.BeginReceive(callback));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 
-		static readonly Action<IDeliveryContext> callback = channel => { };
-	}
+        static readonly Func<IDeliveryContext, Task> callback = channel => { return Task.FromResult(true); };
+    }
 
-	[Subject(typeof(DefaultMessagingHost))]
+    [Subject(typeof(DefaultMessagingHost))]
 	public class when_instructed_to_begin_receiving_messages_without_providing_a_callback : with_the_messaging_host
 	{
 		Because of = () =>
 			thrown = Catch.Exception(() => host.BeginReceive(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
 	public class when_attempting_to_begin_receiving_messages_without_first_initializing_the_host : with_the_messaging_host
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginReceive(c => { }));
+			thrown = Catch.Exception(() => host.BeginReceive(c => { return Task.FromResult(true); }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -233,10 +236,10 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => host.BeginReceive(c => { }));
+			thrown = Catch.Exception(() => host.BeginReceive(c => { return Task.FromResult(true); }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultMessagingHost))]
@@ -246,10 +249,10 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => group = host[defaultGroupName]);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 
 		It should_not_return_a_group = () =>
-			group.ShouldBeNull();
+			group.Should().BeNull();
 
 		static IChannelGroup group;
 	}
@@ -264,10 +267,10 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => group = host[null]);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		It should_not_return_a_group = () =>
-			group.ShouldBeNull();
+			group.Should().BeNull();
 
 		static IChannelGroup group;
 	}
@@ -282,10 +285,10 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => group = host["Some channel group that doesn't exist."]);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<KeyNotFoundException>();
+			thrown.Should().BeOfType<KeyNotFoundException>();
 
 		It should_not_return_a_group = () =>
-			group.ShouldBeNull();
+			group.Should().BeNull();
 
 		static IChannelGroup group;
 	}
@@ -300,10 +303,10 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => group = host[defaultGroupName]);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 
 		It should_not_return_a_group = () =>
-			group.ShouldBeNull();
+			group.Should().BeNull();
 
 		static IChannelGroup group;
 	}
@@ -327,10 +330,10 @@ namespace NanoMessageBus
 			group = host[defaultGroupName];
 
 		It should_wrap_the_returned_instance_so_it_cannot_be_accidentally_disposed = () =>
-			group.ShouldBeOfType<IndisposableChannelGroup>();
+			group.Should().BeOfType<IndisposableChannelGroup>();
 
 		It should_return_the_correct_instance = () =>
-			((IndisposableChannelGroup)group).Inner.ShouldEqual(mockGroup.Object);
+			((IndisposableChannelGroup)group).Inner.Should().Be(mockGroup.Object);
 
 		static IChannelGroup group;
 	}

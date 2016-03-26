@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -15,7 +17,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new DefaultDeliveryHandler(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static Exception thrown;
 	}
@@ -24,10 +26,10 @@ namespace NanoMessageBus
 	public class when_a_null_delivery_is_provided
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => handler.Handle(null));
+			thrown = Catch.Exception(() => handler.HandleAsync(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static readonly DefaultDeliveryHandler handler = new DefaultDeliveryHandler(new DefaultRoutingTable());
 		static Exception thrown;
@@ -50,7 +52,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handler.Handle(mockDelivery.Object);
+			handler.HandleAsync(mockDelivery.Object).Await();
 
 		It should_provide_the_current_message_to_the_routing_table = () =>
 			mockRoutingTable.Verify(x => x.Route(Moq.It.IsAny<DefaultHandlerContext>(), mockMessage.Object), Times.Once());

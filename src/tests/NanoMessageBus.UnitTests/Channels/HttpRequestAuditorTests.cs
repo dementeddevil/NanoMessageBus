@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -19,7 +21,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new HttpRequestAuditor(null));
 
 		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -29,7 +31,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditReceive(null);
 
 		It should_do_nothing = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -42,7 +44,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_not_append_anything_to_the_headers = () =>
-			messageHeaders.Count.ShouldEqual(0);
+			messageHeaders.Count.Should().Be(0);
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -64,28 +66,28 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_the_browser_useragent_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-useragent"].ShouldEqual("MyBrowser");
+			messageHeaders["x-audit-useragent"].Should().Be("MyBrowser");
 
 		It should_append_the_client_ip_address_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1");
+			messageHeaders["x-audit-client-ip"].Should().Be("127.0.0.1");
 
 		It should_append_the_server_ip_address_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-server-ip"].ShouldEqual("192.168.0.1");
+			messageHeaders["x-audit-server-ip"].Should().Be("192.168.0.1");
 
 		It should_append_the_raw_url_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-raw-url"].ShouldEqual("/raw-url/?#");
+			messageHeaders["x-audit-raw-url"].Should().Be("/raw-url/?#");
 
 		It should_append_the_hostname_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-hostname"].ShouldEqual("www.google.com");
+			messageHeaders["x-audit-hostname"].Should().Be("www.google.com");
 
 		It should_append_the_http_method_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-http-method"].ShouldEqual("my-method");
+			messageHeaders["x-audit-http-method"].Should().Be("my-method");
 
 		It should_append_the_referring_url_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-referring-url"].ShouldEqual("http://domain.com/referer");
+			messageHeaders["x-audit-referring-url"].Should().Be("http://domain.com/referer");
 
 		It should_append_the_request_stamp_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000Z");
+			messageHeaders["x-audit-request-stamp"].Should().Be("2010-01-01T00:00:00.0000000Z");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -98,7 +100,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_not_append_the_header_to_the_message = () =>
-			messageHeaders.ContainsKey("x-audit-useragent").ShouldBeFalse();
+			messageHeaders.ContainsKey("x-audit-useragent").Should().BeFalse();
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -121,22 +123,22 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_the_browser_useragent_from_the_envelope_state_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-useragent"].ShouldEqual("MyBrowser");
+			messageHeaders["x-audit-useragent"].Should().Be("MyBrowser");
 
 		It should_append_the_client_ip_address_from_the_envelope_state_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1");
+			messageHeaders["x-audit-client-ip"].Should().Be("127.0.0.1");
 
 		It should_append_the_raw_url_from_the_envelope_state_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-raw-url"].ShouldEqual("/raw-url/?#");
+			messageHeaders["x-audit-raw-url"].Should().Be("/raw-url/?#");
 
 		It should_append_the_http_method_from_the_envelope_state_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-http-method"].ShouldEqual("my-method");
+			messageHeaders["x-audit-http-method"].Should().Be("my-method");
 
 		It should_append_the_referring_from_the_envelope_state_url_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-referring-url"].ShouldEqual("http://domain.com/referer");
+			messageHeaders["x-audit-referring-url"].Should().Be("http://domain.com/referer");
 
 		It should_append_the_request_from_the_envelope_state_stamp_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-request-stamp"].ShouldEqual("2010-01-01T00:00:00.0000000Z");
+			messageHeaders["x-audit-request-stamp"].Should().Be("2010-01-01T00:00:00.0000000Z");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -152,7 +154,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_append_all_client_ip_address_to_the_outgoing_headers = () =>
-			messageHeaders["x-audit-client-ip"].ShouldEqual("1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1");
+			messageHeaders["x-audit-client-ip"].Should().Be("1.1.1.1, 2.2.2.2, 3.3.3.3, 127.0.0.1");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -168,7 +170,7 @@ namespace NanoMessageBus.Channels
 			auditor.AuditSend(mockEnvelope.Object, null);
 
 		It should_return_only_the_unique_values = () =>
-			messageHeaders["x-audit-client-ip"].ShouldEqual("127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3");
+			messageHeaders["x-audit-client-ip"].Should().Be("127.0.0.1, 1.1.1.1, 2.2.2.2, 3.3.3.3");
 	}
 
 	[Subject(typeof(HttpRequestAuditor))]
@@ -178,7 +180,7 @@ namespace NanoMessageBus.Channels
 			auditor.Dispose();
 
 		It should_not_do_anything = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	public abstract class using_an_http_request_auditor

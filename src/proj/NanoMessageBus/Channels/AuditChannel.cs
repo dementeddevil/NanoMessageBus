@@ -28,7 +28,7 @@
 		}
 		protected virtual IDeliveryContext CurrentContext
 		{
-			get { return this.currentContext ?? this.channel; }
+			get { return this._currentContext ?? this._channel; }
 		}
 
 		public virtual IDispatchContext PrepareDispatch(object message = null, IMessagingChannel actual = null)
@@ -39,19 +39,19 @@
 		public virtual void Send(ChannelEnvelope envelope)
 		{
 			if (envelope == null)
-				throw new ArgumentNullException("envelope");
+				throw new ArgumentNullException(nameof(envelope));
 
 			this.ThrowWhenDisposed();
 
 			this.CurrentTransaction.Register(() => this.AuditSend(envelope));
 
 			Log.Verbose("Sending envelope through the underlying channel.", envelope.MessageId());
-			this.channel.Send(envelope);
+			this._channel.Send(envelope);
 		}
 		private void AuditSend(ChannelEnvelope envelope)
 		{
 			var messageId = envelope.MessageId();
-			foreach (var auditor in this.auditors)
+			foreach (var auditor in this._auditors)
 			{
 				Log.Debug("Providing envelope '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
 				auditor.AuditSend(envelope, this);
@@ -60,11 +60,11 @@
 
 		public virtual void BeginShutdown()
 		{
-			this.channel.BeginShutdown();
+			this._channel.BeginShutdown();
 		}
 		public virtual void Receive(Action<IDeliveryContext> callback)
 		{
-			this.channel.Receive(context => this.Receive(context, callback));
+			this._channel.Receive(context => this.Receive(context, callback));
 		}
 		protected virtual void Receive(IDeliveryContext context, Action<IDeliveryContext> callback)
 		{
@@ -73,19 +73,19 @@
 				this.AuditReceive(context);
 
 				Log.Verbose("Routing delivery to configured callback.");
-				this.currentContext = context;
+				this._currentContext = context;
 				callback(this);
 			}
 			finally
 			{
-				this.currentContext = null;
+				this._currentContext = null;
 			}
 		}
 		private void AuditReceive(IDeliveryContext context)
 		{
 			var messageId = context.CurrentMessage.MessageId;
 
-			foreach (var auditor in this.auditors)
+			foreach (var auditor in this._auditors)
 			{
 				Log.Debug("Routing delivery for message '{0}' for inspection to auditor of type '{1}'.", messageId, auditor.GetType());
 				auditor.AuditReceive(context);
@@ -94,7 +94,7 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this.disposed)
+			if (!this._disposed)
 				return;
 
 			Log.Warn("The channel has been disposed.");
@@ -104,16 +104,16 @@
 		public AuditChannel(IMessagingChannel channel, ICollection<IMessageAuditor> auditors)
 		{
 			if (channel == null)
-				throw new ArgumentNullException("channel");
+				throw new ArgumentNullException(nameof(channel));
 
 			if (auditors == null)
-				throw new ArgumentNullException("auditors");
+				throw new ArgumentNullException(nameof(auditors));
 
 			if (auditors.Count == 0)
-				throw new ArgumentException("At least one auditor must be provided.", "auditors");
+				throw new ArgumentException("At least one auditor must be provided.", nameof(auditors));
 
-			this.channel = channel;
-			this.auditors = new List<IMessageAuditor>(auditors);
+			this._channel = channel;
+			this._auditors = new List<IMessageAuditor>(auditors);
 		}
 		~AuditChannel()
 		{
@@ -127,27 +127,27 @@
 		}
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposing || this.disposed)
+			if (!disposing || this._disposed)
 				return;
 
-			this.disposed = true;
+			this._disposed = true;
 
-			foreach (var auditor in this.auditors)
+			foreach (var auditor in this._auditors)
 			{
 				Log.Verbose("Disposing auditor of type '{0}'.", auditor.GetType());
 				auditor.TryDispose();
 			}
 
-			this.auditors.Clear();
+			this._auditors.Clear();
 
 			Log.Verbose("Disposing the underlying channel.");
-			this.channel.TryDispose();
+			this._channel.TryDispose();
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(AuditChannel));
-		private readonly IMessagingChannel channel;
-		private readonly ICollection<IMessageAuditor> auditors;
-		private IDeliveryContext currentContext;
-		private bool disposed;
+		private readonly IMessagingChannel _channel;
+		private readonly ICollection<IMessageAuditor> _auditors;
+		private IDeliveryContext _currentContext;
+		private bool _disposed;
 	}
 }

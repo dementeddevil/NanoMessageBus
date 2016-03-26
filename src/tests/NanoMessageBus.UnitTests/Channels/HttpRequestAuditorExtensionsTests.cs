@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -21,7 +23,7 @@ namespace NanoMessageBus.Channels
 			thrown = Catch.Exception(() => ((HttpContextBase)null).Clone());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static Exception thrown;
 	}
@@ -33,7 +35,7 @@ namespace NanoMessageBus.Channels
 			clone = HttpContext.Current.Clone();
 
 		It should_return_null = () =>
-			clone.ShouldBeNull();
+			clone.Should().BeNull();
 
 		static HttpContextBase clone;
 	}
@@ -45,162 +47,162 @@ namespace NanoMessageBus.Channels
 			clone = original.Clone();
 
 		It should_return_a_object = () =>
-			clone.ShouldNotBeNull();
+			clone.Should().NotBeNull();
 
 		It should_not_return_the_same_instance_as_provided = () =>
-			ReferenceEquals(clone, original).ShouldBeFalse();
+			ReferenceEquals(clone, original).Should().BeFalse();
 
 		It should_populate_the_request = () =>
-			clone.Request.ShouldNotBeNull();
+			clone.Request.Should().NotBeNull();
 
 		It should_not_return_the_same_instance_of_the_request_provided = () =>
-			ReferenceEquals(clone.Request, original.Request).ShouldBeFalse();
+			ReferenceEquals(clone.Request, original.Request).Should().BeFalse();
 
 		It should_return_a_reference_to_any_error_on_the_original = () =>
-			clone.Error.ShouldEqual(original.Error);
+			clone.Error.Should().Be(original.Error);
 
 		It should_return_a_reference_to_all_on_the_original = () =>
 			(clone.AllErrors ?? new Exception[0]).SequenceEqual(
-				original.AllErrors ?? new Exception[0]).ShouldBeTrue();
+				original.AllErrors ?? new Exception[0]).Should().BeTrue();
 
 		It should_indicate_if_debugging_is_enabled = () =>
-			clone.IsDebuggingEnabled.ShouldEqual(original.IsDebuggingEnabled);
+			clone.IsDebuggingEnabled.Should().Be(original.IsDebuggingEnabled);
 
 		It should_indicate_if_custom_errors_are_enabled = () =>
-			clone.IsCustomErrorEnabled.ShouldEqual(original.IsCustomErrorEnabled);
+			clone.IsCustomErrorEnabled.Should().Be(original.IsCustomErrorEnabled);
 
 		It should_indicate_if_the_request_is_a_post = () =>
-			clone.IsPostNotification.ShouldEqual(original.IsPostNotification);
+			clone.IsPostNotification.Should().Be(original.IsPostNotification);
 
 		It should_indicate_if_authorization_has_been_skipped = () =>
-			clone.SkipAuthorization.ShouldEqual(original.SkipAuthorization);
+			clone.SkipAuthorization.Should().Be(original.SkipAuthorization);
 
 		It should_clone_the_context_timestamp = () =>
-			clone.Timestamp.ShouldEqual(original.Timestamp);
+			clone.Timestamp.Should().Be(original.Timestamp);
 
 		It should_return_a_reference_to_the_current_principal = () =>
-			clone.User.ShouldEqual(original.User);
+			clone.User.Should().Be(original.User);
 
 		It should_return_the_same_user_agent = () =>
-			clone.Request.UserAgent.ShouldEqual(original.Request.UserAgent);
+			clone.Request.UserAgent.Should().Be(original.Request.UserAgent);
 
 		It should_return_the_same_accept_types = () =>
-			clone.Request.AcceptTypes.ShouldEqual(original.Request.AcceptTypes);
+			clone.Request.AcceptTypes.Should().BeSameAs(original.Request.AcceptTypes);
 
 		It should_return_the_same_anonymous_id = () =>
-			clone.Request.AnonymousID.ShouldEqual(original.Request.AnonymousID);
+			clone.Request.AnonymousID.Should().Be(original.Request.AnonymousID);
 
 		It should_return_the_same_app_path = () =>
-			clone.Request.ApplicationPath.ShouldEqual(original.Request.ApplicationPath);
+			clone.Request.ApplicationPath.Should().Be(original.Request.ApplicationPath);
 
 		It should_return_the_same_app_relative_path = () =>
-			clone.Request.AppRelativeCurrentExecutionFilePath.ShouldEqual(
+			clone.Request.AppRelativeCurrentExecutionFilePath.Should().Be(
 				original.Request.AppRelativeCurrentExecutionFilePath);
 
 		It should_return_the_same_content_encoding = () =>
-			clone.Request.ContentEncoding.ShouldEqual(original.Request.ContentEncoding);
+			clone.Request.ContentEncoding.Should().Be(original.Request.ContentEncoding);
 
 		It should_return_the_same_content_length = () =>
-			clone.Request.ContentLength.ShouldEqual(original.Request.ContentLength);
+			clone.Request.ContentLength.Should().Be(original.Request.ContentLength);
 
 		It should_return_the_same_content_type = () =>
-			clone.Request.ContentType.ShouldEqual(original.Request.ContentType);
+			clone.Request.ContentType.Should().Be(original.Request.ContentType);
 
 		It should_return_the_same_execution_path = () =>
-			clone.Request.CurrentExecutionFilePath.ShouldEqual(original.Request.CurrentExecutionFilePath);
+			clone.Request.CurrentExecutionFilePath.Should().Be(original.Request.CurrentExecutionFilePath);
 
 		It should_return_the_same_http_method = () =>
-			clone.Request.HttpMethod.ShouldEqual(original.Request.HttpMethod);
+			clone.Request.HttpMethod.Should().Be(original.Request.HttpMethod);
 
 		It should_return_the_same_is_authenticated_property = () =>
-			clone.Request.IsAuthenticated.ShouldEqual(original.Request.IsAuthenticated);
+			clone.Request.IsAuthenticated.Should().Be(original.Request.IsAuthenticated);
 
 		It should_return_the_same_is_local_property = () =>
-			clone.Request.IsLocal.ShouldEqual(original.Request.IsLocal);
+			clone.Request.IsLocal.Should().Be(original.Request.IsLocal);
 
 		It should_return_the_same_is_secure_connection_property = () =>
-			clone.Request.IsSecureConnection.ShouldEqual(original.Request.IsSecureConnection);
+			clone.Request.IsSecureConnection.Should().Be(original.Request.IsSecureConnection);
 
 		It should_return_the_same_path = () =>
-			clone.Request.Path.ShouldEqual(original.Request.Path);
+			clone.Request.Path.Should().Be(original.Request.Path);
 
 		It should_return_the_same_path_info = () =>
-			clone.Request.PathInfo.ShouldEqual(original.Request.PathInfo);
+			clone.Request.PathInfo.Should().Be(original.Request.PathInfo);
 
 		It should_return_the_same_physical_app_path = () =>
-			clone.Request.PhysicalApplicationPath.ShouldEqual(original.Request.PhysicalApplicationPath);
+			clone.Request.PhysicalApplicationPath.Should().Be(original.Request.PhysicalApplicationPath);
 
 		It should_return_the_same_physical_path = () =>
-			clone.Request.PhysicalPath.ShouldEqual(original.Request.PhysicalPath);
+			clone.Request.PhysicalPath.Should().Be(original.Request.PhysicalPath);
 
 		It should_return_the_same_raw_url = () =>
-			clone.Request.RawUrl.ShouldEqual(original.Request.RawUrl);
+			clone.Request.RawUrl.Should().Be(original.Request.RawUrl);
 
 		It should_return_the_same_request_type = () =>
-			clone.Request.RequestType.ShouldEqual(original.Request.RequestType);
+			clone.Request.RequestType.Should().Be(original.Request.RequestType);
 
 		It should_return_the_same_total_bytes_value = () =>
-			clone.Request.TotalBytes.ShouldEqual(original.Request.TotalBytes);
+			clone.Request.TotalBytes.Should().Be(original.Request.TotalBytes);
 
 		It should_return_the_same_url = () =>
-			clone.Request.Url.ShouldEqual(original.Request.Url);
+			clone.Request.Url.Should().Be(original.Request.Url);
 
 		It should_return_the_same_referring_url = () =>
-			clone.Request.UrlReferrer.ShouldEqual(original.Request.UrlReferrer);
+			clone.Request.UrlReferrer.Should().Be(original.Request.UrlReferrer);
 
 		It should_return_the_same_user_host_address = () =>
-			clone.Request.UserHostAddress.ShouldEqual(original.Request.UserHostAddress);
+			clone.Request.UserHostAddress.Should().Be(original.Request.UserHostAddress);
 
 		It should_return_the_same_user_host_name = () =>
-			clone.Request.UserHostName.ShouldEqual(original.Request.UserHostName);
+			clone.Request.UserHostName.Should().Be(original.Request.UserHostName);
 
 		It should_return_the_same_user_languages = () =>
-			clone.Request.UserLanguages.ShouldEqual(original.Request.UserLanguages);
+			clone.Request.UserLanguages.Should().BeSameAs(original.Request.UserLanguages);
 
 		It should_return_the_cookie_collection = () =>
-			clone.Request.Cookies.ShouldNotBeNull();
+			clone.Request.Cookies.Should().NotBeNull();
 
 		It should_return_the_clone_the_cookies = () =>
-			ReferenceEquals(clone.Request.Cookies, original.Request.Cookies).ShouldBeFalse();
+			ReferenceEquals(clone.Request.Cookies, original.Request.Cookies).Should().BeFalse();
 
 		It should_contain_all_request_cookies = () =>
-			clone.Request.Cookies.Count.ShouldEqual(original.Request.Cookies.Count);
+			clone.Request.Cookies.Count.Should().Be(original.Request.Cookies.Count);
 
 		It should_return_the_header_collection = () =>
-			clone.Request.Headers.ShouldNotBeNull();
+			clone.Request.Headers.Should().NotBeNull();
 
 		It should_return_the_clone_the_headers = () =>
-			ReferenceEquals(clone.Request.Headers, original.Request.Headers).ShouldBeFalse();
+			ReferenceEquals(clone.Request.Headers, original.Request.Headers).Should().BeFalse();
 
 		It should_contain_all_request_headers= () =>
-			clone.Request.Headers.Count.ShouldEqual(original.Request.Headers.Count);
+			clone.Request.Headers.Count.Should().Be(original.Request.Headers.Count);
 
 		It should_return_the_form_collection = () =>
-			clone.Request.Form.ShouldNotBeNull();
+			clone.Request.Form.Should().NotBeNull();
 
 		It should_return_the_clone_the_form_data = () =>
-			ReferenceEquals(clone.Request.Form, original.Request.Form).ShouldBeFalse();
+			ReferenceEquals(clone.Request.Form, original.Request.Form).Should().BeFalse();
 
 		It should_contain_all_request_form_data = () =>
-			clone.Request.Form.Count.ShouldEqual(original.Request.Form.Count);
+			clone.Request.Form.Count.Should().Be(original.Request.Form.Count);
 
 		It should_return_the_query_string_collection = () =>
-			clone.Request.QueryString.ShouldNotBeNull();
+			clone.Request.QueryString.Should().NotBeNull();
 
 		It should_return_the_clone_the_query_string_data = () =>
-			ReferenceEquals(clone.Request.QueryString, original.Request.QueryString).ShouldBeFalse();
+			ReferenceEquals(clone.Request.QueryString, original.Request.QueryString).Should().BeFalse();
 
 		It should_contain_all_request_query_string_data = () =>
-			clone.Request.QueryString.Count.ShouldEqual(original.Request.QueryString.Count);
+			clone.Request.QueryString.Count.Should().Be(original.Request.QueryString.Count);
 
 		It should_return_the_server_variables_collection = () =>
-			clone.Request.ServerVariables.ShouldNotBeNull();
+			clone.Request.ServerVariables.Should().NotBeNull();
 
 		It should_return_the_clone_the_server_variables_data = () =>
-			ReferenceEquals(clone.Request.ServerVariables, original.Request.ServerVariables).ShouldBeFalse();
+			ReferenceEquals(clone.Request.ServerVariables, original.Request.ServerVariables).Should().BeFalse();
 
 		It should_contain_all_request_server_variables_data = () =>
-			clone.Request.ServerVariables.Count.ShouldEqual(original.Request.ServerVariables.Count);
+			clone.Request.ServerVariables.Count.Should().Be(original.Request.ServerVariables.Count);
 
 		static HttpContextBase clone;
 	}
@@ -219,13 +221,13 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_NOT_set_the_skip_authorization_value = () =>
-			clone.SkipAuthorization.ShouldBeTrue();
+			clone.SkipAuthorization.Should().BeTrue();
 
 		It should_NOT_set_user_property = () =>
-			clone.User.ShouldEqual(original.User);
+			clone.User.Should().Be(original.User);
 
 		It should_NOT_set_the_content_encoding = () =>
-			clone.Request.ContentEncoding.ShouldEqual(original.Request.ContentEncoding);
+			clone.Request.ContentEncoding.Should().Be(original.Request.ContentEncoding);
 		
 		static HttpContextBase clone;
 	}

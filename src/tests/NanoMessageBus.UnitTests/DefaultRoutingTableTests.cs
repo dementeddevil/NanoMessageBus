@@ -1,22 +1,25 @@
-﻿#pragma warning disable 169, 414
+﻿using System.Threading.Tasks;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
 {
-	using System;
-	using System.Collections.Generic;
-	using Machine.Specifications;
-	using Moq;
-	using It = Machine.Specifications.It;
+    using System;
+    using System.Collections.Generic;
+    using Machine.Specifications;
+    using Moq;
+    using It = Machine.Specifications.It;
+    using FluentAssertions;
 
-	[Subject(typeof(DefaultRoutingTable))]
+    [Subject(typeof(DefaultRoutingTable))]
 	public class when_a_null_message_handler_is_provided : with_the_routing_table
 	{
 		Because of = () =>
 			Try(() => routes.Add((IMessageHandler<object>)null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
@@ -26,27 +29,27 @@ namespace NanoMessageBus
 			Try(() => routes.Add((Func<IHandlerContext, IMessageHandler<object>>)null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
 	public class when_attempting_to_route_with_a_null_handler_context : with_the_routing_table
 	{
 		Because of = () =>
-			Try(() => routes.Route(null, string.Empty));
+			Try(() => routes.Route(null, string.Empty).Await());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
 	public class when_attempting_to_route_with_a_null_message : with_the_routing_table
 	{
 		Because of = () =>
-			Try(() => routes.Route(mockContext.Object, null));
+			Try(() => routes.Route(mockContext.Object, null).Await());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
@@ -56,13 +59,13 @@ namespace NanoMessageBus
 			routes.Add(new GenericHandler<string>(x => received = x));
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, "Hello, World!");
+			handled = routes.Route(mockContext.Object, "Hello, World!").Await();
 
 		It should_pass_the_message_to_the_handler = () =>
-			received.ShouldEqual("Hello, World!");
+			received.Should().Be("Hello, World!");
 
 		It should_indicate_the_message_was_handled_by_the_handler = () =>
-			handled.ShouldEqual(1);
+			handled.Should().Be(1);
 
 		static object received;
 	}
@@ -80,17 +83,20 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_suppress_the_thrown_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		It should_continue_processing_the_existing_message = () =>
-			handled.ShouldEqual(2);
+			handled.Should().Be(2);
 
 		class StringHandler : IMessageHandler<string>
 		{
-			public void Handle(string message) { }
+			public Task HandleAsync(string message)
+			{
+			    return Task.FromResult(true);
+			}
 		}
 	}
 
@@ -108,17 +114,20 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_suppress_the_thrown_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		It should_continue_processing_the_existing_message = () =>
-			handled.ShouldEqual(2);
+			handled.Should().Be(2);
 
 		class StringHandler : IMessageHandler<string>
 		{
-			public void Handle(string message) { }
+		    public Task HandleAsync(string message)
+		    {
+		        return Task.FromResult(true);
+		    }
 		}
 	}
 
@@ -131,10 +140,10 @@ namespace NanoMessageBus
 		}));
 
 		Because of = () =>
-			Try(() => routes.Route(mockContext.Object, string.Empty));
+			Try(() => routes.Route(mockContext.Object, string.Empty).Await());
 
 		It should_not_suppress_the_thrown_exception = () =>
-			thrown.ShouldEqual(toThrow);
+			thrown.Should().Be(toThrow);
 
 		static readonly Exception toThrow = new Exception("my exception");
 	}
@@ -150,28 +159,29 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, "last registration only");
+			handled = routes.Route(mockContext.Object, "last registration only").Await();
 
 		It should_route_to_any_unique_registrations = () =>
-			unique.ShouldBeTrue();
+			unique.Should().BeTrue();
 
 		It should_NOT_route_to_the_first_duplicate_registration = () =>
-			count.ShouldEqual(0);
+			count.Should().Be(0);
 
 		It should_route_to_most_recent_duplicate_registration = () =>
-			last.ShouldBeTrue();
+			last.Should().BeTrue();
 
 		It should_only_route_to_unique_registrations = () =>
-			handled.ShouldEqual(2);
+			handled.Should().Be(2);
 
 		static bool unique;
 		static bool last;
 
 		class StringHandler : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				unique = true;
+			    return Task.FromResult(true);
 			}
 		}
 	}
@@ -186,26 +196,27 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_the_first_registration_first = () =>
-			first.ShouldBeTrue();
+			first.Should().BeTrue();
 
 		It should_route_to_the_next_registration_last = () =>
-			last.ShouldBeTrue();
+			last.Should().BeTrue();
 
 		It should_indicate_that_multiple_handlers_handled_the_message = () =>
-			handled.ShouldEqual(2);
+			handled.Should().Be(2);
 
 		static bool first;
 		static bool last;
 
 		class SecondHandler : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				if (first)
 					last = true;
+                return Task.FromResult(true);
 			}
 		}
 	}
@@ -220,29 +231,31 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			routes.Route(mockContext.Object, string.Empty);
+			routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_the_lowest_sequence_first = () =>
-			first.ShouldBeTrue();
+			first.Should().BeTrue();
 
 		It should_route_to_the_highest_sequence_last = () =>
-			last.ShouldBeTrue();
+			last.Should().BeTrue();
 
 		static bool first;
 		static bool last;
 
 		class RegisteredFirstButRunLast : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				if (first) last = true;
+                return Task.FromResult(true);
 			}
 		}
 		class RegisteredLastButRunFirst : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				if (!last) first = true;
+                return Task.FromResult(true);
 			}
 		}
 	}
@@ -257,16 +270,16 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_the_handler_that_matches_the_message_type = () =>
-			matched.ShouldBeTrue();
+			matched.Should().BeTrue();
 
 		It should_NOT_route_to_the_handler_that_does_not_match_the_message_type = () =>
-			count.ShouldEqual(0);
+			count.Should().Be(0);
 
 		It should_indicate_that_only_the_matching_handler_handled_the_message = () =>
-			handled.ShouldEqual(1);
+			handled.Should().Be(1);
 
 		static bool matched;
 	}
@@ -281,16 +294,16 @@ namespace NanoMessageBus
 		});
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, "Hello, World!");
+			handled = routes.Route(mockContext.Object, "Hello, World!").Await();
 
 		It should_provide_the_handler_context = () =>
-			receivedContext.ShouldEqual(mockContext.Object);
+			receivedContext.Should().Be(mockContext.Object);
 
 		It should_provide_the_message_to_the_registered_callback_handler = () =>
-			receivedMessage.ShouldEqual("Hello, World!");
+			receivedMessage.Should().Be("Hello, World!");
 
 		It should_indicate_that_the_registered_callback_handler_handled_the_message = () =>
-			handled.ShouldEqual(1);
+			handled.Should().Be(1);
 
 		static IHandlerContext receivedContext;
 		static string receivedMessage;
@@ -303,13 +316,13 @@ namespace NanoMessageBus
 			routes.Add(ctx => (IMessageHandler<string>)null);
 
 		Because of = () =>
-			Try(() => handled = routes.Route(mockContext.Object, string.Empty));
+			Try(() => handled = routes.Route(mockContext.Object, string.Empty).Await());
 
 		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		It should_indicate_that_there_were_no_handlers_which_handled_the_message = () =>
-			handled.ShouldEqual(0);
+			handled.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
@@ -321,10 +334,10 @@ namespace NanoMessageBus
 		}));
 
 		Because of = () =>
-			Try(() => routes.Route(mockContext.Object, string.Empty));
+			Try(() => routes.Route(mockContext.Object, string.Empty).Await());
 
 		It should_not_suppress_the_thrown_exception = () =>
-			thrown.ShouldEqual(toThrow);
+			thrown.Should().Be(toThrow);
 
 		static readonly Exception toThrow = new Exception("my exception");
 	}
@@ -346,28 +359,29 @@ namespace NanoMessageBus
 		Cleanup after = () => GetHandler<int>(null); // code coverage
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_any_unique_registrations = () =>
-			unique.ShouldBeTrue();
+			unique.Should().BeTrue();
 
 		It should_NOT_route_to_the_first_duplicate_registration = () =>
-			count.ShouldEqual(0);
+			count.Should().Be(0);
 
 		It should_route_to_the_last_duplicate_registration = () =>
-			last.ShouldBeTrue();
+			last.Should().BeTrue();
 
 		It should_indicate_that_the_message_was_handled_by_unique_handler_registrations_only = () =>
-			handled.ShouldEqual(2);
+			handled.Should().Be(2);
 
 		static bool unique;
 		static bool last;
 
 		class StringHandler : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				unique = true;
+			    return Task.FromResult(true);
 			}
 		}
 	}
@@ -382,26 +396,27 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_the_first_registration_first = () =>
-			first.ShouldBeTrue();
+			first.Should().BeTrue();
 
 		It should_route_to_the_next_registration_last = () =>
-			last.ShouldBeTrue();
+			last.Should().BeTrue();
 
 		It should_indicate_that_the_message_was_handled_by_each_registration = () =>
-			handled.ShouldEqual(2);
+			handled.Should().Be(2);
 
 		static bool first;
 		static bool last;
 
 		class SecondHandler : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				if (first)
 					last = true;
+			    return Task.FromResult(true);
 			}
 		}
 	}
@@ -416,29 +431,31 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			routes.Route(mockContext.Object, string.Empty);
+			routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_the_lowest_sequence_first = () =>
-			first.ShouldBeTrue();
+			first.Should().BeTrue();
 
 		It should_route_to_the_highest_sequence_last = () =>
-			last.ShouldBeTrue();
+			last.Should().BeTrue();
 
 		static bool first;
 		static bool last;
 
 		class RegisteredFirstButRunLast : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				if (first) last = true;
+			    return Task.FromResult(true);
 			}
 		}
 		class RegisteredLastButRunFirst : IMessageHandler<string>
 		{
-			public void Handle(string message)
+			public Task HandleAsync(string message)
 			{
 				if (!last) first = true;
+			    return Task.FromResult(true);
 			}
 		}
 	}
@@ -457,16 +474,16 @@ namespace NanoMessageBus
 		}
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, string.Empty);
+			handled = routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_route_to_the_handler_that_matches_the_message_type = () =>
-			values.ContainsKey(typeof(string)).ShouldBeTrue();
+			values.ContainsKey(typeof(string)).Should().BeTrue();
 
 		It should_NOT_route_to_the_handler_that_does_not_match_the_message_type = () =>
-			values.ContainsKey(typeof(int)).ShouldBeFalse();
+			values.ContainsKey(typeof(int)).Should().BeFalse();
 
 		It should_indicate_that_the_message_was_handled_by_the_approriate_registered_callback_handlers = () =>
-			handled.ShouldEqual(1);
+			handled.Should().Be(1);
 
 		static readonly IDictionary<Type, object> values = new Dictionary<Type, object>();
 	}
@@ -488,20 +505,20 @@ namespace NanoMessageBus
 		}
 
 		Because of = () =>
-			routes.Route(mockContext.Object, string.Empty);
+			routes.Route(mockContext.Object, string.Empty).Await();
 
 		It should_only_dispatch_to_handlers_while_the_context_can_continue_handling = () =>
-			count.ShouldEqual(2);
+			count.Should().Be(2);
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
 	public class when_routing_a_message_with_no_registered_handlers : with_the_routing_table
 	{
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, "Hello, World!");
+			handled = routes.Route(mockContext.Object, "Hello, World!").Await();
 
 		It should_indicate_that_no_handlers_handled_the_message = () =>
-			handled.ShouldEqual(0);
+			handled.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultRoutingTable))]
@@ -521,16 +538,16 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			handled = routes.Route(mockContext.Object, "Hello, World!");
+			handled = routes.Route(mockContext.Object, "Hello, World!").Await();
 
 		It should_provide_the_dependency_resolver = () =>
-			resolverAfterCallback.ShouldEqual(actualResolver);
+			resolverAfterCallback.Should().Be(actualResolver);
 
 		It should_provide_the_message_to_the_registered_callback_handler = () =>
-			receivedMessage.ShouldEqual("Hello, World!");
+			receivedMessage.Should().Be("Hello, World!");
 
 		It should_indicate_that_the_registered_callback_handler_handled_the_message = () =>
-			handled.ShouldEqual(1);
+			handled.Should().Be(1);
 
 		static readonly IDisposable actualResolver = new Mock<IDisposable>().Object;
 		static Mock<IDependencyResolver> mockResolver;
@@ -563,9 +580,10 @@ namespace NanoMessageBus
 
 		protected class GenericHandler<T> : IMessageHandler<T>
 		{
-			public void Handle(T message)
+			public Task HandleAsync(T message)
 			{
 				this.callback(message);
+			    return Task.FromResult(true);
 			}
 
 			public GenericHandler()

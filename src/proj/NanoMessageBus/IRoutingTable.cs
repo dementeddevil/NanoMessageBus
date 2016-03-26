@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 
@@ -22,7 +24,7 @@
 		/// <param name="sequence">The optional value which indicates priority over other handles for the same message.</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		void Add<T>(IMessageHandler<T> handler, int sequence = int.MaxValue);
-
+        
 		/// <summary>
 		/// Adds a route to the handler provided using the optional sequence specified. When the handler type is specified, adding
 		/// the same handler multiple times will result in the most recent registration being used.
@@ -34,13 +36,13 @@
 		/// <exception cref="ArgumentNullException"></exception>
 		void Add<T>(Func<IHandlerContext, IMessageHandler<T>> callback, int sequence = int.MaxValue, Type handlerType = null);
 
-		/// <summary>
-		/// Routes the message provided to the associated message handlers.
-		/// </summary>
-		/// <param name="context">The context surrounding the handling of the channel message.</param>
-		/// <param name="message">The logical message to be routed to the associated handlers.</param>
-		/// <exception cref="ArgumentNullException"></exception>
-		/// <returns>The routes into which the message was routed.</returns>
-		int Route(IHandlerContext context, object message);
+        /// <summary>
+        /// Routes the message provided to the associated message handlers.
+        /// </summary>
+        /// <param name="context">The context surrounding the handling of the channel message.</param>
+        /// <param name="message">The logical message to be routed to the associated handlers.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns>The routes into which the message was routed.</returns>
+        Task<int> Route(IHandlerContext context, object message);
 	}
 }

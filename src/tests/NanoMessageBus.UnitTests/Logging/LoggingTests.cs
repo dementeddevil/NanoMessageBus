@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Logging
@@ -27,7 +29,7 @@ namespace NanoMessageBus.Logging
 		});
 
 		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(LogFactory))]
@@ -52,7 +54,7 @@ namespace NanoMessageBus.Logging
 		});
 
 		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(LogFactory))]
@@ -77,7 +79,7 @@ namespace NanoMessageBus.Logging
 		});
 
 		It should_not_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(LogFactory))]
@@ -104,7 +106,7 @@ namespace NanoMessageBus.Logging
 		};
 
 		It should_not_log_anything = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(LogFactory))]
@@ -131,7 +133,7 @@ namespace NanoMessageBus.Logging
 		};
 
 		It should_not_log_anything = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(LogFactory))]
@@ -144,7 +146,7 @@ namespace NanoMessageBus.Logging
 			LogFactory.Build(typeof(int)).Verbose(string.Empty);
 
 		It should_not_throw_an_exception_when_invoked = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	public abstract class with_a_logger

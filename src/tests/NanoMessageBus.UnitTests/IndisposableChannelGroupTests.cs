@@ -1,21 +1,23 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
 {
-	using System;
-	using Machine.Specifications;
-	using Moq;
-	using It = Machine.Specifications.It;
-
-	[Subject(typeof(IndisposableChannelGroup))]
+    using System;
+    using Machine.Specifications;
+    using Moq;
+    using It = Machine.Specifications.It;
+    using System.Threading.Tasks;
+    [Subject(typeof(IndisposableChannelGroup))]
 	public class when_a_null_channel_group_is_provided : with_an_indisposable_channel_group
 	{
 		Because of = () =>
 			Try(() => new IndisposableChannelGroup(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(IndisposableChannelGroup))]
@@ -25,10 +27,10 @@ namespace NanoMessageBus
 			mockInner.Setup(x => x.DispatchOnly).Returns(true);
 
 		It should_expose_the_underlying_channel_group_properties = () =>
-			group.DispatchOnly.ShouldBeTrue();
+			group.DispatchOnly.Should().BeTrue();
 
 		It should_expose_the_underlying_channel_group_as_a_property = () =>
-			group.Inner.ShouldEqual(mockInner.Object);
+			group.Inner.Should().Be(mockInner.Object);
 	}
 
 	[Subject(typeof(IndisposableChannelGroup))]
@@ -64,7 +66,7 @@ namespace NanoMessageBus
 			mockInner.Verify(x => x.BeginDispatch(DispatchAction), Times.Once());
 
 		It should_return_the_value_from_the_underlying_group_when_begin_dispatch_is_called = () =>
-			queued.ShouldBeTrue();
+			queued.Should().BeTrue();
 
 		static bool queued;
 	}
@@ -111,8 +113,8 @@ namespace NanoMessageBus
 		protected static Mock<IChannelGroup> mockInner;
 		protected static Exception thrown;
 
-		protected static readonly Action<IDeliveryContext> DeliveryAction = x => { };
-		protected static readonly Action<IDispatchContext> DispatchAction = x => { };
+		protected static readonly Func<IDeliveryContext, Task> DeliveryAction = x => { return Task.FromResult(true); };
+		protected static readonly Action<IDispatchContext> DispatchAction = x => {  };
 	}
 }
 

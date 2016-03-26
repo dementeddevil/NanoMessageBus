@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 
@@ -6,36 +8,36 @@
 	{
 		public virtual IChannelGroup Inner
 		{
-			get { return this.inner; }
+			get { return this._inner; }
 		}
 		public virtual bool DispatchOnly
 		{
-			get { return this.inner.DispatchOnly; }
+			get { return this._inner.DispatchOnly; }
 		}
 
 		public virtual void Initialize()
 		{
-			this.inner.Initialize();
+			this._inner.Initialize();
 		}
 		public virtual IMessagingChannel OpenChannel()
 		{
-			return this.inner.OpenChannel();
+			return this._inner.OpenChannel();
 		}
-		public virtual void BeginReceive(Action<IDeliveryContext> callback)
+		public virtual void BeginReceive(Func<IDeliveryContext, Task> callback)
 		{
-			this.inner.BeginReceive(callback);
+			this._inner.BeginReceive(callback);
 		}
 		public virtual bool BeginDispatch(Action<IDispatchContext> callback)
 		{
-			return this.inner.BeginDispatch(callback);
+			return this._inner.BeginDispatch(callback);
 		}
 		
 		public IndisposableChannelGroup(IChannelGroup inner)
 		{
 			if (inner == null)
-				throw new ArgumentNullException("inner");
+				throw new ArgumentNullException(nameof(inner));
 
-			this.inner = inner;
+			this._inner = inner;
 		}
 		~IndisposableChannelGroup()
 		{
@@ -52,6 +54,6 @@
 			// no op
 		}
 
-		private readonly IChannelGroup inner;
+		private readonly IChannelGroup _inner;
 	}
 }

@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -12,34 +14,34 @@ namespace NanoMessageBus
 	public class when_a_channel_message_is_constructed : using_a_channel_message
 	{
 		It should_contain_the_message_identifier_provided = () =>
-			message.MessageId.ShouldEqual(MessageId);
+			message.MessageId.Should().Be(MessageId);
 
 		It should_contain_the_correlation_identifier_provided = () =>
-			message.CorrelationId.ShouldEqual(CorrelationId);
+			message.CorrelationId.Should().Be(CorrelationId);
 
 		It should_contain_the_return_address_provided = () =>
-			message.ReturnAddress.ShouldEqual(ReturnAddress);
+			message.ReturnAddress.Should().Be(ReturnAddress);
 
 		It should_contain_the_set_of_headers_provided = () =>
-			message.Headers.ShouldEqual(Headers);
+			message.Headers.Should().BeSameAs(Headers);
 
 		It should_contain_each_of_the_logical_messages_provided = () =>
-			message.Messages.SequenceEqual(Messages).ShouldBeTrue();
+			message.Messages.SequenceEqual(Messages).Should().BeTrue();
 
 		It should_have_a_null_active_message = () =>
-			message.ActiveMessage.ShouldBeNull();
+			message.ActiveMessage.Should().BeNull();
 
 		It should_have_a_negative_active_message_index = () =>
-			message.ActiveIndex.ShouldEqual(-1);
+			message.ActiveIndex.Should().Be(-1);
 
 		It should_not_contain_an_expiration = () =>
-			message.Expiration.ShouldEqual(DateTime.MinValue);
+			message.Expiration.Should().Be(DateTime.MinValue);
 
 		It should_not_be_persistent = () =>
-			message.Persistent.ShouldBeFalse();
+			message.Persistent.Should().BeFalse();
 
 		It should_not_be_considered_dispatched = () =>
-			message.Dispatched.ShouldEqual(DateTime.MinValue);
+			message.Dispatched.Should().Be(DateTime.MinValue);
 	}
 
 	[Subject(typeof(ChannelMessage))]
@@ -49,7 +51,7 @@ namespace NanoMessageBus
 			Try(() => message.Messages.Clear());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(ChannelMessage))]
@@ -59,7 +61,7 @@ namespace NanoMessageBus
 			Try(() => message.Messages[0] = null);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 	}
 
 	[Subject(typeof(ChannelMessage))]
@@ -69,13 +71,13 @@ namespace NanoMessageBus
 			result = message.MoveNext();
 
 		It should_set_increment_the_active_message_index = () =>
-			message.ActiveMessage.ShouldEqual(Messages[0]);
+			message.ActiveMessage.Should().Be(Messages[0]);
 
 		It should_set_the_active_message_to_the_message_as_the_position_of_the_active_index = () =>
-			message.ActiveIndex.ShouldEqual(0);
+			message.ActiveIndex.Should().Be(0);
 
 		It should_return_true = () =>
-			result.ShouldBeTrue();
+			result.Should().BeTrue();
 
 		static bool result;
 	}
@@ -89,13 +91,13 @@ namespace NanoMessageBus
 		};
 
 		It should_set_the_active_message_to_null = () =>
-			message.ActiveMessage.ShouldBeNull();
+			message.ActiveMessage.Should().BeNull();
 
 		It should_set_the_index_to_a_negative_number = () =>
-			message.ActiveIndex.ShouldEqual(-1);
+			message.ActiveIndex.Should().Be(-1);
 
 		It should_return_false = () =>
-			result.ShouldBeFalse();
+			result.Should().BeFalse();
 
 		static bool result;
 	}

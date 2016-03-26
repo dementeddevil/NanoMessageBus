@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Channels
@@ -17,7 +19,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new AuditChannel(null, mockAuditors.Select(x => x.Object).ToArray()));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -27,7 +29,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new AuditChannel(mockChannel.Object, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -37,7 +39,7 @@ namespace NanoMessageBus.Channels
 			Try(() => new AuditChannel(mockChannel.Object, new IMessageAuditor[0]));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -53,19 +55,19 @@ namespace NanoMessageBus.Channels
 		};
 
 		It should_expose_the_active_state_from_the_underlying_channel = () =>
-			channel.Active.ShouldEqual(mockChannel.Object.Active);
+			channel.Active.Should().Be(mockChannel.Object.Active);
 
 		It should_expose_the_current_message_from_the_underlying_channel = () =>
-			channel.CurrentMessage.ShouldEqual(mockChannel.Object.CurrentMessage);
+			channel.CurrentMessage.Should().Be(mockChannel.Object.CurrentMessage);
 
 		It should_expose_the_current_resolver_from_the_underlying_channel = () =>
-			channel.CurrentResolver.ShouldEqual(mockChannel.Object.CurrentResolver);
+			channel.CurrentResolver.Should().Be(mockChannel.Object.CurrentResolver);
 
 		It should_expose_the_current_transaction_from_the_underlying_channel = () =>
-			channel.CurrentTransaction.ShouldEqual(mockChannel.Object.CurrentTransaction);
+			channel.CurrentTransaction.Should().Be(mockChannel.Object.CurrentTransaction);
 
 		It should_expose_the_current_configuration_from_the_underlying_channel = () =>
-			channel.CurrentConfiguration.ShouldEqual(mockChannel.Object.CurrentConfiguration);
+			channel.CurrentConfiguration.Should().Be(mockChannel.Object.CurrentConfiguration);
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -102,10 +104,10 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch(MyMessage);
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_contain_the_message_specified = () =>
-			dispatchContext.MessageCount.ShouldEqual(1);
+			dispatchContext.MessageCount.Should().Be(1);
 
 		It should_not_invoke_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(MyMessage, null), Times.Never());
@@ -129,10 +131,10 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch();
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_not_contain_any_messages = () =>
-			dispatchContext.MessageCount.ShouldEqual(0);
+			dispatchContext.MessageCount.Should().Be(0);
 
 		It should_not_invoke_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(null, null), Times.Never());
@@ -156,7 +158,7 @@ namespace NanoMessageBus.Channels
 			dispatchContext = channel.PrepareDispatch(MyMessage, mockAlternateChannel.Object);
 
 		It should_return_a_dispatch_context = () =>
-			dispatchContext.ShouldBeOfType<DefaultDispatchContext>();
+			dispatchContext.Should().BeOfType<DefaultDispatchContext>();
 
 		It should_invoke_the_underlying_channel_providing_the_alternate_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(MyMessage, mockAlternateChannel.Object), Times.Once());
@@ -174,7 +176,7 @@ namespace NanoMessageBus.Channels
 			Try(() => channel.Send(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -187,7 +189,7 @@ namespace NanoMessageBus.Channels
 			Try(() => channel.Send(new Mock<ChannelEnvelope>().Object));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(AuditChannel))]
@@ -208,7 +210,7 @@ namespace NanoMessageBus.Channels
 			channel.Send(envelope);
 
 		It should_register_the_audit_to_be_run_with_the_ambient_transaction = () =>
-			registered.ShouldBeTrue();
+			registered.Should().BeTrue();
 
 		It should_provide_the_envelope_to_each_auditor = () => // the transaction commit causes this to occur
 			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditSend(envelope, channel), Times.Once()));
@@ -272,31 +274,31 @@ namespace NanoMessageBus.Channels
 			mockAuditors.ForEach(mock => mock.Verify(x => x.AuditReceive(mockOriginal.Object), Times.Once()));
 
 		It should_invoke_the_callback_specified_providing_itself_as_a_parameter = () =>
-			delivery.ShouldEqual(channel);
+			delivery.Should().Be(channel);
 
 		It should_expose_the_original_context_CurrentResolver = () =>
-			contextResolver.ShouldEqual(mockOriginal.Object.CurrentResolver);
+			contextResolver.Should().Be(mockOriginal.Object.CurrentResolver);
 
 		It should_expose_the_original_context_CurrentMessage = () =>
-			contextMessage.ShouldEqual(mockOriginal.Object.CurrentMessage);
+			contextMessage.Should().Be(mockOriginal.Object.CurrentMessage);
 
 		It should_expose_the_original_context_CurrentTransaction = () =>
-			contextTransaction.ShouldEqual(mockOriginal.Object.CurrentTransaction);
+			contextTransaction.Should().Be(mockOriginal.Object.CurrentTransaction);
 
 		It should_expose_the_original_context_CurrentConfiguration = () =>
-			contextConfiguration.ShouldEqual(mockOriginal.Object.CurrentConfiguration);
+			contextConfiguration.Should().Be(mockOriginal.Object.CurrentConfiguration);
 
 		It should_revert_the_nested_resolver_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentResolver.ShouldEqual(mockChannel.Object.CurrentResolver);
+			channel.CurrentResolver.Should().Be(mockChannel.Object.CurrentResolver);
 
 		It should_revert_the_CurrentMessage_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentMessage.ShouldEqual(mockChannel.Object.CurrentMessage);
+			channel.CurrentMessage.Should().Be(mockChannel.Object.CurrentMessage);
 
 		It should_revert_the_CurrentTransaction_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentTransaction.ShouldEqual(mockChannel.Object.CurrentTransaction);
+			channel.CurrentTransaction.Should().Be(mockChannel.Object.CurrentTransaction);
 
 		It should_revert_the_CurrentConfiguration_back_to_the_constructed_value_upon_completion = () =>
-			channel.CurrentConfiguration.ShouldEqual(mockChannel.Object.CurrentConfiguration);
+			channel.CurrentConfiguration.Should().Be(mockChannel.Object.CurrentConfiguration);
 
 		static IDeliveryContext delivery;
 		static string groupName;

@@ -61,29 +61,29 @@ namespace NanoMessageBus.Logging
 
 		protected virtual void DebugWindow(Threshold severity, string message, params object[] values)
 		{
-			if (severity < this.threshold)
+			if (severity < this._threshold)
 				return;
 
 			lock (Sync)
-				System.Diagnostics.Debug.WriteLine(severity, message.FormatMessage(this.typeToLog, values));
+				System.Diagnostics.Debug.WriteLine(severity, message.FormatMessage(this._typeToLog, values));
 		}
 		protected virtual void TraceWindow(Threshold severity, string message, params object[] values)
 		{
-			if (severity < this.threshold)
+			if (severity < this._threshold)
 				return;
 
 			lock (Sync)
-				Trace.WriteLine(severity, message.FormatMessage(this.typeToLog, values));
+				Trace.WriteLine(severity, message.FormatMessage(this._typeToLog, values));
 		}
 
 		public TraceLogger(Type typeToLog, Threshold threshold = Threshold.Info)
 		{
-			this.typeToLog = typeToLog;
-			this.threshold = threshold;
+			this._typeToLog = typeToLog;
+			this._threshold = threshold;
 		}
 
 		private static readonly object Sync = new object();
-		private readonly Type typeToLog;
-		private readonly Threshold threshold;
+		private readonly Type _typeToLog;
+		private readonly Threshold _threshold;
 	}
 }

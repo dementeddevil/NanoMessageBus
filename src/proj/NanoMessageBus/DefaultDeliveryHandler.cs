@@ -1,29 +1,34 @@
-﻿namespace NanoMessageBus
-{
-	using System;
-	using Logging;
+﻿using System;
+using System.Threading.Tasks;
+using NanoMessageBus.Logging;
 
+namespace NanoMessageBus
+{
 	public class DefaultDeliveryHandler : IDeliveryHandler
 	{
-		public virtual void Handle(IDeliveryContext delivery)
-		{
-			Log.Debug("Channel message received, routing message to configured handlers.");
-
-			using (var context = new DefaultHandlerContext(delivery))
-				this.routingTable.Route(context, delivery.CurrentMessage);
-
-			Log.Verbose("Channel message payload successfully delivered to all configured recipients.");
-		}
+		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDeliveryHandler));
+		private readonly IRoutingTable _routingTable;
 
 		public DefaultDeliveryHandler(IRoutingTable routingTable)
 		{
-			if (routingTable == null)
-				throw new ArgumentNullException("routingTable");
+		    if (routingTable == null)
+		    {
+		        throw new ArgumentNullException(nameof(routingTable));
+		    }
 
-			this.routingTable = routingTable;
+			_routingTable = routingTable;
 		}
 
-		private readonly IRoutingTable routingTable;
-		private static readonly ILog Log = LogFactory.Build(typeof(DefaultDeliveryHandler));
+        public virtual async Task HandleAsync(IDeliveryContext delivery)
+		{
+			Log.Debug("Channel message received, routing message to configured handlers.");
+
+		    using (var context = new DefaultHandlerContext(delivery))
+		    {
+		        await this._routingTable.Route(context, delivery.CurrentMessage).ConfigureAwait(false);
+		    }
+
+			Log.Verbose("Channel message payload successfully delivered to all configured recipients.");
+		}
 	}
 }

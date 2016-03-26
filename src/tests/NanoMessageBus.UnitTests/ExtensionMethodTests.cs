@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -16,7 +18,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => NullDictionary.TryGetValue("key"));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static readonly IDictionary<string, string> NullDictionary = null;
 		static Exception thrown;
@@ -29,7 +31,7 @@ namespace NanoMessageBus
 			value = Empty.TryGetValue("non-existent key");
 
 		It should_return_the_default_value = () =>
-			value.ShouldBeNull();
+			value.Should().BeNull();
 
 		static readonly IDictionary<string, string> Empty = new Dictionary<string, string>();
 		static string value;
@@ -45,7 +47,7 @@ namespace NanoMessageBus
 			value = Populated.TryGetValue("key");
 
 		It should_return_the_expected_value = () =>
-			value.ShouldEqual("42");
+			value.Should().Be("42");
 
 		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
 		static string value;
@@ -61,7 +63,7 @@ namespace NanoMessageBus
 			Populated.TrySetValue("key", null);
 
 		It should_not_touch_the_existing_value = () =>
-			Populated["key"].ShouldEqual("42");
+			Populated["key"].Should().Be("42");
 
 		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
 	}
@@ -73,7 +75,7 @@ namespace NanoMessageBus
 			Populated.TrySetValue("key", "some key");
 
 		It should_set_the_key_to_the_new_value = () =>
-			Populated["key"].ShouldEqual("some key");
+			Populated["key"].Should().Be("some key");
 
 		static readonly IDictionary<string, string> Populated = new Dictionary<string, string>();
 	}
@@ -85,7 +87,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => ((IDisposable)null).TryDispose());
 
 		It should_no_do_anything = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		static Exception thrown;
 	}
@@ -121,7 +123,7 @@ namespace NanoMessageBus
 			mockResource.Verify(x => x.Dispose(), Times.Once());
 
 		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		static Mock<IDisposable> mockResource;
 		static Exception thrown;
@@ -134,7 +136,7 @@ namespace NanoMessageBus
 			serialized = new DateTime(2000, 1, 2, 3, 4, 5, 6, DateTimeKind.Utc).ToIsoString();
 
 		It should_format_the_date_using_iso_standard = () =>
-			serialized.ShouldEqual("2000-01-02T03:04:05.0060000Z");
+			serialized.Should().Be("2000-01-02T03:04:05.0060000Z");
 
 		static string serialized;
 	}
@@ -155,7 +157,7 @@ namespace NanoMessageBus
 			mockResource.Verify(x => x.Dispose(), Times.Once());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldEqual(toThrow);
+			thrown.Should().Be(toThrow);
 
 		static readonly Exception toThrow = new Exception();
 		static Mock<IDisposable> mockResource;

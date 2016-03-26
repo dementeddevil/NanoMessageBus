@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 	using System.Collections.Generic;
@@ -11,30 +13,30 @@
 		public virtual IChannelGroup Initialize()
 		{
 			Log.Info("Initializing host.");
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Initialize).");
 				this.ThrowWhenDisposed();
 
-				if (!this.initialized)
+				if (!this._initialized)
 					this.InitializeChannelGroups();
 
-				this.initialized = true;
+				this._initialized = true;
 				Log.Verbose("Exiting critical section (Initialize).");
 			}
 
 			Log.Info("Host initialized.");
 
-			return new IndisposableChannelGroup(this.groups.Values.First());
+			return new IndisposableChannelGroup(this._groups.Values.First());
 		}
 		protected virtual void InitializeChannelGroups()
 		{
 			Log.Info("Initializing each channel group on each connector.");
-			foreach (var connector in this.connectors)
+			foreach (var connector in this._connectors)
 				foreach (var config in connector.ChannelGroups)
-					this.AddChannelGroup(config.GroupName, this.factory(connector, config));
+					this.AddChannelGroup(config.GroupName, this._factory(connector, config));
 
-			if (this.groups.Count == 0)
+			if (this._groups.Count == 0)
 			{
 				Log.Warn("No channel groups have been configured.");
 				throw new ConfigurationErrorsException("No channel groups have been configured.");
@@ -46,7 +48,7 @@
 				"Adding dispatch-only channel group '{0}'." : "Adding full-duplex channel group '{0}'", name);
 
 			group.Initialize();
-			this.groups[name] = group;
+			this._groups[name] = group;
 		}
 
 		public virtual IChannelGroup this[string channelGroup]
@@ -54,11 +56,11 @@
 			get
 			{
 				if (channelGroup == null)
-					throw new ArgumentNullException("channelGroup");
+					throw new ArgumentNullException(nameof(channelGroup));
 
 				Log.Debug("Reference to dispatch-only channel group '{0}' requested.", channelGroup);
 
-				lock (this.sync)
+				lock (this._sync)
 				{
 					Log.Verbose("Entering critical section (GetOutboundChannel).");
 
@@ -66,7 +68,7 @@
 					this.ThrowWhenUninitialized();
 
 					IChannelGroup group;
-					if (this.groups.TryGetValue(channelGroup, out group))
+					if (this._groups.TryGetValue(channelGroup, out group))
 					{
 						Log.Verbose("Exiting critical section (GetOutboundChannel)--group found.");
 						return new IndisposableChannelGroup(group);
@@ -78,22 +80,22 @@
 			}
 		}
 
-		public virtual void BeginReceive(Action<IDeliveryContext> callback)
+		public virtual void BeginReceive(Func<IDeliveryContext, Task> callback)
 		{
 			if (callback == null)
-				throw new ArgumentNullException("callback");
+				throw new ArgumentNullException(nameof(callback));
 
 			Log.Info("Attempting to begin receive operations.");
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (BeginReceive).");
 				this.ThrowWhenDisposed();
 				this.ThrowWhenUninitialized();
 				this.ThrowWhenReceiving();
-				this.receiving = true;
+				this._receiving = true;
 
-				var activated = this.groups.Values.Where(x => !x.DispatchOnly).Count(x =>
+				var activated = this._groups.Values.Where(x => !x.DispatchOnly).Count(x =>
 				{
 					x.BeginReceive(callback);
 					return true;
@@ -106,7 +108,7 @@
 
 		protected virtual void ThrowWhenDisposed()
 		{
-			if (!this.disposed)
+			if (!this._disposed)
 				return;
 		
 			Log.Warn("The messaging host has been disposed.");
@@ -114,7 +116,7 @@
 		}
 		protected virtual void ThrowWhenUninitialized()
 		{
-			if (this.initialized)
+			if (this._initialized)
 				return;
 
 			Log.Warn("The messaging host has not been initialized.");
@@ -122,7 +124,7 @@
 		}
 		protected virtual void ThrowWhenReceiving()
 		{
-			if (!this.receiving)
+			if (!this._receiving)
 				return;
 
 			Log.Warn("Already receiving--a callback has been provided.");
@@ -132,16 +134,16 @@
 		public DefaultMessagingHost(IEnumerable<IChannelConnector> connectors, ChannelGroupFactory factory)
 		{
 			if (connectors == null)
-				throw new ArgumentNullException("connectors");
+				throw new ArgumentNullException(nameof(connectors));
 
 			if (factory == null)
-				throw new ArgumentNullException("factory");
+				throw new ArgumentNullException(nameof(factory));
 
-			this.connectors = connectors.Where(x => x != null).ToArray();
-			if (this.connectors.Count == 0)
-				throw new ArgumentException("No connectors provided.", "connectors");
+			this._connectors = connectors.Where(x => x != null).ToArray();
+			if (this._connectors.Count == 0)
+				throw new ArgumentException("No connectors provided.", nameof(connectors));
 
-			this.factory = factory;
+			this._factory = factory;
 		}
 		~DefaultMessagingHost()
 		{
@@ -160,21 +162,21 @@
 
 			Log.Info("Disposing host.");
 
-			lock (this.sync)
+			lock (this._sync)
 			{
 				Log.Verbose("Entering critical section (Dispose).");
-				if (this.disposed)
+				if (this._disposed)
 					return;
 
-				this.disposed = true;
+				this._disposed = true;
 
-				foreach (var group in this.groups.Values)
+				foreach (var group in this._groups.Values)
 					group.TryDispose();
 
 				Log.Info("Disposing {0} messaging infrastructure connectors and their respective connections, if any.",
-					this.connectors.Count);
+					this._connectors.Count);
 
-				foreach (var connector in this.connectors)
+				foreach (var connector in this._connectors)
 					connector.TryDispose();
 
 				Log.Verbose("Exiting critical section (Dispose).");
@@ -184,12 +186,12 @@
 		}
 
 		private static readonly ILog Log = LogFactory.Build(typeof(DefaultMessagingHost));
-		private readonly object sync = new object();
-		private readonly IDictionary<string, IChannelGroup> groups = new Dictionary<string, IChannelGroup>();
-		private readonly ICollection<IChannelConnector> connectors;
-		private readonly ChannelGroupFactory factory;
-		private bool receiving;
-		private bool initialized;
-		private bool disposed;
+		private readonly object _sync = new object();
+		private readonly IDictionary<string, IChannelGroup> _groups = new Dictionary<string, IChannelGroup>();
+		private readonly ICollection<IChannelConnector> _connectors;
+		private readonly ChannelGroupFactory _factory;
+		private bool _receiving;
+		private bool _initialized;
+		private bool _disposed;
 	}
 }

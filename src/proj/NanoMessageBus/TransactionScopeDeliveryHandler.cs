@@ -1,22 +1,16 @@
-﻿namespace NanoMessageBus
-{
-	using System;
-	using System.Transactions;
-	using Logging;
+﻿using System;
+using System.Threading.Tasks;
+using System.Transactions;
+using NanoMessageBus.Logging;
 
+namespace NanoMessageBus
+{
 	public class TransactionScopeDeliveryHandler : IDeliveryHandler
 	{
-		public virtual void Handle(IDeliveryContext delivery)
-		{
-			Log.Debug("Creating new transaction scope associated for delivery.");
-			using (var scope = new TransactionScope(this.scopeOption, this.transactionOptions))
-			{
-				this.inner.Handle(delivery);
-
-				Log.Debug("Committing transaction scope associated with delivery.");
-				scope.Complete();
-			}
-		}
+		private static readonly ILog Log = LogFactory.Build(typeof(TransactionScopeDeliveryHandler));
+		private readonly IDeliveryHandler _inner;
+		private readonly TransactionScopeOption _scopeOption;
+		private readonly TransactionOptions _transactionOptions;
 
 		public TransactionScopeDeliveryHandler(IDeliveryHandler inner)
 			: this(inner, TransactionScopeOption.Required)
@@ -26,20 +20,28 @@
 			: this(inner, scopeOption, new TransactionOptions())
 		{
 		}
-		public TransactionScopeDeliveryHandler(
+
+        public TransactionScopeDeliveryHandler(
 			IDeliveryHandler inner, TransactionScopeOption scopeOption, TransactionOptions transactionOptions)
 		{
 			if (inner == null)
-				throw new ArgumentNullException("inner");
+				throw new ArgumentNullException(nameof(inner));
 
-			this.inner = inner;
-			this.scopeOption = scopeOption;
-			this.transactionOptions = transactionOptions;
+			this._inner = inner;
+			this._scopeOption = scopeOption;
+			this._transactionOptions = transactionOptions;
 		}
 
-		private readonly IDeliveryHandler inner;
-		private readonly TransactionScopeOption scopeOption;
-		private readonly TransactionOptions transactionOptions;
-		private static readonly ILog Log = LogFactory.Build(typeof(TransactionScopeDeliveryHandler));
+		public virtual async Task HandleAsync(IDeliveryContext delivery)
+		{
+			Log.Debug("Creating new transaction scope associated for delivery.");
+			using (var scope = new TransactionScope(this._scopeOption, this._transactionOptions))
+			{
+				await _inner.HandleAsync(delivery).ConfigureAwait(false);
+
+				Log.Debug("Committing transaction scope associated with delivery.");
+				scope.Complete();
+			}
+		}
 	}
 }

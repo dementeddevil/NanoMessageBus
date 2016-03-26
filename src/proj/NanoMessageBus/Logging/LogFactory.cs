@@ -32,7 +32,7 @@
 		public static void LogWith(Func<Type, ILog> logger)
 		{
 			var nullLogger = new NullLogger();
-			configured = logger ?? (type => nullLogger);
+			_configured = logger ?? (type => nullLogger);
 		}
 
 		/// <summary>
@@ -42,10 +42,10 @@
 		/// <returns>A reference to the configured logger instance</returns>
 		public static ILog Build(Type typeToLog)
 		{
-			return configured(typeToLog);
+			return _configured(typeToLog);
 		}
 
-		private static Func<Type, ILog> configured;
+		private static Func<Type, ILog> _configured;
 
 		private class NullLogger : ILog
 		{

@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	using System;
 
@@ -39,7 +41,7 @@
 		/// </summary>
 		/// <param name="callback">The callback to which any received messages should be dispatched.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		void BeginReceive(Action<IDeliveryContext> callback);
+		void BeginReceive(Func<IDeliveryContext, Task> callback);
 
 		/// <summary>
 		/// For dispatch-only channel groups, it adds the callback provided to an in-memory queue for

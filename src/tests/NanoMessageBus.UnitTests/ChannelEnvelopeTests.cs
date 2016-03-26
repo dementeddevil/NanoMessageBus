@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -17,16 +19,16 @@ namespace NanoMessageBus
 			envelope = new ChannelEnvelope(message, recipients, state);
 
 		It should_contain_a_reference_to_the_message_provided = () =>
-			envelope.Message.ShouldBeTheSameAs(message);
+			envelope.Message.Should().ShouldBeEquivalentTo(message);
 
 		It should_contain_all_non_null_recipients_specified = () =>
-			envelope.Recipients.Count.ShouldEqual(recipients.Count(x => x != null));
+			envelope.Recipients.Count.Should().Be(recipients.Count(x => x != null));
 
 		It should_contain_all_the_recipients_specified = () =>
-			envelope.Recipients.ToList().ForEach(uri => recipients.Contains(uri).ShouldBeTrue());
+			envelope.Recipients.ToList().ForEach(uri => recipients.Contains(uri).Should().BeTrue());
 
 		It should_contain_any_state_specified = () =>
-			envelope.State.ShouldEqual(state);
+			envelope.State.Should().Be(state);
 
 		static readonly Guid state = Guid.NewGuid();
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
@@ -44,7 +46,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new ChannelEnvelope(null, recipients));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static readonly ICollection<Uri> recipients = new HashSet<Uri> { ChannelEnvelope.LoopbackAddress };
 		static Exception thrown;
@@ -57,7 +59,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new ChannelEnvelope(message, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
 		static Exception thrown;
@@ -70,7 +72,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new ChannelEnvelope(message, new List<Uri>()));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
 		static Exception thrown;
@@ -86,7 +88,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => envelope.Recipients.Clear());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<NotSupportedException>();
+			thrown.Should().BeOfType<NotSupportedException>();
 
 		static readonly ChannelMessage message = new Mock<ChannelMessage>().Object;
 		static readonly ICollection<Uri> recipients = new[] { ChannelEnvelope.LoopbackAddress };

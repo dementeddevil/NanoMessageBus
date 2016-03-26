@@ -1,4 +1,7 @@
-﻿#pragma warning disable 169, 414
+﻿using System.Threading.Tasks;
+using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -15,7 +18,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => new TransactionalDeliveryHandler(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static Exception thrown;
 	}
@@ -24,10 +27,10 @@ namespace NanoMessageBus
 	public class when_a_null_delivery_is_provided_to_the_delivery_handler
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => handler.Handle(null));
+			thrown = Catch.Exception(() => handler.HandleAsync(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 
 		static readonly TransactionalDeliveryHandler handler =
 			new TransactionalDeliveryHandler(new Mock<IDeliveryHandler>().Object);
@@ -46,16 +49,16 @@ namespace NanoMessageBus
 			mockDelivery.Setup(x => x.CurrentTransaction).Returns(mockTransaction.Object);
 
 			mockInnerHandler = new Mock<IDeliveryHandler>();
-			mockInnerHandler.Setup(x => x.Handle(mockDelivery.Object));
+			mockInnerHandler.Setup(x => x.HandleAsync(mockDelivery.Object)).Returns(Task.FromResult(true));
 
 			handler = new TransactionalDeliveryHandler(mockInnerHandler.Object);
 		};
 
 		Because of = () =>
-			handler.Handle(mockDelivery.Object);
+			handler.HandleAsync(mockDelivery.Object).Await();
 
 		It should_provide_the_delivery_to_the_inner_handler = () =>
-			mockInnerHandler.Verify(x => x.Handle(mockDelivery.Object), Times.Once());
+			mockInnerHandler.Verify(x => x.HandleAsync(mockDelivery.Object), Times.Once());
 
 		It should_commit_the_transtion_on_the_delivery_provided = () =>
 			mockTransaction.Verify(x => x.Commit(), Times.Once());

@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus.Serialization
@@ -11,10 +13,10 @@ namespace NanoMessageBus.Serialization
 	public class when_a_new_instance_is_created : using_the_binary_serializer
 	{
 		It should_have_an_empty_content_encoding = () =>
-			serializer.ContentEncoding.ShouldBeEmpty();
+			serializer.ContentEncoding.Should().BeEmpty();
 
 		It should_have_a_content_format_of_binary = () =>
-			serializer.ContentFormat.ShouldEqual("binary");
+			serializer.ContentFormat.Should().Be("binary");
 	}
 
 	[Subject(typeof(BinarySerializer))]
@@ -24,7 +26,7 @@ namespace NanoMessageBus.Serialization
 			Try(() => serializer.Serialize(stream, null));
 
 		It should_not_populate_the_provided_stream = () =>
-			stream.Length.ShouldEqual(0);
+			stream.Length.Should().Be(0);
 	}
 
 	[Subject(typeof(BinarySerializer))]
@@ -34,7 +36,7 @@ namespace NanoMessageBus.Serialization
 			Try(() => serializer.Serialize(null, string.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(BinarySerializer))]
@@ -44,7 +46,7 @@ namespace NanoMessageBus.Serialization
 			Try(() => serializer.Deserialize(null, typeof(string), string.Empty, string.Empty));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(BinarySerializer))]
@@ -58,14 +60,14 @@ namespace NanoMessageBus.Serialization
 
 		It should_be_able_to_deserialize_it = () =>
 		{
-			deserialized.First.ShouldEqual(original.First);
-			deserialized.Second.ShouldEqual(original.Second);
-			deserialized.Third.ShouldEqual(original.Third);
-			deserialized.Fourth.ShouldEqual(original.Fourth);
-			deserialized.Fifth.ShouldEqual(original.Fifth);
-			deserialized.Sixth.ShouldEqual(original.Sixth);
-			deserialized.Seventh.ShouldEqual(original.Seventh);
-			deserialized.Eighth.ShouldEqual(original.Eighth);
+			deserialized.First.Should().Be(original.First);
+			deserialized.Second.Should().Be(original.Second);
+			deserialized.Third.Should().Be(original.Third);
+			deserialized.Fourth.Should().Be(original.Fourth);
+			deserialized.Fifth.Should().Be(original.Fifth);
+			deserialized.Sixth.Should().Be(original.Sixth);
+			deserialized.Seventh.Should().Be(original.Seventh);
+			deserialized.Eighth.Should().Be(original.Eighth);
 		};
 
 		static MyComplexType deserialized;

@@ -8,10 +8,10 @@
 		public virtual IChannelGroup Build(IChannelConnector connector, IChannelGroupConfiguration configuration)
 		{
 			if (connector == null)
-				throw new ArgumentNullException("connector");
+				throw new ArgumentNullException(nameof(connector));
 
 			if (configuration == null)
-				throw new ArgumentNullException("configuration");
+				throw new ArgumentNullException(nameof(configuration));
 
 			if (configuration.Synchronous)
 			{

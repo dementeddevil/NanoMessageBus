@@ -19,7 +19,7 @@
 		/// </summary>
 		public virtual Guid MessageId
 		{
-			get { return this.messageId; }
+			get { return this._messageId; }
 		}
 
 		/// <summary>
@@ -27,7 +27,7 @@
 		/// </summary>
 		public virtual Guid CorrelationId
 		{
-			get { return this.correlationId; }
+			get { return this._correlationId; }
 		}
 
 		/// <summary>
@@ -35,7 +35,7 @@
 		/// </summary>
 		public virtual Uri ReturnAddress
 		{
-			get { return this.returnAddress; }
+			get { return this._returnAddress; }
 		}
 
 		/// <summary>
@@ -43,7 +43,7 @@
 		/// </summary>
 		public virtual IDictionary<string, string> Headers
 		{
-			get { return this.headers; }
+			get { return this._headers; }
 		}
 
 		/// <summary>
@@ -51,7 +51,7 @@
 		/// </summary>
 		public virtual IList<object> Messages
 		{
-			get { return this.immutable; }
+			get { return this._immutable; }
 		}
 
 		/// <summary>
@@ -90,13 +90,13 @@
 		/// <returns>If successful, returns true; otherwise false.</returns>
 		public virtual bool MoveNext()
 		{
-			if (++this.ActiveIndex >= this.messages.Count)
+			if (++this.ActiveIndex >= this._messages.Count)
 			{
 				this.Reset();
 				return false;
 			}
 
-			this.ActiveMessage = this.messages[this.ActiveIndex];
+			this.ActiveMessage = this._messages[this.ActiveIndex];
 			return true;
 		}
 		
@@ -121,12 +121,12 @@
 			IDictionary<string, string> headers,
 			IEnumerable<object> messages)
 		{
-			this.messageId = messageId;
-			this.correlationId = correlationId;
-			this.returnAddress = returnAddress;
-			this.headers = headers ?? new Dictionary<string, string>();
-			this.messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
-			this.immutable = new ReadOnlyCollection<object>(this.messages);
+			this._messageId = messageId;
+			this._correlationId = correlationId;
+			this._returnAddress = returnAddress;
+			this._headers = headers ?? new Dictionary<string, string>();
+			this._messages = (messages ?? new object[0]).Where(x => x != null).ToArray();
+			this._immutable = new ReadOnlyCollection<object>(this._messages);
 
 			this.ActiveIndex = Inactive;
 		}
@@ -139,18 +139,18 @@
 		}
 
 		[DataMember(Order = 1, EmitDefaultValue = false, IsRequired = false, Name = "id")]
-		private readonly Guid messageId;
+		private readonly Guid _messageId;
 		[DataMember(Order = 2, EmitDefaultValue = false, IsRequired = false, Name = "correlation")]
-		private readonly Guid correlationId;
+		private readonly Guid _correlationId;
 		[DataMember(Order = 3, EmitDefaultValue = false, IsRequired = false, Name = "sender")]
-		private readonly Uri returnAddress;
+		private readonly Uri _returnAddress;
 		[DataMember(Order = 4, EmitDefaultValue = false, IsRequired = false, Name = "headers")]
-		private readonly IDictionary<string, string> headers;
+		private readonly IDictionary<string, string> _headers;
 		[DataMember(Order = 5, EmitDefaultValue = false, IsRequired = false, Name = "payload")]
-		private readonly IList<object> messages;
+		private readonly IList<object> _messages;
 
 		[NonSerialized, IgnoreDataMember, XmlIgnore, SoapIgnore]
-		private readonly IList<object> immutable;
+		private readonly IList<object> _immutable;
 
 		private const int Inactive = -1;
 	}

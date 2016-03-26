@@ -1,4 +1,6 @@
-﻿namespace NanoMessageBus
+﻿using System.Threading.Tasks;
+
+namespace NanoMessageBus
 {
 	/// <summary>
 	/// Provides the ability to understand and handle a logical message.
@@ -13,6 +15,6 @@
 		/// Handles the message provided.
 		/// </summary>
 		/// <param name="message">The message to be handled.</param>
-		void Handle(T message);
-	}
+        Task HandleAsync(T message);
+    }
 }

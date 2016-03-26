@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -21,7 +23,7 @@ namespace NanoMessageBus
 			Try(Build);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -37,7 +39,7 @@ namespace NanoMessageBus
 			Try(Build);
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -47,7 +49,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Initialize(null, RestartDelegate));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -57,7 +59,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Initialize(BuildChannel, null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -70,7 +72,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Initialize(BuildChannel, RestartDelegate));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -83,7 +85,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Initialize(BuildChannel, RestartDelegate));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -93,7 +95,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartActivity(null));
 
 		It should_throw_an_exception = () =>
-		   thrown.ShouldBeOfType<ArgumentNullException>();
+		   thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -103,7 +105,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -116,7 +118,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -132,7 +134,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 	
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -145,7 +147,7 @@ namespace NanoMessageBus
 			TryAndWait(() => workerGroup.StartActivity(EmptyActivity));
 
 		It should_bubble_the_exception_to_the_main_thread = () =>
-			thrown.ShouldNotBeNull();
+			thrown.Should().NotBeNull();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -170,7 +172,7 @@ namespace NanoMessageBus
 		};
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
-			invocations.ShouldEqual(minWorkers);
+			invocations.Should().Be(minWorkers);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -186,10 +188,10 @@ namespace NanoMessageBus
 			Thread.Sleep(100);
 
 		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 
 		It should_invoke_the_restart_callback = () =>
-			restarted.ShouldEqual(true);
+			restarted.Should().Be(true);
 
 		static bool restarted;
 	}
@@ -204,7 +206,7 @@ namespace NanoMessageBus
 			TryAndWait(() => workerGroup.StartActivity(x => callback = x.State));
 
 		It should_pass_the_current_state_to_the_callback = () =>
-			callback.ShouldEqual(mockChannel.Object);
+			callback.Should().Be(mockChannel.Object);
 
 		static IMessagingChannel callback;
 	}
@@ -219,7 +221,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartQueue());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -229,7 +231,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartQueue());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -256,7 +258,7 @@ namespace NanoMessageBus
 		};
 
 		It should_invoke_the_state_callback_provided_for_the_minWorkers_value_provided = () =>
-			invocations.ShouldEqual(minWorkers);
+			invocations.Should().Be(minWorkers);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -272,7 +274,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.StartQueue());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -282,7 +284,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Enqueue(null));
 
 		It should_throw_an_exception = () =>
-		   thrown.ShouldBeOfType<ArgumentNullException>();
+		   thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -295,7 +297,7 @@ namespace NanoMessageBus
 			enqueued = workerGroup.Enqueue(x => { });
 
 		It should_not_enqueue_the_work_item = () =>
-		   enqueued.ShouldBeFalse();
+		   enqueued.Should().BeFalse();
 
 		static bool enqueued;
 	}
@@ -317,7 +319,7 @@ namespace NanoMessageBus
 			TryAndWait(() => workerGroup.StartQueue());
 
 		It should_invoke_the_work_item_callback_provided = () =>
-			callback.ShouldEqual(mockChannel.Object);
+			callback.Should().Be(mockChannel.Object);
 
 		static IMessagingChannel callback;
 	}
@@ -340,10 +342,10 @@ namespace NanoMessageBus
 			TryAndWait(() => workerGroup.StartQueue());
 
 		It should_discard_the_earliest_work_item = () =>
-			firstWorkItemPerformed.ShouldBeFalse();
+			firstWorkItemPerformed.Should().BeFalse();
 
 		It should_invoke_the_latest_work_item = () =>
-			secondWorkItemPerformed.ShouldBeTrue();
+			secondWorkItemPerformed.Should().BeTrue();
 
 		Cleanup after = () =>
 			FirstCallback(null); // code coverage
@@ -369,7 +371,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Restart());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -382,7 +384,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Restart());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -395,7 +397,7 @@ namespace NanoMessageBus
 			Try(() => workerGroup.Restart());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -411,7 +413,7 @@ namespace NanoMessageBus
 			TryAndWait(() => workerGroup.Restart());
 
 		It should_still_invoke_the_restart_callback = () =>
-			invocations.ShouldBeGreaterThanOrEqualTo(1);
+			invocations.Should().BeGreaterThan(0);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -430,7 +432,7 @@ namespace NanoMessageBus
 		}));
 
 		It should_not_resume_the_activity = () =>
-			invocations.ShouldEqual(1);
+			invocations.Should().Be(1);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -456,7 +458,7 @@ namespace NanoMessageBus
 		};
 
 		It should_only_allow_a_single_restart_instance_at_a_time = () =>
-			invocations.ShouldEqual(1);
+			invocations.Should().Be(1);
 	}
 
 	[Subject(typeof(TaskWorkerGroup<IMessagingChannel>))]
@@ -511,13 +513,13 @@ namespace NanoMessageBus
 		};
 
 		It should_initiate_cancellation_current_activities = () =>
-			activityNotCanceled.ShouldEqual(0);
+			activityNotCanceled.Should().Be(0);
 
 		It should_invoke_the_restart_callback_until_it_returns_true = () =>
-			restartAttempts.ShouldEqual(RestartAttempts);
+			restartAttempts.Should().Be(RestartAttempts);
 
 		It should_then_resume_invocations_to_the_previously_executing_activity = () =>
-			invocations.ShouldBeGreaterThan(invocationsBeforeRestart);
+			invocations.Should().BeGreaterThan(invocationsBeforeRestart);
 
 		static int restarted;
 		static int activityNotCanceled;
@@ -548,7 +550,7 @@ namespace NanoMessageBus
 			mockChannel.Verify(x => x.Dispose(), Times.Exactly(3));
 
 		It should_clear_the_worker_collection = () =>
-			workerGroup.Workers.Count().ShouldEqual(0);
+			workerGroup.Workers.Count().Should().Be(0);
 	}
 
 	public abstract class with_a_worker_group

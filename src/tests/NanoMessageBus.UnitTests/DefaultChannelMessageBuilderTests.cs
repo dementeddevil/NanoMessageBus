@@ -1,4 +1,6 @@
-﻿#pragma warning disable 169, 414
+﻿using FluentAssertions;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
@@ -23,31 +25,31 @@ namespace NanoMessageBus
 			built = builder.Build(correlationId, returnAddress, headers, messages);
 
 		It should_have_a_message_id = () =>
-			built.MessageId.ShouldNotEqual(Guid.Empty);
+			built.MessageId.Should().NotBe(Guid.Empty);
 
 		It should_have_the_correlation_id_specified = () =>
-			built.CorrelationId.ShouldEqual(correlationId);
+			built.CorrelationId.Should().Be(correlationId);
 
 		It should_have_the_return_address_specified = () =>
-			built.ReturnAddress.ShouldEqual(returnAddress);
+			built.ReturnAddress.Should().Be(returnAddress);
 
 		It should_have_a_reference_the_same_headers_object_instance = () =>
-			built.Headers.ShouldEqual(headers);
+			built.Headers.Should().BeSameAs(headers);
 
 		It should_have_same_number_of_headers_as_the_set_provided = () =>
-			built.Headers.Count.ShouldEqual(headers.Count);
+			built.Headers.Count.Should().Be(headers.Count);
 
 		It should_have_the_same_header_values_for_each_header_provided = () =>
-			built.Headers.Keys.ToList().ForEach(x => built.Headers[x].ShouldEqual(headers[x]));
+			built.Headers.Keys.ToList().ForEach(x => built.Headers[x].Should().Be(headers[x]));
 
 		It should_have_all_of_the_message_provided = () =>
-			built.Messages.SequenceEqual(messages).ShouldBeTrue();
+			built.Messages.SequenceEqual(messages).Should().BeTrue();
 
 		It should_mark_the_message_as_non_expiring = () =>
-			built.Expiration.ShouldEqual(DateTime.MaxValue);
+			built.Expiration.Should().Be(DateTime.MaxValue);
 
 		It should_mark_the_message_as_durable = () =>
-			built.Persistent.ShouldBeTrue();
+			built.Persistent.Should().BeTrue();
 
 		static readonly Guid correlationId = Guid.NewGuid();
 		static readonly Uri returnAddress = new Uri("direct://default/return-address/");
@@ -62,7 +64,7 @@ namespace NanoMessageBus
 			built = builder.Build(Guid.Empty, null, null, new object[0]);
 
 		It should_not_have_a_return_address_on_the_message = () =>
-			built.ReturnAddress.ShouldBeNull();
+			built.ReturnAddress.Should().BeNull();
 	}
 
 	[Subject(typeof(DefaultChannelMessageBuilder))]
@@ -72,7 +74,7 @@ namespace NanoMessageBus
 			built = builder.Build(Guid.Empty, null, null, new object[0]);
 
 		It should_build_a_message_with_an_empty_set_of_headers = () =>
-			built.Headers.Count.ShouldEqual(0);
+			built.Headers.Count.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultChannelMessageBuilder))]
@@ -82,7 +84,7 @@ namespace NanoMessageBus
 			built = builder.Build(Guid.Empty, null, null, null);
 
 		It should_build_a_message_with_an_empty_set_of_messages = () =>
-			built.Messages.Count.ShouldEqual(0);
+			built.Messages.Count.Should().Be(0);
 	}
 
 	[Subject(typeof(DefaultChannelMessageBuilder))]
@@ -95,7 +97,7 @@ namespace NanoMessageBus
 			built = builder.Build(Guid.Empty, null, null, messages);
 
 		It should_mark_the_channel_message_as_nonpersistent = () =>
-			built.Persistent.ShouldBeFalse();
+			built.Persistent.Should().BeFalse();
 
 		static readonly object[] messages = new object[] { string.Empty };
 	}
@@ -110,7 +112,7 @@ namespace NanoMessageBus
 			built = builder.Build(Guid.Empty, null, null, messages);
 
 		It should_correctly_set_the_channel_message_expiration = () =>
-			built.Expiration.ShouldBeCloseTo(SystemTime.UtcNow + timeToLive, TimeSpan.FromSeconds(1));
+			built.Expiration.Should().BeCloseTo(SystemTime.UtcNow + timeToLive + TimeSpan.FromSeconds(1));
 
 		static readonly TimeSpan timeToLive = TimeSpan.FromDays(1);
 		static readonly object[] messages = new object[] { string.Empty };
@@ -123,7 +125,7 @@ namespace NanoMessageBus
 			Try(() => builder.MarkAsTransient(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageBuilder))]
@@ -133,7 +135,7 @@ namespace NanoMessageBus
 			Try(() => builder.MarkAsExpiring(null, TimeSpan.MaxValue));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelMessageBuilder))]
@@ -143,7 +145,7 @@ namespace NanoMessageBus
 			Try(() => builder.MarkAsExpiring(typeof(int), TimeSpan.Zero));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentException>();
+			thrown.Should().BeOfType<ArgumentException>();
 	}
 
 	public abstract class with_a_message_builder

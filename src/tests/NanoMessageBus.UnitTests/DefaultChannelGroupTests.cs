@@ -1,21 +1,24 @@
-﻿#pragma warning disable 169, 414
+﻿using System.Threading.Tasks;
+
+#pragma warning disable 169, 414
 // ReSharper disable InconsistentNaming
 
 namespace NanoMessageBus
 {
-	using System;
-	using Machine.Specifications;
-	using Moq;
-	using It = Machine.Specifications.It;
+    using System;
+    using Machine.Specifications;
+    using Moq;
+    using It = Machine.Specifications.It;
+    using FluentAssertions;
 
-	[Subject(typeof(DefaultChannelGroup))]
+    [Subject(typeof(DefaultChannelGroup))]
 	public class when_constructing_a_new_channel_group : with_a_channel_group
 	{
 		Establish context = () =>
 			mockConfig.Setup(x => x.DispatchOnly).Returns(true);
 
 		It should_contain_the_same_dispatch_mode_as_the_configuration = () =>
-			channelGroup.DispatchOnly.ShouldBeTrue();
+			channelGroup.DispatchOnly.Should().BeTrue();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -33,7 +36,7 @@ namespace NanoMessageBus
 				Moq.It.IsAny<Func<bool>>()), Times.Once());
 
 		It should_provide_a_callback_to_the_worker_group_to_build_a_channel = () =>
-			stateCallback().ShouldEqual(mockChannel.Object);
+			stateCallback().Should().Be(mockChannel.Object);
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -64,7 +67,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.Initialize());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -112,7 +115,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_indicate_success = () =>
-			restarted.ShouldBeTrue();
+			restarted.Should().BeTrue();
 
 		static bool restarted;
 	}
@@ -133,7 +136,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_indicate_failure = () =>
-			restarted.ShouldBeFalse();
+			restarted.Should().BeFalse();
 
 		static bool restarted;
 	}
@@ -159,7 +162,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_indicate_failure = () =>
-			restarted.ShouldBeFalse();
+			restarted.Should().BeFalse();
 
 		static bool restarted;
 	}
@@ -171,7 +174,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.OpenChannel());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -187,7 +190,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.OpenChannel());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -206,7 +209,7 @@ namespace NanoMessageBus
 			mockConnector.Verify(x => x.Connect(ChannelGroupName), Times.Exactly(1));
 
 		It should_return_a_reference_to_the_opened_channel = () =>
-			opened.ShouldEqual(mockChannel.Object);
+			opened.Should().Be(mockChannel.Object);
 
 		static IMessagingChannel opened;
 	}
@@ -224,7 +227,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.OpenChannel());
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ChannelConnectionException>();
+			thrown.Should().BeOfType<ChannelConnectionException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -245,13 +248,13 @@ namespace NanoMessageBus
 			enqueued = channelGroup.BeginDispatch(x => IncrementInvocations());
 
 		It should_indicate_the_work_item_was_enqueued = () =>
-			enqueued.ShouldBeTrue();
+			enqueued.Should().BeTrue();
 
 		It should_prepare_a_dispatch_context_on_the_underlying_channel = () =>
 			mockChannel.Verify(x => x.PrepareDispatch(null, null), Times.Once());
 
 		It should_invoke_the_callback_method_provided = () =>
-			invocations.ShouldEqual(1);
+			invocations.Should().Be(1);
 
 		static IChannelTransaction current;
 		static bool enqueued;
@@ -275,7 +278,7 @@ namespace NanoMessageBus
 			enqueued = channelGroup.BeginDispatch(x => { });
 
 		It should_indicate_the_message_was_not_enqueued = () =>
-			enqueued.ShouldBeFalse();
+			enqueued.Should().BeFalse();
 
 		static bool enqueued;
 	}
@@ -323,7 +326,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginDispatch(x => { }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -336,7 +339,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginDispatch(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -346,7 +349,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginDispatch(x => { }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -364,7 +367,7 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginDispatch(x => { }));
 
 		It should_NOT_throw_an_exception = () =>
-			thrown.ShouldBeNull();
+			thrown.Should().BeNull();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -374,7 +377,7 @@ namespace NanoMessageBus
 			channelGroup.Initialize();
 
 		Because of = () =>
-			channelGroup.BeginReceive(x => { });
+			channelGroup.BeginReceive(x => { return Task.FromResult(true); });
 
 		It should_startup_the_worker_group = () =>
 			mockWorkers.Verify(x => x.StartActivity(Moq.It.IsAny<Action<IWorkItem<IMessagingChannel>>>()), Times.Once());
@@ -413,17 +416,17 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginReceive(null));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ArgumentNullException>();
+			thrown.Should().BeOfType<ArgumentNullException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
 	public class when_attempting_to_begin_receiving_messages_without_first_initializing_the_group : with_a_channel_group
 	{
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginReceive(c => { }));
+			thrown = Catch.Exception(() => channelGroup.BeginReceive(c => { return Task.FromResult(true); }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -436,10 +439,10 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			thrown = Catch.Exception(() => channelGroup.BeginReceive(c => { }));
+			thrown = Catch.Exception(() => channelGroup.BeginReceive(c => { return Task.FromResult(true); }));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<ObjectDisposedException>();
+			thrown.Should().BeOfType<ObjectDisposedException>();
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -455,9 +458,9 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginReceive(callback));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 
-		static readonly Action<IDeliveryContext> callback = channel => { };
+		static readonly Func<IDeliveryContext, Task> callback = channel => { return Task.FromResult(true); };
 	}
 
 	[Subject(typeof(DefaultChannelGroup))]
@@ -473,12 +476,12 @@ namespace NanoMessageBus
 			thrown = Catch.Exception(() => channelGroup.BeginReceive(callback));
 
 		It should_throw_an_exception = () =>
-			thrown.ShouldBeOfType<InvalidOperationException>();
+			thrown.Should().BeOfType<InvalidOperationException>();
 
-		static readonly Action<IDeliveryContext> callback = channel => { };
-	}
+        static readonly Func<IDeliveryContext, Task> callback = channel => { return Task.FromResult(true); };
+    }
 
-	[Subject(typeof(DefaultChannelGroup))]
+    [Subject(typeof(DefaultChannelGroup))]
 	public class when_the_underlying_channel_throws_an_ObjectDisposedException : with_a_channel_group
 	{
 		private Establish context = () =>
@@ -491,7 +494,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			channelGroup.BeginReceive(x => { });
+			channelGroup.BeginReceive(x => { return Task.FromResult(true); });
 
 		It should_consume_the_exception = () =>
 			mockChannel.Verify(x => x.Receive(Moq.It.IsAny<Action<IDeliveryContext>>()), Times.Once());
@@ -513,7 +516,7 @@ namespace NanoMessageBus
 		};
 
 		Because of = () =>
-			channelGroup.BeginReceive(x => { });
+			channelGroup.BeginReceive(x => { return Task.FromResult(true); });
 
 		It should_consume_the_exception = () =>
 			mockWorkers.Verify(x => x.Restart(), Times.Once());

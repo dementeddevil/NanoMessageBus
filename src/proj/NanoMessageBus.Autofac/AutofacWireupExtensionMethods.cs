@@ -18,7 +18,7 @@
 		public static ICollection<Type> GetMessageHandlers(this Assembly assembly)
 		{
 			if (assembly == null)
-				throw new ArgumentNullException("assembly");
+				throw new ArgumentNullException(nameof(assembly));
 
 			ICollection<Type> handlers;
 			if (MessageHandlers.TryGetValue(assembly, out handlers))
@@ -38,7 +38,7 @@
 		public static ICollection<Type> GetMessageHandlerTypes(this Type messageHandler)
 		{
 			if (messageHandler == null)
-				throw new ArgumentNullException("messageHandler");
+				throw new ArgumentNullException(nameof(messageHandler));
 
 			ICollection<Type> types;
 			if (MessageHandlerTypes.TryGetValue(messageHandler, out types))
@@ -58,7 +58,7 @@
 		public static bool IsMessageHandler(this Type candidate)
 		{
 			if (candidate == null)
-				throw new ArgumentNullException("candidate");
+				throw new ArgumentNullException(nameof(candidate));
 
 			return candidate.GetMessageHandlerTypes().Count > 0;
 		}

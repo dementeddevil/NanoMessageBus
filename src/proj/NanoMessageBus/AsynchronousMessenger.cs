@@ -7,7 +7,7 @@
 	{
 		public virtual void Dispatch(object message, IDictionary<string, string> headers = null, object state = null)
 		{
-			this.channelGroup.BeginDispatch(x =>
+			this._channelGroup.BeginDispatch(x =>
 			{
 				var dispatch = x.WithMessage(message);
 
@@ -29,7 +29,7 @@
 
 		public AsynchronousMessenger(IChannelGroup channelGroup)
 		{
-			this.channelGroup = channelGroup;
+			this._channelGroup = channelGroup;
 		}
 
 		public void Dispose()
@@ -42,6 +42,6 @@
 			// no op
 		}
 
-		private readonly IChannelGroup channelGroup;
+		private readonly IChannelGroup _channelGroup;
 	}
 }

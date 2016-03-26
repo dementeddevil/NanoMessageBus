@@ -15,7 +15,7 @@
 		public static HttpContextBase Clone(this HttpContextBase context)
 		{
 			if (context == null)
-				throw new ArgumentNullException("context");
+				throw new ArgumentNullException(nameof(context));
 
 			return new HttpContextClone(context);
 		}
@@ -25,261 +25,261 @@
 	{
 		public override Exception Error
 		{
-			get { return this.error; }
+			get { return this._error; }
 		}
 		public override bool IsCustomErrorEnabled
 		{
-			get { return this.customErrors; }
+			get { return this._customErrors; }
 		}
 		public override bool IsDebuggingEnabled
 		{
-			get { return this.debuggingEnabled; }
+			get { return this._debuggingEnabled; }
 		}
 		public override bool IsPostNotification
 		{
-			get { return this.postNotification; }
+			get { return this._postNotification; }
 		}
 		public override DateTime Timestamp
 		{
-			get { return this.timestamp; }
+			get { return this._timestamp; }
 		}
 		public override Exception[] AllErrors
 		{
-			get { return this.allErrors; }
+			get { return this._allErrors; }
 		}
 		public override bool SkipAuthorization
 		{
-			get { return this.skipAuthorization; }
+			get { return this._skipAuthorization; }
 			set { }
 		}
 		public override IPrincipal User
 		{
-			get { return this.user; }
+			get { return this._user; }
 			set { }
 		}
 		public override HttpRequestBase Request
 		{
-			get { return this.request; }
+			get { return this._request; }
 		}
 
 		public HttpContextClone(HttpContextBase context)
 		{
-			this.error = context.Error;
-			this.allErrors = context.AllErrors;
-			this.debuggingEnabled = context.IsDebuggingEnabled;
-			this.customErrors = context.IsCustomErrorEnabled;
-			this.postNotification = IsMicrosoftRuntime && context.IsPostNotification;
-			this.timestamp = context.Timestamp;
-			this.skipAuthorization = context.SkipAuthorization;
-			this.user = context.User;
+			this._error = context.Error;
+			this._allErrors = context.AllErrors;
+			this._debuggingEnabled = context.IsDebuggingEnabled;
+			this._customErrors = context.IsCustomErrorEnabled;
+			this._postNotification = IsMicrosoftRuntime && context.IsPostNotification;
+			this._timestamp = context.Timestamp;
+			this._skipAuthorization = context.SkipAuthorization;
+			this._user = context.User;
 
-			request = new HttpRequestClone(context.Request);
+			_request = new HttpRequestClone(context.Request);
 		}
 
 		private static readonly bool IsMicrosoftRuntime = Type.GetType("Mono.Runtime") == null;
-		private readonly HttpRequestBase request;
-		private readonly Exception error;
-		private readonly Exception[] allErrors;
-		private readonly bool postNotification;
-		private readonly bool debuggingEnabled;
-		private readonly bool customErrors;
-		private readonly DateTime timestamp;
-		private readonly bool skipAuthorization;
-		private readonly IPrincipal user;
+		private readonly HttpRequestBase _request;
+		private readonly Exception _error;
+		private readonly Exception[] _allErrors;
+		private readonly bool _postNotification;
+		private readonly bool _debuggingEnabled;
+		private readonly bool _customErrors;
+		private readonly DateTime _timestamp;
+		private readonly bool _skipAuthorization;
+		private readonly IPrincipal _user;
 	}
 
 	internal class HttpRequestClone : HttpRequestBase
 	{
 		public override string[] AcceptTypes
 		{
-			get { return this.acceptTypes; }
+			get { return this._acceptTypes; }
 		}
 		public override string AnonymousID
 		{
-			get { return this.anonymousId; }
+			get { return this._anonymousId; }
 		}
 		public override string ApplicationPath
 		{
-			get { return this.applicationPath; }
+			get { return this._applicationPath; }
 		}
 		public override string AppRelativeCurrentExecutionFilePath
 		{
-			get { return this.appRelativeCurrentExecutionFilePath; }
+			get { return this._appRelativeCurrentExecutionFilePath; }
 		}
 		public override Encoding ContentEncoding
 		{
-			get { return this.contentEncoding; }
+			get { return this._contentEncoding; }
 			set { }
 		}
 		public override int ContentLength
 		{
-			get { return this.contentLength; }
+			get { return this._contentLength; }
 		}
 		public override string ContentType
 		{
-			get { return this.contentType; }
+			get { return this._contentType; }
 		}
 		public override string CurrentExecutionFilePath
 		{
-			get { return this.currentExecutionFilePath; }
+			get { return this._currentExecutionFilePath; }
 		}
 		public override string HttpMethod
 		{
-			get { return this.httpMethod; }
+			get { return this._httpMethod; }
 		}
 		public override bool IsAuthenticated
 		{
-			get { return this.isAuthenticated; }
+			get { return this._isAuthenticated; }
 		}
 		public override bool IsLocal
 		{
-			get { return this.isLocal; }
+			get { return this._isLocal; }
 		}
 		public override bool IsSecureConnection
 		{
-			get { return this.isSecureConnection; }
+			get { return this._isSecureConnection; }
 		}
 		public override string Path
 		{
-			get { return this.path; }
+			get { return this._path; }
 		}
 		public override string PathInfo
 		{
-			get { return this.pathInfo; }
+			get { return this._pathInfo; }
 		}
 		public override string PhysicalApplicationPath
 		{
-			get { return this.physicalApplicationPath; }
+			get { return this._physicalApplicationPath; }
 		}
 		public override string PhysicalPath
 		{
-			get { return this.physicalPath; }
+			get { return this._physicalPath; }
 		}
 		public override string RawUrl
 		{
-			get { return this.rawUrl; }
+			get { return this._rawUrl; }
 		}
 		public override string RequestType
 		{
-			get { return this.requestType; }
+			get { return this._requestType; }
 		}
 		public override int TotalBytes
 		{
-			get { return this.totalBytes; }
+			get { return this._totalBytes; }
 		}
 		public override Uri Url
 		{
-			get { return this.url; }
+			get { return this._url; }
 		}
 		public override Uri UrlReferrer
 		{
-			get { return this.urlReferrer; }
+			get { return this._urlReferrer; }
 		}
 		public override string UserHostAddress
 		{
-			get { return this.userHostAddress; }
+			get { return this._userHostAddress; }
 		}
 		public override string UserHostName
 		{
-			get { return this.userHostName; }
+			get { return this._userHostName; }
 		}
 		public override string UserAgent
 		{
-			get { return this.userAgent; }
+			get { return this._userAgent; }
 		}
 		public override string[] UserLanguages
 		{
-			get { return this.userLanguages; }
+			get { return this._userLanguages; }
 		}
 
 		public override HttpCookieCollection Cookies
 		{
-			get { return this.cookies; }
+			get { return this._cookies; }
 		}
 		public override NameValueCollection Headers
 		{
-			get { return this.headers; }
+			get { return this._headers; }
 		}
 		public override NameValueCollection Form
 		{
-			get { return this.form; }
+			get { return this._form; }
 		}
 		public override NameValueCollection QueryString
 		{
-			get { return this.queryString; }
+			get { return this._queryString; }
 		}
 		public override NameValueCollection ServerVariables
 		{
-			get { return this.serverVariables; }
+			get { return this._serverVariables; }
 		}
 
 		public HttpRequestClone(HttpRequestBase request)
 		{
-			this.acceptTypes = request.AcceptTypes;
-			this.anonymousId = request.AnonymousID;
-			this.applicationPath = request.ApplicationPath;
-			this.appRelativeCurrentExecutionFilePath = request.AppRelativeCurrentExecutionFilePath;
-			this.contentEncoding = request.ContentEncoding;
-			this.contentLength = request.ContentLength;
-			this.contentType = request.ContentType;
-			this.currentExecutionFilePath = request.CurrentExecutionFilePath;
-			this.isSecureConnection = request.IsSecureConnection;
-			this.isLocal = request.IsLocal;
-			this.isAuthenticated = request.IsAuthenticated;
-			this.httpMethod = request.HttpMethod;
-			this.path = request.Path;
-			this.pathInfo = request.PathInfo;
-			this.physicalPath = request.PhysicalPath;
-			this.physicalApplicationPath = request.PhysicalApplicationPath;
-			this.rawUrl = request.RawUrl;
-			this.requestType = request.RequestType;
-			this.totalBytes = request.TotalBytes;
-			this.url = request.Url;
-			this.urlReferrer = request.UrlReferrer;
-			this.userHostAddress = request.UserHostAddress;
-			this.userHostName = request.UserHostName;
-			this.userAgent = request.UserAgent;
-			this.userLanguages = request.UserLanguages;
+			this._acceptTypes = request.AcceptTypes;
+			this._anonymousId = request.AnonymousID;
+			this._applicationPath = request.ApplicationPath;
+			this._appRelativeCurrentExecutionFilePath = request.AppRelativeCurrentExecutionFilePath;
+			this._contentEncoding = request.ContentEncoding;
+			this._contentLength = request.ContentLength;
+			this._contentType = request.ContentType;
+			this._currentExecutionFilePath = request.CurrentExecutionFilePath;
+			this._isSecureConnection = request.IsSecureConnection;
+			this._isLocal = request.IsLocal;
+			this._isAuthenticated = request.IsAuthenticated;
+			this._httpMethod = request.HttpMethod;
+			this._path = request.Path;
+			this._pathInfo = request.PathInfo;
+			this._physicalPath = request.PhysicalPath;
+			this._physicalApplicationPath = request.PhysicalApplicationPath;
+			this._rawUrl = request.RawUrl;
+			this._requestType = request.RequestType;
+			this._totalBytes = request.TotalBytes;
+			this._url = request.Url;
+			this._urlReferrer = request.UrlReferrer;
+			this._userHostAddress = request.UserHostAddress;
+			this._userHostName = request.UserHostName;
+			this._userAgent = request.UserAgent;
+			this._userLanguages = request.UserLanguages;
 
-			this.headers = new NameValueCollection(request.Headers);
-			this.form = new NameValueCollection(request.Form);
-			this.queryString = new NameValueCollection(request.QueryString);
-			this.serverVariables = new NameValueCollection(request.ServerVariables);
+			this._headers = new NameValueCollection(request.Headers);
+			this._form = new NameValueCollection(request.Form);
+			this._queryString = new NameValueCollection(request.QueryString);
+			this._serverVariables = new NameValueCollection(request.ServerVariables);
 
-			this.cookies = new HttpCookieCollection();
+			this._cookies = new HttpCookieCollection();
 			for (var i = 0; i < request.Cookies.Count; i++)
-				this.cookies.Add(request.Cookies[i]);
+				this._cookies.Add(request.Cookies[i]);
 		}
 
-		private readonly string userAgent;
-		private readonly string[] acceptTypes;
-		private readonly string anonymousId;
-		private readonly string applicationPath;
-		private readonly string appRelativeCurrentExecutionFilePath;
-		private readonly Encoding contentEncoding;
-		private readonly int contentLength;
-		private readonly string contentType;
-		private readonly string currentExecutionFilePath;
-		private readonly bool isSecureConnection;
-		private readonly bool isLocal;
-		private readonly bool isAuthenticated;
-		private readonly string httpMethod;
-		private readonly string path;
-		private readonly string pathInfo;
-		private readonly string physicalApplicationPath;
-		private readonly string physicalPath;
-		private readonly string rawUrl;
-		private readonly string requestType;
-		private readonly int totalBytes;
-		private readonly Uri url;
-		private readonly Uri urlReferrer;
-		private readonly string userHostAddress;
-		private readonly string userHostName;
-		private readonly string[] userLanguages;
-		private readonly HttpCookieCollection cookies;
-		private readonly NameValueCollection headers;
-		private readonly NameValueCollection queryString;
-		private readonly NameValueCollection form;
-		private readonly NameValueCollection serverVariables;
+		private readonly string _userAgent;
+		private readonly string[] _acceptTypes;
+		private readonly string _anonymousId;
+		private readonly string _applicationPath;
+		private readonly string _appRelativeCurrentExecutionFilePath;
+		private readonly Encoding _contentEncoding;
+		private readonly int _contentLength;
+		private readonly string _contentType;
+		private readonly string _currentExecutionFilePath;
+		private readonly bool _isSecureConnection;
+		private readonly bool _isLocal;
+		private readonly bool _isAuthenticated;
+		private readonly string _httpMethod;
+		private readonly string _path;
+		private readonly string _pathInfo;
+		private readonly string _physicalApplicationPath;
+		private readonly string _physicalPath;
+		private readonly string _rawUrl;
+		private readonly string _requestType;
+		private readonly int _totalBytes;
+		private readonly Uri _url;
+		private readonly Uri _urlReferrer;
+		private readonly string _userHostAddress;
+		private readonly string _userHostName;
+		private readonly string[] _userLanguages;
+		private readonly HttpCookieCollection _cookies;
+		private readonly NameValueCollection _headers;
+		private readonly NameValueCollection _queryString;
+		private readonly NameValueCollection _form;
+		private readonly NameValueCollection _serverVariables;
 	}
 }

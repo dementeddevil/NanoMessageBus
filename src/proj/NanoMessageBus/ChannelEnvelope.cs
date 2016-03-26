@@ -55,10 +55,10 @@
 			: this()
 		{
 			if (message == null)
-				throw new ArgumentNullException("message");
+				throw new ArgumentNullException(nameof(message));
 
 			if (recipients == null)
-				throw new ArgumentNullException("recipients");
+				throw new ArgumentNullException(nameof(recipients));
 
 			this.Message = message;
 
@@ -66,7 +66,7 @@
 			this.Recipients = immutable;
 
 			if (immutable.Count == 0)
-				throw new ArgumentException("No recipients were provided.", "recipients");
+				throw new ArgumentException("No recipients were provided.", nameof(recipients));
 
 			this.State = state;
 		}
