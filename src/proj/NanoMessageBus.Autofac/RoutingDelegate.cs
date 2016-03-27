@@ -1,6 +1,8 @@
-﻿namespace NanoMessageBus
-{
-	internal delegate int RoutingDelegate(IHandlerContext context, object message);
+﻿using System.Threading.Tasks;
 
-	internal delegate int RoutingDelegate<T>(IHandlerContext context, T message);
+namespace NanoMessageBus
+{
+	internal delegate Task<int> RoutingDelegate(IHandlerContext context, object message);
+
+	internal delegate Task<int> RoutingDelegate<T>(IHandlerContext context, T message);
 }
